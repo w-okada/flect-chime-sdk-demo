@@ -1,0 +1,1 @@
+export const BACKEND_STACK_NAME = 'BackendStack'
