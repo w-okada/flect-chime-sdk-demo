@@ -3,7 +3,6 @@
 
 import React from 'react';
 import { Heading } from 'amazon-chime-sdk-component-library-react';
-
 import JoinMeetingDetails from '../../containers/MeetingJoinDetails';
 import DeviceSelection from '../../components/DeviceSelection';
 import { StyledLayout } from './Styled';

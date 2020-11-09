@@ -23,18 +23,18 @@ const EndMeetingControl: React.FC = () => {
   const meetingManager = useMeetingManager();
   const [showModal, setShowModal] = useState(false);
   const toggleModal = (): void => setShowModal(!showModal);
-  const { meetingId } = useAppState();
+  const { meetingName, localUserName, userId, idToken, accessToken, refreshToken} = useAppState();
   const history = useHistory();
 
   const leaveMeeting = async (): Promise<void> => {
-    meetingManager.leave();
+    await meetingManager.leave();
     history.push(routes.HOME);
   };
 
   const endMeetingForAll = async (): Promise<void> => {
     try {
-      if (meetingId) {
-        await endMeeting(meetingId);
+      if (meetingName) {
+        await endMeeting(meetingName, localUserName, userId, idToken, accessToken, refreshToken);
         await meetingManager.leave();
         history.push(routes.HOME);
       }

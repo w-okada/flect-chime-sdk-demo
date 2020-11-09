@@ -84,7 +84,7 @@ export const MeetingFormStateProvider = ({ children }: Props) => {
         // }
 
         setIsLoading(true);
-        meetingManager.getAttendee = createGetAttendeeCallback(validMeetingName);
+        // meetingManager.getAttendee = createGetAttendeeCallback(validMeetingName);
 
         try {
             const { created:created, meetingId:meetingId } = await createMeeting(validMeetingName, attendeeName, region, userId, idToken, accessToken, refreshToken );
@@ -113,7 +113,7 @@ export const MeetingFormStateProvider = ({ children }: Props) => {
 //     }
 
         setIsLoading(true);
-        meetingManager.getAttendee = createGetAttendeeCallback(validMeetingName);
+        meetingManager.getAttendee = createGetAttendeeCallback(validMeetingName, idToken, accessToken);
 
         try {
             const joinInfo = await joinMeeting(validMeetingName, attendeeName, userId, idToken, accessToken, refreshToken);

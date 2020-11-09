@@ -20,7 +20,7 @@ const MeetingView = () => {
   const { showNavbar, showRoster } = useNavigation();
 
   return (
-    <UserActivityProvider>
+    // <UserActivityProvider>
       <StyledLayout showNav={showNavbar} showRoster={showRoster}>
         <StyledContent>
           <MeetingMetrics />
@@ -32,7 +32,7 @@ const MeetingView = () => {
         </StyledContent>
         <NavigationControl />
       </StyledLayout>
-    </UserActivityProvider>
+    // </UserActivityProvider>
   );
 };
 

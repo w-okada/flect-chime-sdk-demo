@@ -17,10 +17,10 @@ Promise<{created:boolean, meetingId:string}> {
   const encodedUserName      = encodeURIComponent(userName)
   const encodedRegion    = region ? encodeURIComponent(region) : ""
 
-  const url = `${BASE_URL}/meetings`
+  const url = `${BASE_URL}meetings`
 
   console.log("connect:::",url)
-  const obj = {meetingName: encodedMeetingName, userName:encodedUserName, region:region, userId:userId, accessToken:accessToken}
+  const obj = {meetingName: encodedMeetingName, userName:encodedUserName, region:region, userId:userId}
   const body = JSON.stringify(obj)
   const response = await fetch(url,
     {
@@ -29,7 +29,8 @@ Promise<{created:boolean, meetingId:string}> {
       headers: {
         "Authorization": idToken,
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        "X-Flect-Access-Token": accessToken        
       }
     }
   );
@@ -45,10 +46,10 @@ export async function joinMeeting(meetingName: string, userName: string, userId:
   const encodedMeetingName = encodeURIComponent(meetingName)
   const encodedUserName      = encodeURIComponent(userName)
 
-  const url = `${BASE_URL}/meetings/${encodedMeetingName}/attendees`
+  const url = `${BASE_URL}meetings/${encodedMeetingName}/attendees`
 
   console.log("connect:::",url)
-  const obj = {meetingName: encodedMeetingName, userName:encodedUserName, userId:userId, accessToken:accessToken}
+  const obj = {meetingName: encodedMeetingName, userName:encodedUserName, userId:userId}
   const body = JSON.stringify(obj)
   const response = await fetch(url,
     {
@@ -57,7 +58,8 @@ export async function joinMeeting(meetingName: string, userName: string, userId:
       headers: {
         "Authorization": idToken,
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        "X-Flect-Access-Token": accessToken
       }
     }
   );
@@ -70,14 +72,43 @@ export async function joinMeeting(meetingName: string, userName: string, userId:
 }
 
 
+export async function endMeeting(meetingName: string, userName: string, userId:string, idToken: string, accessToken:string, refreshToken:string) {
+  const encodedMeetingName = encodeURIComponent(meetingName)
+  const encodedUserName      = encodeURIComponent(userName)
 
-export function createGetAttendeeCallback(meetingId: string) {
+  const url = `${BASE_URL}meetings/${encodedMeetingName}`
+  const obj = {meetingName: encodedMeetingName, userName:encodedUserName, userId:userId}
+  const body = JSON.stringify(obj)
+
+  const response = await fetch(url,
+    {
+      method: 'DELETE',
+      body:body,
+      headers: {
+        "Authorization": idToken,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        "X-Flect-Access-Token": accessToken
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error('Server error ending meeting');
+  }  
+}
+
+
+
+export function createGetAttendeeCallback(meetingName: string, idToken: string, accessToken: string) {
   return async (chimeAttendeeId: string, externalUserId?: string) => {
-    const attendeeUrl = `${BASE_URL}attendee?title=${encodeURIComponent(
-      meetingId
-    )}&attendee=${encodeURIComponent(chimeAttendeeId)}`;
+    const attendeeUrl = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(chimeAttendeeId)}`
     const res = await fetch(attendeeUrl, {
-      method: 'GET'
+      method: 'GET',
+      headers: {
+        "Authorization": idToken,
+        "X-Flect-Access-Token": accessToken
+      }
     });
 
     if (!res.ok) {
@@ -87,12 +118,12 @@ export function createGetAttendeeCallback(meetingId: string) {
     const data = await res.json();
 
     return {
-      name: data.AttendeeInfo.Name
+      name: data.UserName
     };
   };
 }
 
-export async function endMeeting(meetingId: string) {
+export async function endMeeting2(meetingId: string) {
   const res = await fetch(
     `${BASE_URL}end?title=${encodeURIComponent(meetingId)}`,
     {

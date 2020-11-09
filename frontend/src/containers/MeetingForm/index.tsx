@@ -9,25 +9,18 @@ import {
   Heading,
   FormField,
   PrimaryButton,
-  useMeetingManager,
   Modal,
   ModalBody,
   ModalHeader,
-  Meeting,
   Label
 } from 'amazon-chime-sdk-component-library-react';
 
 import { getErrorContext } from '../../providers/ErrorProvider';
-import routes from '../../constants/routes';
 import Card from '../../components/Card';
 import Spinner from '../../components/Spinner';
-import DevicePermissionPrompt from '../DevicePermissionPrompt';
 import RegionSelection from './RegionSelection';
-import { createMeeting, createGetAttendeeCallback, joinMeeting } from '../../utils/api';
 import { useAppState } from '../../providers/AppStateProvider';
-
 import { useMeetingFormState } from '../../providers/MeetingFormStateProvider';
-import { useSignInState } from '../../providers/SignInStateProvider';
 
 
 const MeetingNameField:React.FC = () =>{
