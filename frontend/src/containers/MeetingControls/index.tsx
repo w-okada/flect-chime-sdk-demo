@@ -16,6 +16,9 @@ import {
 import EndMeetingControl from '../EndMeetingControl';
 import { useNavigation } from '../../providers/NavigationProvider';
 import { StyledControls } from './Styled';
+import EffectedVideoInputControl from './EffectedVideoInputControl';
+import VideoEffectControl from '../VideoEffectControl';
+import CustomizedVideoInputControl from './CustomizedVideoIputControle';
 
 const MeetingControls = () => {
   const { toggleNavbar, closeRoster, showRoster } = useNavigation();
@@ -43,10 +46,13 @@ const MeetingControls = () => {
           label="Menu"
         />
         <AudioInputControl />
-        <VideoInputControl />
+        {/* <VideoInputControl /> */}
+        {/* <EffectedVideoInputControl /> */}
+        <CustomizedVideoInputControl />
         <ContentShareControl />
         <AudioOutputControl />
         <EndMeetingControl />
+        <VideoEffectControl />
       </ControlBar>
     </StyledControls>
   );

@@ -20,7 +20,7 @@ import { NavigationProvider } from './providers/NavigationProvider';
 import { SignIn, Home, DeviceSetup, Meeting} from './views';
 import NoMeetingRedirect from './containers/NoMeetingRedirect';
 // import { Meeting, Home, DeviceSetup } from './views';
-
+import { VideoEffectStateProvider } from './providers/VideoEffectProvider'
 
 
 const App: FC = () => (
@@ -33,20 +33,22 @@ const App: FC = () => (
             <MeetingProvider {...meetingConfig}>
               <UserActivityProvider>
                 <NavigationProvider>
-                  <Switch>
-                  <Route exact path={routes.HOME} component={Home} />
-                  <Route exact path={routes.SIGNIN} component={SignIn} />
-                    <Route path={routes.DEVICE}>
-                      <NoMeetingRedirect>
-                        <DeviceSetup />
-                      </NoMeetingRedirect>
-                    </Route>
-                    <Route path={routes.MEETING}>
-                      <NoMeetingRedirect>
-                        <Meeting />
-                      </NoMeetingRedirect>
-                    </Route>
-                  </Switch>
+                  <VideoEffectStateProvider>
+                    <Switch>
+                    <Route exact path={routes.HOME} component={Home} />
+                    <Route exact path={routes.SIGNIN} component={SignIn} />
+                      <Route path={routes.DEVICE}>
+                        <NoMeetingRedirect>
+                          <DeviceSetup />
+                        </NoMeetingRedirect>
+                      </Route>
+                      <Route path={routes.MEETING}>
+                        <NoMeetingRedirect>
+                          <Meeting />
+                        </NoMeetingRedirect>
+                      </Route>
+                    </Switch>
+                  </VideoEffectStateProvider>
                 </NavigationProvider>
               </UserActivityProvider>
             </MeetingProvider>
