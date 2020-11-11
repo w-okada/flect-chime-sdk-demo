@@ -69,12 +69,19 @@ const videoInputSelectionToDevice = async (
 
     c.width = videoWidth!
     c.height = videoHeight!
-    c.getContext("2d")!.fillRect(0,0,100,100)
+    // c.getContext("2d")!.fillRect(0,0,100,100)
   })
 
   // @ts-ignore
   const mediaStream = c.captureStream() as MediaStream
   return mediaStream
+}
+
+const copyFrame = () =>{
+  c.getContext("2d")!.drawImage(v,0, 0, c.width, c.height)
+  console.log(c.width, c.height)
+  c.getContext("2d")!.fillRect(0,0,100,100)
+  requestAnimationFrame(copyFrame)
 }
 
 const MeetingView = () => {
@@ -83,9 +90,11 @@ const MeetingView = () => {
   const meetingManager = useMeetingManager();
   const {backgroundEffect, backgroundImage, backgroundMediaStream, frontEffect} = useVideoEffectState()
   console.log(backgroundEffect)
-  
+
+  copyFrame()
+
   meetingManager.selectVideoInputDevice = async(deviceId:string) => {
-    console.log("SELEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
+    console.log("Update Video Input")
     try {
       const receivedDevice = await videoInputSelectionToDevice(deviceId, frontEffect, backgroundEffect, backgroundImage, backgroundMediaStream);
       if (receivedDevice === null) {
