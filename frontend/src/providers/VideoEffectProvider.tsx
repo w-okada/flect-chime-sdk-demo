@@ -8,7 +8,7 @@ import { OpenCVWorkerManager, generateOpenCVDefaultConfig, OpenCVConfig, generat
 
 import { BodyPixConfig } from "@dannadori/bodypix-worker-js/dist/const";
 import { VirtualBackground } from "../VirtualBackground/VirtualBackground";
-import { useSelectVideoQuality, useAudioVideo } from "amazon-chime-sdk-component-library-react";
+import { useAudioVideo } from "amazon-chime-sdk-component-library-react";
 import { DefaultBrowserBehavior } from "amazon-chime-sdk-js";
 
 type Props = {
@@ -209,7 +209,7 @@ class VideoEffector {
         promises.push(null)
     }
 
-    if(this.frontEffect == "None" && this._backgroundEffect == "None"){
+    if(this.frontEffect === "None" && this._backgroundEffect === "None"){
       // Don't use virtual background
       promises.push(null)
     }else{
@@ -249,7 +249,7 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
   // const [videoEffector, _setVideoEffector] = useState(new VideoEffector())
   const [frontEffect, _setFrontEffect] = useState("None" as FrontEffect)
   const [backgroundEffect, _setBackgroundEffect] = useState("None" as BackgroundEffect)
-  const [backgroundMediaStream, _setBackgroundMediaStream] = useState(null as MediaStream | null)
+  const [backgroundMediaStream] = useState(null as MediaStream | null)
   const frontEffectOptions = FrontEffectOoptions
   const backgroundEffectOptions = BackgroundEffectOoptions
 
@@ -300,7 +300,7 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
     width: number,
     height: number
   ): MediaTrackConstraints => {
-    const dimension = browserBehavior.requiresResolutionAlignment(width, height);
+    //const dimension = browserBehavior.requiresResolutionAlignment(width, height);
     const trackConstraints: MediaTrackConstraints = {};
     if (browserBehavior.requiresNoExactMediaStreamConstraints()) {
       trackConstraints.deviceId = deviceId;

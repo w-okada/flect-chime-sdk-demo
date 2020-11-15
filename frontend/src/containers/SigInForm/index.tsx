@@ -11,7 +11,6 @@ import {
   Modal,
   ModalBody,
   ModalHeader,
-  Button
 } from 'amazon-chime-sdk-component-library-react';
 
 import { getErrorContext } from '../../providers/ErrorProvider';

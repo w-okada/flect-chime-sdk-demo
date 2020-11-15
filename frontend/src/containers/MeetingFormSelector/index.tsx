@@ -1,12 +1,8 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useState } from 'react';
-import {
-  Flex,
-  SecondaryButton,
-  Label
-} from 'amazon-chime-sdk-component-library-react';
+import React from 'react';
+import {  Label } from 'amazon-chime-sdk-component-library-react';
 
 import { CreateMeetingForm, JoinMeetingForm, CreatedMeetingForm } from '../MeetingForm';
 import { StyledDiv, StyledWrapper } from './Styled';
@@ -21,17 +17,16 @@ const MeetingFormSelector: React.FC = () => {
     switch(mode){
       case "CREATE_MEETING":
         return [
-          // <></>,
           <CreateMeetingForm />, 
           <div>
-            <Label onClick={()=>setMode("JOIN_MEETING")}><a href="#" style={{color: '#989da5'}}>switch to join meeting</a> </Label>
+            <Label onClick={()=>setMode("JOIN_MEETING")}  style={{textDecoration:"underline", cursor:"pointer"}}>switch to join meeting</Label>
           </div>
         ]
       case "JOIN_MEETING":
         return [
           <JoinMeetingForm />,
           <div>
-            <Label onClick={()=>setMode("CREATE_MEETING")}><a href="#" style={{color: '#989da5'}}>switch to create meeting</a> </Label>
+            <Label onClick={()=>setMode("CREATE_MEETING")}  style={{textDecoration:"underline", cursor:"pointer"}}>switch to create meeting</Label>
           </div>
         ]
 
@@ -39,7 +34,7 @@ const MeetingFormSelector: React.FC = () => {
         return [
           <CreatedMeetingForm />,
           <div>
-            <Label onClick={()=>setMode("JOIN_MEETING")}><a href="#" style={{color: '#989da5'}}>join meeting</a> </Label>
+            <Label onClick={()=>setMode("JOIN_MEETING")} style={{textDecoration:"underline", cursor:"pointer"}}>join meeting </Label>
           </div>
         ]
       }

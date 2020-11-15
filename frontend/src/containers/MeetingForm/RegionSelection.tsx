@@ -64,7 +64,6 @@ const RegionSelection: React.FC<Props> = ({ setRegion, region }) => {
       label="Meeting region"
     />
   );
-  return <div/>
 };
 
 export default RegionSelection;

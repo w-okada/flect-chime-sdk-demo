@@ -59,7 +59,7 @@ export const useSignInState = (): SignInStateValue => {
 export const SignInStateProvider = ({ children }: Props) => {
   const { setSignInInfo } = useAppState()
   const history = useHistory()
-  const { errorMessage, updateErrorMessage } = useContext(getErrorContext());
+  const { updateErrorMessage } = useContext(getErrorContext());
 
   const [userId, setUserId] = useState("mail2wokada@gmail.com")
   const [password, setPassword] = useState("test22")

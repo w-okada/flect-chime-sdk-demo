@@ -12,10 +12,7 @@ import routes from '../../constants/routes';
 import { useHistory } from 'react-router-dom';
 
 const Home = () => {
-  const {
-    userId: userId,
-    idToken: idToken,
-  } = useAppState();
+  const { userId, idToken} = useAppState();
   const history = useHistory();
   
   if(!userId || !idToken){

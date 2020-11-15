@@ -5,7 +5,6 @@ import React from 'react';
 import {
   ControlBar,
   AudioInputControl,
-  VideoInputControl,
   ContentShareControl,
   AudioOutputControl,
   ControlBarButton,
@@ -16,7 +15,6 @@ import {
 import EndMeetingControl from '../EndMeetingControl';
 import { useNavigation } from '../../providers/NavigationProvider';
 import { StyledControls } from './Styled';
-import EffectedVideoInputControl from './EffectedVideoInputControl';
 import VideoEffectControl from '../VideoEffectControl';
 import CustomizedVideoInputControl from './CustomizedVideoIputControle';
 
@@ -46,8 +44,6 @@ const MeetingControls = () => {
           label="Menu"
         />
         <AudioInputControl />
-        {/* <VideoInputControl /> */}
-        {/* <EffectedVideoInputControl /> */}
         <CustomizedVideoInputControl />
         <ContentShareControl />
         <AudioOutputControl />

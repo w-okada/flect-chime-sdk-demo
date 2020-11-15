@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
-import {
-  VideoTileGrid,
-  UserActivityProvider,
-  useMeetingManager
-} from 'amazon-chime-sdk-component-library-react';
+import { VideoTileGrid, useMeetingManager } from 'amazon-chime-sdk-component-library-react';
 
 import { StyledLayout, StyledContent } from './Styled';
 import NavigationControl from '../../containers/Navigation/NavigationControl';

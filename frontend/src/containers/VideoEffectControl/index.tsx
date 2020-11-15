@@ -1,13 +1,13 @@
 // // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // // SPDX-License-Identifier: Apache-2.0
 
-import { ControlBarButton, Cog, Modal, ModalHeader, ModalBody, ModalButton, ModalButtonGroup, useLocalVideo, useVideoInputs, useSelectVideoInputDevice, Flex, RadioGroup, Button } from "amazon-chime-sdk-component-library-react";
+import { ControlBarButton, Cog, Modal, ModalHeader, ModalBody, ModalButton, ModalButtonGroup, useVideoInputs, useSelectVideoInputDevice, Flex, RadioGroup, Button } from "amazon-chime-sdk-component-library-react";
 import React, { useState } from "react";
 import { StyledP } from "../EndMeetingControl/Styled";
 import { useVideoEffectState  } from "../../providers/VideoEffectProvider";
 
 const FrontEffectSelect: React.FC<{}> = props => {
-  const { devices, selectedDevice } = useVideoInputs({additionalDevices: true});
+  const { selectedDevice } = useVideoInputs({additionalDevices: true});
   const selectDevice = useSelectVideoInputDevice();
   const {frontEffectOptions, setFrontEffect, frontEffect } = useVideoEffectState()
   const options= frontEffectOptions.map(e => {return{label:e, value:e}} )
@@ -38,8 +38,7 @@ const FrontEffectSelect: React.FC<{}> = props => {
 
 
 const BackgroundEffectSelect: React.FC<{}> = props => {
-  const { isVideoEnabled, toggleVideo } = useLocalVideo();
-  const { devices, selectedDevice } = useVideoInputs({additionalDevices: true});
+  const { selectedDevice } = useVideoInputs({additionalDevices: true});
   const selectDevice = useSelectVideoInputDevice();
   const {backgroundEffectOptions, setBackgroundEffect, backgroundEffect, setBackgroundImage, setBackgroundMediaStream } = useVideoEffectState()
   const options= backgroundEffectOptions.map(e => {return{label:e, value:e}} )

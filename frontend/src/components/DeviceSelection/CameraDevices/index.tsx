@@ -11,7 +11,6 @@ import {
 } from 'amazon-chime-sdk-component-library-react';
 
 import { title, StyledInputGroup } from '../Styled';
-import { EffectedCameraSelection } from '../EffectedCameraSelection';
 
 const CameraDevices = () => {
   return (
@@ -21,7 +20,6 @@ const CameraDevices = () => {
       </Heading>
       <StyledInputGroup>
         <CameraSelection />
-        {/* <EffectedCameraSelection /> */}
       </StyledInputGroup>
       <StyledInputGroup>
         <QualitySelection />

@@ -1,10 +1,8 @@
 import React, { useContext, ReactNode, useState } from "react"
-import { AVAILABLE_AWS_REGIONS } from '../constants';
 import { getErrorContext } from "./ErrorProvider";
 import { createGetAttendeeCallback, createMeeting, joinMeeting } from "../utils/api";
 import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
 import { useAppState } from "./AppStateProvider";
-import { useSignInState } from "./SignInStateProvider";
 import { useHistory } from "react-router-dom";
 import routes from "../constants/routes";
 
@@ -55,7 +53,7 @@ export const MeetingFormStateProvider = ({ children }: Props) => {
     const [userName, setUserName] = useState("")
     const [region, setRegion] = useState("")
 
-    const { errorMessage, updateErrorMessage } = useContext(getErrorContext());
+    const { updateErrorMessage } = useContext(getErrorContext());
     const [isLoading, setIsLoading] = useState(false)
     const [APIErrorCode, setErrorCode] = useState("")
     const [APIErrorName, setErrorName] = useState("")
@@ -87,7 +85,7 @@ export const MeetingFormStateProvider = ({ children }: Props) => {
         // meetingManager.getAttendee = createGetAttendeeCallback(validMeetingName);
 
         try {
-            const { created:created, meetingId:meetingId } = await createMeeting(validMeetingName, attendeeName, region, userId, idToken, accessToken, refreshToken );
+            const { created } = await createMeeting(validMeetingName, attendeeName, region, userId, idToken, accessToken, refreshToken );
             if(created){
                 setMode("CREATED_MEETING")
             }else{

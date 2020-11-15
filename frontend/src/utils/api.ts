@@ -1,21 +1,14 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import routes from '../constants/routes';
-import {BASE_URL} from '../Config'
 
-interface MeetingResponse {
-  JoinInfo: {
-    Attendee: any;
-    Meeting: any;
-  };
-}
+import {BASE_URL} from '../Config'
 
 export async function createMeeting(meetingName: string, userName: string, region: string, userId:string, idToken: string, accessToken:string, refreshToken:string): 
 Promise<{created:boolean, meetingId:string}> {
   const encodedMeetingName = encodeURIComponent(meetingName)
   const encodedUserName      = encodeURIComponent(userName)
-  const encodedRegion    = region ? encodeURIComponent(region) : ""
+  //const encodedRegion    = region ? encodeURIComponent(region) : ""
 
   const url = `${BASE_URL}meetings`
 
@@ -35,7 +28,7 @@ Promise<{created:boolean, meetingId:string}> {
     }
   );
   const data = await response.json();
-  const {created:created, meetingId:meetingId} = data;
+  const {created, meetingId} = data;
   // console.log(data)
   // console.log(created, meetingId)
   return {created, meetingId};

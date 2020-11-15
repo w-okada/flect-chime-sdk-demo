@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useEffect } from 'react';
-import {
-  Label
-} from 'amazon-chime-sdk-component-library-react';
+import { Label } from 'amazon-chime-sdk-component-library-react';
 
 
 import { StyledDiv, StyledWrapper } from './Styled';
@@ -21,7 +19,7 @@ const SignInFormSelector: React.FC = () => {
   const {mode, setMode} = useSignInState()
   const history = useHistory()
   useEffect(() => {
-    if(query.get('mode')=="VERIFY" && mode != "VERIFY"){
+    if(query.get('mode') === "VERIFY" && mode !== "VERIFY"){
       setMode(query.get('mode') as MODE)
       history.push(routes.SIGNIN);
     }
@@ -34,50 +32,48 @@ const SignInFormSelector: React.FC = () => {
         return [
           <SignInForm />, 
           <div>
-            <Label onClick={()=>setMode("SIGNUP")} ><a href="#" style={{color: '#989da5'}}>Sign Up</a> </Label>
+            <Label onClick={()=>setMode("VERIFY")} style={{textDecoration:"underline", cursor:"pointer"}}>Verify Code</Label>
             <br/>
-            <Label onClick={()=>setMode("VERIFY")} ><a href="#" style={{color: '#989da5'}}>Verify Code</a> </Label>
+            <Label onClick={()=>setMode("RESEND_VERIFICATION")}  style={{textDecoration:"underline", cursor:"pointer"}}>Resend Verification Code</Label>
             <br/>
-            <Label onClick={()=>setMode("RESEND_VERIFICATION")} ><a href="#" style={{color: '#989da5'}}>Resend Verification Code</a> </Label>
-            <br/>
-            <Label onClick={()=>setMode("FORGOT_PASSWORD")} ><a href="#" style={{color: '#989da5'}}>Forgot Password or Change Password</a> </Label>
+            <Label onClick={()=>setMode("FORGOT_PASSWORD")}  style={{textDecoration:"underline", cursor:"pointer"}}>Forgot Password or Change Password </Label>
           </div>
         ]
       case "SIGNUP":
         return [
           <SignUpForm />, 
           <div>
-            <Label onClick={()=>setMode("SIGNIN")}><a href="#" style={{color: '#989da5'}}>Back</a> </Label>
+            <Label onClick={()=>setMode("SIGNIN")} style={{textDecoration:"underline", cursor:"pointer"}}> Back </Label>
           </div>
         ]
       case "VERIFY":
         return [
           <VerifyForm />, 
           <div>
-            <Label onClick={()=>setMode("SIGNIN")}><a href="#" style={{color: '#989da5'}}>Back</a> </Label>
+            <Label onClick={()=>setMode("SIGNIN")} style={{textDecoration:"underline", cursor:"pointer"}}> Back </Label>
             <br/>
-            <Label onClick={()=>setMode("RESEND_VERIFICATION")} ><a href="#" style={{color: '#989da5'}}>Resend Verification Code</a> </Label>
+            <Label onClick={()=>setMode("RESEND_VERIFICATION")} style={{textDecoration:"underline", cursor:"pointer"}}>Resend Verification Code </Label>
           </div>
         ]
       case "RESEND_VERIFICATION":
         return [
           <ResendVerificationForm />, 
           <div>
-            <Label onClick={()=>setMode("SIGNIN")}><a href="#" style={{color: '#989da5'}}>Back</a> </Label>
+            <Label onClick={()=>setMode("SIGNIN")} style={{textDecoration:"underline", cursor:"pointer"}}> Back </Label>
           </div>
         ]
       case "FORGOT_PASSWORD":
         return [
           <ForgotPasswordForm />, 
           <div>
-            <Label onClick={()=>setMode("SIGNIN")}><a href="#" style={{color: '#989da5'}}>Back</a> </Label>
+            <Label onClick={()=>setMode("SIGNIN")} style={{textDecoration:"underline", cursor:"pointer"}}> Back </Label>
           </div>
         ]
       case "NEW_PASSWORD":
         return [
           <NewPasswordForm />, 
           <div>
-            <Label onClick={()=>setMode("SIGNIN")}><a href="#" style={{color: '#989da5'}}>Back</a> </Label>
+            <Label onClick={()=>setMode("SIGNIN")} style={{textDecoration:"underline", cursor:"pointer"}}> Back </Label>
           </div>
         ]
       }
