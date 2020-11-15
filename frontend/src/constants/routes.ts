@@ -7,10 +7,12 @@ export const rootPath: string = window.location.href.includes(awsPath)
   : '/';
 
 const routes = {
-  HOME: `${rootPath}`,
+  HOME: `${rootPath}index.html`,
   SIGNIN: `${rootPath}signin`,
   DEVICE: `${rootPath}devices`,
   MEETING: `${rootPath}meeting`,
 };
 
+// console.log(routes)
+// console.log(rootPath)
 export default routes;

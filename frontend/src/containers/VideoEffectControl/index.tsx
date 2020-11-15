@@ -60,7 +60,7 @@ const BackgroundEffectSelect: React.FC<{}> = props => {
   const { isVideoEnabled, toggleVideo } = useLocalVideo();
   const { devices, selectedDevice } = useVideoInputs({additionalDevices: true});
   const selectDevice = useSelectVideoInputDevice();
-  const {backgroundEffectOptions, setBackgroundEffect, backgroundEffect, backgroundImage, setBackgroundImage, setBackgroundMediaStream } = useVideoEffectState()
+  const {backgroundEffectOptions, setBackgroundEffect, backgroundEffect, setBackgroundImage, setBackgroundMediaStream } = useVideoEffectState()
   const options= backgroundEffectOptions.map(e => {return{label:e, value:e}} )
   const handleBackendEffectChange = (e: any) => {
     setBackgroundEffect(e.target.value)
@@ -92,7 +92,6 @@ const BackgroundEffectSelect: React.FC<{}> = props => {
   }
   const handleVirtualBackgroundWindowButtonClicked = (e:any) =>{
     console.log("window...")
-    setBackgroundEffect(e.target.value)
     // @ts-ignore https://github.com/microsoft/TypeScript/issues/31821
     navigator.mediaDevices.getDisplayMedia({frameRate: {max: 15,}}).then(media => {
       setBackgroundMediaStream(media)
@@ -106,7 +105,7 @@ const BackgroundEffectSelect: React.FC<{}> = props => {
   return (
     <>
       <StyledP>
-        Select Front Effect
+        Select Background Effect
       </StyledP>
       <Flex layout="equal-columns">
         <RadioGroup
@@ -146,7 +145,7 @@ const VideoEffectControl: React.FC = () => {
 
   return (
     <>
-      <ControlBarButton icon={<Cog />} onClick={toggleModal} label="Leave" />
+      <ControlBarButton icon={<Cog />} onClick={toggleModal} label="Setting" />
       {showModal && (
         <Modal size="md" onClose={toggleModal} rootId="modal-root">
           <ModalHeader title="Configure your setting" />

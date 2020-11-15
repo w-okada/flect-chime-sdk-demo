@@ -15,88 +15,22 @@ import MeetingDetails from '../../containers/MeetingDetails';
 import MeetingControls from '../../containers/MeetingControls';
 import useMeetingEndRedirect from '../../hooks/useMeetingEndRedirect';
 import MeetingMetrics from '../../containers/MeetingMetrics';
-import { DefaultDeviceController, Device, IntervalScheduler } from 'amazon-chime-sdk-js';
-import { useVideoEffectState, BackgroundEffect, FrontEffect } from '../../providers/VideoEffectProvider';
+import { useVideoEffectState } from '../../providers/VideoEffectProvider';
 
-const synthesizeVideoDevice = (colorOrPattern: string): MediaStream | null => {
-  const canvas = document.createElement('canvas') as HTMLCanvasElement;
-  canvas.width = 480;
-  canvas.height = (canvas.width / 16) * 9;
-  const scheduler = new IntervalScheduler(1000);
-  const context = canvas.getContext('2d');
-  // @ts-ignore
-  const stream: MediaStream | null = canvas.captureStream(5) || null;
-  if (stream) {
-    scheduler.start(() => {
-      if (colorOrPattern === 'smpte') {
-        context!.fillStyle = "#00ff00";
-        context!.fillRect(0, 0, canvas.width, canvas.height);
-        context!.fillStyle = "#ff0000";
-        context!.fillText("AASFASDFSAF",10,10)
-//        DefaultDeviceController.fillSMPTEColorBars(canvas, 0);
-      } else {
-        context!.fillStyle = colorOrPattern;
-        context!.fillRect(0, 0, canvas.width, canvas.height);
-      }
-    });
-    stream.getVideoTracks()[0].addEventListener('ended', () => {
-      scheduler.stop();
-    });
-  }
-  return stream;
-}
-
-
-const v = document.createElement("video")
-const c = document.createElement("canvas")
-
-const videoInputSelectionToDevice = async (
-  deviceId: string, frontEffect: FrontEffect, backgroundEffect:BackgroundEffect, 
-  backgroundImage:HTMLImageElement|null, backgroundMediaStream?:MediaStream|null
-  ): Promise<Device> => {
-
-  navigator.mediaDevices.getUserMedia({
-    audio:false,
-    video:{deviceId:deviceId}
-  }).then(stream=>{
-    const videoWidth = stream.getVideoTracks()[0].getSettings().width
-    const videoHeight = stream.getVideoTracks()[0].getSettings().height
-    console.log(videoHeight, videoWidth)
-    v.width=videoWidth!
-    v.height=videoHeight!
-    v.srcObject = stream
-    v.play()
-
-    c.width = videoWidth!
-    c.height = videoHeight!
-    // c.getContext("2d")!.fillRect(0,0,100,100)
-  })
-
-  // @ts-ignore
-  const mediaStream = c.captureStream() as MediaStream
-  return mediaStream
-}
-
-const copyFrame = () =>{
-  c.getContext("2d")!.drawImage(v,0, 0, c.width, c.height)
-  console.log(c.width, c.height)
-  c.getContext("2d")!.fillRect(0,0,100,100)
-  requestAnimationFrame(copyFrame)
-}
 
 const MeetingView = () => {
   useMeetingEndRedirect();
   const { showNavbar, showRoster } = useNavigation();
   const meetingManager = useMeetingManager();
-  const {backgroundEffect, backgroundImage, backgroundMediaStream, frontEffect} = useVideoEffectState()
+  const {backgroundEffect, setDeviceId} = useVideoEffectState()
   console.log(backgroundEffect)
 
-  copyFrame()
 
+  // Hook!!!
   meetingManager.selectVideoInputDevice = async(deviceId:string) => {
     console.log("Update Video Input")
     try {
-      const receivedDevice = await videoInputSelectionToDevice(deviceId, frontEffect, backgroundEffect, backgroundImage, backgroundMediaStream);
+      const receivedDevice = await setDeviceId(deviceId);
       if (receivedDevice === null) {
         await meetingManager.audioVideo?.chooseVideoInputDevice(null);
         meetingManager.selectedVideoInputDevice = null;
