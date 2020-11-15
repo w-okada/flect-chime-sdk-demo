@@ -1,29 +1,10 @@
 // // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // // SPDX-License-Identifier: Apache-2.0
 
-import { ControlBarButton, Cog, Modal, ModalHeader, ModalBody, Heading, ModalButton, ModalButtonGroup, useLocalVideo, useVideoInputs, useSelectVideoInputDevice, Flex, RadioGroup, Button } from "amazon-chime-sdk-component-library-react";
+import { ControlBarButton, Cog, Modal, ModalHeader, ModalBody, ModalButton, ModalButtonGroup, useLocalVideo, useVideoInputs, useSelectVideoInputDevice, Flex, RadioGroup, Button } from "amazon-chime-sdk-component-library-react";
 import React, { useState } from "react";
 import { StyledP } from "../EndMeetingControl/Styled";
-import { Select, FormField } from 'amazon-chime-sdk-component-library-react';
-import { useVideoEffectState } from "../../providers/VideoEffectProvider";
-// import React, { useState } from 'react';
-// import { useHistory } from 'react-router-dom';
-// import {
-//   ControlBarButton,
-//   Phone,
-//   Modal,
-//   ModalBody,
-//   ModalHeader,
-//   ModalButton,
-//   ModalButtonGroup,
-//   useMeetingManager
-// } from 'amazon-chime-sdk-component-library-react';
-
-// import { endMeeting } from '../../utils/api';
-// import { StyledP } from './Styled';
-// import { useAppState } from '../../providers/AppStateProvider';
-// import routes from '../../constants/routes';
-
+import { useVideoEffectState  } from "../../providers/VideoEffectProvider";
 
 const FrontEffectSelect: React.FC<{}> = props => {
   const { devices, selectedDevice } = useVideoInputs({additionalDevices: true});
@@ -136,6 +117,29 @@ const BackgroundEffectSelect: React.FC<{}> = props => {
   );
 };
 
+const VideoQualitySelect: React.FC<{}> = props => {
+  const { VideoQualityOptions, selectQuality, videoQuality } = useVideoEffectState()
+  const options = VideoQualityOptions.map(e => {return{label:e, value:e}} )
+
+  const handleChange = (e: any) => {
+    selectQuality(e.target.value)
+  };
+
+  return (
+    <>
+      <StyledP>
+        Video Quality
+      </StyledP>
+      <Flex layout="equal-columns">
+        <RadioGroup
+          options={options}
+          value={videoQuality}
+          onChange={handleChange}
+        />
+      </Flex>
+    </>
+  );
+};
 
 
 const VideoEffectControl: React.FC = () => {
@@ -152,6 +156,7 @@ const VideoEffectControl: React.FC = () => {
           <ModalBody>
             <FrontEffectSelect />
             <BackgroundEffectSelect />
+            <VideoQualitySelect />
           </ModalBody>
           <ModalButtonGroup
             primaryButtons={[

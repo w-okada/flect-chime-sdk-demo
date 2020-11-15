@@ -8,6 +8,8 @@ import { OpenCVWorkerManager, generateOpenCVDefaultConfig, OpenCVConfig, generat
 
 import { BodyPixConfig } from "@dannadori/bodypix-worker-js/dist/const";
 import { VirtualBackground } from "../VirtualBackground/VirtualBackground";
+import { useSelectVideoQuality, useAudioVideo } from "amazon-chime-sdk-component-library-react";
+import { DefaultBrowserBehavior } from "amazon-chime-sdk-js";
 
 type Props = {
   children: ReactNode;
@@ -15,9 +17,16 @@ type Props = {
 
 export type FrontEffect = "None" | "Ascii" | "Canny" | "Black"
 export type BackgroundEffect = "None" | "Ascii" | "Canny" | "Black" | "Image" | "Window"
+export type VideoQuality = '360p' | '540p' | '720p';
 
 const FrontEffectOoptions: FrontEffect[] = ["None", "Ascii", "Canny", "Black"]
 const BackgroundEffectOoptions: BackgroundEffect[] = ["None", "Ascii", "Canny", "Black", "Image", "Window"]
+const VideoQualityOptions: VideoQuality[] = ['360p', '540p', '720p']
+const VideoQualityDetails:{[key in VideoQuality]:number[]} = {
+  '360p':[ 640, 360, 15, 6000],
+  '540p':[ 960, 540, 15, 14000],
+  '720p':[1280, 720, 15, 14000],
+}
 
 const backgroundVideo = document.createElement("video")
 const backgroundCanvas = document.createElement("canvas")
@@ -29,13 +38,15 @@ export interface VideoEffectStateValue {
   //Input Device
   deviceId: string
   setDeviceId: (deviceId: string) => MediaStream
-
+  selectQuality: (quality: VideoQuality) => void
+  videoQuality: VideoQuality
   // Effect
   frontEffect: FrontEffect,
   backgroundEffect: BackgroundEffect
   backgroundMediaStream: MediaStream | null
   frontEffectOptions: FrontEffect[]
   backgroundEffectOptions: BackgroundEffect[]
+  VideoQualityOptions: VideoQuality[]
   setFrontEffect: (e: FrontEffect) => void
   setBackgroundEffect: (e: BackgroundEffect) => void
   setBackgroundImage: (p: HTMLImageElement) => void
@@ -55,11 +66,18 @@ export const useVideoEffectState = (): VideoEffectStateValue => {
 class VideoEffector {
   vb = new VirtualBackground()
   frontEffect: FrontEffect = "None"
-  _backgroundEffect: BackgroundEffect = "None"
+  private _backgroundEffect: BackgroundEffect = "None"
   backgroundImage = (()=>{
     const i = document.createElement("img")
     return i
   })()
+
+  private _quality = '360p' as VideoQuality 
+  set quality(val:VideoQuality){
+    this._quality = val
+  } 
+  get quality(){return this._quality}
+  
 
   private static _instance:VideoEffector;
   public static getInstance():VideoEffector{
@@ -216,14 +234,18 @@ class VideoEffector {
         // Not use Virtual Background
         tempCanvas.getContext("2d")!.drawImage(front, 0, 0, tempCanvas.width, tempCanvas.height)
         requestAnimationFrame(this.copyFrame)
+        //console.log("--------->", frontVideo.width, frontCanvas.width, backgroundCanvas.width, tempCanvas.width)
       }
+
     })
   }
 }
 
+const browserBehavior: DefaultBrowserBehavior = new DefaultBrowserBehavior();
+
 export const VideoEffectStateProvider = ({ children }: Props) => {
   const [deviceId, setDeviceIdInternal] = useState("blue")
-
+  const audioVideo = useAudioVideo();
   // const [videoEffector, _setVideoEffector] = useState(new VideoEffector())
   const [frontEffect, _setFrontEffect] = useState("None" as FrontEffect)
   const [backgroundEffect, _setBackgroundEffect] = useState("None" as BackgroundEffect)
@@ -231,18 +253,25 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
   const frontEffectOptions = FrontEffectOoptions
   const backgroundEffectOptions = BackgroundEffectOoptions
 
-  // const [asciiArtWorkerManager, setAsciiArtWorkerManager] = useState(null as AsciiArtWorkerManager|null)
-  // const [asciiArtConfig, setAsciiArtConfigInternal] = useState(generateAsciiArtDefaultConfig())
-  // const [asciiArtParams, setAsciiArtParams] = useState(generateDefaultAsciiArtParams())
+  const [videoQuality, setVideoQuality] = useState('360p' as VideoQuality);
 
   const setDeviceId = (deviceId: string):MediaStream => {
+    return setDevice(deviceId, videoQuality)
+  }
+  const selectQuality = (quality: VideoQuality) => {
+    setVideoQuality(quality);
+    VideoEffector.getInstance().quality = quality
+    return setDevice(deviceId, quality)
+  }  
+  const setDevice = (deviceId: string, videoQuality:VideoQuality):MediaStream => {
+    const [width, height, fps, bandWidth] = VideoQualityDetails[videoQuality]
     navigator.mediaDevices.getUserMedia({
       audio: false,
-      video: { deviceId: deviceId }
+      video: calculateVideoConstraint(deviceId, width, height)
     }).then(stream => {
       const videoWidth = stream.getVideoTracks()[0].getSettings().width
       const videoHeight = stream.getVideoTracks()[0].getSettings().height
-      console.log(videoHeight, videoWidth)
+      console.log(videoWidth, videoHeight)
       frontVideo.width  = videoWidth!
       frontVideo.height = videoHeight!
       frontVideo.srcObject = stream
@@ -256,13 +285,41 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
 
       tempCanvas.width = videoWidth!
       tempCanvas.height = videoHeight!
+      console.log("video resolution",videoWidth, videoHeight)
     })
 
     // @ts-ignore
     const mediaStream = tempCanvas.captureStream() as MediaStream
     setDeviceIdInternal(deviceId)
+    audioVideo!.chooseVideoInputQuality(width, height, fps, bandWidth);
     return mediaStream
   }
+
+  const calculateVideoConstraint = (
+    deviceId: string,
+    width: number,
+    height: number
+  ): MediaTrackConstraints => {
+    const dimension = browserBehavior.requiresResolutionAlignment(width, height);
+    const trackConstraints: MediaTrackConstraints = {};
+    if (browserBehavior.requiresNoExactMediaStreamConstraints()) {
+      trackConstraints.deviceId = deviceId;
+      trackConstraints.width = width;
+      trackConstraints.height = height;
+    } else {
+      // trackConstraints.deviceId = { exact: deviceId };
+      // trackConstraints.width = { exact: dimension[0] };
+      // trackConstraints.height = { exact: dimension[1] };
+      trackConstraints.deviceId = deviceId;
+      trackConstraints.width = width;
+      trackConstraints.height = height;
+
+    }
+
+    return trackConstraints;
+  }
+
+
 
   const setFrontEffect = (_frontEffect:FrontEffect) =>{
     VideoEffector.getInstance().frontEffect = _frontEffect
@@ -279,7 +336,6 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
   }
 
   const setBackgroundMediaStream = (_backgroundMediaStream: MediaStream | null) => {
-    console.log("media!!!!!", _backgroundMediaStream)
     VideoEffector.getInstance().backgroundMediaStream = _backgroundMediaStream
   }
 
@@ -300,6 +356,8 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
   const providerValue = {
     deviceId,
     setDeviceId,
+    selectQuality,
+    videoQuality,
 
     frontEffect,
     backgroundEffect,
@@ -307,6 +365,7 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
 
     frontEffectOptions,
     backgroundEffectOptions,
+    VideoQualityOptions,
 
     setFrontEffect,
     setBackgroundEffect,
@@ -326,64 +385,5 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
     </VideoEffectStateContext.Provider>
   )
 }
-
-
-
-
-// const synthesizeVideoDevice = (colorOrPattern: string): MediaStream | null => {
-//   const canvas = document.createElement('canvas') as HTMLCanvasElement;
-//   canvas.width = 480;
-//   canvas.height = (canvas.width / 16) * 9;
-//   const scheduler = new IntervalScheduler(1000);
-//   const context = canvas.getContext('2d');
-//   // @ts-ignore
-//   const stream: MediaStream | null = canvas.captureStream(5) || null;
-//   if (stream) {
-//     scheduler.start(() => {
-//       if (colorOrPattern === 'smpte') {
-//         context!.fillStyle = "#00ff00";
-//         context!.fillRect(0, 0, canvas.width, canvas.height);
-//         context!.fillStyle = "#ff0000";
-//         context!.fillText("AASFASDFSAF",10,10)
-// //        DefaultDeviceController.fillSMPTEColorBars(canvas, 0);
-//       } else {
-//         context!.fillStyle = colorOrPattern;
-//         context!.fillRect(0, 0, canvas.width, canvas.height);
-//       }
-//     });
-//     stream.getVideoTracks()[0].addEventListener('ended', () => {
-//       scheduler.stop();
-//     });
-//   }
-//   return stream;
-// }
-
-// const videoInputSelectionToDevice = async (
-//   deviceId: string, frontEffect: FrontEffect, backgroundEffect:BackgroundEffect, 
-//   backgroundImage:HTMLImageElement|null, backgroundMediaStream?:MediaStream|null
-//   ): Promise<Device> => {
-
-//   navigator.mediaDevices.getUserMedia({
-//     audio:false,
-//     video:{deviceId:deviceId}
-//   }).then(stream=>{
-//     const videoWidth = stream.getVideoTracks()[0].getSettings().width
-//     const videoHeight = stream.getVideoTracks()[0].getSettings().height
-//     console.log(videoHeight, videoWidth)
-//     v.width=videoWidth!
-//     v.height=videoHeight!
-//     v.srcObject = stream
-//     v.play()
-
-//     c.width = videoWidth!
-//     c.height = videoHeight!
-//     // c.getContext("2d")!.fillRect(0,0,100,100)
-//   })
-
-//   // @ts-ignore
-//   const mediaStream = c.captureStream() as MediaStream
-//   return mediaStream
-// }
-
 
 
