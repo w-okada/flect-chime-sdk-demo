@@ -18,6 +18,7 @@ import { endMeeting } from '../../utils/api';
 import { StyledP } from './Styled';
 import { useAppState } from '../../providers/AppStateProvider';
 import routes from '../../constants/routes';
+import { useVideoEffectState } from '../../providers/VideoEffectProvider';
 
 const EndMeetingControl: React.FC = () => {
   const meetingManager = useMeetingManager();
@@ -25,13 +26,16 @@ const EndMeetingControl: React.FC = () => {
   const toggleModal = (): void => setShowModal(!showModal);
   const { meetingName, localUserName, userId, idToken, accessToken, refreshToken} = useAppState();
   const history = useHistory();
+  const { stopDevice } = useVideoEffectState()
 
   const leaveMeeting = async (): Promise<void> => {
     await meetingManager.leave();
+    stopDevice()
     history.push(routes.HOME);
   };
 
   const endMeetingForAll = async (): Promise<void> => {
+    stopDevice()
     try {
       if (meetingName) {
         await endMeeting(meetingName, localUserName, userId, idToken, accessToken, refreshToken);

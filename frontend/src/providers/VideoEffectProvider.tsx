@@ -38,6 +38,7 @@ export interface VideoEffectStateValue {
   //Input Device
   deviceId: string
   setDeviceId: (deviceId: string) => MediaStream
+  stopDevice: () => void
   selectQuality: (quality: VideoQuality) => void
   videoQuality: VideoQuality
   // Effect
@@ -86,7 +87,6 @@ class VideoEffector {
     }
     return this._instance
   }
-
   constructor(){
     console.log("video effector !!!!!!")
   }
@@ -246,7 +246,8 @@ const browserBehavior: DefaultBrowserBehavior = new DefaultBrowserBehavior();
 export const VideoEffectStateProvider = ({ children }: Props) => {
   const [deviceId, setDeviceIdInternal] = useState("blue")
   const audioVideo = useAudioVideo();
-  // const [videoEffector, _setVideoEffector] = useState(new VideoEffector())
+  const [frontMediaStream, setFrontMediaStream] = useState(null as MediaStream | null)
+
   const [frontEffect, _setFrontEffect] = useState("None" as FrontEffect)
   const [backgroundEffect, _setBackgroundEffect] = useState("None" as BackgroundEffect)
   const [backgroundMediaStream] = useState(null as MediaStream | null)
@@ -269,6 +270,7 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
       audio: false,
       video: calculateVideoConstraint(deviceId, width, height)
     }).then(stream => {
+      setFrontMediaStream(stream)
       const videoWidth = stream.getVideoTracks()[0].getSettings().width
       const videoHeight = stream.getVideoTracks()[0].getSettings().height
       console.log(videoWidth, videoHeight)
@@ -293,6 +295,16 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
     setDeviceIdInternal(deviceId)
     audioVideo!.chooseVideoInputQuality(width, height, fps, bandWidth);
     return mediaStream
+  }
+
+  const stopDevice = () =>{
+    frontVideo.pause()
+    frontVideo.srcObject = null
+    if(frontMediaStream){
+      frontMediaStream.getTracks().forEach(function(track) {
+        track.stop();
+      });
+    }
   }
 
   const calculateVideoConstraint = (
@@ -347,6 +359,7 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
   }
 
 
+
   useEffect(()=>{
     setTimeout(VideoEffector.getInstance().copyFrame, 1000*5)
   },[])
@@ -356,6 +369,7 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
   const providerValue = {
     deviceId,
     setDeviceId,
+    stopDevice,
     selectQuality,
     videoQuality,
 
