@@ -9,14 +9,15 @@ import {
   NavbarItem,
   Attendees,
   Eye,
-  Information
+  Information,
+  Chat
 } from 'amazon-chime-sdk-component-library-react';
 
 import { useNavigation } from '../../providers/NavigationProvider';
 import { useAppState } from '../../providers/AppStateProvider';
 
 const Navigation = () => {
-  const { toggleRoster, toggleMetrics, closeNavbar } = useNavigation();
+  const { toggleRoster, toggleMetrics, closeNavbar, toggleChatView } = useNavigation();
   const { theme, toggleTheme } = useAppState();
 
   return (
@@ -28,6 +29,11 @@ const Navigation = () => {
         label="Attendees"
       />
       <NavbarItem
+        icon={<Chat />}
+        onClick={toggleChatView}
+        label="Chat"
+      />      
+      <NavbarItem
         icon={<Eye />}
         onClick={toggleTheme}
         label={theme === 'light' ? 'Dark mode' : 'Light mode'}
@@ -37,6 +43,7 @@ const Navigation = () => {
         onClick={toggleMetrics}
         label="Meeting metrics"
       />
+
     </Navbar>
   );
 };

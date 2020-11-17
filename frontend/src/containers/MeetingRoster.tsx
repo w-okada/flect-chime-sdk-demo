@@ -12,7 +12,7 @@ import {
 
 import { useNavigation } from '../providers/NavigationProvider';
 
-const MeetingRoster = () => {
+const MeetingRoster_ = () => {
   const { roster } = useRosterState();
   const [filter, setFilter] = useState('');
   const { closeRoster } = useNavigation();
@@ -42,7 +42,7 @@ const MeetingRoster = () => {
         searchValue={filter}
         onSearch={handleSearch}
         onClose={closeRoster}
-        title="Present"
+        title="Presenta"
         badge={attendees.length}
       />
       <RosterGroup>{attendeeItems}</RosterGroup>
@@ -50,4 +50,4 @@ const MeetingRoster = () => {
   );
 };
 
-export default MeetingRoster;
+export default MeetingRoster_;

@@ -12,11 +12,12 @@ import MeetingControls from '../../containers/MeetingControls';
 import useMeetingEndRedirect from '../../hooks/useMeetingEndRedirect';
 import MeetingMetrics from '../../containers/MeetingMetrics';
 import { useVideoEffectState } from '../../providers/VideoEffectProvider';
+import { RealitimeSubscribeStateProvider } from '../../providers/RealtimeSubscribeProvider';
 
 
 const MeetingView = () => {
   useMeetingEndRedirect();
-  const { showNavbar, showRoster } = useNavigation();
+  const { showNavbar, showRoster, showChatView } = useNavigation();
   const meetingManager = useMeetingManager();
   const {backgroundEffect, setDeviceId} = useVideoEffectState()
   console.log(backgroundEffect)
@@ -47,14 +48,18 @@ const MeetingView = () => {
 
   return (
     // <UserActivityProvider>
-      <StyledLayout showNav={showNavbar} showRoster={showRoster}>
+      <StyledLayout showNav={showNavbar} showRoster={showRoster || showChatView}>
         <StyledContent>
+        <RealitimeSubscribeStateProvider>
+
           <MeetingMetrics />
           <VideoTileGrid
             className="videos"
             noRemoteVideoView={<MeetingDetails />}
           />
           <MeetingControls />
+          </RealitimeSubscribeStateProvider>
+
         </StyledContent>
         <NavigationControl />
       </StyledLayout>

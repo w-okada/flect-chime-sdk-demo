@@ -5,15 +5,18 @@ import { ControlBarButton, Cog, Modal, ModalHeader, ModalBody, ModalButton, Moda
 import React, { useState } from "react";
 import { StyledP } from "../EndMeetingControl/Styled";
 import { useVideoEffectState  } from "../../providers/VideoEffectProvider";
+import { useRealitimeSubscribeState } from "../../providers/RealtimeSubscribeProvider";
 
 const FrontEffectSelect: React.FC<{}> = props => {
   const { selectedDevice } = useVideoInputs({additionalDevices: true});
   const selectDevice = useSelectVideoInputDevice();
   const {frontEffectOptions, setFrontEffect, frontEffect } = useVideoEffectState()
   const options= frontEffectOptions.map(e => {return{label:e, value:e}} )
+ const {chatData, sendChatData} = useRealitimeSubscribeState()
   const handleChange = (e: any) => {
     setFrontEffect(e.target.value)
     console.log(e.target.value)
+   sendChatData("TEST SENDING!!!!!!!!!")
     if(selectDevice){
       selectDevice(selectedDevice!)
     }

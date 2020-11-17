@@ -17,13 +17,18 @@ export type NavigationContextType = {
   showNavbar: boolean;
   showRoster: boolean;
   showMetrics: boolean;
+  showChatView: boolean;
   toggleRoster: () => void;
   toggleNavbar: () => void;
+  toggleChatView: () => void;
   openRoster: () => void;
   closeRoster: () => void;
   openNavbar: () => void;
   closeNavbar: () => void;
   toggleMetrics: () => void;
+  openChatView: () => void;
+  closeChatView: () => void;
+  
 };
 
 type Props = {
@@ -40,6 +45,7 @@ const NavigationProvider = ({ children }: Props) => {
   const [showNavbar, setShowNavbar] = useState(() => isDesktop());
   const [showRoster, setShowRoster] = useState(() => isDesktop());
   const [showMetrics, setShowMetrics] = useState(false);
+  const [showChatView, setShowChatView] = useState(()=> isDesktop())
   const isDesktopView = useRef(isDesktop());
 
   const location = useLocation();
@@ -65,6 +71,7 @@ const NavigationProvider = ({ children }: Props) => {
       if (!isResizeDesktop) {
         setShowNavbar(false);
         setShowRoster(false);
+        setShowChatView(false)
       } else {
         setShowNavbar(true);
       }
@@ -76,6 +83,9 @@ const NavigationProvider = ({ children }: Props) => {
 
   const toggleRoster = (): void => {
     setShowRoster(!showRoster);
+    if(showChatView){
+      setShowChatView(false)
+    }
   };
 
   const toggleNavbar = (): void => {
@@ -85,6 +95,13 @@ const NavigationProvider = ({ children }: Props) => {
   const toggleMetrics = () => {
     setShowMetrics(currentState => !currentState);
   };
+
+  const toggleChatView = () =>{
+    setShowChatView(!showChatView)
+    if(showRoster){
+      setShowRoster(false)
+    }
+  }
 
   const openNavbar = (): void => {
     setShowNavbar(true);
@@ -101,18 +118,29 @@ const NavigationProvider = ({ children }: Props) => {
   const closeRoster = (): void => {
     setShowRoster(false);
   };
+  const openChatView = () =>{
+    setShowChatView(true)
+  }
+  const closeChatView = () =>{
+    setShowChatView(false)
+  }
 
   const providerValue = {
     showNavbar,
     showRoster,
     showMetrics,
+    showChatView,
     toggleRoster,
     toggleNavbar,
     toggleMetrics,
+    toggleChatView,
     openRoster,
     closeRoster,
     openNavbar,
-    closeNavbar
+    closeNavbar,
+    openChatView,
+    closeChatView
+
   };
   return (
     <NavigationContext.Provider value={providerValue}>
