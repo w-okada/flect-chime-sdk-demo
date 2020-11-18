@@ -11,8 +11,8 @@ type Props = {
 type DataMessageType = "CHAT" | "STAMP" | "WHITE_BOARD"
 
 export interface RealitimeSubscribeStateValue {
-    chatData:  string[]
-    sendChatData: (text: string) => void
+    chatData:  DataMessage[]
+    sendChatData: (mess: string) => void
 }
 
 export const RealitimeSubscribeStateContext = React.createContext<RealitimeSubscribeStateValue | null>(null)
@@ -44,8 +44,7 @@ class RealitimeSubscriber {
 
 export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
     const audioVideo = useAudioVideo()
-    const [chatData, setChatData] = useState([] as string[])
-    const roster = useRosterState()
+    const [chatData, setChatData] = useState([] as DataMessage[])
     const sendChatData = (text:string) =>{
         const message= {
             action   : 'sendmessage',
@@ -56,25 +55,25 @@ export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
     }
 
     const receiveChatData = (mess: DataMessage) =>{
-        console.log("MESSAGE:::",mess)
-        let attendees = Object.values(roster);
-        console.log(">>>>>",roster)
-        console.log(attendees)
-        console.log(attendees[0])
-        console.log(attendees[0][mess.senderAttendeeId].name)
+        setChatData([...chatData, mess])
     }
 
     useEffect(()=>{
+        const receivedChatDataCallback = (mess:DataMessage):void=>{
+            receiveChatData(mess)
+        }
         audioVideo!.realtimeSubscribeToReceiveDataMessage(
             "CHAT" as DataMessageType,
-            receiveChatData
+            receivedChatDataCallback
         )
+        return ()=>{
+            audioVideo!.realtimeUnsubscribeFromReceiveDataMessage("CHAT" as DataMessageType)
+        }
     })
 
     const providerValue = {
         chatData,
-        sendChatData
-
+        sendChatData,
     }
     return (
         <RealitimeSubscribeStateContext.Provider value={providerValue}>

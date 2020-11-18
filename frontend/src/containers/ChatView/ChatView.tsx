@@ -1,7 +1,8 @@
-import { useRosterState, Flex, Roster, RosterHeader, RosterGroup, RosterAttendee, useAttendeeStatus, Label } from "amazon-chime-sdk-component-library-react";
+import { useRosterState, Flex, Roster, RosterHeader, RosterGroup, RosterAttendee, useAttendeeStatus, Label, Input, Textarea, PrimaryButton } from "amazon-chime-sdk-component-library-react";
 import { useNavigation } from "../../providers/NavigationProvider";
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
+import { useRealitimeSubscribeState } from "../../providers/RealtimeSubscribeProvider";
 
 export const Title = styled.h1`
   background-color: ___CSS_0___;
@@ -13,7 +14,7 @@ export const Title = styled.h1`
 
 export interface ChatProps {
   attendeeId: string;
-  text:string
+  text: string
 }
 
 export const ChatLine: React.FC<ChatProps> = ({ attendeeId, text }) => {
@@ -22,36 +23,52 @@ export const ChatLine: React.FC<ChatProps> = ({ attendeeId, text }) => {
   const attendeeName = roster[attendeeId]?.name || '';
 
   return (
-    <Label>Hello world</Label>
+    <Label id="" >Hello world</Label>
   );
 };
 
 
 const ChatView = () => {
-    const { roster } = useRosterState();
-    const { closeChatView } = useNavigation();
-
-    let attendees = Object.values(roster);
-    console.log("chat view")
-    const attendeeItems = []
-    for(let i=0; i< 30; i++){
-      attendeeItems.push(
-        <Flex layout="fill-space-centered">
-          <Title>I'm acentered</Title>
-        </Flex>
-
-      )
-    }
+  const { roster } = useRosterState();
+  const { closeChatView } = useNavigation();
+  const { chatData, sendChatData } = useRealitimeSubscribeState()
+  const [ chatMessage, setChatMessage] = useState('');
   
-    return (
+  let attendees = Object.values(roster);
+  console.log("chat view")
+  const attendeeItems = []
+  for (let c of chatData) {
+    attendeeItems.push(
+    <Label key={""+c.timestampMs}>{c.text()}</Label>
+    )
+  }
 
-      <Roster className="roster">
-         <RosterHeader title="Chat" onClose={closeChatView}>
-         </RosterHeader>
-        <RosterGroup>{attendeeItems}</RosterGroup>
-      </Roster>
-    );
+  return (
+
+    <Roster className="roster">
+      <RosterHeader title="Chat" onClose={closeChatView}>
+      </RosterHeader>
+      <RosterGroup>{attendeeItems}</RosterGroup>
+      <Textarea
+        // showClear={true}
+        //@ts-ignore
+        onChange={e => setChatMessage(e.target.value)}
+        // sizing={"md"}
+        value={chatMessage}
+        placeholder="input your message"
+        type="text"
+        label="my test label"
+        style={{resize:"vertical",}}
+      />
+      <PrimaryButton 
+        label="send" 
+        onClick={e=>{
+          setChatMessage("")
+          sendChatData(chatMessage)
+        }}
+      />
+    </Roster>
+  );
 }
-
 
 export default ChatView

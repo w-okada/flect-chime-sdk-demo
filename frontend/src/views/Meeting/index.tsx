@@ -20,12 +20,12 @@ const MeetingView = () => {
   useMeetingEndRedirect();
   const { showNavbar, showRoster, showChatView } = useNavigation();
   const meetingManager = useMeetingManager();
-  const {backgroundEffect, setDeviceId} = useVideoEffectState()
+  const { backgroundEffect, setDeviceId } = useVideoEffectState()
   console.log(backgroundEffect)
 
 
   // Hook!!!
-  meetingManager.selectVideoInputDevice = async(deviceId:string) => {
+  meetingManager.selectVideoInputDevice = async (deviceId: string) => {
     console.log("Update Video Input")
     try {
       const receivedDevice = await setDeviceId(deviceId);
@@ -49,9 +49,9 @@ const MeetingView = () => {
 
   return (
     // <UserActivityProvider>
-      <StyledLayout showNav={showNavbar} showRoster={showRoster || showChatView}>
+    <StyledLayout showNav={showNavbar} showRoster={showRoster || showChatView}>
+      <RealitimeSubscribeStateProvider>
         <StyledContent>
-        <RealitimeSubscribeStateProvider>
 
           <MeetingMetrics />
           <CustomVideoTileGrid
@@ -59,11 +59,11 @@ const MeetingView = () => {
             noRemoteVideoView={<MeetingDetails />}
           />
           <MeetingControls />
-          </RealitimeSubscribeStateProvider>
 
         </StyledContent>
         <NavigationControl />
-      </StyledLayout>
+      </RealitimeSubscribeStateProvider>
+    </StyledLayout>
     // </UserActivityProvider>
   );
 };
