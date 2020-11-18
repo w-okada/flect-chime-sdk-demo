@@ -45,7 +45,7 @@ const NavigationProvider = ({ children }: Props) => {
   const [showNavbar, setShowNavbar] = useState(() => isDesktop());
   const [showRoster, setShowRoster] = useState(() => isDesktop());
   const [showMetrics, setShowMetrics] = useState(false);
-  const [showChatView, setShowChatView] = useState(()=> isDesktop())
+  const [showChatView, setShowChatView] = useState(false)
   const isDesktopView = useRef(isDesktop());
 
   const location = useLocation();
