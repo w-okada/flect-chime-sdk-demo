@@ -13,6 +13,7 @@ import useMeetingEndRedirect from '../../hooks/useMeetingEndRedirect';
 import MeetingMetrics from '../../containers/MeetingMetrics';
 import { useVideoEffectState } from '../../providers/VideoEffectProvider';
 import { RealitimeSubscribeStateProvider } from '../../providers/RealtimeSubscribeProvider';
+import CustomVideoTileGrid from '../../containers/CustomVideoTileGrid';
 
 
 const MeetingView = () => {
@@ -53,7 +54,7 @@ const MeetingView = () => {
         <RealitimeSubscribeStateProvider>
 
           <MeetingMetrics />
-          <VideoTileGrid
+          <CustomVideoTileGrid
             className="videos"
             noRemoteVideoView={<MeetingDetails />}
           />
