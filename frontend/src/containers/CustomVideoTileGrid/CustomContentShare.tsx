@@ -1,13 +1,14 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useEffect, useRef, HTMLAttributes, forwardRef, MutableRefObject } from 'react';
+import React, { useEffect, useRef, HTMLAttributes, forwardRef, MutableRefObject, useState } from 'react';
 import { BaseSdkProps } from 'amazon-chime-sdk-component-library-react/lib/components/sdk/Base';
 import { useAudioVideo, useContentShareState, VideoTile } from 'amazon-chime-sdk-component-library-react';
 import styled from 'styled-components';
 // import CustomVideoTile from './CustomVideoTile';
 import { BaseProps } from 'amazon-chime-sdk-component-library-react/lib/components/ui/Base';
 import { CustomStyledVideoTile } from './CustomStyledVideoTile';
+import { useRealitimeSubscribeState, DrawingData, RealtimeData } from '../../providers/RealtimeSubscribeProvider';
 
 type ObjectFit = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
 
@@ -25,17 +26,52 @@ class SharedContentDrawer {
     private _videoRef: MutableRefObject<HTMLVideoElement | null> | null = null
     private _canvasRef: MutableRefObject<HTMLCanvasElement | null> | null = null
     private _drawing: boolean = false
+    private _whiteboardData: RealtimeData[] = []
     set videoRef(val: MutableRefObject<HTMLVideoElement | null>) {
         this._videoRef = val
         this._videoRef.current!.play()
     }
-    set canvasRef(val: MutableRefObject<HTMLCanvasElement | null>) { this._canvasRef = val }
+    set canvasRef(val: MutableRefObject<HTMLCanvasElement | null>) { 
+        this._canvasRef = val 
+        // this._canvasRef.current!.addEventListener("mousedown",  this.drawingStart, { passive: false })
+        // this._canvasRef.current!.addEventListener("mouseup",    this.drawingEnd,   { passive: false })
+        // this._canvasRef.current!.addEventListener("mouseleave", this.drawingEnd,   { passive: false })
+        // this._canvasRef.current!.addEventListener("mousemove",  this.drawingDraw,      { passive: false })         
+    
+    }
     set drawing(val: boolean) {
         if (this._drawing !== val) {
             this._drawing = val
             this.startDrawing()
         }
     }
+
+    set whiteboardData(val:RealtimeData[]){this._whiteboardData=val}
+    // inDrawing = false
+
+
+//     drawingStart = (e: MouseEvent) => {this.inDrawing = true}
+//     drawingEnd = (e: MouseEvent) => {this.inDrawing = false}
+//     drawingDraw = (e: MouseEvent) => {
+// //            if(inDrawing && this.state.inDrawingMode && this.state.enableDrawing){
+//         if(this.inDrawing){
+            
+//             const startX = e.offsetX - e.movementX
+//             const startY = e.offsetY - e.movementY
+
+//             const cs = getComputedStyle(this._canvasRef!.current!)
+//             console.log("CS:",cs)
+//             const width = cs.getPropertyValue("width")
+//             const height = cs.getPropertyValue("height")
+            
+//             const startXR = startX  / this._canvasRef!.current!.width!
+//             const startYR = startY  / this._canvasRef!.current!.height!
+//             const endXR   = e.offsetX / this._canvasRef!.current!.width!
+//             const endYR   = e.offsetY / this._canvasRef!.current!.height!
+//             console.log(startXR, startYR, endXR, endYR, "  1111 ", this._canvasRef!.current!.width, this._canvasRef!.current!.height, width, height)
+//             //console.log("CS: ",cs)
+//         }
+//     }    
 
     private startDrawing = () => {
         if (this._videoRef && this._canvasRef && this._videoRef.current && this._drawing) {
@@ -45,6 +81,19 @@ class SharedContentDrawer {
                 this._canvasRef.current!.getContext("2d")!.drawImage(this._videoRef.current!, 0, 0, this._canvasRef.current!.width, this._canvasRef.current!.height)
                 const now = performance.now()
                 this._canvasRef.current!.getContext("2d")!.fillText("" + now, 100, 200)
+
+                for(let data of this._whiteboardData){
+                    const drawing = data.data as DrawingData
+                    const ctx = this._canvasRef.current!.getContext("2d")!
+                    ctx.beginPath();
+                    ctx.moveTo(drawing.startXR * this._canvasRef.current!.width, drawing.startYR*this._canvasRef.current!.height);
+                    ctx.lineTo(drawing.endXR*this._canvasRef.current!.width, drawing.endYR*this._canvasRef.current!.height);
+                    ctx.strokeStyle = drawing.stroke
+                    ctx.lineWidth = drawing.lineWidth
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+
             }catch(exception){
                 console.log(exception)
             }
@@ -69,6 +118,11 @@ export const CustomVideoTile = forwardRef(
         const canvasEl = useRef<HTMLCanvasElement | null>(null);
         const videoEl = useRef<HTMLVideoElement | null>(null);
 
+        const [inDrawing, setInDrawing] = useState(false)
+        const {sendWhiteBoardData, whiteboardData} = useRealitimeSubscribeState()
+
+        const drawer = SharedContentDrawer.getInstance()
+        drawer.whiteboardData = whiteboardData
         useEffect(() => {
             if (!audioVideo || !videoEl.current || !tileId) {
                 return;
@@ -79,6 +133,9 @@ export const CustomVideoTile = forwardRef(
                 drawer.videoRef = videoEl
                 drawer.canvasRef = canvasEl
                 drawer.drawing = true
+                canvasEl.current!.width = videoEl.current!.videoWidth
+                canvasEl.current!.height = videoEl.current!.videoHeight
+                console.log(">>>>>>>>>>>>>>>>>>>>", canvasEl.current!.width, canvasEl.current!.height)
             }
             audioVideo.bindVideoElement(tileId, videoEl.current);
             return () => {
@@ -90,6 +147,112 @@ export const CustomVideoTile = forwardRef(
                 }
             };
         }, [audioVideo, tileId]);
+
+        const drawingStart = (e: MouseEvent) => {setInDrawing(true)}
+        const drawingEnd = (e: MouseEvent) => {setInDrawing(false)}
+        const drawing = (e: MouseEvent) => {
+//            if(inDrawing && this.state.inDrawingMode && this.state.enableDrawing){
+            if(inDrawing){
+
+                const cs = getComputedStyle(canvasEl.current!)
+                const width = parseInt(cs.getPropertyValue("width"))
+                const height = parseInt(cs.getPropertyValue("height"))
+
+                const rateX = width / canvasEl.current!.width
+                const rateY = height / canvasEl.current!.height
+                const drawingData = (()=>{
+                    if(rateX > rateY){ //  widthにあまりがある。
+                        const trueWidth = canvasEl.current!.width * rateY
+                        const trueHeight = canvasEl.current!.height * rateY
+                        const restW = (width - trueWidth) / 2
+                        const startX = e.offsetX - restW - e.movementX
+                        const startY = e.offsetY - e.movementY
+    
+                        const startXR = startX / trueWidth
+                        const startYR = startY / trueHeight
+                        const endXR   = (e.offsetX - restW) / trueWidth
+                        const endYR   = e.offsetY / trueHeight
+                        const drawingData:DrawingData = {
+                            drawingCmd: "DRAW",
+                            startXR: startXR,
+                            startYR: startYR,
+                            endXR: endXR,
+                            endYR: endYR,
+                            stroke: "black",
+                            lineWidth: 2
+                        }
+                        return drawingData
+                    }else{ // heightにあまりがある
+                        const trueWidth = canvasEl.current!.width * rateY
+                        const trueHeight = canvasEl.current!.height * rateY
+                        const restH = (height - trueHeight) / 2
+                        const startX = e.offsetX - e.movementX
+                        const startY = e.offsetY - restH - e.movementY
+    
+                        const startXR = startX / trueWidth
+                        const startYR = startY / trueHeight
+                        const endXR   = e.offsetX / trueWidth
+                        const endYR   = (e.offsetY - restH) / trueHeight
+                        const drawingData:DrawingData = {
+                            drawingCmd: "DRAW",
+                            startXR: startXR,
+                            startYR: startYR,
+                            endXR: endXR,
+                            endYR: endYR,
+                            stroke: "black",
+                            lineWidth: 2
+                        }
+                        return drawingData
+                    }
+                })()
+                sendWhiteBoardData(drawingData)
+
+                //console.log("CS: ",cs)
+            }
+        }
+
+        useEffect(()=>{
+            if(!canvasEl.current){
+                return
+            }
+            console.log("ADD EVENT LISTENER")
+            canvasEl.current!.addEventListener("mousedown",  drawingStart, { passive: false })
+            canvasEl.current!.addEventListener("mouseup",    drawingEnd,   { passive: false })
+            canvasEl.current!.addEventListener("mouseleave", drawingEnd,   { passive: false })
+            canvasEl.current!.addEventListener("mousemove",  drawing,      { passive: false }) 
+
+            // canvasEl.current!.addEventListener("touchstart", (e)=>{
+            //     this.drawingStart()
+            //     this.setState({
+            //         previousX:e.changedTouches[0].clientX-this.drawingCanvas.getBoundingClientRect().left,
+            //         previousY:e.changedTouches[0].clientY-this.drawingCanvas.getBoundingClientRect().top,
+            //     })
+            // }, { passive: false })
+
+            // canvasEl.current!.addEventListener("touchmove", (e)=>{
+            //     e.preventDefault(); 
+            //     const prevX = this.state.previousX
+            //     const prevY = this.state.previousY
+            //     const thisTimeX = e.changedTouches[0].clientX-this.drawingCanvas.getBoundingClientRect().left
+            //     const thisTimeY = e.changedTouches[0].clientY-this.drawingCanvas.getBoundingClientRect().top
+            //     this.drawing(thisTimeX, thisTimeY, thisTimeX-prevX, thisTimeY-prevY)
+            //     this.setState({previousX:thisTimeX,previousY:thisTimeY})
+            // }, { passive: false })
+
+            // canvasEl.current!.addEventListener("touchend", (e)=>{
+            //     drawingEnd()
+            // }, { passive: false })
+            return ()=>{
+                if(canvasEl.current){
+                    canvasEl.current!.removeEventListener("mousedown",  drawingStart)
+                    canvasEl.current!.removeEventListener("mouseup",    drawingEnd)
+                    canvasEl.current!.removeEventListener("mouseleave", drawingEnd)
+                    canvasEl.current!.removeEventListener("mousemove",  drawing)
+                }
+            }
+        })
+
+
 
         return (
             <CustomStyledVideoTile
