@@ -54,20 +54,18 @@ export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
         setChatData([...chatData, mess])
     }
 
-    const receiveChatData = (mess: RealtimeData) =>{
-        setChatData([...chatData, mess])
+
+    const receiveChatData = (mess:DataMessage) =>{
+        const senderId = mess.senderAttendeeId
+        const data = JSON.parse(mess.text()) as RealtimeData
+        data.senderId = senderId
+        setChatData([...chatData, data])
     }
 
     useEffect(()=>{
-        const receivedChatDataCallback = (mess:DataMessage):void=>{
-            const senderId = mess.senderAttendeeId
-            const data = JSON.parse(mess.text()) as RealtimeData
-            data.senderId = senderId
-            receiveChatData(data)
-        }
         audioVideo!.realtimeSubscribeToReceiveDataMessage(
             "CHAT" as DataMessageType,
-            receivedChatDataCallback
+            receiveChatData
         )
         return ()=>{
             audioVideo!.realtimeUnsubscribeFromReceiveDataMessage("CHAT" as DataMessageType)
