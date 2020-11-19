@@ -1,17 +1,28 @@
 import { ReactNode, useContext, useEffect, useState } from "react";
 import React from "react";
-import { useAudioVideo, useRosterState } from "amazon-chime-sdk-component-library-react";
+import { useAudioVideo, useRosterState, useUniqueId } from "amazon-chime-sdk-component-library-react";
 import { DataMessage } from "amazon-chime-sdk-js";
-
+import { v4 } from 'uuid';
+import { useAppState } from "./AppStateProvider";
 
 type Props = {
     children: ReactNode;
 };
+export type RealtimeData = {
+    uuid: string
+    action: RealtimeDataAction
+    cmd: RealtimeDataCmd
+    data: string
+    createdDate: number
+    senderId   : string
+}
 
 type DataMessageType = "CHAT" | "STAMP" | "WHITE_BOARD"
+type RealtimeDataAction = "sendmessage"
+type RealtimeDataCmd    = "TEXT"
 
 export interface RealitimeSubscribeStateValue {
-    chatData:  DataMessage[]
+    chatData:  RealtimeData[]
     sendChatData: (mess: string) => void
 }
 
@@ -26,41 +37,33 @@ export const useRealitimeSubscribeState = (): RealitimeSubscribeStateValue => {
     return state
 }
 
-class RealitimeSubscriber {
-
-    private static _instance:RealitimeSubscriber;
-    public static getInstance():RealitimeSubscriber{
-    if(!this._instance){
-        this._instance= new RealitimeSubscriber()
-    }
-    return this._instance
-    }
-    constructor(){
-    console.log("RealitimeSubscriber !!!!!!")
-    }
-
-
-}
-
 export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
     const audioVideo = useAudioVideo()
-    const [chatData, setChatData] = useState([] as DataMessage[])
+    const { localUserId } = useAppState()
+    const [chatData, setChatData] = useState([] as RealtimeData[])
     const sendChatData = (text:string) =>{
-        const message= {
-            action   : 'sendmessage',
-            cmd      : "TEXT",
-            text     : text,
+        const mess:RealtimeData = {
+            uuid        : v4(),
+            action      : 'sendmessage',
+            cmd         : "TEXT",
+            data        : text,
+            createdDate : new Date().getTime(),
+            senderId    : localUserId
         } 
-        audioVideo!.realtimeSendDataMessage("CHAT" as DataMessageType, JSON.stringify(message))
+        audioVideo!.realtimeSendDataMessage("CHAT" as DataMessageType, JSON.stringify(mess))
+        setChatData([...chatData, mess])
     }
 
-    const receiveChatData = (mess: DataMessage) =>{
+    const receiveChatData = (mess: RealtimeData) =>{
         setChatData([...chatData, mess])
     }
 
     useEffect(()=>{
         const receivedChatDataCallback = (mess:DataMessage):void=>{
-            receiveChatData(mess)
+            const senderId = mess.senderAttendeeId
+            const data = JSON.parse(mess.text()) as RealtimeData
+            data.senderId = senderId
+            receiveChatData(data)
         }
         audioVideo!.realtimeSubscribeToReceiveDataMessage(
             "CHAT" as DataMessageType,

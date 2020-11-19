@@ -12,10 +12,11 @@ interface AppStateValue {
   meetingId: string;
   meetingName: string;
   localUserName: string;
+  localUserId: string;
   theme: string;
   region: string;
   toggleTheme: () => void;
-  setAppMeetingInfo: (meetingId: string, meetingName: string, name: string, region: string) => void;
+  setAppMeetingInfo: (meetingId: string, meetingName: string, attendeeId:string, name: string, region: string) => void;
   setSignInInfo: (userId: string, idToken: string, accessToken:string, refreshToken:string) => void;
 }
 
@@ -43,6 +44,7 @@ export function AppStateProvider({ children }: Props) {
   const [meetingName, setMeetingName] = useState(query.get('meetingName') || '');
   const [region, setRegion] = useState(query.get('region') || '');
   const [localUserName, setLocalUserName] = useState('');
+  const [localUserId, setLocalUserId] = useState('');
   const [theme, setTheme] = useState(() => {
     const storedTheme = localStorage.getItem('theme');
     return storedTheme || 'light';
@@ -61,6 +63,7 @@ export function AppStateProvider({ children }: Props) {
   const setAppMeetingInfo = (
     meetingId: string,
     meetingName: string,
+    attendeeId: string,
     name: string,
     region: string
   ) => {
@@ -68,6 +71,7 @@ export function AppStateProvider({ children }: Props) {
     setMeetingId(meetingId);
     setLocalUserName(name);
     setMeetingName(meetingName)
+    setLocalUserId(attendeeId)
   };
 
   const setSignInInfo = (
@@ -90,6 +94,7 @@ export function AppStateProvider({ children }: Props) {
     meetingId,
     meetingName,
     localUserName,
+    localUserId,
     theme,
     region,
     toggleTheme,

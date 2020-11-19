@@ -123,7 +123,7 @@ export const MeetingFormStateProvider = ({ children }: Props) => {
             });
 
             setIsLoading(false);
-            setAppMeetingInfo(joinInfo.Meeting.MeetingId, meetingName, attendeeName, region);
+            setAppMeetingInfo(joinInfo.Meeting.MeetingId, meetingName, joinInfo.Attendee.AttendeeId, attendeeName, region);
             history.push(routes.DEVICE);
         } catch (error) {
             setIsLoading(false);

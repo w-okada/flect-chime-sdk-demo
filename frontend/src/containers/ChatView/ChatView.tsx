@@ -2,7 +2,7 @@ import { useRosterState, Flex, Roster, RosterHeader, RosterGroup, RosterAttendee
 import { useNavigation } from "../../providers/NavigationProvider";
 import React, { useState } from "react";
 import styled from "styled-components";
-import { useRealitimeSubscribeState } from "../../providers/RealtimeSubscribeProvider";
+import { useRealitimeSubscribeState, RealtimeData } from "../../providers/RealtimeSubscribeProvider";
 
 export const Title = styled.h1`
   background-color: ___CSS_0___;
@@ -38,8 +38,23 @@ const ChatView = () => {
   console.log("chat view")
   const attendeeItems = []
   for (let c of chatData) {
+    console.log(c)
+    const senderName = roster[c.senderId] ? roster[c.senderId].name : "unknwon"
+    console.log(senderName, roster)
+
+    const uuid = c.uuid
+    const text = c.data
+    const time = (new Date(c.createdDate)).toLocaleTimeString('ja-JP')
+
     attendeeItems.push(
-    <Label key={""+c.timestampMs}>{c.text()}</Label>
+      <div key={uuid}>
+        <p style={{color:"green"}}>
+        {time}  {senderName}
+        </p>
+        <p style={{paddingLeft:"5px"}}>
+          {text}
+        </p>
+      </div>
     )
   }
 
@@ -49,11 +64,10 @@ const ChatView = () => {
       <RosterHeader title="Chat" onClose={closeChatView}>
       </RosterHeader>
       <RosterGroup>{attendeeItems}</RosterGroup>
+      <br/>
       <Textarea
-        // showClear={true}
         //@ts-ignore
         onChange={e => setChatMessage(e.target.value)}
-        // sizing={"md"}
         value={chatMessage}
         placeholder="input your message"
         type="text"
