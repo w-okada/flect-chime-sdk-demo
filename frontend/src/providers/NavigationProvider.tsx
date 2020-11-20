@@ -18,9 +18,12 @@ export type NavigationContextType = {
   showRoster: boolean;
   showMetrics: boolean;
   showChatView: boolean;
+  showWhiteboardView: boolean
   toggleRoster: () => void;
   toggleNavbar: () => void;
   toggleChatView: () => void;
+  toggleWhiteboardView: () => void;
+  
   openRoster: () => void;
   closeRoster: () => void;
   openNavbar: () => void;
@@ -28,6 +31,8 @@ export type NavigationContextType = {
   toggleMetrics: () => void;
   openChatView: () => void;
   closeChatView: () => void;
+  openWhiteboardView: () => void;
+  closeWhiteboardView: () => void;
   
 };
 
@@ -46,6 +51,7 @@ const NavigationProvider = ({ children }: Props) => {
   const [showRoster, setShowRoster] = useState(() => isDesktop());
   const [showMetrics, setShowMetrics] = useState(false);
   const [showChatView, setShowChatView] = useState(false)
+  const [showWhiteboardView, setShowWhiteboardView] = useState(false)
   const isDesktopView = useRef(isDesktop());
 
   const location = useLocation();
@@ -72,6 +78,7 @@ const NavigationProvider = ({ children }: Props) => {
         setShowNavbar(false);
         setShowRoster(false);
         setShowChatView(false)
+        setShowWhiteboardView(false)
       } else {
         setShowNavbar(true);
       }
@@ -83,9 +90,9 @@ const NavigationProvider = ({ children }: Props) => {
 
   const toggleRoster = (): void => {
     setShowRoster(!showRoster);
-    if(showChatView){
-      setShowChatView(false)
-    }
+
+    setShowChatView(false)
+    setShowWhiteboardView(false)
   };
 
   const toggleNavbar = (): void => {
@@ -98,10 +105,18 @@ const NavigationProvider = ({ children }: Props) => {
 
   const toggleChatView = () =>{
     setShowChatView(!showChatView)
-    if(showRoster){
-      setShowRoster(false)
-    }
+
+    setShowRoster(false)
+    setShowWhiteboardView(false)
   }
+
+  const toggleWhiteboardView = () =>{
+    setShowWhiteboardView(!showWhiteboardView)
+ 
+    setShowRoster(false)
+    setShowChatView(false)
+  }
+
 
   const openNavbar = (): void => {
     setShowNavbar(true);
@@ -125,22 +140,34 @@ const NavigationProvider = ({ children }: Props) => {
     setShowChatView(false)
   }
 
+  const openWhiteboardView = () =>{
+    setShowWhiteboardView(true)
+  }
+  const closeWhiteboardView = () =>{
+    setShowWhiteboardView(false)
+  }
+
   const providerValue = {
     showNavbar,
     showRoster,
     showMetrics,
     showChatView,
+    showWhiteboardView,
+
     toggleRoster,
     toggleNavbar,
     toggleMetrics,
     toggleChatView,
+    toggleWhiteboardView,
+
     openRoster,
     closeRoster,
     openNavbar,
     closeNavbar,
     openChatView,
-    closeChatView
-
+    closeChatView,
+    openWhiteboardView,
+    closeWhiteboardView,
   };
   return (
     <NavigationContext.Provider value={providerValue}>

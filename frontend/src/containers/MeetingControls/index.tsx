@@ -47,8 +47,8 @@ const MeetingControls = () => {
         <CustomizedVideoInputControl />
         <ContentShareControl />
         <AudioOutputControl />
-        <EndMeetingControl />
         <VideoEffectControl />
+        <EndMeetingControl />
       </ControlBar>
     </StyledControls>
   );

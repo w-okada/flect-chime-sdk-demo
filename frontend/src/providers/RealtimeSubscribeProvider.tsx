@@ -31,12 +31,17 @@ type DataMessageType = "CHAT" | "STAMP" | "WHITEBOARD"
 type RealtimeDataAction = "sendmessage"
 type RealtimeDataCmd    = "TEXT" | "WHITEBOARD"
 type DrawingCmd = "DRAW" | "ERASE" | "CLEAR"
+type DrawingMode = "DRAW" | "ERASE" | "DISABLE"
 
 export interface RealitimeSubscribeStateValue {
     chatData:  RealtimeData[]
     sendChatData: (mess: string) => void
     whiteboardData:  RealtimeData[]
     sendWhiteBoardData: (data: DrawingData) => void
+    drawingMode: DrawingMode
+    setDrawingMode: (mode:DrawingMode) => void
+    drawingStroke: string
+    setDrawingStroke:(stroke:string) => void
 }
 
 export const RealitimeSubscribeStateContext = React.createContext<RealitimeSubscribeStateValue | null>(null)
@@ -55,6 +60,8 @@ export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
     const { localUserId } = useAppState()
     const [chatData, setChatData] = useState([] as RealtimeData[])
     const [whiteboardData, setWhiteboardData] = useState([] as RealtimeData[])
+    const [drawingMode, setDrawingMode] = useState("DISABLE" as DrawingMode)
+    const [drawingStroke, setDrawingStroke] = useState("black")
 
     const sendChatData = (text:string) =>{
         const mess:RealtimeData = {
@@ -79,7 +86,11 @@ export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
             senderId    : localUserId
         } 
         audioVideo!.realtimeSendDataMessage("WHITEBOARD" as DataMessageType, JSON.stringify(mess))
-        setWhiteboardData([...whiteboardData, mess])
+        if(data.drawingCmd === "CLEAR"){
+            setWhiteboardData([])
+        }else{
+            setWhiteboardData([...whiteboardData, mess])
+        }
     }
 
 
@@ -95,7 +106,12 @@ export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
         const senderId = mess.senderAttendeeId
         const data = JSON.parse(mess.text()) as RealtimeData
         data.senderId = senderId
-        setWhiteboardData([...whiteboardData, data])
+        console.log(data)
+        if( ((data.data) as DrawingData).drawingCmd === "CLEAR"){
+            setWhiteboardData([])
+        }else{
+            setWhiteboardData([...whiteboardData, data])
+        }
     }
 
     useEffect(()=>{
@@ -117,7 +133,11 @@ export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
         chatData,
         sendChatData,
         whiteboardData,
-        sendWhiteBoardData
+        sendWhiteBoardData,
+        drawingMode, 
+        setDrawingMode,
+        drawingStroke,
+        setDrawingStroke
     }
     return (
         <RealitimeSubscribeStateContext.Provider value={providerValue}>

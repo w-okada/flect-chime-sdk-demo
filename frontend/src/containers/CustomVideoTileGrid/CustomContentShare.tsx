@@ -79,19 +79,23 @@ class SharedContentDrawer {
                 this._canvasRef.current!.width = this._videoRef.current!.videoWidth
                 this._canvasRef.current!.height = this._videoRef.current!.videoHeight
                 this._canvasRef.current!.getContext("2d")!.drawImage(this._videoRef.current!, 0, 0, this._canvasRef.current!.width, this._canvasRef.current!.height)
-                const now = performance.now()
-                this._canvasRef.current!.getContext("2d")!.fillText("" + now, 100, 200)
 
                 for(let data of this._whiteboardData){
                     const drawing = data.data as DrawingData
                     const ctx = this._canvasRef.current!.getContext("2d")!
-                    ctx.beginPath();
-                    ctx.moveTo(drawing.startXR * this._canvasRef.current!.width, drawing.startYR*this._canvasRef.current!.height);
-                    ctx.lineTo(drawing.endXR*this._canvasRef.current!.width, drawing.endYR*this._canvasRef.current!.height);
-                    ctx.strokeStyle = drawing.stroke
-                    ctx.lineWidth = drawing.lineWidth
-                    ctx.stroke();
-                    ctx.closePath();
+                    if(drawing.drawingCmd === "DRAW"){
+                        ctx.beginPath();
+                        ctx.moveTo(drawing.startXR * this._canvasRef.current!.width, drawing.startYR*this._canvasRef.current!.height);
+                        ctx.lineTo(drawing.endXR*this._canvasRef.current!.width, drawing.endYR*this._canvasRef.current!.height);
+                        ctx.strokeStyle = drawing.stroke
+                        ctx.lineWidth = drawing.lineWidth
+                        ctx.stroke();
+                        ctx.closePath();
+                    }else{
+                        const width = drawing.lineWidth
+                        ctx.clearRect(drawing.startXR*this._canvasRef.current!.width-width, drawing.startYR*this._canvasRef.current!.height-width, width*2, width*2)
+                        ctx.clearRect(drawing.endXR*this._canvasRef.current!.width-width, drawing.endYR*this._canvasRef.current!.height-width, width*2, width*2);
+                    }
                 }
 
             }catch(exception){
@@ -119,7 +123,7 @@ export const CustomVideoTile = forwardRef(
         const videoEl = useRef<HTMLVideoElement | null>(null);
 
         const [inDrawing, setInDrawing] = useState(false)
-        const {sendWhiteBoardData, whiteboardData} = useRealitimeSubscribeState()
+        const {sendWhiteBoardData, whiteboardData, drawingMode, drawingStroke} = useRealitimeSubscribeState()
 
         const drawer = SharedContentDrawer.getInstance()
         drawer.whiteboardData = whiteboardData
@@ -173,12 +177,12 @@ export const CustomVideoTile = forwardRef(
                         const endXR   = (e.offsetX - restW) / trueWidth
                         const endYR   = e.offsetY / trueHeight
                         const drawingData:DrawingData = {
-                            drawingCmd: "DRAW",
+                            drawingCmd: drawingMode==="DRAW" ? "DRAW" : "ERASE",
                             startXR: startXR,
                             startYR: startYR,
                             endXR: endXR,
                             endYR: endYR,
-                            stroke: "black",
+                            stroke: drawingStroke,
                             lineWidth: 2
                         }
                         return drawingData
@@ -194,12 +198,12 @@ export const CustomVideoTile = forwardRef(
                         const endXR   = e.offsetX / trueWidth
                         const endYR   = (e.offsetY - restH) / trueHeight
                         const drawingData:DrawingData = {
-                            drawingCmd: "DRAW",
+                            drawingCmd: drawingMode==="DRAW" ? "DRAW" : "ERASE",
                             startXR: startXR,
                             startYR: startYR,
                             endXR: endXR,
                             endYR: endYR,
-                            stroke: "black",
+                            stroke: drawingStroke,
                             lineWidth: 2
                         }
                         return drawingData

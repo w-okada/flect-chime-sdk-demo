@@ -18,7 +18,7 @@ import CustomVideoTileGrid from '../../containers/CustomVideoTileGrid';
 
 const MeetingView = () => {
   useMeetingEndRedirect();
-  const { showNavbar, showRoster, showChatView } = useNavigation();
+  const { showNavbar, showRoster, showChatView, showWhiteboardView } = useNavigation();
   const meetingManager = useMeetingManager();
   const { backgroundEffect, setDeviceId } = useVideoEffectState()
   console.log(backgroundEffect)
@@ -49,7 +49,7 @@ const MeetingView = () => {
 
   return (
     // <UserActivityProvider>
-    <StyledLayout showNav={showNavbar} showRoster={showRoster || showChatView}>
+    <StyledLayout showNav={showNavbar} showRoster={showRoster || showChatView || showWhiteboardView}>
       <RealitimeSubscribeStateProvider>
         <StyledContent>
 
