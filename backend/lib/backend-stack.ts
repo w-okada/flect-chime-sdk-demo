@@ -238,7 +238,8 @@ export class BackendStack extends cdk.Stack {
     const addCorsOptions = (apiResource: IResource) => {
       let origin 
       if(FRONTEND_LOCAL_DEV){
-        origin = "'https://localhost:3000'"
+        // origin = "'https://localhost:3000'"
+        origin = "'https://192.168.1.4:3000'"
       }else{
         origin = `'https://${bucket.bucketWebsiteDomainName}'`
       }
