@@ -32,6 +32,8 @@ const SignInFormSelector: React.FC = () => {
         return [
           <SignInForm />, 
           <div>
+            <Label onClick={()=>setMode("SIGNUP")} style={{textDecoration:"underline", cursor:"pointer"}}>Signup</Label>
+            <br/>
             <Label onClick={()=>setMode("VERIFY")} style={{textDecoration:"underline", cursor:"pointer"}}>Verify Code</Label>
             <br/>
             <Label onClick={()=>setMode("RESEND_VERIFICATION")}  style={{textDecoration:"underline", cursor:"pointer"}}>Resend Verification Code</Label>

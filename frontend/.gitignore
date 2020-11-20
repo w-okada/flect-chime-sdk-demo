@@ -26,3 +26,6 @@ yarn-error.log*
 /src/BackendConfig.ts
 
 sync.sh
+
+*~
+*#

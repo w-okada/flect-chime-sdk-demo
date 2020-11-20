@@ -241,7 +241,7 @@ export class BackendStack extends cdk.Stack {
         // origin = "'https://localhost:3000'"
         origin = "'https://192.168.1.4:3000'"
       }else{
-        origin = `'https://${bucket.bucketWebsiteDomainName}'`
+        origin = `'https://${bucket.bucketDomainName}'`
       }
       apiResource.addMethod('OPTIONS', new MockIntegration({
         integrationResponses: [{
@@ -395,6 +395,11 @@ export class BackendStack extends cdk.Stack {
     new CfnOutput(this, "BucketWebsiteDomainName", {
       description: "BucketWebsiteDomainName",
       value: bucket.bucketWebsiteDomainName
+    })
+
+    new CfnOutput(this, "BucketDomainName", {
+      description: "BucketDomainName",
+      value: bucket.bucketDomainName
     })
 
     new CfnOutput(this, "RestAPIEndpoint", {
