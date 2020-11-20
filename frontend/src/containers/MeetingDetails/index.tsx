@@ -6,7 +6,6 @@ import React from 'react';
 import {
   Flex,
   Heading,
-  PrimaryButton,
   useMeetingManager
 } from 'amazon-chime-sdk-component-library-react';
 
@@ -14,7 +13,7 @@ import { useAppState } from '../../providers/AppStateProvider';
 import { StyledList } from './Styled';
 
 const MeetingDetails = () => {
-  const { meetingId, toggleTheme, theme } = useAppState();
+  const { meetingName, meetingId } = useAppState();
   const manager = useMeetingManager();
 
   return (
@@ -24,19 +23,19 @@ const MeetingDetails = () => {
           Meeting information
         </Heading>
         <StyledList>
-          <div>
+        <div>
             <dt>Meeting ID</dt>
             <dd>{meetingId}</dd>
+          </div>
+          <div>
+            <dt>Meeting Name</dt>
+            <dd>{meetingName}</dd>
           </div>
           <div>
             <dt>Hosted region</dt>
             <dd>{manager.meetingRegion}</dd>
           </div>
         </StyledList>
-        <PrimaryButton
-          label={theme === 'light' ? 'Dark mode' : 'Light mode'}
-          onClick={toggleTheme}
-        ></PrimaryButton>
       </Flex>
     </Flex>
   );

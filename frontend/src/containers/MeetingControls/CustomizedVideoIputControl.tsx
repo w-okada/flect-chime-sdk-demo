@@ -16,33 +16,33 @@ const videoInputConfig: DeviceConfig = {
 };
 
 export const isOptionActive = (
-    meetingManagerDeviceId: string | null,
-    currentDeviceId: string
-  ): boolean => {
-    if (currentDeviceId === 'none' && meetingManagerDeviceId === null) {
-      return true;
-    }
-    return currentDeviceId === meetingManagerDeviceId;
-  };
-  
+  meetingManagerDeviceId: string | null,
+  currentDeviceId: string
+): boolean => {
+  if (currentDeviceId === 'none' && meetingManagerDeviceId === null) {
+    return true;
+  }
+  return currentDeviceId === meetingManagerDeviceId;
+};
+
 const CustomizedVideoInputControl: React.FC<Props> = ({ label = 'Video' }) => {
   const { devices, selectedDevice } = useVideoInputs(videoInputConfig);
   const { isVideoEnabled, toggleVideo } = useLocalVideo();
   const selectDevice = useSelectVideoInputDevice();
   const meetingManager = useMeetingManager();
-  
+
   const dropdownOptions: PopOverItemProps[] = devices.map((device: any) => ({
     children: <span>{device.label}</span>,
     checked: isOptionActive(selectedDevice, device.deviceId),
     onClick: () => selectDevice(device.deviceId)
   }));
 
-  const toggle = ()=>{
+  const toggle = () => {
     meetingManager.selectedVideoInputDevice = "blue"
-    toggleVideo().then(()=>{
-        if(selectedDevice){
-            selectDevice(selectedDevice)
-        }
+    toggleVideo().then(() => {
+      if (selectedDevice) {
+        selectDevice(selectedDevice)
+      }
     })
   }
 

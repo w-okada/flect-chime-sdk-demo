@@ -4,20 +4,17 @@
 import { ControlBarButton, Cog, Modal, ModalHeader, ModalBody, ModalButton, ModalButtonGroup, useVideoInputs, useSelectVideoInputDevice, Flex, RadioGroup, Button } from "amazon-chime-sdk-component-library-react";
 import React, { useState } from "react";
 import { StyledP } from "../EndMeetingControl/Styled";
-import { useVideoEffectState  } from "../../providers/VideoEffectProvider";
-import { useRealitimeSubscribeState } from "../../providers/RealtimeSubscribeProvider";
+import { useVideoEffectState } from "../../providers/VideoEffectProvider";
 
 const FrontEffectSelect: React.FC<{}> = props => {
-  const { selectedDevice } = useVideoInputs({additionalDevices: true});
+  const { selectedDevice } = useVideoInputs({ additionalDevices: true });
   const selectDevice = useSelectVideoInputDevice();
-  const {frontEffectOptions, setFrontEffect, frontEffect } = useVideoEffectState()
-  const options= frontEffectOptions.map(e => {return{label:e, value:e}} )
- const {chatData, sendChatData} = useRealitimeSubscribeState()
+  const { frontEffectOptions, setFrontEffect, frontEffect } = useVideoEffectState()
+  const options = frontEffectOptions.map(e => { return { label: e, value: e } })
   const handleChange = (e: any) => {
     setFrontEffect(e.target.value)
     console.log(e.target.value)
-   sendChatData("TEST SENDING!!!!!!!!!")
-    if(selectDevice){
+    if (selectDevice) {
       selectDevice(selectedDevice!)
     }
   };
@@ -41,30 +38,30 @@ const FrontEffectSelect: React.FC<{}> = props => {
 
 
 const BackgroundEffectSelect: React.FC<{}> = props => {
-  const { selectedDevice } = useVideoInputs({additionalDevices: true});
+  const { selectedDevice } = useVideoInputs({ additionalDevices: true });
   const selectDevice = useSelectVideoInputDevice();
-  const {backgroundEffectOptions, setBackgroundEffect, backgroundEffect, setBackgroundImage, setBackgroundMediaStream } = useVideoEffectState()
-  const options= backgroundEffectOptions.map(e => {return{label:e, value:e}} )
+  const { backgroundEffectOptions, setBackgroundEffect, backgroundEffect, setBackgroundImage, setBackgroundMediaStream } = useVideoEffectState()
+  const options = backgroundEffectOptions.map(e => { return { label: e, value: e } })
   const handleBackendEffectChange = (e: any) => {
     setBackgroundEffect(e.target.value)
-    if(selectDevice){
+    if (selectDevice) {
       selectDevice(selectedDevice!)
     }
   }
 
-  const handleVirtualBackgroundImageButtonClicked = (e:any) =>{
+  const handleVirtualBackgroundImageButtonClicked = (e: any) => {
     const input = document.createElement("input")
-    input.type="file"
-    input.onchange = (file:any)=>{
+    input.type = "file"
+    input.onchange = (file: any) => {
       console.log(file.target.files[0])
       const fileType = file.target.files[0].type
-      if(fileType.startsWith("image")){
+      if (fileType.startsWith("image")) {
         const path = URL.createObjectURL(file.target.files[0]);
         const img = document.createElement("img")
         img.src = path
-        img.onload = () =>{
+        img.onload = () => {
           setBackgroundImage(img)
-          if(selectDevice){
+          if (selectDevice) {
             selectDevice(selectedDevice!)
           }
 
@@ -73,13 +70,13 @@ const BackgroundEffectSelect: React.FC<{}> = props => {
     }
     input.click()
   }
-  const handleVirtualBackgroundWindowButtonClicked = (e:any) =>{
+  const handleVirtualBackgroundWindowButtonClicked = (e: any) => {
     console.log("window...")
     // @ts-ignore https://github.com/microsoft/TypeScript/issues/31821
-    navigator.mediaDevices.getDisplayMedia({frameRate: {max: 15,}}).then(media => {
+    navigator.mediaDevices.getDisplayMedia({ frameRate: { max: 15, } }).then(media => {
       setBackgroundMediaStream(media)
       console.log(media)
-      if(selectDevice){
+      if (selectDevice) {
         selectDevice(selectedDevice!)
       }
     })
@@ -98,21 +95,21 @@ const BackgroundEffectSelect: React.FC<{}> = props => {
         />
       </Flex>
 
-      <div hidden={!(backgroundEffect==="Image")}>
+      <div hidden={!(backgroundEffect === "Image")}>
         <StyledP>
           Virtual Background Image
         </StyledP>
         <Flex layout="fill-space-centered">
-          <Button label="Choose File" onClick={handleVirtualBackgroundImageButtonClicked}/>
+          <Button label="Choose File" onClick={handleVirtualBackgroundImageButtonClicked} />
         </Flex>
       </div>
 
-      <div hidden={!(backgroundEffect==="Window")}>
+      <div hidden={!(backgroundEffect === "Window")}>
         <StyledP>
           Virtual Background Window
         </StyledP>
         <Flex layout="fill-space-centered">
-          <Button label="Choose Window" onClick={handleVirtualBackgroundWindowButtonClicked}/>
+          <Button label="Choose Window" onClick={handleVirtualBackgroundWindowButtonClicked} />
         </Flex>
       </div>
     </>
@@ -121,7 +118,7 @@ const BackgroundEffectSelect: React.FC<{}> = props => {
 
 const VideoQualitySelect: React.FC<{}> = props => {
   const { VideoQualityOptions, selectQuality, videoQuality } = useVideoEffectState()
-  const options = VideoQualityOptions.map(e => {return{label:e, value:e}} )
+  const options = VideoQualityOptions.map(e => { return { label: e, value: e } })
 
   const handleChange = (e: any) => {
     selectQuality(e.target.value)

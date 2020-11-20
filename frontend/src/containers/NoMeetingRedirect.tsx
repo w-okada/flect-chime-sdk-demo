@@ -31,7 +31,7 @@ const NoMeetingRedirect: React.FC = ({ children }) => {
       });
       history.push(routes.HOME);
     }
-  }, []);
+  });
 
   return <>{children}</>;
 };

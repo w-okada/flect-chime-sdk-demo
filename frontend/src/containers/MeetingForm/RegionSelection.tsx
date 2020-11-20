@@ -51,7 +51,7 @@ const RegionSelection: React.FC<Props> = ({ setRegion, region }) => {
     return () => {
       mounted = false;
     };
-  }, []);
+  });
 
   return (
     <FormField

@@ -12,6 +12,8 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   smallText?: string;
 }
 
+
+// Thsi component is used for display error message.
 const Card: React.FC<CardProps> = ({
   header,
   title,

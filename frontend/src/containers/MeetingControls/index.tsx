@@ -16,7 +16,7 @@ import EndMeetingControl from '../EndMeetingControl';
 import { useNavigation } from '../../providers/NavigationProvider';
 import { StyledControls } from './Styled';
 import VideoEffectControl from '../VideoEffectControl';
-import CustomizedVideoInputControl from './CustomizedVideoIputControle';
+import CustomizedVideoInputControl  from './CustomizedVideoIputControl';
 
 const MeetingControls = () => {
   const { toggleNavbar, closeRoster, showRoster } = useNavigation();

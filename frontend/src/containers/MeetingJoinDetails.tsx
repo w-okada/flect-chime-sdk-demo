@@ -45,7 +45,7 @@ const MeetingJoinDetails = () => {
           onClick={handleJoinMeeting}
         />
         <Label style={{ margin: '.75rem 0 0 0' }}>
-          Joining meeting <b>{meetingName}({meetingId})</b> as <b>{localUserName}</b>
+          Joining meeting <b>{meetingName}({meetingId})</b> as <b>User Name: {localUserName}</b>
         </Label>
       </Flex>
       {error && (

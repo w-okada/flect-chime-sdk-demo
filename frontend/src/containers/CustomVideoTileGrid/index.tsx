@@ -1,8 +1,4 @@
-// Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-
 import React from 'react';
-import { BaseProps } from 'amazon-chime-sdk-component-library-react/lib/components/ui/Base';
 import { useFeaturedTileState, useContentShareState, useRemoteVideoTileState, useLocalVideo, FeaturedRemoteVideos, RemoteVideos, LocalVideo, VideoGrid } from 'amazon-chime-sdk-component-library-react';
 import CustomContentShare from './CustomContentShare';
 import { Layout } from 'amazon-chime-sdk-component-library-react/lib/components/ui/VideoGrid';
@@ -52,7 +48,7 @@ export const CustomVideoTileGrid: React.FC<Props> = ({
   const { tiles } = useRemoteVideoTileState();
   const { tileId: contentTileId } = useContentShareState();
   const { isVideoEnabled } = useLocalVideo();
-  const featured = layout === "featured" && !!featureTileId || !!contentTileId;
+  const featured = layout === "featured" && (!!featureTileId || !!contentTileId);
   const remoteSize = tiles.length + (contentTileId ? 1 : 0);
   const gridSize =
     remoteSize > 1 && isVideoEnabled ? remoteSize + 1 : remoteSize;
