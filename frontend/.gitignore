@@ -25,3 +25,4 @@ yarn-error.log*
 ## config
 /src/BackendConfig.ts
 
+sync.sh
