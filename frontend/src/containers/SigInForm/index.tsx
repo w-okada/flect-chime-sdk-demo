@@ -113,7 +113,7 @@ export const SignInForm: React.FC = () => {
   return(
     <form>
       <Heading tag="h1" level={4} css="margin-bottom: 1rem">
-        SingIn
+        SignIn
       </Heading>
       <UserIdField />
       <PasswordField />
@@ -129,7 +129,7 @@ export const SignUpForm: React.FC = () => {
   return(
     <form>
       <Heading tag="h1" level={4} css="margin-bottom: 1rem">
-        SingUp
+        SignUp
       </Heading>
       <UserIdField />
       <PasswordField />
