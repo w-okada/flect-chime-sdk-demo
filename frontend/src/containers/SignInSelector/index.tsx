@@ -12,8 +12,6 @@ import { useSignInState } from '../../providers/SignInStateProvider';
 import { useHistory } from "react-router-dom"
 import routes from '../../constants/routes';
 
-
-
 const SignInFormSelector: React.FC = () => {
   const query = new URLSearchParams(window.location.search);
   const {mode, setMode} = useSignInState()

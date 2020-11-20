@@ -49,7 +49,9 @@ export const useMeetingFormState = (): MeetingFormStateInterface => {
   
 export const MeetingFormStateProvider = ({ children }: Props) => {
     const [mode, setMode] = useState("CREATE_MEETING" as MODE)
-    const [meetingName, setMeetingName] = useState("")
+    const {meetingName:a} = useAppState()
+    const [meetingName, setMeetingName] = useState(a)
+
     const [userName, setUserName] = useState("")
     const [region, setRegion] = useState("")
 
