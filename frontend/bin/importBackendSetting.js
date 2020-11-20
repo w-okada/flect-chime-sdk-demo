@@ -23,3 +23,12 @@ Object.keys(outputs).forEach(key =>{
 // console.log(result)
 fs.writeFileSync('./src/BackendConfig.ts', outputString);
 
+
+console.log("create sync.sh")
+const bucketname = outputs["Bucket"]
+console.log(`bucket: ${bucketname}`)
+outputString=""
+outputString += `npm run build \r\n`
+outputString += `aws s3 sync build/ s3://${bucketname} \r\n`
+
+fs.writeFileSync('./sync.sh', outputString);
