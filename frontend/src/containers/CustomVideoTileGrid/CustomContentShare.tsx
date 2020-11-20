@@ -123,6 +123,7 @@ export const CustomVideoTile = forwardRef(
         const videoEl = useRef<HTMLVideoElement | null>(null);
 
         const [inDrawing, setInDrawing] = useState(false)
+        const [previousPosition, setPreviousPosition] = useState([0,0])
         const {sendWhiteBoardData, whiteboardData, drawingMode, drawingStroke} = useRealitimeSubscribeState()
 
         const drawer = SharedContentDrawer.getInstance()
@@ -210,9 +211,26 @@ export const CustomVideoTile = forwardRef(
                     }
                 })()
                 sendWhiteBoardData(drawingData)
-
                 //console.log("CS: ",cs)
             }
+        }
+
+        const touchStart = (e: TouchEvent) => {
+            setInDrawing(true)
+            const x = e.changedTouches[0].clientX - canvasEl.current!.getBoundingClientRect().left
+            const y = e.changedTouches[0].clientY - canvasEl.current!.getBoundingClientRect().top
+            setPreviousPosition([x, y])
+        }
+        const touchEnd = (e: TouchEvent) => {
+            setInDrawing(false)
+        }
+        const touchMove = (e: TouchEvent) => {
+            e.preventDefault(); 
+            const prevX = previousPosition[0]
+            const prevY = previousPosition[1]
+            const thisTimeX = e.changedTouches[0].clientX - canvasEl.current!.getBoundingClientRect().left
+            const thisTimeY = e.changedTouches[0].clientY - canvasEl.current!.getBoundingClientRect().top
+            console.log(prevX, prevY, thisTimeX, thisTimeY)
         }
 
         useEffect(()=>{
@@ -225,33 +243,21 @@ export const CustomVideoTile = forwardRef(
             canvasEl.current!.addEventListener("mouseleave", drawingEnd,   { passive: false })
             canvasEl.current!.addEventListener("mousemove",  drawing,      { passive: false }) 
 
-            // canvasEl.current!.addEventListener("touchstart", (e)=>{
-            //     this.drawingStart()
-            //     this.setState({
-            //         previousX:e.changedTouches[0].clientX-this.drawingCanvas.getBoundingClientRect().left,
-            //         previousY:e.changedTouches[0].clientY-this.drawingCanvas.getBoundingClientRect().top,
-            //     })
-            // }, { passive: false })
+            canvasEl.current!.addEventListener("touchstart", touchStart, { passive: false })
+            canvasEl.current!.addEventListener("touchend",   touchEnd,   { passive: false })
+            canvasEl.current!.addEventListener("touchmove",  touchMove,  { passive: false })
 
-            // canvasEl.current!.addEventListener("touchmove", (e)=>{
-            //     e.preventDefault(); 
-            //     const prevX = this.state.previousX
-            //     const prevY = this.state.previousY
-            //     const thisTimeX = e.changedTouches[0].clientX-this.drawingCanvas.getBoundingClientRect().left
-            //     const thisTimeY = e.changedTouches[0].clientY-this.drawingCanvas.getBoundingClientRect().top
-            //     this.drawing(thisTimeX, thisTimeY, thisTimeX-prevX, thisTimeY-prevY)
-            //     this.setState({previousX:thisTimeX,previousY:thisTimeY})
-            // }, { passive: false })
-
-            // canvasEl.current!.addEventListener("touchend", (e)=>{
-            //     drawingEnd()
-            // }, { passive: false })
             return ()=>{
                 if(canvasEl.current){
                     canvasEl.current!.removeEventListener("mousedown",  drawingStart)
                     canvasEl.current!.removeEventListener("mouseup",    drawingEnd)
                     canvasEl.current!.removeEventListener("mouseleave", drawingEnd)
                     canvasEl.current!.removeEventListener("mousemove",  drawing)
+
+                    canvasEl.current!.removeEventListener("touchstart", touchStart)
+                    canvasEl.current!.removeEventListener("touchend",   touchEnd)
+                    canvasEl.current!.removeEventListener("touchmove",  touchMove)
+
                 }
             }
         })
