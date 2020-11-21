@@ -1,11 +1,8 @@
 import * as cdk from '@aws-cdk/core';
 import * as lambda from "@aws-cdk/aws-lambda";
-import {
-  RestApi, Integration, LambdaIntegration, Resource,
-  MockIntegration, PassthroughBehavior, EmptyModel, Cors, AuthorizationType, CfnAuthorizer, LambdaRestApi, IResource
-} from "@aws-cdk/aws-apigateway"
-import { CfnApi, CfnDeployment, CfnIntegration, CfnRoute, CfnStage } from "@aws-cdk/aws-apigatewayv2";
-
+import { RestApi, LambdaIntegration, MockIntegration, PassthroughBehavior, AuthorizationType, IResource, CfnAuthorizer } from "@aws-cdk/aws-apigateway"
+import * as v2 from "@aws-cdk/aws-apigatewayv2";
+// { CfnApi, CfnDeployment, CfnIntegration, CfnRoute, CfnStage, CfnAuthorizer }
 import { UserPool, UserPoolClient } from "@aws-cdk/aws-cognito"
 import { Table, AttributeType, ProjectionType, } from "@aws-cdk/aws-dynamodb";
 import { CfnOutput, Duration, ConcreteDependable } from '@aws-cdk/core';
@@ -140,22 +137,6 @@ export class BackendStack extends cdk.Stack {
     });
 
     // ( - ) Utility
-    // const addPermission = (f:lambda.Function)=>{
-    //   meetingTable.grantFullAccess(f)
-    //   attendeeTable.grantFullAccess(f)
-    //   f.addToRolePolicy(statement)
-    // }
-    // const environment = {
-    //   MEETING_TABLE_NAME: meetingTable.tableName,
-    //   ATTENDEE_TABLE_NAME: attendeeTable.tableName,
-    //   USER_POOL_ID: userPool.userPoolId
-    // }
-    // const addEnvironments = (f:lambda.Function)=>{
-    //   f.addEnvironment("MEETING_TABLE_NAME",   meetingTable.tableName)
-    //   f.addEnvironment("ATTENDEE_TABLE_NAME",  attendeeTable.tableName)
-    //   f.addEnvironment("USER_POOL_ID",         userPool.userPoolId)
-    //   f.addLayers(nodeModulesLayer)
-    // }
     const addCommonSetting = (f: lambda.Function) => {
       meetingTable.grantFullAccess(f)
       attendeeTable.grantFullAccess(f)
@@ -295,14 +276,10 @@ export class BackendStack extends cdk.Stack {
     //// ( - ) Rest API 
     const restApi: RestApi = new RestApi(this, "ChimeAPI", {
       restApiName: `${id}_restApi`,
-      // defaultCorsPreflightOptions: {
-      //   allowOrigins: ["https://localhost:3000", bucket.bucketWebsiteDomainName],
-      //   allowMethods: Cors.ALL_METHODS,
-      //   allowCredentials: true
-      // },
     })
 
     //// ( - ) Authorizer
+    //////// for V1 ...
     const authorizer = new CfnAuthorizer(this, 'cfnAuth', {
       name: `${id}_authorizer`,
       type: AuthorizationType.COGNITO,
@@ -396,12 +373,16 @@ export class BackendStack extends cdk.Stack {
     // WebSocket
     // https://github.com/aws-samples/aws-cdk-examples/pull/325/files
     ////////
-    const webSocketApi = new CfnApi(this, "ChimeMessageAPI", {
+
+    // API Gateway
+    const webSocketApi = new v2.CfnApi(this, "ChimeMessageAPI", {
       name: "ChimeMessageAPI",
       protocolType: "WEBSOCKET",
       routeSelectionExpression: "$request.body.action",
     });
 
+    //// Lambda Function
+    // (1) connect
     const lambdaFuncMessageConnect = new lambda.Function(this, 'ChimeMessageAPIConnect', {
       code: lambda.Code.asset(`${__dirname}/lambda`),
       handler: 'message.connect',
@@ -411,6 +392,7 @@ export class BackendStack extends cdk.Stack {
     });
     addCommonSetting(lambdaFuncMessageConnect)
 
+    // (2) disconnect
     const lambdaFuncMessageDisconnect = new lambda.Function(this, 'ChimeMessageAPIDisconnect', {
       code: lambda.Code.asset(`${__dirname}/lambda`),
       handler: 'message.disconnect',
@@ -420,6 +402,8 @@ export class BackendStack extends cdk.Stack {
     });
     addCommonSetting(lambdaFuncMessageDisconnect)
 
+
+    // (3) message
     const lambdaFuncMessageMessage = new lambda.Function(this, 'ChimeMessageAPIMessage', {
       code: lambda.Code.asset(`${__dirname}/lambda`),
       handler: 'message.message',
@@ -430,12 +414,24 @@ export class BackendStack extends cdk.Stack {
     addCommonSetting(lambdaFuncMessageMessage)
 
 
+    // (4) auth
+    const lambdaFuncMessageAuth = new lambda.Function(this, 'ChimeMessageAPIAuth', {
+      code: lambda.Code.asset(`${__dirname}/lambda`),
+      handler: 'message.authorize',
+      runtime: lambda.Runtime.NODEJS_12_X,
+      timeout: Duration.seconds(300),
+      memorySize: 256,
+    });
+    addCommonSetting(lambdaFuncMessageAuth)
+
     const policy = new PolicyStatement({
       effect: Effect.ALLOW,
       resources: [
         lambdaFuncMessageConnect.functionArn,
         lambdaFuncMessageDisconnect.functionArn,
-        lambdaFuncMessageMessage.functionArn
+        lambdaFuncMessageMessage.functionArn,
+        lambdaFuncMessageAuth.functionArn,
+
       ],
       actions: ["lambda:InvokeFunction"]
     });
@@ -445,55 +441,78 @@ export class BackendStack extends cdk.Stack {
     });
     role.addToPolicy(policy);
 
-
-    const connectIntegration = new CfnIntegration(this, "ChimeMessageAPIConnectIntegration", {
+    const messageAuthorizer = new v2.CfnAuthorizer(this, 'messageAuthorizer', {
+      name: `${id}_authorizer`,
+      authorizerType: 'REQUEST',
+      identitySource: [],
       apiId: webSocketApi.ref,
-      integrationType: "AWS_PROXY",
-      integrationUri: "arn:aws:apigateway:" + "us-east-1" + ":lambda:path/2015-03-31/functions/" + lambdaFuncMessageConnect.functionArn + "/invocations",
-      credentialsArn: role.roleArn,
-    })
-
-    const disconnectIntegration = new CfnIntegration(this, "ChimeMessageAPIDisconnectIntegration", {
-      apiId: webSocketApi.ref,
-      integrationType: "AWS_PROXY",
-      integrationUri: "arn:aws:apigateway:" + "us-east-1" + ":lambda:path/2015-03-31/functions/" + lambdaFuncMessageDisconnect.functionArn + "/invocations",
-      credentialsArn: role.roleArn,
-    })
-
-    const messageIntegration = new CfnIntegration(this, "ChimeMessageAPIMessageIntegration", {
-      apiId: webSocketApi.ref,
-      integrationType: "AWS_PROXY",
-      integrationUri: "arn:aws:apigateway:" + "us-east-1" + ":lambda:path/2015-03-31/functions/" + lambdaFuncMessageMessage.functionArn + "/invocations",
-      credentialsArn: role.roleArn,
+      authorizerUri: `arn:aws:apigateway:${this.region}:lambda:path/2015-03-31/functions/${lambdaFuncMessageAuth.functionArn}/invocations`,
+      authorizerCredentialsArn:role.roleArn
     })
 
 
-    const connectRoute = new CfnRoute(this, "connectRoute", {
+    //// Integration
+    const connectIntegration = new v2.CfnIntegration(this, "ChimeMessageAPIConnectIntegration", {
+      apiId: webSocketApi.ref,
+      integrationType: "AWS_PROXY",
+      integrationUri: "arn:aws:apigateway:" + this.region + ":lambda:path/2015-03-31/functions/" + lambdaFuncMessageConnect.functionArn + "/invocations",
+      credentialsArn: role.roleArn,
+    })
+
+    const disconnectIntegration = new v2.CfnIntegration(this, "ChimeMessageAPIDisconnectIntegration", {
+      apiId: webSocketApi.ref,
+      integrationType: "AWS_PROXY",
+      integrationUri: "arn:aws:apigateway:" + this.region + ":lambda:path/2015-03-31/functions/" + lambdaFuncMessageDisconnect.functionArn + "/invocations",
+      credentialsArn: role.roleArn,
+    })
+
+    const messageIntegration = new v2.CfnIntegration(this, "ChimeMessageAPIMessageIntegration", {
+      apiId: webSocketApi.ref,
+      integrationType: "AWS_PROXY",
+      integrationUri: "arn:aws:apigateway:" + this.region + ":lambda:path/2015-03-31/functions/" + lambdaFuncMessageMessage.functionArn + "/invocations",
+      credentialsArn: role.roleArn,
+    })
+
+
+    // const messageAuthorizer = new CfnAuthorizer(this, 'cfnMessageAuth', {
+    //   name: `${id}_messageAuthorizer`,
+    //   type: "TOKEN",
+    //   restApiId: restApi.restApiId,
+    //   identitySource: 'method.request.header.Authorization',
+    //   authorizerCredentials: role.roleArn,
+    //   authorizerUri: `arn:aws:apigateway:${this.region}:lambda:path/2015-03-31/functions/${lambdaFuncMessageAuth.functionArn}/invocations`,
+    // })    
+
+    //// Route
+    const connectRoute = new v2.CfnRoute(this, "connectRoute", {
       apiId: webSocketApi.ref,
       routeKey: "$connect",
-      authorizationType: "NONE",
+      authorizationType: AuthorizationType.CUSTOM,
+      //authorizationType: "NONE",
       target: "integrations/" + connectIntegration.ref,
+      authorizerId: messageAuthorizer.ref
     });
 
-    const disconnectRoute = new CfnRoute(this, "disconnectRoute", {
+    const disconnectRoute = new v2.CfnRoute(this, "disconnectRoute", {
       apiId: webSocketApi.ref,
       routeKey: "$disconnect",
       authorizationType: "NONE",
       target: "integrations/" + disconnectIntegration.ref,
     });
 
-    const messageRoute = new CfnRoute(this, "messageRoute", {
+    const messageRoute = new v2.CfnRoute(this, "messageRoute", {
       apiId: webSocketApi.ref,
       routeKey: "sendmessage",
       authorizationType: "NONE",
       target: "integrations/" + messageIntegration.ref,
     });
 
-    const deployment = new CfnDeployment(this, 'ChimeMessageAPIDep', {
+    //// Deploy
+    const deployment = new v2.CfnDeployment(this, 'ChimeMessageAPIDep', {
       apiId: webSocketApi.ref
     });
 
-    const stage = new CfnStage(this, `ChimeMessageAPIStage`, {
+    const stage = new v2.CfnStage(this, `ChimeMessageAPIStage`, {
       apiId: webSocketApi.ref,
       autoDeploy: true,
       deploymentId: deployment.ref,
