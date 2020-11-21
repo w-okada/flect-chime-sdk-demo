@@ -119,13 +119,18 @@ export const MeetingFormStateProvider = ({ children }: Props) => {
             const joinInfo = await joinMeeting(validMeetingName, attendeeName, userId, idToken, accessToken, refreshToken);
             console.log("JoinInfo:", joinInfo )
 
+            const meetingInfo = joinInfo.Meeting
+            const attendeeInfo = joinInfo.Attendee
+
+
             await meetingManager.join({
-                meetingInfo: joinInfo.Meeting,
-                attendeeInfo: joinInfo.Attendee
+                meetingInfo: meetingInfo,
+                attendeeInfo: attendeeInfo
             });
 
+
             setIsLoading(false);
-            setAppMeetingInfo(joinInfo.Meeting.MeetingId, meetingName, joinInfo.Attendee.AttendeeId, attendeeName, region);
+            setAppMeetingInfo(meetingInfo.MeetingId, meetingName, attendeeInfo.AttendeeId, attendeeName, region, attendeeInfo.JoinToken);
             history.push(routes.DEVICE);
         } catch (error) {
             setIsLoading(false);

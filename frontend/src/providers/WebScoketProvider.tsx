@@ -29,7 +29,8 @@ export const useWebSocketState = (): WebSocketStateValue => {
 }
 
 export const WebSocketStateProvider = ({ children }: Props) => {
-    const messagingURLWithQuery = `${WebSocketEndpoint}/Prod?joinToken=${"a"}&meetingId=${"b"}&attendeeId=${"c"}`
+    const {meetingId, localUserId, joinToken } = useAppState()
+    const messagingURLWithQuery = `${WebSocketEndpoint}/Prod?joinToken=${joinToken}&meetingId=${meetingId}&attendeeId=${localUserId}`
     console.log("MESSAGEING_URL", messagingURLWithQuery)
     
     const [webSocket] = useState( (() => {
@@ -41,6 +42,7 @@ export const WebSocketStateProvider = ({ children }: Props) => {
             new FullJitterBackoff(1000, 0, 10000)
         )
         ws.open(20 * 1000)
+        console.log("WebSocket Created!!")
         return ws
     })())
 

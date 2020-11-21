@@ -1,18 +1,19 @@
 
 var utils = require('./utils')
 var AWS = require('aws-sdk');
+const chime = new AWS.Chime({ region: 'us-east-1' });
 
 const generatePolicy = (principalId, effect, resource, context) => {
     const authResponse = {};
     authResponse.principalId = principalId;
     if (effect && resource) {
-        const policyDocument        = {};
-        policyDocument.Version      = '2012-10-17';
-        policyDocument.Statement    = [];
-        const statementOne          = {};
-        statementOne.Action         = 'execute-api:Invoke';
-        statementOne.Effect         = effect;
-        statementOne.Resource       = resource;
+        const policyDocument = {};
+        policyDocument.Version = '2012-10-17';
+        policyDocument.Statement = [];
+        const statementOne = {};
+        statementOne.Action = 'execute-api:Invoke';
+        statementOne.Effect = effect;
+        statementOne.Resource = resource;
         policyDocument.Statement[0] = statementOne;
         authResponse.policyDocument = policyDocument;
     }
@@ -29,41 +30,25 @@ exports.authorize = async (event, context, callback) => {
         !!event.queryStringParameters.attendeeId &&
         !!event.queryStringParameters.joinToken
     ) {
+        console.log("meetingId:", event.queryStringParameters.meetingId)
+        console.log("attendeeId:", event.queryStringParameters.attendeeId)
+        console.log("joinToken:", event.queryStringParameters.joinToken)
         try {
-            //   attendeeInfo = await chime
-            //     .getAttendee({
-            //       MeetingId: event.queryStringParameters.MeetingId,
-            //       AttendeeId: event.queryStringParameters.AttendeeId
-            //     })
-            //     .promise();
-            //   if (
-            //     attendeeInfo.Attendee.JoinToken ===
-            //     event.queryStringParameters.JoinToken
-            //   ) {
-            //     passedAuthCheck = true;
-            //   } else if (strictVerify) {
-            //     console.error('failed to authenticate with join token');
-            //   } else {
-            //     passedAuthCheck = true;
-            //     console.warn(
-            //       'failed to authenticate with join token (skipping due to strictVerify=false)'
-            //     );
-            //   }
-            passedAuthCheck = true;
-        } catch (e) {
-            if (strictVerify) {
-                console.error(`failed to authenticate with join token: ${e.message}`);
-            } else {
+            attendeeInfo = await chime.getAttendee({
+                    MeetingId: event.queryStringParameters.meetingId,
+                    AttendeeId: event.queryStringParameters.attendeeId
+                }).promise();
+            if (attendeeInfo.Attendee.JoinToken === event.queryStringParameters.joinToken) {
                 passedAuthCheck = true;
-                console.warn(
-                    `failed to authenticate with join token (skipping due to strictVerify=false): ${e.message}`
-                );
+            } else {
+                console.error('failed to authenticate with join token');
             }
+        } catch (e) {
+            console.error(`failed to authenticate with join token: ${e.message}`);
         }
     } else {
         console.error('missing MeetingId, AttendeeId, JoinToken parameters');
     }
-    passedAuthCheck = true
     return generatePolicy(
         'me',
         passedAuthCheck ? 'Allow' : 'Deny',

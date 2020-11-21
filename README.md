@@ -34,3 +34,7 @@ $ cdk destroy
 ```
 $ sudo npm update -g aws-cdk
 ```
+## tail Log
+```
+aws logs tail --follow  API-Gateway-Execution-Logs_gvr36meb89/prod
+```
