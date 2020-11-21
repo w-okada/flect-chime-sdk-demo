@@ -188,8 +188,8 @@ export const CustomVideoTile = forwardRef(
                         }
                         return drawingData
                     }else{ // heightにあまりがある
-                        const trueWidth = canvasEl.current!.width * rateY
-                        const trueHeight = canvasEl.current!.height * rateY
+                        const trueWidth = canvasEl.current!.width * rateX
+                        const trueHeight = canvasEl.current!.height * rateX
                         const restH = (height - trueHeight) / 2
                         const startX = e.offsetX - e.movementX
                         const startY = e.offsetY - restH - e.movementY
