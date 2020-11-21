@@ -14,3 +14,23 @@ $ npm install
 $ npm run build_all
 ```
 
+## Build frontend
+```
+$ cd frontend
+$ npm install
+$ npm run build
+$ 
+
+```
+
+
+# Delete Stack
+```
+$ cdk destroy
+```
+
+# Appendix
+## update cdk
+```
+$ sudo npm update -g aws-cdk
+```

@@ -28,7 +28,7 @@ export type DrawingData = {
     lineWidth: number
 }
 
-type DataMessageType = "CHAT" | "STAMP" | "WHITEBOARD"
+type DataMessageType = "WHITEBOARD"
 type RealtimeDataAction = "sendmessage"
 type RealtimeDataCmd = "TEXT" | "WHITEBOARD"
 type DrawingCmd = "DRAW" | "ERASE" | "CLEAR"

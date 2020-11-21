@@ -14,6 +14,7 @@ import MeetingMetrics from '../../containers/MeetingMetrics';
 import { useVideoEffectState } from '../../providers/VideoEffectProvider';
 import { RealitimeSubscribeStateProvider } from '../../providers/RealtimeSubscribeProvider';
 import CustomVideoTileGrid from '../../containers/CustomVideoTileGrid';
+import { WebSocketStateProvider } from '../../providers/WebScoketProvider';
 
 
 const MeetingView = () => {
@@ -51,17 +52,19 @@ const MeetingView = () => {
     // <UserActivityProvider>
     <StyledLayout showNav={showNavbar} showRoster={showRoster || showChatView || showWhiteboardView}>
       <RealitimeSubscribeStateProvider>
-        <StyledContent>
+        <WebSocketStateProvider>
+          <StyledContent>
 
-          <MeetingMetrics />
-          <CustomVideoTileGrid
-            className="videos"
-            noRemoteVideoView={<MeetingDetails />}
-          />
-          <MeetingControls />
+            <MeetingMetrics />
+            <CustomVideoTileGrid
+              className="videos"
+              noRemoteVideoView={<MeetingDetails />}
+            />
+            <MeetingControls />
 
-        </StyledContent>
-        <NavigationControl />
+          </StyledContent>
+          <NavigationControl />
+        </WebSocketStateProvider>
       </RealitimeSubscribeStateProvider>
     </StyledLayout>
     // </UserActivityProvider>

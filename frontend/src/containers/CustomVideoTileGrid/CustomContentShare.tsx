@@ -11,7 +11,7 @@ import { CustomStyledVideoTile } from './CustomStyledVideoTile';
 import { useRealitimeSubscribeState, DrawingData, RealtimeData } from '../../providers/RealtimeSubscribeProvider';
 
 type ObjectFit = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
-
+const THROTTLE_MSEC = 20
 
 class SharedContentDrawer {
 
@@ -114,6 +114,7 @@ export interface VideoTileProps
     objectFit?: ObjectFit;
 }
 
+
 export const CustomVideoTile = forwardRef(
     (props: VideoTileProps, ref: React.Ref<HTMLVideoElement>) => {
         const { tag, className, nameplate, ...rest } = props;
@@ -125,6 +126,7 @@ export const CustomVideoTile = forwardRef(
         const [inDrawing, setInDrawing] = useState(false)
         const [previousPosition, setPreviousPosition] = useState([0,0])
         const {sendWhiteBoardData, whiteboardData, drawingMode, drawingStroke} = useRealitimeSubscribeState()
+        const [lastSendingTime, setLastSendingTime] = useState(Date.now())
 
         const drawer = SharedContentDrawer.getInstance()
         drawer.whiteboardData = whiteboardData
@@ -153,68 +155,78 @@ export const CustomVideoTile = forwardRef(
             };
         }, [audioVideo, tileId]);
 
-        const drawingStart = (e: MouseEvent) => {setInDrawing(true)}
+        const drawingStart = (e: MouseEvent) => {
+            setInDrawing(true)
+            setPreviousPosition([e.offsetX, e.offsetY])
+        }
         const drawingEnd = (e: MouseEvent) => {setInDrawing(false)}
         const drawing = (e: MouseEvent) => {
-//            if(inDrawing && this.state.inDrawingMode && this.state.enableDrawing){
+            if( Date.now() - lastSendingTime  < THROTTLE_MSEC){
+                return
+            }
             if(inDrawing){
-
-                const cs = getComputedStyle(canvasEl.current!)
-                const width = parseInt(cs.getPropertyValue("width"))
-                const height = parseInt(cs.getPropertyValue("height"))
-
-                const rateX = width / canvasEl.current!.width
-                const rateY = height / canvasEl.current!.height
-                const drawingData = (()=>{
-                    if(rateX > rateY){ //  widthにあまりがある。
-                        const trueWidth = canvasEl.current!.width * rateY
-                        const trueHeight = canvasEl.current!.height * rateY
-                        const restW = (width - trueWidth) / 2
-                        const startX = e.offsetX - restW - e.movementX
-                        const startY = e.offsetY - e.movementY
-    
-                        const startXR = startX / trueWidth
-                        const startYR = startY / trueHeight
-                        const endXR   = (e.offsetX - restW) / trueWidth
-                        const endYR   = e.offsetY / trueHeight
-                        const drawingData:DrawingData = {
-                            drawingCmd: drawingMode==="DRAW" ? "DRAW" : "ERASE",
-                            startXR: startXR,
-                            startYR: startYR,
-                            endXR: endXR,
-                            endYR: endYR,
-                            stroke: drawingStroke,
-                            lineWidth: 2
-                        }
-                        return drawingData
-                    }else{ // heightにあまりがある
-                        const trueWidth = canvasEl.current!.width * rateX
-                        const trueHeight = canvasEl.current!.height * rateX
-                        const restH = (height - trueHeight) / 2
-                        const startX = e.offsetX - e.movementX
-                        const startY = e.offsetY - restH - e.movementY
-    
-                        const startXR = startX / trueWidth
-                        const startYR = startY / trueHeight
-                        const endXR   = e.offsetX / trueWidth
-                        const endYR   = (e.offsetY - restH) / trueHeight
-                        const drawingData:DrawingData = {
-                            drawingCmd: drawingMode==="DRAW" ? "DRAW" : "ERASE",
-                            startXR: startXR,
-                            startYR: startYR,
-                            endXR: endXR,
-                            endYR: endYR,
-                            stroke: drawingStroke,
-                            lineWidth: 2
-                        }
-                        return drawingData
-                    }
-                })()
+                const startX = previousPosition[0]
+                const startY = previousPosition[1]
+                const endX = e.offsetX
+                const endY = e.offsetY             
+                const drawingData = generateDrawingData(startX, startY, endX, endY)
                 sendWhiteBoardData(drawingData)
-                //console.log("CS: ",cs)
+                setLastSendingTime(Date.now())
+                setPreviousPosition([e.offsetX, e.offsetY])
             }
         }
 
+        const generateDrawingData = (startX:number, startY:number, endX:number, endY:number) => {
+            const cs = getComputedStyle(canvasEl.current!)
+            const width = parseInt(cs.getPropertyValue("width"))
+            const height = parseInt(cs.getPropertyValue("height"))
+            const rateX = width / canvasEl.current!.width
+            const rateY = height / canvasEl.current!.height
+
+            const drawingData = (()=>{
+                if(rateX > rateY){ //  widthにあまりがある。
+                    const trueWidth = canvasEl.current!.width * rateY
+                    const trueHeight = canvasEl.current!.height * rateY
+                    const restW = (width - trueWidth) / 2
+
+                    const startXR = (startX - restW) / trueWidth
+                    const startYR = startY / trueHeight
+                    const endXR   = (endX - restW) / trueWidth
+                    const endYR   = endY / trueHeight
+                    const drawingData:DrawingData = {
+                        drawingCmd: drawingMode==="DRAW" ? "DRAW" : "ERASE",
+                        startXR: startXR,
+                        startYR: startYR,
+                        endXR: endXR,
+                        endYR: endYR,
+                        stroke: drawingStroke,
+                        lineWidth: 2
+                    }
+                    console.log(drawingData)
+                    return drawingData                    
+                }else{ // heightにあまりがある
+                    const trueWidth = canvasEl.current!.width * rateX
+                    const trueHeight = canvasEl.current!.height * rateX
+                    const restH = (height - trueHeight) / 2
+
+                    const startXR = startX / trueWidth
+                    const startYR = (startY - restH) / trueHeight
+                    const endXR   = endX / trueWidth
+                    const endYR   = (endY - restH) / trueHeight
+                    const drawingData:DrawingData = {
+                        drawingCmd: drawingMode==="DRAW" ? "DRAW" : "ERASE",
+                        startXR: startXR,
+                        startYR: startYR,
+                        endXR: endXR,
+                        endYR: endYR,
+                        stroke: drawingStroke,
+                        lineWidth: 2
+                    }
+                    return drawingData
+                }
+            })()
+            return drawingData
+        }
         const touchStart = (e: TouchEvent) => {
             setInDrawing(true)
             const x = e.changedTouches[0].clientX - canvasEl.current!.getBoundingClientRect().left
@@ -226,11 +238,22 @@ export const CustomVideoTile = forwardRef(
         }
         const touchMove = (e: TouchEvent) => {
             e.preventDefault(); 
-            const prevX = previousPosition[0]
-            const prevY = previousPosition[1]
-            const thisTimeX = e.changedTouches[0].clientX - canvasEl.current!.getBoundingClientRect().left
-            const thisTimeY = e.changedTouches[0].clientY - canvasEl.current!.getBoundingClientRect().top
-            console.log(prevX, prevY, thisTimeX, thisTimeY)
+            if( Date.now() - lastSendingTime  < THROTTLE_MSEC){
+                return
+            }
+
+            if(inDrawing){
+                const startX = previousPosition[0]
+                const startY = previousPosition[1]
+                const endX = e.changedTouches[0].clientX - canvasEl.current!.getBoundingClientRect().left
+                const endY = e.changedTouches[0].clientY - canvasEl.current!.getBoundingClientRect().top
+                const drawingData = generateDrawingData(startX, startY, endX, endY)
+                console.log(startX, startY, endX, endY)
+                console.log(drawingData)
+                sendWhiteBoardData(drawingData)
+                setPreviousPosition([endX, endY])
+                setLastSendingTime(Date.now())
+            }
         }
 
         useEffect(()=>{

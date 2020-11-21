@@ -4,11 +4,13 @@ import {
   RestApi, Integration, LambdaIntegration, Resource,
   MockIntegration, PassthroughBehavior, EmptyModel, Cors, AuthorizationType, CfnAuthorizer, LambdaRestApi, IResource
 } from "@aws-cdk/aws-apigateway"
+import { CfnApi, CfnDeployment, CfnIntegration, CfnRoute, CfnStage } from "@aws-cdk/aws-apigatewayv2";
+
 import { UserPool, UserPoolClient } from "@aws-cdk/aws-cognito"
-import {Table, AttributeType, ProjectionType, } from "@aws-cdk/aws-dynamodb";
-import { CfnOutput, Duration } from '@aws-cdk/core';
+import { Table, AttributeType, ProjectionType, } from "@aws-cdk/aws-dynamodb";
+import { CfnOutput, Duration, ConcreteDependable } from '@aws-cdk/core';
 import * as s3 from '@aws-cdk/aws-s3'
-import { ManagedPolicy, Effect, PolicyStatement} from '@aws-cdk/aws-iam'
+import { ManagedPolicy, Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 import { Role, ServicePrincipal } from "@aws-cdk/aws-iam";
 import { FRONTEND_LOCAL_DEV } from '../bin/config';
 
@@ -45,9 +47,9 @@ export class BackendStack extends cdk.Stack {
       effect: Effect.ALLOW,
     })
     statement.addActions(
-      "cognito-idp:GetUser", 
+      "cognito-idp:GetUser",
       "cognito-idp:AdminGetUser",
-      
+
       'chime:CreateMeeting',
       'chime:DeleteMeeting',
       'chime:GetMeeting',
@@ -56,7 +58,8 @@ export class BackendStack extends cdk.Stack {
       'chime:CreateAttendee',
       'chime:DeleteAttendee',
       'chime:GetAttendee',
-      'chime:ListAttendees'
+      'chime:ListAttendees',
+
     )
     statement.addResources(userPool.userPoolArn)
     statement.addResources("arn:*:chime::*:meeting/*")
@@ -67,7 +70,7 @@ export class BackendStack extends cdk.Stack {
     const bucket = new s3.Bucket(this, 'StaticSiteBucket', {
       bucketName: (`${id}-Bucket`).toLowerCase(),
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      publicReadAccess: true
+      publicReadAccess: true,
     })
 
 
@@ -82,20 +85,20 @@ export class BackendStack extends cdk.Stack {
         name: "MeetingName",
         type: AttributeType.STRING,
       },
-      readCapacity:2,
-      writeCapacity:2,
+      readCapacity: 2,
+      writeCapacity: 2,
       removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
     });
 
     meetingTable.addGlobalSecondaryIndex({
-      indexName:"MeetingId",
-      partitionKey:{
-        name:"MeetingId", type:AttributeType.STRING
+      indexName: "MeetingId",
+      partitionKey: {
+        name: "MeetingId", type: AttributeType.STRING
       },
       projectionType: ProjectionType.ALL,
-      readCapacity:2,
-      writeCapacity:2
-    })    
+      readCapacity: 2,
+      writeCapacity: 2
+    })
 
     //// (2) Attendee Table
     const attendeeTable = new Table(this, "attendeeTable", {
@@ -104,20 +107,34 @@ export class BackendStack extends cdk.Stack {
         name: "AttendeeId",
         type: AttributeType.STRING,
       },
-      readCapacity:2,
-      writeCapacity:2,
+      readCapacity: 2,
+      writeCapacity: 2,
       removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
     });
 
-
+    //// (3) Connection Table
+    const connectionTable = new Table(this, "connectionTable", {
+      tableName: `${id}_connectionTable`,
+      partitionKey: {
+        name: "MeetingId",
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: "AttendeeId",
+        type: AttributeType.STRING,
+      },
+      readCapacity: 2,
+      writeCapacity: 2,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
+    });
 
 
     ///////////////////////////////
     //// Lambda Layers
     ///////////////////////////////
     // ( - ) Lambda Layer
-    const nodeModulesLayer = new lambda.LayerVersion(this, 'NodeModulesLayer',{
-      layerVersionName:`${id}_LambdaLayer`,
+    const nodeModulesLayer = new lambda.LayerVersion(this, 'NodeModulesLayer', {
+      layerVersionName: `${id}_LambdaLayer`,
       code: lambda.AssetCode.fromAsset(`${__dirname}/layer`),
       compatibleRuntimes: [lambda.Runtime.NODEJS_12_X]
     });
@@ -139,14 +156,16 @@ export class BackendStack extends cdk.Stack {
     //   f.addEnvironment("USER_POOL_ID",         userPool.userPoolId)
     //   f.addLayers(nodeModulesLayer)
     // }
-    const addCommonSetting = (f:lambda.Function)=>{
+    const addCommonSetting = (f: lambda.Function) => {
       meetingTable.grantFullAccess(f)
       attendeeTable.grantFullAccess(f)
+      connectionTable.grantFullAccess(f)
       f.addToRolePolicy(statement)
 
-      f.addEnvironment("MEETING_TABLE_NAME",   meetingTable.tableName)
-      f.addEnvironment("ATTENDEE_TABLE_NAME",  attendeeTable.tableName)
-      f.addEnvironment("USER_POOL_ID",         userPool.userPoolId)
+      f.addEnvironment("MEETING_TABLE_NAME", meetingTable.tableName)
+      f.addEnvironment("ATTENDEE_TABLE_NAME", attendeeTable.tableName)
+      f.addEnvironment("CONNECTION_TABLE_NAME", connectionTable.tableName)
+      f.addEnvironment("USER_POOL_ID", userPool.userPoolId)
       f.addLayers(nodeModulesLayer)
     }
 
@@ -160,7 +179,7 @@ export class BackendStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(10),
     })
     addCommonSetting(lambdaFunctionGetRoot)
-    
+
 
     //// (2-1) Get Meetings
     const lambdaFunctionGetMeetings: lambda.Function = new lambda.Function(this, "funcGetMeetings", {
@@ -236,11 +255,11 @@ export class BackendStack extends cdk.Stack {
     //// ( - ) Utility
     // https://github.com/aws/aws-cdk/issues/906
     const addCorsOptions = (apiResource: IResource) => {
-      let origin 
-      if(FRONTEND_LOCAL_DEV){
+      let origin
+      if (FRONTEND_LOCAL_DEV) {
         // origin = "'https://localhost:3000'"
         origin = "'https://192.168.1.4:3000'"
-      }else{
+      } else {
         origin = `'https://${bucket.bucketDomainName}'`
       }
       apiResource.addMethod('OPTIONS', new MockIntegration({
@@ -296,7 +315,7 @@ export class BackendStack extends cdk.Stack {
     const root = restApi.root
     addCorsOptions(root)
     const addRoot = root.addMethod("GET", new LambdaIntegration(lambdaFunctionGetRoot), {
-      operationName:`${id}_getRoot`,
+      operationName: `${id}_getRoot`,
       authorizationType: AuthorizationType.COGNITO,
       authorizer: {
         authorizerId: authorizer.ref
@@ -305,12 +324,12 @@ export class BackendStack extends cdk.Stack {
 
     //// (2) Meeting
     const apiMeetings = restApi.root.addResource("meetings")
-    const apiMeeting  = apiMeetings.addResource("{meetingName}")
+    const apiMeeting = apiMeetings.addResource("{meetingName}")
     addCorsOptions(apiMeetings)
     addCorsOptions(apiMeeting)
     //// (2-1) Get Meetings
     apiMeetings.addMethod("GET", new LambdaIntegration(lambdaFunctionGetMeetings), {
-      operationName:`${id}_getMeetings`,
+      operationName: `${id}_getMeetings`,
       authorizationType: AuthorizationType.COGNITO,
       authorizer: {
         authorizerId: authorizer.ref
@@ -319,7 +338,7 @@ export class BackendStack extends cdk.Stack {
 
     //// (2-2) Post Meeting
     apiMeetings.addMethod("POST", new LambdaIntegration(lambdaFunctionPostMeeting), {
-      operationName:`${id}_postMeeting`,
+      operationName: `${id}_postMeeting`,
       authorizationType: AuthorizationType.COGNITO,
       authorizer: {
         authorizerId: authorizer.ref
@@ -327,8 +346,8 @@ export class BackendStack extends cdk.Stack {
     })
 
     //// (2-3) Delete Meeting
-    apiMeeting.addMethod("DELETE", new LambdaIntegration(lambdaFunctionDeleteMeeting),{
-      operationName:`${id}_deleteMeeting`,
+    apiMeeting.addMethod("DELETE", new LambdaIntegration(lambdaFunctionDeleteMeeting), {
+      operationName: `${id}_deleteMeeting`,
       authorizationType: AuthorizationType.COGNITO,
       authorizer: {
         authorizerId: authorizer.ref
@@ -338,13 +357,13 @@ export class BackendStack extends cdk.Stack {
 
     ///// (3) Attendee
     const apiAttendees = apiMeeting.addResource("attendees")
-    const apiAttendee  = apiAttendees.addResource("{userId}")
+    const apiAttendee = apiAttendees.addResource("{userId}")
     addCorsOptions(apiAttendees)
     addCorsOptions(apiAttendee)
 
     //// (3-1) Get Attendee
     apiAttendee.addMethod("GET", new LambdaIntegration(lambdaFunctionGetAttendee), {
-      operationName:`${id}_postAttendee`,
+      operationName: `${id}_postAttendee`,
       authorizationType: AuthorizationType.COGNITO,
       authorizer: {
         authorizerId: authorizer.ref
@@ -353,7 +372,7 @@ export class BackendStack extends cdk.Stack {
 
     //// (3-2) Post Attendee
     apiAttendees.addMethod("POST", new LambdaIntegration(lambdaFunctionPostAttendee), {
-      operationName:`${id}_postAttendee`,
+      operationName: `${id}_postAttendee`,
       authorizationType: AuthorizationType.COGNITO,
       authorizer: {
         authorizerId: authorizer.ref
@@ -365,13 +384,129 @@ export class BackendStack extends cdk.Stack {
     addCorsOptions(apiLogs)
     //// (4-1) Post Log
     apiLogs.addMethod("POST", new LambdaIntegration(lambdaFunctionPostLog), {
-      operationName:`${id}_postLog`,
+      operationName: `${id}_postLog`,
       // authorizationType: AuthorizationType.COGNITO,
       // authorizer: {
       //   authorizerId: authorizer.ref
       // },
     })
-    
+
+
+    /////////
+    // WebSocket
+    // https://github.com/aws-samples/aws-cdk-examples/pull/325/files
+    ////////
+    const webSocketApi = new CfnApi(this, "ChimeMessageAPI", {
+      name: "ChimeMessageAPI",
+      protocolType: "WEBSOCKET",
+      routeSelectionExpression: "$request.body.action",
+    });
+
+    const lambdaFuncMessageConnect = new lambda.Function(this, 'ChimeMessageAPIConnect', {
+      code: lambda.Code.asset(`${__dirname}/lambda`),
+      handler: 'message.connect',
+      runtime: lambda.Runtime.NODEJS_12_X,
+      timeout: Duration.seconds(300),
+      memorySize: 256,
+    });
+    addCommonSetting(lambdaFuncMessageConnect)
+
+    const lambdaFuncMessageDisconnect = new lambda.Function(this, 'ChimeMessageAPIDisconnect', {
+      code: lambda.Code.asset(`${__dirname}/lambda`),
+      handler: 'message.disconnect',
+      runtime: lambda.Runtime.NODEJS_12_X,
+      timeout: Duration.seconds(300),
+      memorySize: 256,
+    });
+    addCommonSetting(lambdaFuncMessageDisconnect)
+
+    const lambdaFuncMessageMessage = new lambda.Function(this, 'ChimeMessageAPIMessage', {
+      code: lambda.Code.asset(`${__dirname}/lambda`),
+      handler: 'message.message',
+      runtime: lambda.Runtime.NODEJS_12_X,
+      timeout: Duration.seconds(300),
+      memorySize: 256,
+    });
+    addCommonSetting(lambdaFuncMessageMessage)
+
+
+    const policy = new PolicyStatement({
+      effect: Effect.ALLOW,
+      resources: [
+        lambdaFuncMessageConnect.functionArn,
+        lambdaFuncMessageDisconnect.functionArn,
+        lambdaFuncMessageMessage.functionArn
+      ],
+      actions: ["lambda:InvokeFunction"]
+    });
+
+    const role = new Role(this, `ChimeMessageAPIRole`, {
+      assumedBy: new ServicePrincipal("apigateway.amazonaws.com")
+    });
+    role.addToPolicy(policy);
+
+
+    const connectIntegration = new CfnIntegration(this, "ChimeMessageAPIConnectIntegration", {
+      apiId: webSocketApi.ref,
+      integrationType: "AWS_PROXY",
+      integrationUri: "arn:aws:apigateway:" + "us-east-1" + ":lambda:path/2015-03-31/functions/" + lambdaFuncMessageConnect.functionArn + "/invocations",
+      credentialsArn: role.roleArn,
+    })
+
+    const disconnectIntegration = new CfnIntegration(this, "ChimeMessageAPIDisconnectIntegration", {
+      apiId: webSocketApi.ref,
+      integrationType: "AWS_PROXY",
+      integrationUri: "arn:aws:apigateway:" + "us-east-1" + ":lambda:path/2015-03-31/functions/" + lambdaFuncMessageDisconnect.functionArn + "/invocations",
+      credentialsArn: role.roleArn,
+    })
+
+    const messageIntegration = new CfnIntegration(this, "ChimeMessageAPIMessageIntegration", {
+      apiId: webSocketApi.ref,
+      integrationType: "AWS_PROXY",
+      integrationUri: "arn:aws:apigateway:" + "us-east-1" + ":lambda:path/2015-03-31/functions/" + lambdaFuncMessageMessage.functionArn + "/invocations",
+      credentialsArn: role.roleArn,
+    })
+
+
+    const connectRoute = new CfnRoute(this, "connectRoute", {
+      apiId: webSocketApi.ref,
+      routeKey: "$connect",
+      authorizationType: "NONE",
+      target: "integrations/" + connectIntegration.ref,
+    });
+
+    const disconnectRoute = new CfnRoute(this, "disconnectRoute", {
+      apiId: webSocketApi.ref,
+      routeKey: "$disconnect",
+      authorizationType: "NONE",
+      target: "integrations/" + disconnectIntegration.ref,
+    });
+
+    const messageRoute = new CfnRoute(this, "messageRoute", {
+      apiId: webSocketApi.ref,
+      routeKey: "sendmessage",
+      authorizationType: "NONE",
+      target: "integrations/" + messageIntegration.ref,
+    });
+
+    const deployment = new CfnDeployment(this, 'ChimeMessageAPIDep', {
+      apiId: webSocketApi.ref
+    });
+
+    const stage = new CfnStage(this, `ChimeMessageAPIStage`, {
+      apiId: webSocketApi.ref,
+      autoDeploy: true,
+      deploymentId: deployment.ref,
+      stageName: "Prod"
+    });
+
+    const dependencies = new ConcreteDependable();
+    dependencies.add(connectRoute)
+    dependencies.add(disconnectRoute)
+    dependencies.add(messageRoute)
+    deployment.node.addDependency(dependencies);
+
+
 
 
     ///////////////////////////////
@@ -407,5 +542,9 @@ export class BackendStack extends cdk.Stack {
       value: restApi.url
     })
 
+    new CfnOutput(this, "WebSocketEndpoint", {
+      description: "WebSocketEndpoint",
+      value: webSocketApi.attrApiEndpoint,
+    })
   }
 }
