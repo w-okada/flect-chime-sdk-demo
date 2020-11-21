@@ -17,7 +17,7 @@ import Notifications from './containers/Notifications';
 import ErrorProvider from './providers/ErrorProvider';
 import meetingConfig from './meetingConfig';
 import { NavigationProvider } from './providers/NavigationProvider';
-import { SignIn, Home, DeviceSetup, Meeting} from './views';
+import { SignIn, Home, DeviceSetup, Meeting } from './views';
 import NoMeetingRedirect from './containers/NoMeetingRedirect';
 // import { Meeting, Home, DeviceSetup } from './views';
 import { VideoEffectStateProvider } from './providers/VideoEffectProvider'
@@ -35,8 +35,8 @@ const App: FC = () => (
                 <NavigationProvider>
                   <VideoEffectStateProvider>
                     <Switch>
-                    <Route exact path={routes.HOME} component={Home} />
-                    <Route exact path={routes.SIGNIN} component={SignIn} />
+                      <Route exact path={routes.HOME} component={Home} />
+                      <Route exact path={routes.SIGNIN} component={SignIn} />
                       <Route path={routes.DEVICE}>
                         <NoMeetingRedirect>
                           <DeviceSetup />

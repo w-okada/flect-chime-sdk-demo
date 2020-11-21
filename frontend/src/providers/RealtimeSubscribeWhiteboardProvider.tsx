@@ -5,7 +5,6 @@ import { DataMessage } from "amazon-chime-sdk-js";
 import { v4 } from 'uuid';
 import { useAppState } from "./AppStateProvider";
 import { RealitimeSubscribeChatStateProvider } from "./RealtimeSubscribeChatProvider";
-import { RealitimeSubscribeWhiteboardStateProvider } from "./RealtimeSubscribeWhiteboardProvider";
 
 type Props = {
     children: ReactNode;
@@ -35,7 +34,7 @@ type RealtimeDataCmd = "TEXT" | "WHITEBOARD"
 type DrawingCmd = "DRAW" | "ERASE" | "CLEAR"
 type DrawingMode = "DRAW" | "ERASE" | "DISABLE"
 
-export interface RealitimeSubscribeStateValue {
+export interface RealitimeSubscribeWhiteboardStateValue {
     whiteboardData: RealtimeData[]
     sendWhiteBoardData: (data: DrawingData) => void
     drawingMode: DrawingMode
@@ -44,18 +43,18 @@ export interface RealitimeSubscribeStateValue {
     setDrawingStroke: (stroke: string) => void
 }
 
-export const RealitimeSubscribeStateContext = React.createContext<RealitimeSubscribeStateValue | null>(null)
+export const RealitimeSubscribeWhiteboardStateContext = React.createContext<RealitimeSubscribeWhiteboardStateValue | null>(null)
 
 
-export const useRealitimeSubscribeState = (): RealitimeSubscribeStateValue => {
-    const state = useContext(RealitimeSubscribeStateContext)
+export const useRealitimeSubscribeState = (): RealitimeSubscribeWhiteboardStateValue => {
+    const state = useContext(RealitimeSubscribeWhiteboardStateContext)
     if (!state) {
         throw new Error("Error using RealitimeSubscribe in context!")
     }
     return state
 }
 
-export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
+export const RealitimeSubscribeWhiteboardStateProvider = ({ children }: Props) => {
     const audioVideo = useAudioVideo()
     const { localUserId } = useAppState()
     const [whiteboardData, setWhiteboardData] = useState([] as RealtimeData[])
@@ -72,22 +71,32 @@ export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
             senderId: localUserId
         }
         audioVideo!.realtimeSendDataMessage("WHITEBOARD" as DataMessageType, JSON.stringify(mess))
-        if (data.drawingCmd === "CLEAR") {
-            setWhiteboardData([])
-        } else {
-            setWhiteboardData([...whiteboardData, mess])
-        }
+        newDataHandler(mess)
+        // if (data.drawingCmd === "CLEAR") {
+        //     setWhiteboardData([])
+        // } else {
+        //     setWhiteboardData([...whiteboardData, mess])
+        // }
     }
 
-    const receiveWhiteboardData = (mess: DataMessage) => {
-        const senderId = mess.senderAttendeeId
-        const data = JSON.parse(mess.text()) as RealtimeData
-        data.senderId = senderId
-        console.log(data)
-        if (((data.data) as DrawingData).drawingCmd === "CLEAR") {
+    const receiveWhiteboardData = (dataMessage: DataMessage) => {
+        const senderId = dataMessage.senderAttendeeId
+        const mess = JSON.parse(dataMessage.text()) as RealtimeData
+        mess.senderId = senderId
+        newDataHandler(mess)
+        // console.log(data)
+        // if (((data.data) as DrawingData).drawingCmd === "CLEAR") {
+        //     setWhiteboardData([])
+        // } else {
+        //     setWhiteboardData([...whiteboardData, data])
+        // }
+    }
+
+    const newDataHandler = (realtimeData: RealtimeData) => {
+        if (realtimeData.data.drawingCmd === "CLEAR") {
             setWhiteboardData([])
         } else {
-            setWhiteboardData([...whiteboardData, data])
+            setWhiteboardData([...whiteboardData, realtimeData])
         }
     }
 
@@ -110,13 +119,9 @@ export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
         setDrawingStroke
     }
     return (
-        <RealitimeSubscribeStateContext.Provider value={providerValue}>
-            <RealitimeSubscribeChatStateProvider>
-                <RealitimeSubscribeWhiteboardStateProvider>
-                    {children}
-                </RealitimeSubscribeWhiteboardStateProvider>
-            </RealitimeSubscribeChatStateProvider>
-        </RealitimeSubscribeStateContext.Provider>
+        <RealitimeSubscribeWhiteboardStateContext.Provider value={providerValue}>
+            {children}
+        </RealitimeSubscribeWhiteboardStateContext.Provider>
     )
 }
 

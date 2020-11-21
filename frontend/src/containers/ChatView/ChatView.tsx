@@ -2,6 +2,7 @@ import { useRosterState, Roster, RosterHeader, RosterGroup,   Textarea, PrimaryB
 import { useNavigation } from "../../providers/NavigationProvider";
 import React, { useState } from "react";
 import { useRealitimeSubscribeState } from "../../providers/RealtimeSubscribeProvider";
+import { useRealitimeSubscribeChatState } from "../../providers/RealtimeSubscribeChatProvider";
 
 export interface ChatProps {
   attendeeId: string;
@@ -11,7 +12,7 @@ export interface ChatProps {
 const ChatView = () => {
   const { roster } = useRosterState();
   const { closeChatView } = useNavigation();
-  const { chatData, sendChatData } = useRealitimeSubscribeState()
+  const { chatData, sendChatData } = useRealitimeSubscribeChatState()
   const [ chatMessage, setChatMessage] = useState('');
   
   const attendeeItems = []
@@ -22,7 +23,7 @@ const ChatView = () => {
     const time = (new Date(c.createdDate)).toLocaleTimeString('ja-JP')
 
     attendeeItems.push(
-      <div key={uuid} style={{margin:"5px"}}>
+      <div key={uuid} style={{margin:"5px", wordWrap:"break-word"}}>
         <p style={{color:"green"}}>
         {time}  {senderName}
         </p>
