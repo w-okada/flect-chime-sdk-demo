@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
-import { VideoTileGrid, useMeetingManager } from 'amazon-chime-sdk-component-library-react';
+import { useMeetingManager } from 'amazon-chime-sdk-component-library-react';
 
 import { StyledLayout, StyledContent } from './Styled';
 import NavigationControl from '../../containers/Navigation/NavigationControl';
@@ -22,7 +22,6 @@ const MeetingView = () => {
   const { showNavbar, showRoster, showChatView, showWhiteboardView } = useNavigation();
   const meetingManager = useMeetingManager();
   const { backgroundEffect, setDeviceId } = useVideoEffectState()
-  console.log(backgroundEffect)
 
 
   // Hook!!!
@@ -52,7 +51,7 @@ const MeetingView = () => {
     // <UserActivityProvider>
     <StyledLayout showNav={showNavbar} showRoster={showRoster || showChatView || showWhiteboardView}>
       <RealitimeSubscribeStateProvider>
-        <WebSocketStateProvider>
+        {/* <WebSocketStateProvider> */}
           <StyledContent>
 
             <MeetingMetrics />
@@ -64,7 +63,7 @@ const MeetingView = () => {
 
           </StyledContent>
           <NavigationControl />
-        </WebSocketStateProvider>
+        {/* </WebSocketStateProvider> */}
       </RealitimeSubscribeStateProvider>
     </StyledLayout>
     // </UserActivityProvider>

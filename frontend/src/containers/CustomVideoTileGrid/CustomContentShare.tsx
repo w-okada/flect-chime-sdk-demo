@@ -3,14 +3,12 @@
 
 import React, { useEffect, useRef, HTMLAttributes, forwardRef, MutableRefObject, useState } from 'react';
 import { BaseSdkProps } from 'amazon-chime-sdk-component-library-react/lib/components/sdk/Base';
-import { useAudioVideo, useContentShareState, VideoTile } from 'amazon-chime-sdk-component-library-react';
+import { useAudioVideo, useContentShareState } from 'amazon-chime-sdk-component-library-react';
 import styled from 'styled-components';
 // import CustomVideoTile from './CustomVideoTile';
 import { BaseProps } from 'amazon-chime-sdk-component-library-react/lib/components/ui/Base';
 import { CustomStyledVideoTile } from './CustomStyledVideoTile';
-import { useRealitimeSubscribeState, DrawingData, RealtimeData } from '../../providers/RealtimeSubscribeProvider';
-import { useWebSocketState } from '../../providers/WebScoketProvider';
-import { useWebSocketWhiteboardState } from '../../providers/WebScoketWhiteboardProvider';
+import { useRealitimeSubscribeWhiteboardState, DrawingData } from '../../providers/RealtimeSubscribeWhiteboardProvider';
 
 type ObjectFit = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
 const THROTTLE_MSEC = 20
@@ -98,14 +96,13 @@ export const CustomVideoTile = forwardRef(
 
         const [inDrawing, setInDrawing] = useState(false)
         const [previousPosition, setPreviousPosition] = useState([0,0])
-//        const {sendWhiteBoardData, whiteboardData, drawingMode, drawingStroke} = useRealitimeSubscribeState()
+        const {sendDrawingData, drawingDatas, drawingMode, drawingStroke} = useRealitimeSubscribeWhiteboardState()
         const [lastSendingTime, setLastSendingTime] = useState(Date.now())
-        const { sendWebSocketWhiteboardMessage, drawingDatas, drawingMode, setDrawingMode, drawingStroke} = useWebSocketWhiteboardState()
+//        const { sendWebSocketWhiteboardMessage, drawingDatas, drawingMode, setDrawingMode, drawingStroke} = useWebSocketWhiteboardState()
 
 
         const drawer = SharedContentDrawer.getInstance()
         drawer.drawingDatas = drawingDatas
-        console.log("drawing!!!")
         useEffect(() => {
             if (!audioVideo || !videoEl.current || !tileId) {
                 return;
@@ -147,12 +144,7 @@ export const CustomVideoTile = forwardRef(
                 const drawingData = generateDrawingData(startX, startY, endX, endY)
                 setLastSendingTime(Date.now())
                 setPreviousPosition([e.offsetX, e.offsetY])
-                // const wsData = {
-                //     action   : 'sendmessage',
-                //     data     : drawingData
-                // }
-                // webSocket.send(JSON.stringify(wsData))
-                sendWebSocketWhiteboardMessage(drawingData)
+                sendDrawingData(drawingData)
             }
         }
 
@@ -227,7 +219,7 @@ export const CustomVideoTile = forwardRef(
                 const endX = e.changedTouches[0].clientX - canvasEl.current!.getBoundingClientRect().left
                 const endY = e.changedTouches[0].clientY - canvasEl.current!.getBoundingClientRect().top
                 const drawingData = generateDrawingData(startX, startY, endX, endY)
-                sendWebSocketWhiteboardMessage(drawingData)
+                sendDrawingData(drawingData)
                 setPreviousPosition([endX, endY])
                 setLastSendingTime(Date.now())
             }

@@ -1,22 +1,20 @@
 import { ReactNode, useContext, useEffect, useState } from "react";
 import React from "react";
-import { useAudioVideo, useRosterState, useUniqueId } from "amazon-chime-sdk-component-library-react";
-import { DataMessage } from "amazon-chime-sdk-js";
+import { useAudioVideo } from "amazon-chime-sdk-component-library-react";
+import { DataMessage, AudioVideoFacade } from "amazon-chime-sdk-js";
 import { v4 } from 'uuid';
 import { useAppState } from "./AppStateProvider";
-import { RealitimeSubscribeChatStateProvider } from "./RealtimeSubscribeChatProvider";
+import { RealtimeData } from "./RealtimeSubscribeProvider";
+
+import {Semaphore} from 'await-semaphore';
+
 
 type Props = {
     children: ReactNode;
 };
-export type RealtimeData = {
-    uuid: string
-    action: RealtimeDataAction
-    cmd: RealtimeDataCmd
-    data: any
-    createdDate: number
-    senderId: string
-}
+
+const SEND_INTERVAL_TIME = 1000 * 5
+const SEND_INTERVAL_NUM  = 5
 
 export type DrawingData = {
     drawingCmd: DrawingCmd
@@ -29,14 +27,13 @@ export type DrawingData = {
 }
 
 type DataMessageType = "WHITEBOARD"
-type RealtimeDataAction = "sendmessage"
-type RealtimeDataCmd = "TEXT" | "WHITEBOARD"
+
 type DrawingCmd = "DRAW" | "ERASE" | "CLEAR"
 type DrawingMode = "DRAW" | "ERASE" | "DISABLE"
 
 export interface RealitimeSubscribeWhiteboardStateValue {
-    whiteboardData: RealtimeData[]
-    sendWhiteBoardData: (data: DrawingData) => void
+    drawingDatas: DrawingData[]
+    sendDrawingData: (data: DrawingData) => void
     drawingMode: DrawingMode
     setDrawingMode: (mode: DrawingMode) => void
     drawingStroke: string
@@ -46,7 +43,7 @@ export interface RealitimeSubscribeWhiteboardStateValue {
 export const RealitimeSubscribeWhiteboardStateContext = React.createContext<RealitimeSubscribeWhiteboardStateValue | null>(null)
 
 
-export const useRealitimeSubscribeState = (): RealitimeSubscribeWhiteboardStateValue => {
+export const useRealitimeSubscribeWhiteboardState = (): RealitimeSubscribeWhiteboardStateValue => {
     const state = useContext(RealitimeSubscribeWhiteboardStateContext)
     if (!state) {
         throw new Error("Error using RealitimeSubscribe in context!")
@@ -54,50 +51,96 @@ export const useRealitimeSubscribeState = (): RealitimeSubscribeWhiteboardStateV
     return state
 }
 
+class DrawingDataBufferSender{
+    private semaphore = new Semaphore(1);
+    private drawingDataBuffer:DrawingData[] =[]
+
+    private _audioVideo:AudioVideoFacade|null = null
+    set audioVideo(val:AudioVideoFacade){this._audioVideo=val}
+    private _localUserId:string|null = null
+    set localUserId(val:string){this._localUserId=val}
+
+    private instance:DrawingDataBufferSender|null = null
+    private static _instance: DrawingDataBufferSender
+    public static getInstance(): DrawingDataBufferSender {
+        if (!this._instance) {
+            this._instance = new DrawingDataBufferSender()
+        }
+        return this._instance
+    }
+
+    private constructor(){
+        this.startMonitor()
+    }
+
+    addDrawindData = (data:DrawingData) => {
+        this.semaphore.acquire().then(release=>{
+            this.drawingDataBuffer.push(data)
+            if(this.drawingDataBuffer.length > SEND_INTERVAL_NUM){
+                this.sendDrawingBuffer()
+            }
+            release()
+        })
+    }
+
+    startMonitor = () =>{
+        this.semaphore.acquire().then(release=>{
+            this.sendDrawingBuffer()
+            release()
+            setTimeout(this.startMonitor, SEND_INTERVAL_TIME)
+        })
+    }
+
+    // Use this function under semaphore. (startMonitor, addDrawindData are known.)
+    private sendDrawingBuffer = () => {
+        if(this._localUserId && this._audioVideo){
+            const mess: RealtimeData = {
+                uuid: v4(),
+                action: 'sendmessage',
+                cmd: "WHITEBOARD",
+                data: this.drawingDataBuffer,
+                createdDate: new Date().getTime(),
+                senderId: this._localUserId
+            }
+            console.log("send data",JSON.stringify(mess).length)
+            this._audioVideo!.realtimeSendDataMessage("WHITEBOARD" as DataMessageType, JSON.stringify(mess))
+            this.drawingDataBuffer = []
+        }
+    }
+
+
+}
+
 export const RealitimeSubscribeWhiteboardStateProvider = ({ children }: Props) => {
     const audioVideo = useAudioVideo()
     const { localUserId } = useAppState()
-    const [whiteboardData, setWhiteboardData] = useState([] as RealtimeData[])
+    const [drawingDatas, setDrawingDatas] = useState([] as DrawingData[])
     const [drawingMode, setDrawingMode] = useState("DISABLE" as DrawingMode)
     const [drawingStroke, setDrawingStroke] = useState("black")
 
-    const sendWhiteBoardData = (data: DrawingData) => {
-        const mess: RealtimeData = {
-            uuid: v4(),
-            action: 'sendmessage',
-            cmd: "WHITEBOARD",
-            data: data,
-            createdDate: new Date().getTime(),
-            senderId: localUserId
-        }
-        audioVideo!.realtimeSendDataMessage("WHITEBOARD" as DataMessageType, JSON.stringify(mess))
-        newDataHandler(mess)
-        // if (data.drawingCmd === "CLEAR") {
-        //     setWhiteboardData([])
-        // } else {
-        //     setWhiteboardData([...whiteboardData, mess])
-        // }
+    const sender = DrawingDataBufferSender.getInstance()
+
+    const sendDrawingData = (data: DrawingData) => {
+        sender.addDrawindData(data)
+        sender.audioVideo = audioVideo!
+        sender.localUserId = localUserId
+
+        newDataHandler([data])
     }
 
     const receiveWhiteboardData = (dataMessage: DataMessage) => {
         const senderId = dataMessage.senderAttendeeId
         const mess = JSON.parse(dataMessage.text()) as RealtimeData
         mess.senderId = senderId
-        newDataHandler(mess)
-        // console.log(data)
-        // if (((data.data) as DrawingData).drawingCmd === "CLEAR") {
-        //     setWhiteboardData([])
-        // } else {
-        //     setWhiteboardData([...whiteboardData, data])
-        // }
+        newDataHandler(mess.data as DrawingData[])
     }
 
-    const newDataHandler = (realtimeData: RealtimeData) => {
-        if (realtimeData.data.drawingCmd === "CLEAR") {
-            setWhiteboardData([])
-        } else {
-            setWhiteboardData([...whiteboardData, realtimeData])
-        }
+    const newDataHandler = (data: DrawingData[]) => {
+        // if (data.drawingCmd === "CLEAR") {
+        //     setDrawingDatas([])
+        // } else {
+            setDrawingDatas([...drawingDatas, ...data])
+        // }
     }
 
     useEffect(() => {
@@ -111,8 +154,8 @@ export const RealitimeSubscribeWhiteboardStateProvider = ({ children }: Props) =
     })
 
     const providerValue = {
-        whiteboardData,
-        sendWhiteBoardData,
+        drawingDatas,
+        sendDrawingData,
         drawingMode,
         setDrawingMode,
         drawingStroke,

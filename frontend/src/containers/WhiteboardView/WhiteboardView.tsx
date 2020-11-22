@@ -2,8 +2,7 @@ import { Flex, Roster, RosterHeader,  useContentShareState } from "amazon-chime-
 import { useNavigation } from "../../providers/NavigationProvider";
 import React  from "react";
 import styled from "styled-components";
-import { useRealitimeSubscribeState, DrawingData } from "../../providers/RealtimeSubscribeProvider";
-import { useWebSocketWhiteboardState } from "../../providers/WebScoketWhiteboardProvider";
+import { useRealitimeSubscribeWhiteboardState, DrawingData } from "../../providers/RealtimeSubscribeWhiteboardProvider";
 
 export const Title = styled.h1`
   background-color: ___CSS_0___;
@@ -34,8 +33,8 @@ const colors = [
 ]
 
 const ColorPallet = () => {
-//  const { setDrawingMode, setDrawingStroke, drawingStroke, drawingMode, sendWhiteBoardData } = useRealitimeSubscribeState()
-  const {setDrawingMode, setDrawingStroke, drawingStroke, drawingMode, sendWebSocketWhiteboardMessage} = useWebSocketWhiteboardState()
+  const { setDrawingMode, setDrawingStroke, drawingStroke, drawingMode, sendDrawingData } = useRealitimeSubscribeWhiteboardState()
+  //const {setDrawingMode, setDrawingStroke, drawingStroke, drawingMode, sendWebSocketWhiteboardMessage} = useWebSocketWhiteboardState()
   return (
     <div>
       <div>
@@ -68,7 +67,8 @@ const ColorPallet = () => {
             stroke: "black",
             lineWidth: 2
           }
-          sendWebSocketWhiteboardMessage(drawingData)
+          // sendWebSocketWhiteboardMessage(drawingData)
+          sendDrawingData(drawingData)
         }}>
           Clear
         </span>

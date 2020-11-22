@@ -1,11 +1,5 @@
 import { ReactNode, useContext, useEffect, useState } from "react";
 import React from "react";
-import { useAudioVideo, useRosterState, useUniqueId } from "amazon-chime-sdk-component-library-react";
-import { DataMessage, ReconnectingPromisedWebSocket, DefaultPromisedWebSocketFactory, DefaultDOMWebSocketFactory, FullJitterBackoff } from "amazon-chime-sdk-js";
-import { v4 } from 'uuid';
-import { useAppState } from "./AppStateProvider";
-import { RealtimeData } from "./RealtimeSubscribeProvider";
-import { WebSocketEndpoint } from "../BackendConfig";
 import { useWebSocketState } from "./WebScoketProvider";
 
 type Props = {

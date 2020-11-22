@@ -1,7 +1,6 @@
 import { useRosterState, Roster, RosterHeader, RosterGroup,   Textarea, PrimaryButton } from "amazon-chime-sdk-component-library-react";
 import { useNavigation } from "../../providers/NavigationProvider";
 import React, { useState } from "react";
-import { useRealitimeSubscribeState } from "../../providers/RealtimeSubscribeProvider";
 import { useRealitimeSubscribeChatState } from "../../providers/RealtimeSubscribeChatProvider";
 
 export interface ChatProps {
