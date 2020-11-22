@@ -51,7 +51,7 @@ const MeetingView = () => {
     // <UserActivityProvider>
     <StyledLayout showNav={showNavbar} showRoster={showRoster || showChatView || showWhiteboardView}>
       <RealitimeSubscribeStateProvider>
-        {/* <WebSocketStateProvider> */}
+        <WebSocketStateProvider>
           <StyledContent>
 
             <MeetingMetrics />
@@ -63,7 +63,7 @@ const MeetingView = () => {
 
           </StyledContent>
           <NavigationControl />
-        {/* </WebSocketStateProvider> */}
+        </WebSocketStateProvider>
       </RealitimeSubscribeStateProvider>
     </StyledLayout>
     // </UserActivityProvider>

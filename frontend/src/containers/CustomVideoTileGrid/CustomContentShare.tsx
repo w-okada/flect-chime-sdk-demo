@@ -8,7 +8,8 @@ import styled from 'styled-components';
 // import CustomVideoTile from './CustomVideoTile';
 import { BaseProps } from 'amazon-chime-sdk-component-library-react/lib/components/ui/Base';
 import { CustomStyledVideoTile } from './CustomStyledVideoTile';
-import { useRealitimeSubscribeWhiteboardState, DrawingData } from '../../providers/RealtimeSubscribeWhiteboardProvider';
+import { DrawingData, useWebSocketWhiteboardState } from '../../providers/WebScoketWhiteboardProvider';
+// import { useRealitimeSubscribeWhiteboardState, DrawingData } from '../../providers/RealtimeSubscribeWhiteboardProvider';
 
 type ObjectFit = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
 const THROTTLE_MSEC = 20
@@ -96,12 +97,13 @@ export const CustomVideoTile = forwardRef(
 
         const [inDrawing, setInDrawing] = useState(false)
         const [previousPosition, setPreviousPosition] = useState([0,0])
-        const {sendDrawingData, drawingDatas, drawingMode, drawingStroke} = useRealitimeSubscribeWhiteboardState()
         const [lastSendingTime, setLastSendingTime] = useState(Date.now())
-//        const { sendWebSocketWhiteboardMessage, drawingDatas, drawingMode, setDrawingMode, drawingStroke} = useWebSocketWhiteboardState()
+        // const {sendDrawingData, drawingDatas, drawingMode, drawingStroke} = useRealitimeSubscribeWhiteboardState()
+        const { sendDrawingData, drawingDatas, drawingMode, setDrawingMode, drawingStroke} = useWebSocketWhiteboardState()
 
 
         const drawer = SharedContentDrawer.getInstance()
+        console.log("CustomVideoTile rendering!")
         drawer.drawingDatas = drawingDatas
         useEffect(() => {
             if (!audioVideo || !videoEl.current || !tileId) {

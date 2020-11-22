@@ -60,7 +60,6 @@ class DrawingDataBufferSender{
     private _localUserId:string|null = null
     set localUserId(val:string){this._localUserId=val}
 
-    private instance:DrawingDataBufferSender|null = null
     private static _instance: DrawingDataBufferSender
     public static getInstance(): DrawingDataBufferSender {
         if (!this._instance) {
@@ -85,7 +84,9 @@ class DrawingDataBufferSender{
 
     startMonitor = () =>{
         this.semaphore.acquire().then(release=>{
-            this.sendDrawingBuffer()
+            if(this.drawingDataBuffer.length > 0){
+                this.sendDrawingBuffer()
+            }
             release()
             setTimeout(this.startMonitor, SEND_INTERVAL_TIME)
         })

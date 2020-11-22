@@ -6,6 +6,10 @@ import { RealitimeSubscribeWhiteboardStateProvider } from "./RealtimeSubscribeWh
 type RealtimeDataAction = "sendmessage"
 type RealtimeDataCmd = "TEXT" | "WHITEBOARD"
 
+type Props = {
+    children: ReactNode;
+};
+
 export type RealtimeData = {
     uuid: string
     action: RealtimeDataAction
@@ -14,10 +18,6 @@ export type RealtimeData = {
     createdDate: number
     senderId: string
 }
-
-type Props = {
-    children: ReactNode;
-};
 
 export interface RealitimeSubscribeStateValue {
 }
@@ -39,9 +39,9 @@ export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
     return (
         <RealitimeSubscribeStateContext.Provider value={providerValue}>
             <RealitimeSubscribeChatStateProvider>
-                <RealitimeSubscribeWhiteboardStateProvider>
+                {/* <RealitimeSubscribeWhiteboardStateProvider> */}
                     {children}
-                </RealitimeSubscribeWhiteboardStateProvider>
+                {/* </RealitimeSubscribeWhiteboardStateProvider> */}
             </RealitimeSubscribeChatStateProvider>
         </RealitimeSubscribeStateContext.Provider>
     )
