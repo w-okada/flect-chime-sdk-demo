@@ -13,29 +13,17 @@ import { useMeetingManager } from 'amazon-chime-sdk-component-library-react';
 
 import routes from '../constants/routes';
 
-type SHOW_NAVI_TARGET =  "NONE" | "ROSTER" | "CHAT" | "WHITEBOARD"
+type SHOW_NAVI_TARGET =  "NONE" | "ROSTER" | "CHAT" | "WHITEBOARD" | "FILE_TRANSFER"
 
 export type NavigationContextType = {
   showNavbar: boolean;
-  showMetrics: boolean;
-  // showRoster: boolean;
-  // showChatView: boolean;
-  // showWhiteboardView: boolean
   toggleNavbar: () => void;
-  // toggleRoster: () => void;
-  // toggleChatView: () => void;
-  // toggleWhiteboardView: () => void;
-  
   openNavbar: () => void;
   closeNavbar: () => void;
+
+  showMetrics: boolean;
   toggleMetrics: () => void;
 
-  // openRoster: () => void;
-  // closeRoster: () => void;
-  // openChatView: () => void;
-  // closeChatView: () => void;
-  // openWhiteboardView: () => void;
-  // closeWhiteboardView: () => void;
   naviShowTarget: SHOW_NAVI_TARGET
   setNaviShowTarget: (target: SHOW_NAVI_TARGET) => void
 };
@@ -53,9 +41,6 @@ const isDesktop = () => window.innerWidth > 768;
 const NavigationProvider = ({ children }: Props) => {
   const [showNavbar, setShowNavbar] = useState(() => isDesktop());
   const [showMetrics, setShowMetrics] = useState(false);
-  // const [showRoster, setShowRoster] = useState(() => isDesktop());
-  // const [showChatView, setShowChatView] = useState(false)
-  // const [showWhiteboardView, setShowWhiteboardView] = useState(false)
 
   const [naviShowTarget, setNaviShowTarget] = useState("ROSTER" as SHOW_NAVI_TARGET)
 
@@ -83,9 +68,6 @@ const NavigationProvider = ({ children }: Props) => {
       if (!isResizeDesktop) {
         setShowNavbar(false);
         setNaviShowTarget("NONE")
-        // setShowRoster(false);
-        // setShowChatView(false)
-        // setShowWhiteboardView(false)
       } else {
         setShowNavbar(true);
       }
@@ -102,30 +84,6 @@ const NavigationProvider = ({ children }: Props) => {
     setShowMetrics(currentState => !currentState);
   };
 
-  // const toggleRoster = (): void => {
-  //   setNaviShowTarget("ROSTER")
-  //   // setShowRoster(!showRoster);
-
-  //   // setShowChatView(false)
-  //   // setShowWhiteboardView(false)
-  // };
-
-
-  // const toggleChatView = () =>{
-  //   setNaviShowTarget("CHAT")
-  //   // setShowChatView(!showChatView)
-
-  //   // setShowRoster(false)
-  //   // setShowWhiteboardView(false)
-  // }
-
-  // const toggleWhiteboardView = () =>{
-  //   setNaviShowTarget("WHITEBOARD")
-  //   // setShowWhiteboardView(!showWhiteboardView)
- 
-  //   // setShowRoster(false)
-  //   // setShowChatView(false)
-  // }
 
 
   const openNavbar = (): void => {
@@ -136,48 +94,17 @@ const NavigationProvider = ({ children }: Props) => {
     setShowNavbar(false);
   };
 
-  // const openRoster = (): void => {
-  //   setShowRoster(true);
-  // };
-
-  // const closeRoster = (): void => {
-  //   setShowRoster(false);
-  // };
-  // const openChatView = () =>{
-  //   setShowChatView(true)
-  // }
-  // const closeChatView = () =>{
-  //   setShowChatView(false)
-  // }
-
-  // const openWhiteboardView = () =>{
-  //   setShowWhiteboardView(true)
-  // }
-  // const closeWhiteboardView = () =>{
-  //   setShowWhiteboardView(false)
-  // }
 
   const providerValue = {
     showNavbar,
     showMetrics,
-    // showRoster,
-    // showChatView,
-    // showWhiteboardView,
 
     toggleNavbar,
     toggleMetrics,
-    // toggleRoster,
-    // toggleChatView,
-    // toggleWhiteboardView,
 
     openNavbar,
     closeNavbar,
-    // openRoster,
-    // closeRoster,
-    // openChatView,
-    // closeChatView,
-    // openWhiteboardView,
-    // closeWhiteboardView,
+    
     naviShowTarget, 
     setNaviShowTarget
   };

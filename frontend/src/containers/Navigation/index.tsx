@@ -8,7 +8,8 @@ import {
   Eye,
   Information,
   Chat,
-  Document
+  Document,
+  Arrow
 } from 'amazon-chime-sdk-component-library-react';
 
 import { useNavigation } from '../../providers/NavigationProvider';
@@ -39,6 +40,13 @@ const Navigation = () => {
         icon={<Document />}
         onClick={()=>{
           naviShowTarget === "WHITEBOARD" ? setNaviShowTarget("NONE"): setNaviShowTarget("WHITEBOARD")
+        }}
+        label="Draw"
+      />      
+      <NavbarItem
+        icon={<Arrow />}
+        onClick={()=>{
+          naviShowTarget === "FILE_TRANSFER" ? setNaviShowTarget("NONE"): setNaviShowTarget("FILE_TRANSFER")
         }}
         label="Draw"
       />      
