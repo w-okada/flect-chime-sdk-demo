@@ -57,9 +57,11 @@ export class BackendStack extends cdk.Stack {
       'chime:GetAttendee',
       'chime:ListAttendees',
 
+      'execute-api:ManageConnections'
     )
     statement.addResources(userPool.userPoolArn)
     statement.addResources("arn:*:chime::*:meeting/*")
+    statement.addResources("arn:aws:execute-api:*:*:**/@connections/*")
 
     //////////////////////////////////////
     //// Storage Resources (S3)

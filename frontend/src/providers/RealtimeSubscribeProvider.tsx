@@ -112,9 +112,9 @@ export const RealitimeSubscribeStateProvider = ({ children }: Props) => {
     return (
         <RealitimeSubscribeStateContext.Provider value={providerValue}>
             <RealitimeSubscribeChatStateProvider>
-                <RealitimeSubscribeWhiteboardStateProvider>
+                {/* <RealitimeSubscribeWhiteboardStateProvider> */}
                     {children}
-                </RealitimeSubscribeWhiteboardStateProvider>
+                {/* </RealitimeSubscribeWhiteboardStateProvider> */}
             </RealitimeSubscribeChatStateProvider>
         </RealitimeSubscribeStateContext.Provider>
     )

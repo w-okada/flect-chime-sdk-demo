@@ -3,6 +3,7 @@ import { useNavigation } from "../../providers/NavigationProvider";
 import React  from "react";
 import styled from "styled-components";
 import { useRealitimeSubscribeState, DrawingData } from "../../providers/RealtimeSubscribeProvider";
+import { useWebSocketWhiteboardState } from "../../providers/WebScoketWhiteboardProvider";
 
 export const Title = styled.h1`
   background-color: ___CSS_0___;
@@ -33,7 +34,8 @@ const colors = [
 ]
 
 const ColorPallet = () => {
-  const { setDrawingMode, setDrawingStroke, drawingStroke, drawingMode, sendWhiteBoardData } = useRealitimeSubscribeState()
+//  const { setDrawingMode, setDrawingStroke, drawingStroke, drawingMode, sendWhiteBoardData } = useRealitimeSubscribeState()
+  const {setDrawingMode, setDrawingStroke, drawingStroke, drawingMode, sendWebSocketWhiteboardMessage} = useWebSocketWhiteboardState()
   return (
     <div>
       <div>
@@ -66,7 +68,7 @@ const ColorPallet = () => {
             stroke: "black",
             lineWidth: 2
           }
-          sendWhiteBoardData(drawingData)
+          sendWebSocketWhiteboardMessage(drawingData)
         }}>
           Clear
         </span>

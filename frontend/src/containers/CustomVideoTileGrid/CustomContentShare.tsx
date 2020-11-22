@@ -9,6 +9,8 @@ import styled from 'styled-components';
 import { BaseProps } from 'amazon-chime-sdk-component-library-react/lib/components/ui/Base';
 import { CustomStyledVideoTile } from './CustomStyledVideoTile';
 import { useRealitimeSubscribeState, DrawingData, RealtimeData } from '../../providers/RealtimeSubscribeProvider';
+import { useWebSocketState } from '../../providers/WebScoketProvider';
+import { useWebSocketWhiteboardState } from '../../providers/WebScoketWhiteboardProvider';
 
 type ObjectFit = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
 const THROTTLE_MSEC = 20
@@ -26,18 +28,13 @@ class SharedContentDrawer {
     private _videoRef: MutableRefObject<HTMLVideoElement | null> | null = null
     private _canvasRef: MutableRefObject<HTMLCanvasElement | null> | null = null
     private _drawing: boolean = false
-    private _whiteboardData: RealtimeData[] = []
+    private _drawingDatas: DrawingData[] = []
     set videoRef(val: MutableRefObject<HTMLVideoElement | null>) {
         this._videoRef = val
         this._videoRef.current!.play()
     }
     set canvasRef(val: MutableRefObject<HTMLCanvasElement | null>) { 
         this._canvasRef = val 
-        // this._canvasRef.current!.addEventListener("mousedown",  this.drawingStart, { passive: false })
-        // this._canvasRef.current!.addEventListener("mouseup",    this.drawingEnd,   { passive: false })
-        // this._canvasRef.current!.addEventListener("mouseleave", this.drawingEnd,   { passive: false })
-        // this._canvasRef.current!.addEventListener("mousemove",  this.drawingDraw,      { passive: false })         
-    
     }
     set drawing(val: boolean) {
         if (this._drawing !== val) {
@@ -46,32 +43,9 @@ class SharedContentDrawer {
         }
     }
 
-    set whiteboardData(val:RealtimeData[]){this._whiteboardData=val}
-    // inDrawing = false
-
-
-//     drawingStart = (e: MouseEvent) => {this.inDrawing = true}
-//     drawingEnd = (e: MouseEvent) => {this.inDrawing = false}
-//     drawingDraw = (e: MouseEvent) => {
-// //            if(inDrawing && this.state.inDrawingMode && this.state.enableDrawing){
-//         if(this.inDrawing){
-            
-//             const startX = e.offsetX - e.movementX
-//             const startY = e.offsetY - e.movementY
-
-//             const cs = getComputedStyle(this._canvasRef!.current!)
-//             console.log("CS:",cs)
-//             const width = cs.getPropertyValue("width")
-//             const height = cs.getPropertyValue("height")
-            
-//             const startXR = startX  / this._canvasRef!.current!.width!
-//             const startYR = startY  / this._canvasRef!.current!.height!
-//             const endXR   = e.offsetX / this._canvasRef!.current!.width!
-//             const endYR   = e.offsetY / this._canvasRef!.current!.height!
-//             console.log(startXR, startYR, endXR, endYR, "  1111 ", this._canvasRef!.current!.width, this._canvasRef!.current!.height, width, height)
-//             //console.log("CS: ",cs)
-//         }
-//     }    
+    set drawingDatas(val:DrawingData[]){
+        this._drawingDatas=val
+    }
 
     private startDrawing = () => {
         if (this._videoRef && this._canvasRef && this._videoRef.current && this._drawing) {
@@ -80,8 +54,7 @@ class SharedContentDrawer {
                 this._canvasRef.current!.height = this._videoRef.current!.videoHeight
                 this._canvasRef.current!.getContext("2d")!.drawImage(this._videoRef.current!, 0, 0, this._canvasRef.current!.width, this._canvasRef.current!.height)
 
-                for(let data of this._whiteboardData){
-                    const drawing = data.data as DrawingData
+                for(let drawing of this._drawingDatas){
                     const ctx = this._canvasRef.current!.getContext("2d")!
                     if(drawing.drawingCmd === "DRAW"){
                         ctx.beginPath();
@@ -125,11 +98,14 @@ export const CustomVideoTile = forwardRef(
 
         const [inDrawing, setInDrawing] = useState(false)
         const [previousPosition, setPreviousPosition] = useState([0,0])
-        const {sendWhiteBoardData, whiteboardData, drawingMode, drawingStroke} = useRealitimeSubscribeState()
+//        const {sendWhiteBoardData, whiteboardData, drawingMode, drawingStroke} = useRealitimeSubscribeState()
         const [lastSendingTime, setLastSendingTime] = useState(Date.now())
+        const { sendWebSocketWhiteboardMessage, drawingDatas, drawingMode, setDrawingMode, drawingStroke} = useWebSocketWhiteboardState()
+
 
         const drawer = SharedContentDrawer.getInstance()
-        drawer.whiteboardData = whiteboardData
+        drawer.drawingDatas = drawingDatas
+        console.log("drawing!!!")
         useEffect(() => {
             if (!audioVideo || !videoEl.current || !tileId) {
                 return;
@@ -142,7 +118,6 @@ export const CustomVideoTile = forwardRef(
                 drawer.drawing = true
                 canvasEl.current!.width = videoEl.current!.videoWidth
                 canvasEl.current!.height = videoEl.current!.videoHeight
-                console.log(">>>>>>>>>>>>>>>>>>>>", canvasEl.current!.width, canvasEl.current!.height)
             }
             audioVideo.bindVideoElement(tileId, videoEl.current);
             return () => {
@@ -170,9 +145,14 @@ export const CustomVideoTile = forwardRef(
                 const endX = e.offsetX
                 const endY = e.offsetY             
                 const drawingData = generateDrawingData(startX, startY, endX, endY)
-                sendWhiteBoardData(drawingData)
                 setLastSendingTime(Date.now())
                 setPreviousPosition([e.offsetX, e.offsetY])
+                // const wsData = {
+                //     action   : 'sendmessage',
+                //     data     : drawingData
+                // }
+                // webSocket.send(JSON.stringify(wsData))
+                sendWebSocketWhiteboardMessage(drawingData)
             }
         }
 
@@ -202,7 +182,6 @@ export const CustomVideoTile = forwardRef(
                         stroke: drawingStroke,
                         lineWidth: 2
                     }
-                    console.log(drawingData)
                     return drawingData                    
                 }else{ // heightにあまりがある
                     const trueWidth = canvasEl.current!.width * rateX
@@ -248,9 +227,7 @@ export const CustomVideoTile = forwardRef(
                 const endX = e.changedTouches[0].clientX - canvasEl.current!.getBoundingClientRect().left
                 const endY = e.changedTouches[0].clientY - canvasEl.current!.getBoundingClientRect().top
                 const drawingData = generateDrawingData(startX, startY, endX, endY)
-                console.log(startX, startY, endX, endY)
-                console.log(drawingData)
-                sendWhiteBoardData(drawingData)
+                sendWebSocketWhiteboardMessage(drawingData)
                 setPreviousPosition([endX, endY])
                 setLastSendingTime(Date.now())
             }
@@ -260,7 +237,6 @@ export const CustomVideoTile = forwardRef(
             if(!canvasEl.current){
                 return
             }
-            console.log("ADD EVENT LISTENER")
             canvasEl.current!.addEventListener("mousedown",  drawingStart, { passive: false })
             canvasEl.current!.addEventListener("mouseup",    drawingEnd,   { passive: false })
             canvasEl.current!.addEventListener("mouseleave", drawingEnd,   { passive: false })

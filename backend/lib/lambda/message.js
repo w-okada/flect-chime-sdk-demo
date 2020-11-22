@@ -125,7 +125,7 @@ exports.message = async (event, context, callback) => {
     console.log(context)
     console.log(callback)
     console.log('sendmessage event:', JSON.stringify(event, null, 2));
-
+    console.log("meetingId",event.requestContext.authorizer.meetingId)
     // Gather the information of attendees
     let attendees = {};
     try {
@@ -148,18 +148,25 @@ exports.message = async (event, context, callback) => {
     });
     
     console.log("DATA:",event.body)
+    console.log("Attendee!!!:", attendees)
     const body = JSON.parse(event.body)
     const targetId = body.targetId
     const private  = body.private
 
+    console.log("targetId:", targetId)
+    console.log("private:", private)
+    
     const postCalls = attendees.Items.map(async connection => {
         const connectionId = connection.ConnectionId.S
         const attendeeId   = connection.AttendeeId.S
         if(private !==true || attendeeId === targetId){
             try {
-                await apigwManagementApi
+                const res = await apigwManagementApi
                     .postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(body)})
                     .promise();
+                    console.log("done sending!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1", res)
+                    console.log("done sending!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!2", connectionId)
+                    console.log("done sending!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!3", JSON.stringify(body))
             } catch (e) {
                 if (e.statusCode === 410) {
                     console.log(`found stale connection, skipping ${connectionId}`);
@@ -173,15 +180,16 @@ exports.message = async (event, context, callback) => {
     });
 
     try {
-        await Promise.all(postCalls);
+        const res = await Promise.all(postCalls);
+        console.log("RESPONSE!", res)
+
     } catch (e) {
         console.error(`failed to post: ${e.message}`);
         return { statusCode: 500, body: e.stack };
     }
     
     body.done              = true
-    body.content.fileParts = "" // reduce trafic
+    // body.content.fileParts = "" // reduce trafic
 
     return { statusCode: 200, body: JSON.stringify(body) };}
 
-    
