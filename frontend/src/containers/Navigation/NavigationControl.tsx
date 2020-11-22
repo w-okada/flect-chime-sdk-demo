@@ -10,14 +10,14 @@ import MeetingRoster from '../MeetingRoster';
 import WhiteboardView from '../WhiteboardView/WhiteboardView';
 
 const NavigationControl = () => {
-  const { showNavbar, showRoster, showChatView, showWhiteboardView } = useNavigation();
+  const { showNavbar, naviShowTarget } = useNavigation();
 
   return (
     <>
       {showNavbar ? <Navigation /> : null}
-      {showRoster ? <MeetingRoster /> : null}
-      {showChatView? <ChatView />: null}
-      {showWhiteboardView? <WhiteboardView />: null}
+      {naviShowTarget === "ROSTER" ? <MeetingRoster /> : null}
+      {naviShowTarget === "CHAT" ? <ChatView />: null}
+      {naviShowTarget === "WHITEBOARD" ? <WhiteboardView />: null}
     </>
   );
 };

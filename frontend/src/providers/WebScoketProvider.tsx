@@ -65,8 +65,9 @@ class WebSocketManager{
             )
             this.ws.open(20 * 1000)
             this.ws.addEventListener('message', this.receiveMessage)
+            this.ws.addEventListener('close', this.reconnect)
             this.messagingURLWithQuery = messagingURLWithQuery
-            console.log("WebSocket Created!!")
+            console.log("WebSocket Created!!", this.ws)
         }
     }
 
@@ -85,6 +86,10 @@ class WebSocketManager{
         if(this.listener[topic]){
             this.listener[topic] = this.listener[topic].filter(x=>x!==f)
         }
+    }
+
+    reconnect = (e:Event) => {
+        console.log("Reconnect!!!!!!", e)
     }
     
     receiveMessage = (e:Event) => {

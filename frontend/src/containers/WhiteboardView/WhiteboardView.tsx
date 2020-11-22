@@ -79,7 +79,7 @@ const ColorPallet = () => {
 }
 
 const WhiteboardView = () => {
-  const { closeWhiteboardView } = useNavigation();
+  const { setNaviShowTarget } = useNavigation();
   const { tileId } = useContentShareState();
 
   const notification = (
@@ -91,7 +91,7 @@ const WhiteboardView = () => {
   return (
 
     <Roster className="roster">
-      <RosterHeader title="Whiteboard" onClose={closeWhiteboardView}>
+      <RosterHeader title="Whiteboard" onClose={()=>{setNaviShowTarget("NONE")}}>
       </RosterHeader>
       {tileId ? <></> : <>{notification}</>}
       <ColorPallet />

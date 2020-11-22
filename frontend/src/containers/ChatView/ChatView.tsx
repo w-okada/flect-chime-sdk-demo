@@ -10,7 +10,7 @@ export interface ChatProps {
 
 const ChatView = () => {
   const { roster } = useRosterState();
-  const { closeChatView } = useNavigation();
+  const { setNaviShowTarget } = useNavigation();
   const { chatData, sendChatData } = useRealitimeSubscribeChatState()
   const [ chatMessage, setChatMessage] = useState('');
   
@@ -36,7 +36,7 @@ const ChatView = () => {
   return (
 
     <Roster className="roster">
-      <RosterHeader title="Chat" onClose={closeChatView}>
+      <RosterHeader title="Chat" onClose={()=>{setNaviShowTarget("NONE")}}>
       </RosterHeader>
       <RosterGroup>{attendeeItems}</RosterGroup>
       <br/>

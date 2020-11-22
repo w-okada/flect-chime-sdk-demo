@@ -15,7 +15,7 @@ import { useNavigation } from '../providers/NavigationProvider';
 const MeetingRoster_ = () => {
   const { roster } = useRosterState();
   const [filter, setFilter] = useState('');
-  const { closeRoster } = useNavigation();
+  const { setNaviShowTarget } = useNavigation();
 
   let attendees = Object.values(roster);
 
@@ -41,7 +41,7 @@ const MeetingRoster_ = () => {
       <RosterHeader
         searchValue={filter}
         onSearch={handleSearch}
-        onClose={closeRoster}
+        onClose={()=>{setNaviShowTarget("NONE")}}
         title="Present"
         badge={attendees.length}
       />

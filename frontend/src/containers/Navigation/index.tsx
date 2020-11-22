@@ -15,7 +15,7 @@ import { useNavigation } from '../../providers/NavigationProvider';
 import { useAppState } from '../../providers/AppStateProvider';
 
 const Navigation = () => {
-  const { toggleRoster, toggleMetrics, closeNavbar, toggleChatView, toggleWhiteboardView } = useNavigation();
+  const { toggleMetrics, closeNavbar, setNaviShowTarget, naviShowTarget } = useNavigation();
   const { theme, toggleTheme } = useAppState();
 
   return (
@@ -23,17 +23,23 @@ const Navigation = () => {
       <NavbarHeader title="Navigation" onClose={closeNavbar} />
       <NavbarItem
         icon={<Attendees />}
-        onClick={toggleRoster}
+        onClick={()=>{
+          naviShowTarget === "ROSTER" ? setNaviShowTarget("NONE"): setNaviShowTarget("ROSTER")
+        }}
         label="Attendees"
       />
       <NavbarItem
         icon={<Chat />}
-        onClick={toggleChatView}
+        onClick={()=>{
+          naviShowTarget === "CHAT" ? setNaviShowTarget("NONE"): setNaviShowTarget("CHAT")
+        }}
         label="Chat"
       />      
       <NavbarItem
         icon={<Document />}
-        onClick={toggleWhiteboardView}
+        onClick={()=>{
+          naviShowTarget === "WHITEBOARD" ? setNaviShowTarget("NONE"): setNaviShowTarget("WHITEBOARD")
+        }}
         label="Draw"
       />      
       <NavbarItem

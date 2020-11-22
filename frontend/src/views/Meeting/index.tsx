@@ -19,7 +19,7 @@ import { WebSocketStateProvider } from '../../providers/WebScoketProvider';
 
 const MeetingView = () => {
   useMeetingEndRedirect();
-  const { showNavbar, showRoster, showChatView, showWhiteboardView } = useNavigation();
+  const { showNavbar, naviShowTarget } = useNavigation();
   const meetingManager = useMeetingManager();
   const { backgroundEffect, setDeviceId } = useVideoEffectState()
 
@@ -49,7 +49,7 @@ const MeetingView = () => {
 
   return (
     // <UserActivityProvider>
-    <StyledLayout showNav={showNavbar} showRoster={showRoster || showChatView || showWhiteboardView}>
+    <StyledLayout showNav={showNavbar} showRoster={naviShowTarget!=="NONE"}>
       <RealitimeSubscribeStateProvider>
         <WebSocketStateProvider>
           <StyledContent>

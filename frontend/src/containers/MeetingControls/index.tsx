@@ -19,13 +19,11 @@ import VideoEffectControl from '../VideoEffectControl';
 import CustomizedVideoInputControl  from './CustomizedVideoIputControl';
 
 const MeetingControls = () => {
-  const { toggleNavbar, closeRoster, showRoster } = useNavigation();
+  const { toggleNavbar, setNaviShowTarget } = useNavigation();
   const { isUserActive } = useUserActivityState();
 
   const handleToggle = () => {
-    if (showRoster) {
-      closeRoster();
-    }
+    setNaviShowTarget("NONE")
 
     toggleNavbar();
   };
