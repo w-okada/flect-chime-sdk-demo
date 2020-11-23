@@ -1,4 +1,4 @@
-import { useRosterState, Roster, RosterHeader, RosterGroup,   Textarea, PrimaryButton } from "amazon-chime-sdk-component-library-react";
+import { useRosterState, Roster, RosterHeader, RosterGroup,   Textarea, PrimaryButton, ChatBubbleContainer, ChatBubble } from "amazon-chime-sdk-component-library-react";
 import { useNavigation } from "../../providers/NavigationProvider";
 import React, { useState } from "react";
 import { useRealitimeSubscribeChatState } from "../../providers/RealtimeSubscribeChatProvider";
@@ -7,6 +7,9 @@ export interface ChatProps {
   attendeeId: string;
   text: string
 }
+const bubbleStyles = `
+  margin: 1rem;
+`;
 
 const ChatView = () => {
   const { roster } = useRosterState();
@@ -22,15 +25,26 @@ const ChatView = () => {
     const time = (new Date(c.createdDate)).toLocaleTimeString('ja-JP')
 
     attendeeItems.push(
-      <div key={uuid} style={{margin:"5px", wordWrap:"break-word"}}>
-        <p style={{color:"green"}}>
-        {time}  {senderName}
-        </p>
-        <p style={{paddingLeft:"5px"}}>
-          {text}
-        </p>
-      </div>
-    )
+      <>
+        <div key={uuid} style={{margin:"5px", wordWrap:"break-word"}}>
+          <p style={{color:"green"}}>
+          {time}  {senderName}
+          </p>
+          <p style={{paddingLeft:"5px"}}>
+            {text}
+          </p>
+        </div>
+        {/* <ChatBubbleContainer timestamp={time}>
+          <ChatBubble
+            variant="incoming"
+            senderName="Bruce Wayne"
+            content="This is an example ChatBubble in a ChatBubbleContainer."
+            showTail={false}
+            css={bubbleStyles}
+          />
+        </ChatBubbleContainer> */}
+      </>
+  )
   }
 
   return (
