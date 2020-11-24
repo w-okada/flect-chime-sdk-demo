@@ -25,26 +25,27 @@ const ChatView = () => {
     const time = (new Date(c.createdDate)).toLocaleTimeString('ja-JP')
 
     attendeeItems.push(
-      <>
-        <div key={uuid} style={{margin:"5px", wordWrap:"break-word"}}>
-          <p style={{color:"green"}}>
-          {time}  {senderName}
-          </p>
-          <p style={{paddingLeft:"5px"}}>
-            {text}
-          </p>
-        </div>
-        {/* <ChatBubbleContainer timestamp={time}>
-          <ChatBubble
-            variant="incoming"
-            senderName="Bruce Wayne"
-            content="This is an example ChatBubble in a ChatBubbleContainer."
-            showTail={false}
-            css={bubbleStyles}
-          />
-        </ChatBubbleContainer> */}
-      </>
-  )
+      <div key={uuid} style={{margin:"5px", wordWrap:"break-word"}}>
+        <p style={{color:"green"}}>
+        {time}  {senderName}
+        </p>
+        <p style={{paddingLeft:"5px"}}>
+          {text}
+        </p>
+      </div>
+    )
+
+    // attendeeItems.push(
+    //   <ChatBubbleContainer timestamp={time}>
+    //     <ChatBubble
+    //       variant="incoming"
+    //       senderName="Bruce Wayne"
+    //       content="This is an example ChatBubble in a ChatBubbleContainer."
+    //       showTail={false}
+    //       css={bubbleStyles}
+    //     />
+    //   </ChatBubbleContainer>
+    // )
   }
 
   return (

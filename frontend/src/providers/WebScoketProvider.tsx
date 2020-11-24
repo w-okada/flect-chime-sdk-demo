@@ -1,9 +1,11 @@
 import { ReactNode, useContext, useEffect, useState } from "react";
 import React from "react";
-import { ReconnectingPromisedWebSocket, DefaultPromisedWebSocketFactory, DefaultDOMWebSocketFactory, FullJitterBackoff } from "amazon-chime-sdk-js";
+// import { ReconnectingPromisedWebSocket, DefaultPromisedWebSocketFactory, DefaultDOMWebSocketFactory, FullJitterBackoff } from "amazon-chime-sdk-js";
 import { useAppState } from "./AppStateProvider";
 import { WebSocketEndpoint } from "../BackendConfig";
 import { WebSocketWhiteboardStateProvider } from "./WebScoketWhiteboardProvider";
+import { DefaultWebSocketAdapter, Logger, WebSocketAdapter } from "amazon-chime-sdk-js";
+import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
 
 type Props = {
     children: ReactNode;
@@ -49,25 +51,28 @@ class WebSocketManager{
     }
 
     messagingURLWithQuery:string=""
-
-    private ws:ReconnectingPromisedWebSocket|null = null
-    createWebSocket = (messagingURLWithQuery:string, reuse:boolean=true) => {
+    private websocketAdapter:WebSocketAdapter|null = null
+    createWebSocket = (messagingURLWithQuery:string, logger:Logger, reuse:boolean=true) => {
         if(reuse && this.messagingURLWithQuery === messagingURLWithQuery){
             console.log("reuse websocket")
         }else{
             console.log("not reuse,", reuse, this.messagingURLWithQuery,  messagingURLWithQuery)
-            this.ws =  new ReconnectingPromisedWebSocket(
+            this.websocketAdapter =  new DefaultWebSocketAdapter(logger)
+            this.websocketAdapter.create(
                 messagingURLWithQuery,
-                [],
-                'arraybuffer',
-                new DefaultPromisedWebSocketFactory(new DefaultDOMWebSocketFactory()),
-                new FullJitterBackoff(1000, 0, 10000)
+                []
             )
-            this.ws.open(20 * 1000)
-            this.ws.addEventListener('message', this.receiveMessage)
-            this.ws.addEventListener('close', this.reconnect)
+            //     'arraybuffer',
+            //     new DefaultPromisedWebSocketFactory(new DefaultDOMWebSocketFactory()),
+            //     new FullJitterBackoff(1000, 0, 10000)
+            // )
+            // this.ws.open(20 * 1000)
+            this.websocketAdapter.addEventListener('message', this.receiveMessage)
+            this.websocketAdapter.addEventListener('close', this.reconnect)
+            this.websocketAdapter.addEventListener('error', this.reconnect)
+            
             this.messagingURLWithQuery = messagingURLWithQuery
-            console.log("WebSocket Created!!", this.ws)
+            console.log("WebSocket Created!!", this.websocketAdapter)
         }
     }
 
@@ -89,7 +94,7 @@ class WebSocketManager{
     }
 
     reconnect = (e:Event) => {
-        console.log("Reconnect!!!!!!", e)
+        console.log("Reconnect!!!!!! or error !?", e)
     }
     
     receiveMessage = (e:Event) => {
@@ -112,7 +117,7 @@ class WebSocketManager{
             data: data
         }
         const message = JSON.stringify(mess)
-        this.ws!.send(message)
+        this.websocketAdapter!.send(message)
         console.log("send data(ws):", message.length)
         // console.log("data",message)
     }
@@ -121,11 +126,13 @@ class WebSocketManager{
 
 export const WebSocketStateProvider = ({ children }: Props) => {
     const {meetingId, localUserId, joinToken } = useAppState()
+    const meetingManager = useMeetingManager()
+    
     const messagingURLWithQuery = `${WebSocketEndpoint}/Prod?joinToken=${joinToken}&meetingId=${meetingId}&attendeeId=${localUserId}`
     
     console.log("WebSocket Provider rendering")
     const webSocketManager = WebSocketManager.getInstance()
-    webSocketManager.createWebSocket(messagingURLWithQuery, true)
+    webSocketManager.createWebSocket(messagingURLWithQuery, meetingManager.meetingSession?.logger!, true)
     webSocketManager.localUserId = localUserId
     
 
