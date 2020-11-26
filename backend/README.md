@@ -1,3 +1,2 @@
 # Backend Stack for FLECT Chime SDK
-
-See root readme.
+[See root readme.](../README.md)
