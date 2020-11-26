@@ -1,13 +1,35 @@
-# Backend Stack for FLECT Chime SDK
+# FLECT Chime meeting v.2.0.0
+This is a video conference system with amazon chime sdk and its component library. This software is based on the demo of [Chime SDK UI Component Library](https://github.com/aws/amazon-chime-sdk-component-library-react).
+
+# Features
+- integrated with amazon cognito
+- virtual background
+- 
+<img src="resources/imgs/vbg5.gif" />
+
+- chat
+- white board
+
+<img src="resources/imgs/whiteboard800-5.gif" />
+
+# Installation
+## Prerequisite
+It is assumed that AWS Credential is configured. If you have not yet done so, please refer to this page to configure it.
+
+https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html
 
 ## Build backend
-### define  stack name
+### define stack name
+Define the stack name for backend.
+```
 $ emacs backend/bin/config.ts
 
 export const BACKEND_STACK_NAME = 'BackendStack'
 export const FRONTEND_LOCAL_DEV = false
+```
 
 ### build and setup on aws
+
 ```
 $ cd backend
 $ npm install
@@ -19,8 +41,6 @@ $ npm run build_all
 $ cd frontend
 $ npm install
 $ npm run build
-$ 
-
 ```
 
 
@@ -36,5 +56,6 @@ $ sudo npm update -g aws-cdk
 ```
 ## tail Log
 ```
-aws logs tail --follow  API-Gateway-Execution-Logs_gvr36meb89/prod
+aws logs tail --follow  API-Gateway-Execution-Logs_gvrxxxx89/prod
 ```
+

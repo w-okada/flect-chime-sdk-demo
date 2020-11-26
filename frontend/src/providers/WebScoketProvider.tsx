@@ -62,11 +62,6 @@ class WebSocketManager{
                 messagingURLWithQuery,
                 []
             )
-            //     'arraybuffer',
-            //     new DefaultPromisedWebSocketFactory(new DefaultDOMWebSocketFactory()),
-            //     new FullJitterBackoff(1000, 0, 10000)
-            // )
-            // this.ws.open(20 * 1000)
             this.websocketAdapter.addEventListener('message', this.receiveMessage)
             this.websocketAdapter.addEventListener('close', this.reconnect)
             this.websocketAdapter.addEventListener('error', this.reconnect)
@@ -95,6 +90,12 @@ class WebSocketManager{
 
     reconnect = (e:Event) => {
         console.log("Reconnect!!!!!! or error !?", e)
+        setTimeout(()=>{
+            this.websocketAdapter!.create(
+                this.messagingURLWithQuery,
+                []
+            )
+        },10*1000)
     }
     
     receiveMessage = (e:Event) => {

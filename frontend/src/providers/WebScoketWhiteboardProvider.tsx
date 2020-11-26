@@ -10,8 +10,7 @@ type Props = {
 
 const TOPIC_NAME = "WHITEBOARD"
 
-
-const SEND_INTERVAL_TIME = 1000 * 2
+const SEND_INTERVAL_TIME = 1000 * 0.05
 const SEND_INTERVAL_NUM  = 100
 
 export type DrawingData = {

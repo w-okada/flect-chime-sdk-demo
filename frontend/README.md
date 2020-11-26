@@ -1,4 +1,7 @@
 # Frontend for FLECT Chime SDK
+[See root readme.](../README.md)
+
+
 
 ## Build frontend
 ```
@@ -14,5 +17,3 @@ sh sync.sh
 ```
 $ npm run start
 ```
-
-
