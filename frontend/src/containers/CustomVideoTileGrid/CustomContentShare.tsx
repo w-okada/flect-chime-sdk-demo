@@ -5,7 +5,6 @@ import React, { useEffect, useRef, HTMLAttributes, forwardRef, MutableRefObject,
 import { BaseSdkProps } from 'amazon-chime-sdk-component-library-react/lib/components/sdk/Base';
 import { useAudioVideo, useContentShareState } from 'amazon-chime-sdk-component-library-react';
 import styled from 'styled-components';
-// import CustomVideoTile from './CustomVideoTile';
 import { BaseProps } from 'amazon-chime-sdk-component-library-react/lib/components/ui/Base';
 import { CustomStyledVideoTile } from './CustomStyledVideoTile';
 import { DrawingData, useWebSocketWhiteboardState } from '../../providers/WebScoketWhiteboardProvider';

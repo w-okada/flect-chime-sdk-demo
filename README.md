@@ -1,4 +1,4 @@
-# FLECT Chime meeting v.2.0.0
+# FLECT Chime meeting 
 This is a video conference system with amazon chime sdk and its component library. This software is based on the demo of [Chime SDK UI Component Library](https://github.com/aws/amazon-chime-sdk-component-library-react).
 
 # Features
