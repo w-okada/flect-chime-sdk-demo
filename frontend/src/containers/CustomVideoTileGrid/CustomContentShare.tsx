@@ -1,7 +1,7 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useEffect, useRef, HTMLAttributes, forwardRef, MutableRefObject, useState } from 'react';
+import React, { useEffect, useRef, HTMLAttributes, forwardRef, MutableRefObject, useState, FC } from 'react';
 import { BaseSdkProps } from 'amazon-chime-sdk-component-library-react/lib/components/sdk/Base';
 import { useAudioVideo, useContentShareState } from 'amazon-chime-sdk-component-library-react';
 import styled from 'styled-components';
@@ -78,16 +78,15 @@ class SharedContentDrawer {
 
 }
 
-export interface VideoTileProps
-    extends Omit<HTMLAttributes<HTMLDivElement>, 'css'>,
-    BaseProps {
+export interface VideoTileProps extends Omit<HTMLAttributes<HTMLDivElement>, 'css'>,
+BaseProps {
     nameplate?: string | null;
     objectFit?: ObjectFit;
 }
 
 
-export const CustomVideoTile = forwardRef(
-    (props: VideoTileProps, ref: React.Ref<HTMLVideoElement>) => {
+export const CustomVideoTile: FC< VideoTileProps> =
+    (props: VideoTileProps) => {
         const { tag, className, nameplate, ...rest } = props;
         const audioVideo = useAudioVideo();
         const { tileId } = useContentShareState();
@@ -273,7 +272,7 @@ export const CustomVideoTile = forwardRef(
             </CustomStyledVideoTile>
         );
     }
-);
+
 
 interface Props extends BaseSdkProps { }
 
