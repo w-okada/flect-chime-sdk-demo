@@ -218,6 +218,10 @@ class VideoEffector {
       case "Window":
         this.backgroundCanvas.getContext("2d")!.drawImage(this.backgroundVideo, 0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
         break
+      case "Black":
+        this.backgroundCanvas.getContext("2d")!.fillStyle="black"
+        this.backgroundCanvas.getContext("2d")!.fillRect(0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
+        break
       default:
         this.backgroundCanvas.getContext("2d")!.drawImage(this.frontVideo, 0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
         break
@@ -265,8 +269,8 @@ class VideoEffector {
       if(segment){
         // Use Virtual Background
         const f = this.vb.convert(front, back, segment)
-        console.log("virtual:::",front.width, back.width, this.backgroundCanvas.width, f.width)
-//        this.tempCanvas.getContext("2d")!.drawImage(f, 0, 0, this.tempCanvas.width, this.tempCanvas.height)
+//        console.log("virtual:::",front.width, back.width, this.backgroundCanvas.width, f.width)
+        this.tempCanvas.getContext("2d")!.drawImage(f, 0, 0, this.tempCanvas.width, this.tempCanvas.height)
         requestAnimationFrame(this.copyFrame)
       }else{
         // Not use Virtual Background
@@ -274,7 +278,6 @@ class VideoEffector {
         requestAnimationFrame(this.copyFrame)
         //console.log("--------->", frontVideo.width, frontCanvas.width, backgroundCanvas.width, tempCanvas.width)
       }
-
     })
   }
 }
