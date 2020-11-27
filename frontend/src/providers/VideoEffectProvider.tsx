@@ -223,7 +223,11 @@ class VideoEffector {
         this.backgroundCanvas.getContext("2d")!.fillRect(0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
         break
       default:
-        this.backgroundCanvas.getContext("2d")!.drawImage(this.frontVideo, 0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
+        if(this.frontEffect === "None" && this._backgroundEffect === "None"){
+          // no virtual background -> skip copy background
+        }else{
+          this.backgroundCanvas.getContext("2d")!.drawImage(this.frontVideo, 0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
+        }
         break
     }
 
