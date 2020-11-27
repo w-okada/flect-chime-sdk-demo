@@ -28,11 +28,6 @@ const VideoQualityDetails:{[key in VideoQuality]:number[]} = {
   '720p':[1280, 720, 15, 14000],
 }
 
-const backgroundVideo = document.createElement("video")
-const backgroundCanvas = document.createElement("canvas")
-const frontVideo = document.createElement("video")
-const frontCanvas = document.createElement("canvas")
-const tempCanvas = document.createElement("canvas")
 
 export interface VideoEffectStateValue {
   //Input Device
@@ -65,21 +60,22 @@ export const useVideoEffectState = (): VideoEffectStateValue => {
 }
 
 class VideoEffector {
-  vb = new VirtualBackground()
-  frontEffect: FrontEffect = "None"
-  private _backgroundEffect: BackgroundEffect = "None"
-  backgroundImage = (()=>{
-    const i = document.createElement("img")
-    return i
-  })()
+  private backgroundVideo  = document.createElement("video")
+  private backgroundCanvas = document.createElement("canvas")
+  private frontVideo       = document.createElement("video")
+  private frontCanvas      = document.createElement("canvas")
+  private tempCanvas       = document.createElement("canvas")
 
-  private _quality = '360p' as VideoQuality 
-  set quality(val:VideoQuality){
-    this._quality = val
-  } 
-  get quality(){return this._quality}
+  private _backgroundImage  = document.createElement("img")
   
+  private vb = new VirtualBackground()
+  
+  private _frontEffect: FrontEffect = "None"
+  private _backgroundEffect: BackgroundEffect = "None"
+  private _quality = '360p' as VideoQuality 
 
+
+  // Constructor and Singleton pattern
   private static _instance:VideoEffector;
   public static getInstance():VideoEffector{
     if(!this._instance){
@@ -91,23 +87,62 @@ class VideoEffector {
     console.log("video effector !!!!!!")
   }
 
+
+  // Set Attribute
+  set frontEffect(val:FrontEffect){this._frontEffect = val} 
+  get frontEffect(){return this._frontEffect}
+
   set backgroundEffect(val:BackgroundEffect){
-    backgroundVideo.pause()
+    this.backgroundVideo.pause()
     this._backgroundEffect=val
   }
-  // _backgroundMediaStream: MediaStream | null = null
-  set backgroundMediaStream(val:MediaStream|null){
-    if(val === null){
-      backgroundVideo.pause()
-      // this._backgroundMediaStream=null
+  get backgroundEffect(){return this._backgroundEffect}
+
+  set quality(val:VideoQuality){this._quality = val} 
+  get quality(){return this._quality}
+  
+
+  set backgroundImage(val:HTMLImageElement){this._backgroundImage=val}
+
+
+  set frontMediaStream(stream:MediaStream|null){
+    if(stream===null){
+      this.frontVideo.pause()
+      this.frontVideo.srcObject = null
       return
     }
+    const videoWidth = stream.getVideoTracks()[0].getSettings().width
+    const videoHeight = stream.getVideoTracks()[0].getSettings().height
+    for(let comp of [this.frontVideo, this.frontCanvas, this.backgroundCanvas, this.tempCanvas]){
+      comp.width  = videoWidth!
+      comp.height = videoHeight!
+    }    
 
-    backgroundVideo.width = val.getVideoTracks()[0].getSettings().width!
-    backgroundVideo.height = val.getVideoTracks()[0].getSettings().height!
-    backgroundVideo.srcObject=val
-    backgroundVideo.play()
-    console.log("set background mediastream")
+    this.frontVideo.srcObject = stream
+    this.frontVideo.play()
+    console.log("video resolution",videoWidth, videoHeight)    
+  }
+
+  get convertedMediaStream():MediaStream{
+    //@ts-ignore
+    return this.tempCanvas.captureStream() as MediaStream
+  }
+
+  set backgroundMediaStream(stream:MediaStream|null){
+    if(stream === null){
+      this.backgroundVideo.pause()
+      return
+    }
+    const videoWidth = stream.getVideoTracks()[0].getSettings().width
+    const videoHeight = stream.getVideoTracks()[0].getSettings().height    
+    for(let comp of [this.backgroundVideo]){
+      comp.width  = videoWidth!
+      comp.height = videoHeight!
+    }    
+
+    this.backgroundVideo.srcObject=stream
+    this.backgroundVideo.play()
+    console.log("set background mediastream", videoWidth, videoHeight)
   }
 
   //// workers
@@ -172,27 +207,29 @@ class VideoEffector {
   }
   opencvParams = generateDefaultOpenCVParams()
   
+
+  // Operation
   copyFrame = () =>{
-    frontCanvas.getContext("2d")!.drawImage(frontVideo, 0, 0, frontCanvas.width, frontCanvas.height)
+    this.frontCanvas.getContext("2d")!.drawImage(this.frontVideo, 0, 0, this.frontCanvas.width, this.frontCanvas.height)
     switch(this._backgroundEffect){
       case "Image":
-        backgroundCanvas.getContext("2d")!.drawImage(this.backgroundImage, 0, 0, backgroundCanvas.width, backgroundCanvas.height)
+        this.backgroundCanvas.getContext("2d")!.drawImage(this._backgroundImage, 0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
         break
       case "Window":
-        backgroundCanvas.getContext("2d")!.drawImage(backgroundVideo, 0, 0, backgroundCanvas.width, backgroundCanvas.height)
+        this.backgroundCanvas.getContext("2d")!.drawImage(this.backgroundVideo, 0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
         break
       default:
-        backgroundCanvas.getContext("2d")!.drawImage(frontVideo, 0, 0, backgroundCanvas.width, backgroundCanvas.height)
+        this.backgroundCanvas.getContext("2d")!.drawImage(this.frontVideo, 0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
         break
     }
 
     const promises = []
     switch(this._backgroundEffect){
       case "Ascii":
-        promises.push(this.asciiArtWorkerManagerForB.predict(backgroundCanvas, this.asciiArtParams))
+        promises.push(this.asciiArtWorkerManagerForB.predict(this.backgroundCanvas, this.asciiArtParams))
         break
       case "Canny":
-        promises.push(this.opencvManagerForB.predict(backgroundCanvas, this.opencvParams))
+        promises.push(this.opencvManagerForB.predict(this.backgroundCanvas, this.opencvParams))
         break
       default:
         promises.push(null)
@@ -200,10 +237,10 @@ class VideoEffector {
 
     switch(this.frontEffect){
       case "Ascii":
-        promises.push(this.asciiArtWorkerManagerForF.predict(frontCanvas, this.asciiArtParams))
+        promises.push(this.asciiArtWorkerManagerForF.predict(this.frontCanvas, this.asciiArtParams))
         break
       case "Canny":
-        promises.push(this.opencvManagerForF.predict(frontCanvas, this.opencvParams))
+        promises.push(this.opencvManagerForF.predict(this.frontCanvas, this.opencvParams))
         break
       default:
         promises.push(null)
@@ -213,26 +250,27 @@ class VideoEffector {
       // Don't use virtual background
       promises.push(null)
     }else{
-      promises.push(this.bodyPixWorkerManager.predict(frontCanvas, this.bodyPixParams))
+      promises.push(this.bodyPixWorkerManager.predict(this.frontCanvas, this.bodyPixParams))
     }
     
     Promise.all(promises).then(([back, front, segment])=>{
       //console.log(back, front, segment)
       if(!front){
-        front = frontCanvas
+        front = this.frontCanvas
       }
       if(!back){
-        back = backgroundCanvas
+        back = this.backgroundCanvas
       }
 
       if(segment){
         // Use Virtual Background
         const f = this.vb.convert(front, back, segment)
-        tempCanvas.getContext("2d")!.drawImage(f, 0, 0, tempCanvas.width, tempCanvas.height)
+        console.log("virtual:::",front.width, back.width, this.backgroundCanvas.width, f.width)
+//        this.tempCanvas.getContext("2d")!.drawImage(f, 0, 0, this.tempCanvas.width, this.tempCanvas.height)
         requestAnimationFrame(this.copyFrame)
       }else{
         // Not use Virtual Background
-        tempCanvas.getContext("2d")!.drawImage(front, 0, 0, tempCanvas.width, tempCanvas.height)
+        this.tempCanvas.getContext("2d")!.drawImage(front, 0, 0, this.tempCanvas.width, this.tempCanvas.height)
         requestAnimationFrame(this.copyFrame)
         //console.log("--------->", frontVideo.width, frontCanvas.width, backgroundCanvas.width, tempCanvas.width)
       }
@@ -271,35 +309,18 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
       video: calculateVideoConstraint(deviceId, width, height)
     }).then(stream => {
       setFrontMediaStream(stream)
-      const videoWidth = stream.getVideoTracks()[0].getSettings().width
-      const videoHeight = stream.getVideoTracks()[0].getSettings().height
-      console.log(videoWidth, videoHeight)
-      frontVideo.width  = videoWidth!
-      frontVideo.height = videoHeight!
-      frontVideo.srcObject = stream
-      frontVideo.play()
-
-      frontCanvas.width       = videoWidth!
-      frontCanvas.height      = videoHeight!
-      backgroundCanvas.width  = videoWidth!
-      backgroundCanvas.height = videoHeight!
-
-
-      tempCanvas.width = videoWidth!
-      tempCanvas.height = videoHeight!
-      console.log("video resolution",videoWidth, videoHeight)
+      VideoEffector.getInstance().frontMediaStream = stream
     })
 
     // @ts-ignore
-    const mediaStream = tempCanvas.captureStream() as MediaStream
+    const mediaStream = VideoEffector.getInstance().convertedMediaStream
     setDeviceIdInternal(deviceId)
     audioVideo!.chooseVideoInputQuality(width, height, fps, bandWidth);
     return mediaStream
   }
 
   const stopDevice = () =>{
-    frontVideo.pause()
-    frontVideo.srcObject = null
+    VideoEffector.getInstance().frontMediaStream = null
     if(frontMediaStream){
       frontMediaStream.getTracks().forEach(function(track) {
         track.stop();
