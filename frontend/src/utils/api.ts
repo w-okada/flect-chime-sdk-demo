@@ -111,7 +111,7 @@ export function createGetAttendeeCallback(meetingName: string, idToken: string, 
     const data = await res.json();
 
     return {
-      name: data.UserName
+      name: decodeURIComponent(data.UserName)
     };
   };
 }
