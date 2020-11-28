@@ -4,13 +4,13 @@
 import { ControlBarButton, Cog, Modal, ModalHeader, ModalBody, ModalButton, ModalButtonGroup, useVideoInputs, useSelectVideoInputDevice, Flex, RadioGroup, Button } from "amazon-chime-sdk-component-library-react";
 import React, { useState } from "react";
 import { StyledP } from "../EndMeetingControl/Styled";
-import { useVideoEffectState } from "../../providers/VideoEffectProvider/VideoEffectProvider";
+import { useVideoEffectState, VirtualBackgroundQuality } from "../../providers/VideoEffectProvider/VideoEffectProvider";
 
 const FrontEffectSelect: React.FC<{}> = props => {
   const { selectedDevice } = useVideoInputs({ additionalDevices: true });
   const selectDevice = useSelectVideoInputDevice();
-  const { frontEffectOptions, setFrontEffect, frontEffect } = useVideoEffectState()
-  const options = frontEffectOptions.map(e => { return { label: e, value: e } })
+  const { FrontEffectOptions, setFrontEffect, frontEffect } = useVideoEffectState()
+  const options = FrontEffectOptions.map(e => { return { label: e, value: e } })
   const handleChange = (e: any) => {
     setFrontEffect(e.target.value)
     console.log(e.target.value)
@@ -40,8 +40,8 @@ const FrontEffectSelect: React.FC<{}> = props => {
 const BackgroundEffectSelect: React.FC<{}> = props => {
   const { selectedDevice } = useVideoInputs({ additionalDevices: true });
   const selectDevice = useSelectVideoInputDevice();
-  const { backgroundEffectOptions, setBackgroundEffect, backgroundEffect, setBackgroundImage, setBackgroundMediaStream } = useVideoEffectState()
-  const options = backgroundEffectOptions.map(e => { return { label: e, value: e } })
+  const { BackgroundEffectOptions, setBackgroundEffect, backgroundEffect, setBackgroundImage, setBackgroundMediaStream } = useVideoEffectState()
+  const options = BackgroundEffectOptions.map(e => { return { label: e, value: e } })
   const handleBackendEffectChange = (e: any) => {
     setBackgroundEffect(e.target.value)
     if (selectDevice) {
@@ -116,6 +116,38 @@ const BackgroundEffectSelect: React.FC<{}> = props => {
   );
 };
 
+
+const VirtualBackgroundQualitySelect: React.FC<{}> = props => {
+  const { selectedDevice } = useVideoInputs({ additionalDevices: true });
+  const selectDevice = useSelectVideoInputDevice();
+  const { virtualBackgroundQuality, setVirtualBackgroundQuality, VirtualBackgroundQualityOptions} = useVideoEffectState()
+  const options = VirtualBackgroundQualityOptions.map(e => { return { label: ""+e, value: ""+e } })
+  const handleChange = (e: any) => {
+    setVirtualBackgroundQuality(parseInt(e.target.value) as VirtualBackgroundQuality)
+    console.log(e.target.value)
+    if (selectDevice) {
+      selectDevice(selectedDevice!)
+    }
+  };
+
+  return (
+    <>
+      <StyledP>
+        VirtualBackgroundQuality(0: low - 4: high)
+      </StyledP>
+      <Flex layout="equal-columns">
+        <RadioGroup
+          options={options}
+          value={""+virtualBackgroundQuality}
+          onChange={handleChange}
+        />
+      </Flex>
+    </>
+  );
+};
+
+
+
 const VideoQualitySelect: React.FC<{}> = props => {
   const { VideoQualityOptions, selectQuality, videoQuality } = useVideoEffectState()
   const options = VideoQualityOptions.map(e => { return { label: e, value: e } })
@@ -156,6 +188,7 @@ const VideoEffectControl: React.FC = () => {
             <FrontEffectSelect />
             <BackgroundEffectSelect />
             <VideoQualitySelect />
+            <VirtualBackgroundQualitySelect />
           </ModalBody>
           <ModalButtonGroup
             primaryButtons={[

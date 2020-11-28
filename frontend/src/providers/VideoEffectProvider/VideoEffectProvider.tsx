@@ -15,8 +15,12 @@ export type FrontEffect = "None" | "Ascii" | "Canny" | "Blur" | "Black"
 export type BackgroundEffect = "None" | "Ascii" | "Canny" | "Blur" | "Black" | "Image" | "Window"
 export type VideoQuality = '360p' | '540p' | '720p';
 
-const FrontEffectOoptions: FrontEffect[] = ["None", "Ascii", "Canny", "Blur", "Black"]
-const BackgroundEffectOoptions: BackgroundEffect[] = ["None", "Ascii", "Canny", "Blur", "Black", "Image", "Window"]
+export type VirtualBackgroundQuality = 0 | 1 | 2 | 3 | 4;
+const VirtualBackgroundQualityOptions:VirtualBackgroundQuality[] = [0, 1, 2, 3, 4];
+export const VirtualBackgroundQualityResolution = [300, 450, 600, 750, 900]
+
+const FrontEffectOptions: FrontEffect[] = ["None", "Ascii", "Canny", "Blur", "Black"]
+const BackgroundEffectOptions: BackgroundEffect[] = ["None", "Ascii", "Canny", "Blur", "Black", "Image", "Window"]
 const VideoQualityOptions: VideoQuality[] = ['360p', '540p', '720p']
 const VideoQualityDetails:{[key in VideoQuality]:number[]} = {
   '360p':[ 640, 360, 15, 6000],
@@ -32,13 +36,16 @@ export interface VideoEffectStateValue {
   stopDevice: () => void
   selectQuality: (quality: VideoQuality) => void
   videoQuality: VideoQuality
+  virtualBackgroundQuality: VirtualBackgroundQuality
   // Effect
   frontEffect: FrontEffect,
   backgroundEffect: BackgroundEffect
   backgroundMediaStream: MediaStream | null
-  frontEffectOptions: FrontEffect[]
-  backgroundEffectOptions: BackgroundEffect[]
+  FrontEffectOptions: FrontEffect[]
+  BackgroundEffectOptions: BackgroundEffect[]
   VideoQualityOptions: VideoQuality[]
+  VirtualBackgroundQualityOptions:VirtualBackgroundQuality[]
+  setVirtualBackgroundQuality: (val: VirtualBackgroundQuality) => void
   setFrontEffect: (e: FrontEffect) => void
   setBackgroundEffect: (e: BackgroundEffect) => void
   setBackgroundImage: (p: HTMLImageElement) => void
@@ -66,10 +73,11 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
   const [frontEffect, _setFrontEffect] = useState("None" as FrontEffect)
   const [backgroundEffect, _setBackgroundEffect] = useState("None" as BackgroundEffect)
   const [backgroundMediaStream] = useState(null as MediaStream | null)
-  const frontEffectOptions = FrontEffectOoptions
-  const backgroundEffectOptions = BackgroundEffectOoptions
+  // const frontEffectOptions = FrontEffectOoptions
+  // const backgroundEffectOptions = BackgroundEffectOoptions
 
   const [videoQuality, setVideoQuality] = useState('360p' as VideoQuality);
+  const [virtualBackgroundQuality, _setVirtualBackgroundQuality] = useState(0 as VirtualBackgroundQuality)
 
   const videoEffector = VideoEffector.getInstance()
 
@@ -127,11 +135,14 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
       trackConstraints.height = height;
 
     }
-
     return trackConstraints;
   }
 
 
+  const setVirtualBackgroundQuality = (val:VirtualBackgroundQuality) => {
+    videoEffector.virtaulBackgroundQuality = val
+    _setVirtualBackgroundQuality(val)
+  }
 
   const setFrontEffect = (_frontEffect:FrontEffect) =>{
     videoEffector.frontEffect = _frontEffect
@@ -141,7 +152,7 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
   const setBackgroundEffect = (_backgroundEffect:BackgroundEffect) =>{
     videoEffector.backgroundEffect = _backgroundEffect
     _setBackgroundEffect(_backgroundEffect)
-  }
+  }  
 
   const setBackgroundImage = (_backgroundImage: HTMLImageElement) => {
     videoEffector.backgroundImage = _backgroundImage
@@ -172,15 +183,18 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
     stopDevice,
     selectQuality,
     videoQuality,
+    virtualBackgroundQuality,
 
     frontEffect,
     backgroundEffect,
     backgroundMediaStream,
 
-    frontEffectOptions,
-    backgroundEffectOptions,
+    FrontEffectOptions,
+    BackgroundEffectOptions,
     VideoQualityOptions,
+    VirtualBackgroundQualityOptions,
 
+    setVirtualBackgroundQuality,
     setFrontEffect,
     setBackgroundEffect,
     setBackgroundImage,

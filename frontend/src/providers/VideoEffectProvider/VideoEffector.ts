@@ -1,4 +1,4 @@
-import { FrontEffect, BackgroundEffect, VideoQuality } from "./VideoEffectProvider"
+import { FrontEffect, BackgroundEffect, VideoQuality, VirtualBackgroundQuality, VirtualBackgroundQualityResolution } from "./VideoEffectProvider"
 import { AsciiArtWorkerManager, generateAsciiArtDefaultConfig, AsciiConfig, generateDefaultAsciiArtParams } from "@dannadori/asciiart-worker-js"
 import { BodypixWorkerManager, generateBodyPixDefaultConfig, generateDefaultBodyPixParams } from "@dannadori/bodypix-worker-js"
 import { BodyPixConfig } from "@dannadori/bodypix-worker-js/dist/const"
@@ -48,6 +48,21 @@ export class VideoEffector {
   
     set quality(val:VideoQuality){this._quality = val} 
     get quality(){return this._quality}
+
+    set virtaulBackgroundQuality(val:VirtualBackgroundQuality){
+      const params = [
+        this.asciiArtParamsForF,
+        this.asciiArtParamsForB,
+        this.bodyPixParams,
+        this.facemeshParams,
+        this.opencvParamsForF,
+        this.opencvParamsForB,
+      ]
+      for(const param of params){
+        param.processWidth = VirtualBackgroundQualityResolution[val]
+        param.processHeight = VirtualBackgroundQualityResolution[val]
+      }
+    }
     
   
     set backgroundImage(val:HTMLImageElement){this._backgroundImage=val}
