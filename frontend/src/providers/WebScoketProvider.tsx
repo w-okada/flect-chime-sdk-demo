@@ -91,6 +91,7 @@ class WebSocketManager{
     reconnect = (e:Event) => {
         console.log("Reconnect!!!!!! or error !?", e)
         setTimeout(()=>{
+            console.log("reconnecting... ")
             this.websocketAdapter!.create(
                 this.messagingURLWithQuery,
                 []

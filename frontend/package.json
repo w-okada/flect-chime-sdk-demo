@@ -6,7 +6,7 @@
     "@dannadori/asciiart-worker-js": "^1.0.18",
     "@dannadori/bodypix-worker-js": "^1.0.27",
     "@dannadori/facemesh-worker-js": "^1.0.35",
-    "@dannadori/opencv-worker-js": "^1.0.22",
+    "@dannadori/opencv-worker-js": "^1.0.23",
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/free-solid-svg-icons": "^5.15.1",
     "@fortawesome/react-fontawesome": "^0.1.13",

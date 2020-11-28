@@ -41,18 +41,20 @@ const PasswordField:React.FC = () =>{
     <FormField
       field={Input}
       label="Password"
-      value={"*".repeat(password.length)}
+      fieldProps={{ type: 'password' }}
+      value={password}
+      // value={"*".repeat(password.length)}
       onChange={(e: ChangeEvent<HTMLInputElement>)=>{
-        let newPassword = e.target.value
-        if(newPassword.length > password.length){
-          const lastChar = newPassword.slice(-1)
-          newPassword = password + lastChar
-        }else if(newPassword.length < password.length){
-          newPassword = password.slice(0, -1)
-        }else{
-          newPassword=password
-        }
-        setPassword(newPassword)
+        // let newPassword = e.target.value
+        // if(newPassword.length > password.length){
+        //   const lastChar = newPassword.slice(-1)
+        //   newPassword = password + lastChar
+        // }else if(newPassword.length < password.length){
+        //   newPassword = password.slice(0, -1)
+        // }else{
+        //   newPassword=password
+        // }
+        setPassword(e.target.value)
       }}
     />
   )
