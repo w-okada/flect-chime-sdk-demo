@@ -22,11 +22,11 @@ const Home = () => {
 
   return(
     <MeetingFormStateProvider>
-    <StyledLayout>
-      <MeetingFormSelector />
-      <VersionLabel />
-    </StyledLayout>
-  </MeetingFormStateProvider>
+      <StyledLayout>
+        <MeetingFormSelector />
+        <VersionLabel />
+      </StyledLayout>
+    </MeetingFormStateProvider>
   )
 }
 

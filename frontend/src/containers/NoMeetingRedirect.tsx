@@ -11,11 +11,13 @@ import {
 } from 'amazon-chime-sdk-component-library-react';
 
 import routes from '../constants/routes';
+import { useAppState } from '../providers/AppStateProvider';
 
 const NoMeetingRedirect: React.FC = ({ children }) => {
   const history = useHistory();
   const dispatch = useNotificationDispatch();
   const meetingManager = useMeetingManager();
+  const { userId, idToken} = useAppState();  
 
   const payload: any = {
     severity: Severity.INFO,
@@ -29,7 +31,11 @@ const NoMeetingRedirect: React.FC = ({ children }) => {
         type: ActionType.ADD,
         payload: payload,
       });
-      history.push(routes.HOME);
+      if(!userId || !idToken){
+        history.push(routes.SIGNIN)
+      } else{
+        history.push(routes.HOME);
+      }
     }
   });
 
