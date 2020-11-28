@@ -54,12 +54,12 @@ export const RealitimeSubscribeChatStateProvider = ({ children }: Props) => {
     }
 
     useEffect(() => {
-        audioVideo!.realtimeSubscribeToReceiveDataMessage(
+        audioVideo?.realtimeSubscribeToReceiveDataMessage(
             "CHAT" as DataMessageType,
             receiveChatData
         )
         return () => {
-            audioVideo!.realtimeUnsubscribeFromReceiveDataMessage("CHAT" as DataMessageType)
+            audioVideo?.realtimeUnsubscribeFromReceiveDataMessage("CHAT" as DataMessageType)
         }
     })
 

@@ -95,6 +95,9 @@ class WebSocketManager{
                 this.messagingURLWithQuery,
                 []
             )
+            this.websocketAdapter!.addEventListener('message', this.receiveMessage)
+            this.websocketAdapter!.addEventListener('close', this.reconnect)
+            this.websocketAdapter!.addEventListener('error', this.reconnect)
         },10*1000)
     }
     
