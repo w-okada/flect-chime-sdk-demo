@@ -11,12 +11,12 @@ type Props = {
   children: ReactNode;
 };
 
-export type FrontEffect = "None" | "Ascii" | "Canny" | "Black"
-export type BackgroundEffect = "None" | "Ascii" | "Canny" | "Black" | "Image" | "Window"
+export type FrontEffect = "None" | "Ascii" | "Canny" | "Blur" | "Black" 
+export type BackgroundEffect = "None" | "Ascii" | "Canny" | "Blur" | "Black" | "Image" | "Window"
 export type VideoQuality = '360p' | '540p' | '720p';
 
-const FrontEffectOoptions: FrontEffect[] = ["None", "Ascii", "Canny", "Black"]
-const BackgroundEffectOoptions: BackgroundEffect[] = ["None", "Ascii", "Canny", "Black", "Image", "Window"]
+const FrontEffectOoptions: FrontEffect[] = ["None", "Ascii", "Canny", "Blur", "Black"]
+const BackgroundEffectOoptions: BackgroundEffect[] = ["None", "Ascii", "Canny", "Blur", "Black", "Image", "Window"]
 const VideoQualityOptions: VideoQuality[] = ['360p', '540p', '720p']
 const VideoQualityDetails:{[key in VideoQuality]:number[]} = {
   '360p':[ 640, 360, 15, 6000],
@@ -155,7 +155,7 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
     videoEffector.asciiArtConfig = _asciiArtConfig
   }
   const setAsciiArtParams = (_asciiArtParams: AsciiOperatipnParams) =>{
-    videoEffector.asciiArtParams = _asciiArtParams
+    videoEffector.asciiArtParamsForF = _asciiArtParams
   }
 
 

@@ -3,7 +3,7 @@ import { AsciiArtWorkerManager, generateAsciiArtDefaultConfig, AsciiConfig, gene
 import { BodypixWorkerManager, generateBodyPixDefaultConfig, generateDefaultBodyPixParams } from "@dannadori/bodypix-worker-js"
 import { BodyPixConfig } from "@dannadori/bodypix-worker-js/dist/const"
 import { FacemeshWorkerManager, generateFacemeshDefaultConfig, FacemeshConfig, generateDefaultFacemeshParams } from "@dannadori/facemesh-worker-js"
-import { OpenCVWorkerManager, generateOpenCVDefaultConfig, OpenCVConfig, generateDefaultOpenCVParams } from "@dannadori/opencv-worker-js"
+import { OpenCVWorkerManager, generateOpenCVDefaultConfig, OpenCVConfig, generateDefaultOpenCVParams, OpenCVFunctionType } from "@dannadori/opencv-worker-js"
 import { VirtualBackground } from "./VirtualBackground"
 
 export class VideoEffector {
@@ -113,7 +113,8 @@ export class VideoEffector {
       this.asciiArtWorkerManagerForB.init(val)
       this._asciiArtConfig = val
     }
-    asciiArtParams = generateDefaultAsciiArtParams()
+    asciiArtParamsForF = generateDefaultAsciiArtParams()
+    asciiArtParamsForB = generateDefaultAsciiArtParams()
     // BodyPix
     bodyPixWorkerManager = (()=>{
       const w = new BodypixWorkerManager()    
@@ -155,7 +156,8 @@ export class VideoEffector {
       this.opencvManagerForB.init(val)
       this._opencvConfig=val
     }
-    opencvParams = generateDefaultOpenCVParams()
+    opencvParamsForF = generateDefaultOpenCVParams()
+    opencvParamsForB = generateDefaultOpenCVParams()
     
   
     // Operation
@@ -194,10 +196,15 @@ export class VideoEffector {
       if(this._backgroundEffect !== this._frontEffect){
         switch(this._backgroundEffect){
           case "Ascii":
-            promises.push(this.asciiArtWorkerManagerForB.predict(this.backgroundCanvas, this.asciiArtParams))
+            promises.push(this.asciiArtWorkerManagerForB.predict(this.backgroundCanvas, this.asciiArtParamsForB))
             break
           case "Canny":
-            promises.push(this.opencvManagerForB.predict(this.backgroundCanvas, this.opencvParams))
+            this.opencvParamsForB.type = OpenCVFunctionType.Canny
+            promises.push(this.opencvManagerForB.predict(this.backgroundCanvas, this.opencvParamsForB))
+            break
+          case "Blur":
+            this.opencvParamsForB.type = OpenCVFunctionType.Blur
+            promises.push(this.opencvManagerForB.predict(this.backgroundCanvas, this.opencvParamsForB))
             break
           default:
             promises.push(null)
@@ -209,10 +216,15 @@ export class VideoEffector {
       // edit front
       switch(this.frontEffect){
         case "Ascii":
-          promises.push(this.asciiArtWorkerManagerForF.predict(this.frontCanvas, this.asciiArtParams))
+          promises.push(this.asciiArtWorkerManagerForF.predict(this.frontCanvas, this.asciiArtParamsForF))
           break
         case "Canny":
-          promises.push(this.opencvManagerForF.predict(this.frontCanvas, this.opencvParams))
+          this.opencvParamsForF.type = OpenCVFunctionType.Canny
+          promises.push(this.opencvManagerForF.predict(this.frontCanvas, this.opencvParamsForF))
+          break
+        case "Blur":
+          this.opencvParamsForF.type = OpenCVFunctionType.Blur
+          promises.push(this.opencvManagerForF.predict(this.frontCanvas, this.opencvParamsForF))
           break
         default:
           promises.push(null)
