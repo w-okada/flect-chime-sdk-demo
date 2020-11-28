@@ -20,7 +20,7 @@ import { NavigationProvider } from './providers/NavigationProvider';
 import { SignIn, Home, DeviceSetup, Meeting } from './views';
 import NoMeetingRedirect from './containers/NoMeetingRedirect';
 // import { Meeting, Home, DeviceSetup } from './views';
-import { VideoEffectStateProvider } from './providers/VideoEffectProvider'
+import { VideoEffectStateProvider } from './providers/VideoEffectProvider/VideoEffectProvider'
 
 
 const App: FC = () => (

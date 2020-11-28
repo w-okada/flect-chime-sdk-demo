@@ -11,7 +11,7 @@ import MeetingDetails from '../../containers/MeetingDetails';
 import MeetingControls from '../../containers/MeetingControls';
 import useMeetingEndRedirect from '../../hooks/useMeetingEndRedirect';
 import MeetingMetrics from '../../containers/MeetingMetrics';
-import { useVideoEffectState } from '../../providers/VideoEffectProvider';
+import { useVideoEffectState } from '../../providers/VideoEffectProvider/VideoEffectProvider';
 import { RealitimeSubscribeStateProvider } from '../../providers/RealtimeSubscribeProvider';
 import CustomVideoTileGrid from '../../containers/CustomVideoTileGrid';
 import { WebSocketStateProvider } from '../../providers/WebScoketProvider';
@@ -21,7 +21,7 @@ const MeetingView = () => {
   useMeetingEndRedirect();
   const { showNavbar, naviShowTarget } = useNavigation();
   const meetingManager = useMeetingManager();
-  const { backgroundEffect, setDeviceId } = useVideoEffectState()
+  const { setDeviceId } = useVideoEffectState()
 
 
   // Hook!!!

@@ -1,4 +1,4 @@
-import { useRosterState, Roster, RosterHeader, RosterGroup,   Textarea, PrimaryButton, ChatBubbleContainer, ChatBubble, PopOverItem } from "amazon-chime-sdk-component-library-react";
+import { useRosterState, Roster, RosterHeader, RosterGroup,   Textarea, PrimaryButton } from "amazon-chime-sdk-component-library-react";
 import { useNavigation } from "../../providers/NavigationProvider";
 import React, { useState } from "react";
 import { useRealitimeSubscribeChatState } from "../../providers/RealtimeSubscribeChatProvider";
@@ -7,9 +7,7 @@ export interface ChatProps {
   attendeeId: string;
   text: string
 }
-const bubbleStyles = `
-  margin: 1rem;
-`;
+
 
 const ChatView = () => {
   const { roster } = useRosterState();
@@ -24,47 +22,17 @@ const ChatView = () => {
     const text = c.data
     const time = (new Date(c.createdDate)).toLocaleTimeString('ja-JP')
 
-    // attendeeItems.push(
-    //   <div key={uuid} style={{margin:"5px", wordWrap:"break-word"}}>
-    //     <p style={{color:"green"}}>
-    //     {time}  {senderName}
-    //     </p>
-    //     <p style={{paddingLeft:"5px"}}>
-    //       {text}
-    //     </p>
-    //   </div>
-    // )
-    const actions = (
-      <PopOverItem
-        children={<span>save comment</span>}
-      />
-    );
-    
     attendeeItems.push(
-      <>
-      <ChatBubbleContainer timestamp={time}>
-        <ChatBubble
-          variant="outgoing"
-          senderName="Okada"
-          content="Do You Like Broccoli Ice Cream?"
-          showTail={false}
-          css={bubbleStyles}
-        />
-      </ChatBubbleContainer>
-
-      <ChatBubbleContainer timestamp={time} actions={actions}>
-         <ChatBubble
-           variant="incoming"
-           senderName="lion"
-           content="No, I don't"
-           showTail={false}
-           css={bubbleStyles}
-         />
-       </ChatBubbleContainer>
-       
-      </>
-
+      <div key={uuid} style={{margin:"5px", wordWrap:"break-word"}}>
+        <p style={{color:"green"}}>
+        {time}  {senderName}
+        </p>
+        <p style={{paddingLeft:"5px"}}>
+          {text}
+        </p>
+      </div>
     )
+
   }
 
   return (

@@ -23,7 +23,6 @@ export type DrawingData = {
     lineWidth: number
 }
 
-type DataMessageType = "WHITEBOARD"
 
 type DrawingCmd = "DRAW" | "ERASE" | "CLEAR"
 type DrawingMode = "DRAW" | "ERASE" | "DISABLE"

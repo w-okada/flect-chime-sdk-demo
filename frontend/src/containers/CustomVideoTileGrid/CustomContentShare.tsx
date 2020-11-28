@@ -1,7 +1,7 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useEffect, useRef, HTMLAttributes, forwardRef, MutableRefObject, useState, FC } from 'react';
+import React, { useEffect, useRef, HTMLAttributes, MutableRefObject, useState, FC } from 'react';
 import { BaseSdkProps } from 'amazon-chime-sdk-component-library-react/lib/components/sdk/Base';
 import { useAudioVideo, useContentShareState } from 'amazon-chime-sdk-component-library-react';
 import styled from 'styled-components';
@@ -96,7 +96,7 @@ export const CustomVideoTile: FC<VideoTileProps> = (props: VideoTileProps) => {
     const [previousPosition, setPreviousPosition] = useState([0, 0])
     const [lastSendingTime, setLastSendingTime] = useState(Date.now())
     // const {sendDrawingData, drawingDatas, drawingMode, drawingStroke} = useRealitimeSubscribeWhiteboardState()
-    const { sendDrawingData, drawingDatas, drawingMode, setDrawingMode, drawingStroke } = useWebSocketWhiteboardState()
+    const { sendDrawingData, drawingDatas, drawingMode, drawingStroke } = useWebSocketWhiteboardState()
 
 
     const drawer = SharedContentDrawer.getInstance()

@@ -1,4 +1,4 @@
-import { ReactNode, useContext, useEffect, useState } from "react";
+import { ReactNode, useContext } from "react";
 import React from "react";
 // import { ReconnectingPromisedWebSocket, DefaultPromisedWebSocketFactory, DefaultDOMWebSocketFactory, FullJitterBackoff } from "amazon-chime-sdk-js";
 import { useAppState } from "./AppStateProvider";
@@ -104,7 +104,7 @@ class WebSocketManager{
         const topic = message.topic
 //        console.log("recieveMessage!!", event)
         if(this.listener[topic]){
-            this.listener[topic].map(x=>{
+            this.listener[topic].forEach(x=>{
                 x(message)
             })
         }

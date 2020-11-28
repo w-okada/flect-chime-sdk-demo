@@ -4,7 +4,7 @@
 import { ControlBarButton, Cog, Modal, ModalHeader, ModalBody, ModalButton, ModalButtonGroup, useVideoInputs, useSelectVideoInputDevice, Flex, RadioGroup, Button } from "amazon-chime-sdk-component-library-react";
 import React, { useState } from "react";
 import { StyledP } from "../EndMeetingControl/Styled";
-import { useVideoEffectState } from "../../providers/VideoEffectProvider";
+import { useVideoEffectState } from "../../providers/VideoEffectProvider/VideoEffectProvider";
 
 const FrontEffectSelect: React.FC<{}> = props => {
   const { selectedDevice } = useVideoInputs({ additionalDevices: true });

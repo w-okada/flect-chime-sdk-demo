@@ -18,7 +18,7 @@ import { endMeeting } from '../../utils/api';
 import { StyledP } from './Styled';
 import { useAppState } from '../../providers/AppStateProvider';
 import routes from '../../constants/routes';
-import { useVideoEffectState } from '../../providers/VideoEffectProvider';
+import { useVideoEffectState } from '../../providers/VideoEffectProvider/VideoEffectProvider';
 
 const EndMeetingControl: React.FC = () => {
   const meetingManager = useMeetingManager();
