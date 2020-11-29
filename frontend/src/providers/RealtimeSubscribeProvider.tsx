@@ -1,7 +1,7 @@
 import { ReactNode, useContext} from "react";
 import React from "react";
 import { RealitimeSubscribeChatStateProvider } from "./RealtimeSubscribeChatProvider";
-import { RealitimeSubscribeWhiteboardStateProvider } from "./RealtimeSubscribeWhiteboardProvider";
+// import { RealitimeSubscribeWhiteboardStateProvider } from "./RealtimeSubscribeWhiteboardProvider";
 
 type RealtimeDataAction = "sendmessage"
 type RealtimeDataCmd = "TEXT" | "WHITEBOARD"

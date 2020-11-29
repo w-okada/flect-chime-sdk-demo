@@ -5,22 +5,21 @@ import React from "react";
 import { VideoEffector } from "./VideoEffector"
 import { useAudioVideo } from "amazon-chime-sdk-component-library-react";
 import { DefaultBrowserBehavior } from "amazon-chime-sdk-js";
-import { AsciiConfig, AsciiOperatipnParams } from "@dannadori/asciiart-worker-js";
 
 type Props = {
   children: ReactNode;
 };
 
-export type FrontEffect = "None" | "Ascii" | "Canny" | "Blur" | "Black" 
-export type BackgroundEffect = "None" | "Ascii" | "Canny" | "Blur" | "Black" | "Image" | "Window"
+export type FrontEffect = "None" | "Ascii" | "Canny" | "Blur" | "Color" 
+export type BackgroundEffect = "None" | "Ascii" | "Canny" | "Blur" | "Color" | "Image" | "Window"
 export type VideoQuality = '360p' | '540p' | '720p';
 
 export type VirtualBackgroundQuality = 0 | 1 | 2 | 3 | 4;
 const VirtualBackgroundQualityOptions:VirtualBackgroundQuality[] = [0, 1, 2, 3, 4];
 export const VirtualBackgroundQualityResolution = [300, 450, 600, 750, 900]
 
-const FrontEffectOptions: FrontEffect[] = ["None", "Ascii", "Canny", "Blur", "Black"]
-const BackgroundEffectOptions: BackgroundEffect[] = ["None", "Ascii", "Canny", "Blur", "Black", "Image", "Window"]
+const FrontEffectOptions: FrontEffect[] = ["None", "Ascii", "Canny", "Blur", "Color"]
+const BackgroundEffectOptions: BackgroundEffect[] = ["None", "Ascii", "Canny", "Blur", "Color", "Image", "Window"]
 const VideoQualityOptions: VideoQuality[] = ['360p', '540p', '720p']
 const VideoQualityDetails:{[key in VideoQuality]:number[]} = {
   '360p':[ 640, 360, 15, 6000],
@@ -30,6 +29,8 @@ const VideoQualityDetails:{[key in VideoQuality]:number[]} = {
 
 
 export interface VideoEffectStateValue {
+  counter: number
+  setCounter: (val:number) => void
   //Input Device
   deviceId: string
   setDeviceId: (deviceId: string) => MediaStream
@@ -50,6 +51,38 @@ export interface VideoEffectStateValue {
   setBackgroundEffect: (e: BackgroundEffect) => void
   setBackgroundImage: (p: HTMLImageElement) => void
   setBackgroundMediaStream: (m: MediaStream | null) => void
+
+  // worker
+  //// asciiart
+  asciiArtFontSizeForF: number
+  setAsciiArtFontSizeForF: (val: number) => void
+  asciiArtFontSizeForB: number
+  setAsciiArtFontSizeForB: (val: number) => void
+  //// canny
+  cannyThreshold1ForF: number
+  setCannyThreshold1ForF: (val: number) => void
+  cannyThreshold2ForF: number
+  setCannyThreshold2ForF: (val: number) => void
+  cannyBitwiseNotForF: boolean
+  setCannyBitwiseNotForF: (val: boolean) => void
+  cannyThreshold1ForB: number
+  setCannyThreshold1ForB: (val: number) => void
+  cannyThreshold2ForB: number
+  setCannyThreshold2ForB: (val: number) => void
+  cannyBitwiseNotForB: boolean
+  setCannyBitwiseNotForB: (val: boolean) => void
+  //// blur
+  bularKernelSizeForF: number
+  setBularKernelSizeForF: (val_w: number, val_h: number) => void
+  bularKernelSizeForB: number
+  setBularKernelSizeForB: (val_w: number, val_h: number) => void
+  //// color
+  colorColorForF: string
+  setColorColorForF: (color: string) => void
+  colorColorForB: string
+  setColorColorForB: (color: string) => void
+
+  
 }
 
 export const VideoEffectStateContext = React.createContext<VideoEffectStateValue | null>(null)
@@ -66,6 +99,7 @@ export const useVideoEffectState = (): VideoEffectStateValue => {
 const browserBehavior: DefaultBrowserBehavior = new DefaultBrowserBehavior();
 
 export const VideoEffectStateProvider = ({ children }: Props) => {
+  const [counter, setCounter] = useState(0) // for state change publish
   const [deviceId, setDeviceIdInternal] = useState("blue")
   const audioVideo = useAudioVideo();
   const [frontMediaStream, setFrontMediaStream] = useState(null as MediaStream | null)
@@ -162,12 +196,62 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
     videoEffector.backgroundMediaStream = _backgroundMediaStream
   }
 
-  const setAsciiArtConfig = (_asciiArtConfig: AsciiConfig) => {
-    videoEffector.asciiArtConfig = _asciiArtConfig
+  // Worker setting
+  //// AsciiArt
+  const asciiArtFontSizeForF = videoEffector.asciiArtParamsForF.fontSize
+  const setAsciiArtFontSizeForF = (val: number) =>{
+    videoEffector.asciiArtParamsForF.fontSize = val
   }
-  const setAsciiArtParams = (_asciiArtParams: AsciiOperatipnParams) =>{
-    videoEffector.asciiArtParamsForF = _asciiArtParams
+  const asciiArtFontSizeForB = videoEffector.asciiArtParamsForB.fontSize
+  const setAsciiArtFontSizeForB = (val: number) =>{
+    videoEffector.asciiArtParamsForB.fontSize = val
   }
+  //// Canny
+  const cannyThreshold1ForF = videoEffector.opencvParamsForF.cannyParams!.threshold1
+  const setCannyThreshold1ForF = (val: number) =>{
+    videoEffector.opencvParamsForF.cannyParams!.threshold1 = val
+  }
+  const cannyThreshold2ForF = videoEffector.opencvParamsForF.cannyParams!.threshold2
+  const setCannyThreshold2ForF = (val: number) =>{
+    videoEffector.opencvParamsForF.cannyParams!.threshold2 = val
+  }
+  const cannyBitwiseNotForF = videoEffector.opencvParamsForF.cannyParams!.bitwiseNot
+  const setCannyBitwiseNotForF = (val: boolean) =>{
+    videoEffector.opencvParamsForF.cannyParams!.bitwiseNot = val
+  }
+  const cannyThreshold1ForB = videoEffector.opencvParamsForB.cannyParams!.threshold1
+  const setCannyThreshold1ForB = (val: number) =>{
+    videoEffector.opencvParamsForB.cannyParams!.threshold1 = val
+  }
+  const cannyThreshold2ForB = videoEffector.opencvParamsForB.cannyParams!.threshold2
+  const setCannyThreshold2ForB = (val: number) =>{
+    videoEffector.opencvParamsForB.cannyParams!.threshold2 = val
+  }
+  const cannyBitwiseNotForB = videoEffector.opencvParamsForB.cannyParams!.bitwiseNot
+  const setCannyBitwiseNotForB = (val: boolean) =>{
+    videoEffector.opencvParamsForB.cannyParams!.bitwiseNot = val
+  }
+  //// Blur
+  const bularKernelSizeForF = videoEffector.opencvParamsForF.blurParams!.kernelSize[0]
+  const setBularKernelSizeForF = (val_w:number,val_h:number) => {
+    videoEffector.opencvParamsForF.blurParams!.kernelSize = [val_w, val_h]
+  }
+  const bularKernelSizeForB = videoEffector.opencvParamsForB.blurParams!.kernelSize[0]
+  const setBularKernelSizeForB = (val_w:number,val_h:number) => {
+    videoEffector.opencvParamsForB.blurParams!.kernelSize = [val_w, val_h]
+  }
+  //// color
+  const colorColorForF = videoEffector.frontColor
+  const setColorColorForF = (color:string) => {
+    videoEffector.frontColor = color
+  }
+  const colorColorForB = videoEffector.backgroundColor
+  const setColorColorForB = (color:string) => {
+    videoEffector.backgroundColor = color
+  }
+
+
+
 
 
 
@@ -178,6 +262,9 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
 
 
   const providerValue = {
+    counter,
+    setCounter,
+
     deviceId,
     setDeviceId,
     stopDevice,
@@ -203,8 +290,34 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
 
     // Workers 
     //// AsciiArt
-    setAsciiArtConfig,
-    setAsciiArtParams,
+    asciiArtFontSizeForF,
+    setAsciiArtFontSizeForF,
+    asciiArtFontSizeForB,
+    setAsciiArtFontSizeForB,
+    //// Canny
+    cannyThreshold1ForF,
+    setCannyThreshold1ForF,
+    cannyThreshold2ForF,
+    setCannyThreshold2ForF,
+    cannyBitwiseNotForF,
+    setCannyBitwiseNotForF,
+    cannyThreshold1ForB,
+    setCannyThreshold1ForB,
+    cannyThreshold2ForB,
+    setCannyThreshold2ForB,
+    cannyBitwiseNotForB,
+    setCannyBitwiseNotForB,
+    //// Blur
+    bularKernelSizeForF,
+    setBularKernelSizeForF,
+    bularKernelSizeForB,
+    setBularKernelSizeForB,
+    //// Color
+    colorColorForF,
+    setColorColorForF,
+    colorColorForB,
+    setColorColorForB,
+
   }
 
   return (

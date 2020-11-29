@@ -14,6 +14,8 @@ export class VideoEffector {
     private tempCanvas       = document.createElement("canvas")
   
     private _backgroundImage  = document.createElement("img")
+    frontColor       = "black"
+    backgroundColor       = "black"
     
     private vb = new VirtualBackground()
     
@@ -109,6 +111,8 @@ export class VideoEffector {
       this.backgroundVideo.play()
       console.log("set background mediastream", videoWidth, videoHeight)
     }
+
+
   
     //// workers
     // Ascii Art
@@ -196,8 +200,8 @@ export class VideoEffector {
           case "Window":
             this.backgroundCanvas.getContext("2d")!.drawImage(this.backgroundVideo, 0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
             break
-          case "Black":
-            this.backgroundCanvas.getContext("2d")!.fillStyle="black"
+          case "Color":
+            this.backgroundCanvas.getContext("2d")!.fillStyle=this.backgroundColor
             this.backgroundCanvas.getContext("2d")!.fillRect(0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
             break
           default:
@@ -255,8 +259,8 @@ export class VideoEffector {
       Promise.all(promises).then(([back, front, segment])=>{
         //console.log(back, front, segment)
         if(!front){
-          if(this.frontEffect === "Black"){
-            this.frontCanvas.getContext("2d")!.fillStyle="black"
+          if(this.frontEffect === "Color"){
+            this.frontCanvas.getContext("2d")!.fillStyle=this.frontColor
             this.frontCanvas.getContext("2d")!.fillRect(0, 0, this.frontCanvas.width, this.frontCanvas.height)
           }
           front = this.frontCanvas

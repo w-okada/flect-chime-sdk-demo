@@ -2,7 +2,8 @@ import { Flex, Roster, RosterHeader,  useContentShareState } from "amazon-chime-
 import { useNavigation } from "../../providers/NavigationProvider";
 import React  from "react";
 import styled from "styled-components";
-import { useRealitimeSubscribeWhiteboardState, DrawingData } from "../../providers/RealtimeSubscribeWhiteboardProvider";
+//import { useRealitimeSubscribeWhiteboardState } from "../../providers/RealtimeSubscribeWhiteboardProvider";
+import { DrawingData } from "../../providers/RealtimeSubscribeWhiteboardProvider";
 import { useWebSocketWhiteboardState } from "../../providers/WebScoketWhiteboardProvider";
 
 export const Title = styled.h1`
