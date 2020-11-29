@@ -5,7 +5,7 @@ export const BlurSetting:React.FC<{kernelSize:number,setKernelSize:(w:number, h:
     return (
       <>
         <Flex layout="fill-space-centered">
-            fontsize
+            Strength
             <input type="range" min={2} max={50} value={kernelSize} onChange={(e)=>{
                 console.log(e.target.value)
                 setKernelSize(parseInt(e.target.value), parseInt(e.target.value))

@@ -24,8 +24,8 @@ Define the stack name for backend.
 ```
 $ emacs backend/bin/config.ts
 
-export const BACKEND_STACK_NAME = 'BackendStack'
-export const FRONTEND_LOCAL_DEV = false
+export const BACKEND_STACK_NAME = 'BackendStack' # <-- You should change.
+export const FRONTEND_LOCAL_DEV = false          # <-- Set false for deployment.
 ```
 
 ### build and setup on aws
@@ -41,6 +41,7 @@ $ npm run build_all
 $ cd frontend
 $ npm install
 $ npm run build
+$ sh sync.sh
 ```
 
 
