@@ -1,4 +1,4 @@
-import { FormField, Select } from "amazon-chime-sdk-component-library-react";
+import { FormField, Select, Checkbox } from "amazon-chime-sdk-component-library-react";
 import { useVideoEffectState } from "../../providers/VideoEffectProvider/VideoEffectProvider";
 import React from "react";
 import { BackgroundImageSetting } from "./BackgroundImageSetting";
@@ -10,6 +10,7 @@ import { BackgroundWindowSetting } from "./BackgroundWindowSetting";
 
 export const BackgroundEffectSelect: React.FC<{}> = props => {
     const { BackgroundEffectOptions, setBackgroundEffect, backgroundEffect, setBackgroundImage, setBackgroundMediaStream,
+        syncBackground, setSyncBackground,
         asciiArtFontSizeForB, setAsciiArtFontSizeForB,
         cannyThreshold1ForB, cannyThreshold2ForB, cannyBitwiseNotForB, setCannyThreshold1ForB, setCannyThreshold2ForB, setCannyBitwiseNotForB,
         bularKernelSizeForB, setBularKernelSizeForB,
@@ -58,12 +59,22 @@ export const BackgroundEffectSelect: React.FC<{}> = props => {
                 label="Select Background Effect"
                 layout={'horizontal'}
             />
+            sync(experimental)
+            <Checkbox value="" checked={syncBackground}
+              onChange={(e) => { 
+                setSyncBackground(!syncBackground)
+                setCounter(counter+1)
+              }}
+              aria-label="checkbox label"
+            />
+
             <div style={{ paddingLeft: 15 }} hidden={!(backgroundEffect === "Ascii")}>
                 <AsciiSetting fontSize={asciiArtFontSizeForB} setFontSize={(fontSize: number) => {
                     setAsciiArtFontSizeForB(fontSize)
                     setCounter(counter + 1)
                 }} />
             </div>
+            
             <div style={{ paddingLeft: 15 }} hidden={!(backgroundEffect === "Canny")}>
                 <CannySetting 
                     threshold1={cannyThreshold1ForB} threshold2={cannyThreshold2ForB} bitwiseNot={cannyBitwiseNotForB}
@@ -89,7 +100,6 @@ export const BackgroundEffectSelect: React.FC<{}> = props => {
                     setBackgroundImage(img)
                 }} />
             </div>
-
 
             <div hidden={!(backgroundEffect === "Window")}>
                 <BackgroundWindowSetting setBackgroundWindow={(stream)=>{

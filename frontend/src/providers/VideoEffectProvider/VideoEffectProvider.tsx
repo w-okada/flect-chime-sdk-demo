@@ -38,6 +38,8 @@ export interface VideoEffectStateValue {
   selectQuality: (quality: VideoQuality) => void
   videoQuality: VideoQuality
   virtualBackgroundQuality: VirtualBackgroundQuality
+  syncBackground: boolean
+  setSyncBackground: (val:boolean) => void
   // Effect
   frontEffect: FrontEffect,
   backgroundEffect: BackgroundEffect
@@ -178,6 +180,13 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
     _setVirtualBackgroundQuality(val)
   }
 
+  const syncBackground = videoEffector.syncBackground
+  const setSyncBackground = (val:boolean) => {
+    videoEffector.syncBackground = val
+  }
+
+
+
   const setFrontEffect = (_frontEffect:FrontEffect) =>{
     videoEffector.frontEffect = _frontEffect
     _setFrontEffect(_frontEffect)
@@ -257,6 +266,7 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
 
   useEffect(()=>{
     setTimeout(videoEffector.copyFrame, 1000*5)
+    setTimeout(videoEffector.generateAsyncBackgroundImage, 1000*5)
   },[])
 
 
@@ -271,6 +281,8 @@ export const VideoEffectStateProvider = ({ children }: Props) => {
     selectQuality,
     videoQuality,
     virtualBackgroundQuality,
+    syncBackground,
+    setSyncBackground,
 
     frontEffect,
     backgroundEffect,

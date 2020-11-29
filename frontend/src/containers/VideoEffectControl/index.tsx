@@ -23,6 +23,7 @@ const VideoEffectControl: React.FC = () => {
             <BackgroundEffectSelect />
             <VideoQualitySelect />
             <VirtualBackgroundQualitySelect />
+            
           </ModalBody>
           <ModalButtonGroup
             primaryButtons={[
