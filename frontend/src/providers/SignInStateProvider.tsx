@@ -61,8 +61,8 @@ export const SignInStateProvider = ({ children }: Props) => {
   const history = useHistory()
   const { updateErrorMessage } = useContext(getErrorContext());
 
-  const [userId, setUserId] = useState("mail2wokada@gmail.com")
-  const [password, setPassword] = useState("test22")
+  const [userId, setUserId] = useState("")
+  const [password, setPassword] = useState("")
   const [verifyCode, setVerifyCode] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [cognitoErrorCode, setErrorCode] = useState("")
