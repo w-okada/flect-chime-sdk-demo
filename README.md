@@ -5,7 +5,7 @@ This is a video conference system with amazon chime sdk and its component librar
 - integrated with amazon cognito
 - virtual background
 - 
-<img src="resources/imgs/vbg5.gif" />
+<img src="resources/imgs/vbg.png" />
 
 - chat
 - white board
