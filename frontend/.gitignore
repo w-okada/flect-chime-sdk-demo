@@ -26,6 +26,7 @@ yarn-error.log*
 /src/BackendConfig.ts
 
 sync.sh
+demo_url.txt
 
 *~
 *#

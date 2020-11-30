@@ -28,7 +28,7 @@ export const BACKEND_STACK_NAME = 'BackendStack' # <-- You should change.
 export const FRONTEND_LOCAL_DEV = false          # <-- Set false for deployment.
 ```
 
-### build and setup on aws
+### build and deploy backend
 
 ```
 $ cd backend
@@ -37,12 +37,22 @@ $ npm run build_all
 ```
 
 ## Build frontend
+### build
+when you run `npm run build`, you get the information of backend
+
 ```
 $ cd frontend
 $ npm install
 $ npm run build
+```
+
+### deploy frontend
+```
 $ sh sync.sh
 ```
+
+### access to the demo
+You can find URL of demo in `demo_url.txt`. Please access this URL with browser.
 
 
 # Delete Stack
