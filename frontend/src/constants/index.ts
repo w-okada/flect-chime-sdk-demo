@@ -45,3 +45,7 @@ export const SDK_LOG_LEVELS = {
   'error': LogLevel.ERROR,
   'off': LogLevel.OFF,
 }
+
+
+
+export const SECOND_WIHTEBOARD_BASE_URL = `${window.location.origin.toString()}/whiteboard`

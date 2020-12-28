@@ -3,6 +3,7 @@ import React, { useContext, useState, ReactNode } from 'react';
 type Props = {
   children: ReactNode;
 };
+type AppMode = "Main" | "Whiteboard"
 
 interface AppStateValue {
   userId: string,
@@ -13,12 +14,16 @@ interface AppStateValue {
   meetingName: string;
   localUserName: string;
   localUserId: string;
+  mode: AppMode;
   theme: string;
   region: string;
   joinToken: string
   toggleTheme: () => void;
   setAppMeetingInfo: (meetingId: string, meetingName: string, attendeeId:string, name: string, region: string, joinToken:string) => void;
   setSignInInfo: (userId: string, idToken: string, accessToken:string, refreshToken:string) => void;
+  setMode: (mode:AppMode) => void
+  
+  wss: string
 }
 
 const AppStateContext = React.createContext<AppStateValue | null>(null);
@@ -47,10 +52,16 @@ export function AppStateProvider({ children }: Props) {
   const [joinToken, setJoinToken] = useState("");
   const [localUserName, setLocalUserName] = useState('');
   const [localUserId, setLocalUserId] = useState('');
+
+  const [mode, setMode] = useState('Main' as AppMode)
+
   const [theme, setTheme] = useState(() => {
     const storedTheme = localStorage.getItem('theme');
     return storedTheme || 'light';
   });
+
+  const [wss, setWss] = useState(query.get('wss') || '');
+
 
   const toggleTheme = (): void => {
     if (theme === 'light') {
@@ -99,12 +110,16 @@ export function AppStateProvider({ children }: Props) {
     meetingName,
     localUserName,
     localUserId,
+    mode,
     theme,
     region,
     joinToken,
     toggleTheme,
     setAppMeetingInfo,
-    setSignInInfo
+    setSignInInfo,
+    setMode,
+
+    wss
   };
 
   return (

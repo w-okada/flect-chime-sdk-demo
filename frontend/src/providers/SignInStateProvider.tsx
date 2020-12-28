@@ -4,7 +4,7 @@ import { useAppState } from "./AppStateProvider"
 import { getErrorContext } from "./ErrorProvider"
 import { CognitoUser, AuthenticationDetails, CognitoUserPool, CognitoUserAttribute } from 'amazon-cognito-identity-js';
 import React from "react"
-import { awsConfiguration } from "../Config";
+import { awsConfiguration, DEFAULT_USERID, DEFAULT_PASSWORD } from "../Config";
 import routes from "../constants/routes";
 
 export type MODE = "SIGNIN" | "SIGNUP" | "VERIFY" | "RESEND_VERIFICATION" | "FORGOT_PASSWORD" | "NEW_PASSWORD"
@@ -61,8 +61,11 @@ export const SignInStateProvider = ({ children }: Props) => {
   const history = useHistory()
   const { updateErrorMessage } = useContext(getErrorContext());
 
-  const [userId, setUserId] = useState("")
-  const [password, setPassword] = useState("")
+  const [userId, setUserId] = useState(DEFAULT_USERID)
+  const [password, setPassword] = useState(DEFAULT_PASSWORD)
+  // const [userId, setUserId] = useState("")
+  // const [password, setPassword] = useState("")
+
   const [verifyCode, setVerifyCode] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [cognitoErrorCode, setErrorCode] = useState("")

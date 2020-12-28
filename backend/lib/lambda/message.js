@@ -35,9 +35,12 @@ exports.authorize = async (event, context, callback) => {
         console.log("attendeeId:", event.queryStringParameters.attendeeId)
         console.log("joinToken:", event.queryStringParameters.joinToken)
         try {
+            console.log("auth attendeeId1: ", event.queryStringParameters.attendeeId)
+            const attendeeId = event.queryStringParameters.attendeeId.split("_")[0]
+            console.log("auth attendeeId2: ", attendeeId)
             attendeeInfo = await chime.getAttendee({
                     MeetingId: event.queryStringParameters.meetingId,
-                    AttendeeId: event.queryStringParameters.attendeeId
+                    AttendeeId: attendeeId
                 }).promise();
             if (attendeeInfo.Attendee.JoinToken === event.queryStringParameters.joinToken) {
                 passedAuthCheck = true;

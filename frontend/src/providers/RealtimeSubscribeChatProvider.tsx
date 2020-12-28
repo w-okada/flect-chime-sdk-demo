@@ -6,6 +6,7 @@ import { v4 } from 'uuid';
 import { useAppState } from "./AppStateProvider";
 import { RealtimeData } from "./RealtimeSubscribeProvider";
 
+
 type Props = {
     children: ReactNode;
 };
@@ -32,7 +33,7 @@ export const RealitimeSubscribeChatStateProvider = ({ children }: Props) => {
     const audioVideo = useAudioVideo()
     const { localUserId } = useAppState()
     const [chatData, setChatData] = useState([] as RealtimeData[])
-
+    
     const sendChatData = (text: string) => {
         const mess: RealtimeData = {
             uuid: v4(),

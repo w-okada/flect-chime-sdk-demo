@@ -57,10 +57,6 @@ export class VirtualBackground{
                     pixelData[pix_offset + 2] = 0
                     pixelData[pix_offset + 3] = 0
                 }else{
-                    // pixelData[pix_offset]     = fgImageData.data[pix_offset]
-                    // pixelData[pix_offset + 1] = fgImageData.data[pix_offset + 1]
-                    // pixelData[pix_offset + 2] = fgImageData.data[pix_offset + 2]
-                    // pixelData[pix_offset + 3] = fgImageData.data[pix_offset + 3]
                     pixelData[pix_offset]     = 255
                     pixelData[pix_offset + 1] = 255
                     pixelData[pix_offset + 2] = 255
@@ -76,8 +72,6 @@ export class VirtualBackground{
         this.canvasFrontResized.getContext("2d")!.drawImage(this.canvasFront, 0, 0, this.canvasFrontResized.width, this.canvasFrontResized.height)
         this.canvasFrontResized.getContext("2d")!.globalCompositeOperation = 'source-in';
         this.canvasFrontResized.getContext("2d")!.drawImage(foreground, 0, 0, this.canvasFrontResized.width, this.canvasFrontResized.height)
-
-
 
         // (3) merge Front into Bacground
         const frontPositionX = conf.width  * conf.frontPositionX

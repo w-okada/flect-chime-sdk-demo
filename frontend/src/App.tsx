@@ -21,7 +21,8 @@ import { SignIn, Home, DeviceSetup, Meeting } from './views';
 import NoMeetingRedirect from './containers/NoMeetingRedirect';
 // import { Meeting, Home, DeviceSetup } from './views';
 import { VideoEffectStateProvider } from './providers/VideoEffectProvider/VideoEffectProvider'
-
+import SecondWhiteboardView from './views/SecondWhiteboard';
+import * as AWS from 'aws-sdk/global';
 
 const App: FC = () => (
   <Router>
@@ -46,6 +47,10 @@ const App: FC = () => (
                         <NoMeetingRedirect>
                           <Meeting />
                         </NoMeetingRedirect>
+                      </Route>
+                      <Route path={routes.WHITEBOARD}>
+                          <SecondWhiteboardView />
+                        WHITEBOARD!!!!
                       </Route>
                     </Switch>
                   </VideoEffectStateProvider>

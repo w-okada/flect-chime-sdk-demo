@@ -114,6 +114,7 @@ class WebSocketManager{
         }
     }
 
+    
     sendMessage = (topic:string,data:any) =>{
         const mess:WebSocketMessage = {
             action   : 'sendmessage',
@@ -122,23 +123,29 @@ class WebSocketManager{
             data: data
         }
         const message = JSON.stringify(mess)
-        this.websocketAdapter!.send(message)
-        console.log("send data(ws):", message.length)
+        const res = this.websocketAdapter!.send(message)
+        console.log("send data(ws):", message.length, "sending result:", res)
         // console.log("data",message)
     }
 }
 
 
 export const WebSocketStateProvider = ({ children }: Props) => {
-    const {meetingId, localUserId, joinToken } = useAppState()
+    const {meetingId, localUserId, joinToken, wss } = useAppState()
     const meetingManager = useMeetingManager()
+    const messagingURLWithQuery = (()=>{
+        if(wss.length > 0){
+            return decodeURIComponent(wss)
+        }else{
+            return `${WebSocketEndpoint}/Prod?joinToken=${joinToken}&meetingId=${meetingId}&attendeeId=${localUserId}`
+        }
+    })()
     
-    const messagingURLWithQuery = `${WebSocketEndpoint}/Prod?joinToken=${joinToken}&meetingId=${meetingId}&attendeeId=${localUserId}`
     
-    console.log("WebSocket Provider rendering")
+    console.log("WebSocket Provider rendering", messagingURLWithQuery)
     const webSocketManager = WebSocketManager.getInstance()
     webSocketManager.createWebSocket(messagingURLWithQuery, meetingManager.meetingSession?.logger!, true)
-    webSocketManager.localUserId = localUserId
+    webSocketManager.localUserId = wss.length > 0 ? localUserId+"_second" :localUserId
     
 
     const sendWebSocketMessage = (topic:string, data:any) => {

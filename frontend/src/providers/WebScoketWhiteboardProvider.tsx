@@ -24,7 +24,7 @@ export type DrawingData = {
 }
 
 
-type DrawingCmd = "DRAW" | "ERASE" | "CLEAR"
+type DrawingCmd = "DRAW" | "ERASE" | "CLEAR" | "SYNC_SCREEN"
 type DrawingMode = "DRAW" | "ERASE" | "DISABLE"
 
 

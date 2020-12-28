@@ -11,6 +11,7 @@ const routes = {
   SIGNIN: `${rootPath}signin`,
   DEVICE: `${rootPath}devices`,
   MEETING: `${rootPath}meeting`,
+  WHITEBOARD: `${rootPath}whiteboard`,
 };
 
 // console.log(routes)
