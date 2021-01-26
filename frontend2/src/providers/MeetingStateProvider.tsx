@@ -50,6 +50,13 @@ interface MeetingStateValue {
     setAudioOutput: (val: string | null) => void
 
 
+    audioInputEnable:  boolean
+    videoInputEnable:  boolean
+    audioOutputEnable: boolean
+    setAudioInputEnable:  (val:boolean)=>void
+    setVideoInputEnable:  (val:boolean)=>void
+    setAudioOutputEnable: (val:boolean)=>void
+
     // meetingSession: DefaultMeetingSession | null
     // joinMeeting: (meetingTitle: string, userName: string) => void
 
@@ -76,6 +83,10 @@ export const MeetingStateProvider = ({ children }: Props) => {
     const { userId, idToken, accessToken, refreshToken } = useAppState()
     const [ stateCounter, setStateCounter] = useState(0)
 
+    // (3) InPreview(in waiting room), LocalVideoTile cannot be started...?
+    // so we must manage flag whether user is in meeting or in waiting room.
+    const [ inMeeting, setInMeeting] = useState(false)
+
 
     const [meetingName, setMeetingName] = useState("")
     const [userName, setUserName] = useState("")
@@ -88,6 +99,11 @@ export const MeetingStateProvider = ({ children }: Props) => {
     const [videoInput, internal_setVideoInput] = useState(null as string | MediaStream | null)
     const [virtualBG, internal_setVirtualBG] = useState(null as VirtualBackgroundType | null)
     const [audioOutput, internal_setAudioOutput] = useState(null as string | null)
+
+    const [audioInputEnable,  internal_setAudioInputEnable]  = useState(true)
+    const [videoInputEnable,  internal_setVideoInputEnable]  = useState(true)
+    const [audioOutputEnable, internal_setAudioOutputEnable] = useState(true)
+
     const [virtualBackgroundProcessor, setVirtualBackgroundProcessor] = useState(null as VirtualBackground | null)
     if (virtualBackgroundProcessor === null) {
         setVirtualBackgroundProcessor(new VirtualBackground())
@@ -99,16 +115,28 @@ export const MeetingStateProvider = ({ children }: Props) => {
     // Device Setting
     ///////////////////////
     const setAudioInput = async (val: string | null) => {
-        await meetingSession?.audioVideo.chooseAudioInputDevice(val)
+        if(audioInputEnable){
+            await meetingSession?.audioVideo.chooseAudioInputDevice(val)
+        }else{
+            await meetingSession?.audioVideo.chooseAudioInputDevice(null)
+        }
         internal_setAudioInput(val)
     }
     const setVideoInput = async (val: string | MediaStream | null) => {
-        await setupVideoInput(val, virtualBG)
+        if(videoInputEnable){
+            await setupVideoInput(val, virtualBG)
+        }else{
+            await setupVideoInput(null, virtualBG)
+        }
         internal_setVideoInput(val)
     }
 
     const setVirtualBG = async (val: VirtualBackgroundType | null) => {
-        await setupVideoInput(videoInput, val)
+        if(videoInputEnable){
+            await setupVideoInput(videoInput, val)
+        }else{
+            await setupVideoInput(null, val)
+        }
         internal_setVirtualBG(val)
     }
     const setupVideoInput = async (video: string | MediaStream | null, vbg: VirtualBackgroundType | null) => {
@@ -119,21 +147,59 @@ export const MeetingStateProvider = ({ children }: Props) => {
                     video, // device id string
                     [virtualBackgroundProcessor!])
                 await meetingSession?.audioVideo.chooseVideoInputDevice(videoProcessor)
+                meetingSession?.audioVideo.startLocalVideoTile()
+                // (3)
+                if(inMeeting){
+                    meetingSession?.audioVideo.startLocalVideoTile()
+                }
                 virtualBackgroundProcessor!.setVirtualBackgroundType(vbg)
-
             } else {
                 await meetingSession?.audioVideo.chooseVideoInputDevice(video)
+                // (3)
+                if(inMeeting){
+                    meetingSession?.audioVideo.startLocalVideoTile()
+                }
             }
         } else {
-            await meetingSession?.audioVideo.chooseVideoInputDevice(video)
+            await meetingSession?.audioVideo.chooseVideoInputDevice(null)
         }
     }
 
-
     const setAudioOutput = async (val: string | null) => {
-        await meetingSession?.audioVideo.chooseAudioOutputDevice(val)
+        if(audioOutputEnable){
+            await meetingSession?.audioVideo.chooseAudioOutputDevice(val)
+        }else{
+            await meetingSession?.audioVideo.chooseAudioOutputDevice(null)
+        }
         internal_setAudioOutput(val)
     }
+
+    const setAudioInputEnable = async (val:boolean) => {
+        if(val){
+            await meetingSession?.audioVideo.chooseAudioInputDevice(audioInput)
+        }else{
+            await meetingSession?.audioVideo.chooseAudioInputDevice(null)
+        }
+        internal_setAudioInputEnable(val)
+    }
+    const setVideoInputEnable = async (val:boolean) => {
+        if(val){
+            await setupVideoInput(videoInput, virtualBG)
+        }else{
+            await setupVideoInput(null, virtualBG)
+        }
+        internal_setVideoInputEnable(val)
+    }
+    const setAudioOutputEnable = async (val:boolean) => {
+        if(val){
+            await meetingSession?.audioVideo.chooseAudioOutputDevice(audioOutput)
+        }else{
+            await meetingSession?.audioVideo.chooseAudioOutputDevice(null)
+        }        
+        internal_setAudioOutputEnable(val)
+    }
+    
+
 
 
     ////////////////////////
@@ -280,7 +346,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
             }
 
             //https://github.com/aws/amazon-chime-sdk-js/issues/502#issuecomment-652665492
-            // When stop preview, camera stream is terminated!!? So when enter meeting I rechoose Devices as workaround.
+            // When stop preview, camera stream is terminated!!? So when enter meeting I rechoose Devices as workaround. (2)
             stopPreview()
             if(audioOutputElement){
                 await meetingSession?.audioVideo.bindAudioElement(audioOutputElement);
@@ -292,6 +358,8 @@ export const MeetingStateProvider = ({ children }: Props) => {
 
             meetingSession?.audioVideo.start()
             meetingSession?.audioVideo.startLocalVideoTile()
+            // (3)
+            setInMeeting(true)
             resolve()
 
         })
@@ -309,6 +377,8 @@ export const MeetingStateProvider = ({ children }: Props) => {
         meetingSession?.audioVideo.stopLocalVideoTile()
         virtualBackgroundProcessor?.destroy()
         setMeetingSession(null)
+        // (3)
+        setInMeeting(false)
     }
 
 
@@ -336,6 +406,13 @@ export const MeetingStateProvider = ({ children }: Props) => {
         setVideoInput,
         setVirtualBG,
         setAudioOutput,
+        audioInputEnable,
+        videoInputEnable,
+        audioOutputEnable,
+        setAudioInputEnable,
+        setVideoInputEnable,
+        setAudioOutputEnable,
+
 
         createMeeting,
         joinMeeting,

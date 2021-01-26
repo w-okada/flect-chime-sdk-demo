@@ -1,7 +1,7 @@
 import React, { useEffect } from "react"
 import clsx from 'clsx';
 import { Container, Avatar, Typography, TextField, Button, Grid, Link, Box, CssBaseline, CircularProgress, FormControlLabel, Checkbox, AppBar, Drawer, Toolbar, IconButton, Divider, GridList, GridListTile, ListSubheader, GridListTileBar } from '@material-ui/core'
-import { Menu, Notifications, ChevronLeft, ChevronRight, ExpandMore, AllOut, Info } from '@material-ui/icons'
+import { Menu, Notifications, ChevronLeft, ChevronRight, ExpandMore, AllOut, Info, Settings, ExitToApp, Videocam, VideocamOff, Mic, MicOff, VolumeMute, VolumeOff, VolumeUp } from '@material-ui/icons'
 import { createMuiTheme, makeStyles, ThemeProvider, withStyles } from '@material-ui/core/styles';
 import routes from "../constants/routes"
 import { useHistory } from "react-router-dom"
@@ -46,13 +46,15 @@ const useStyles = makeStyles((theme) => ({
     toolbar: {
         // paddingRight: 24, // keep right padding when drawer closed
     },
-    menuButton: {
-        // marginRight: 36,
+    menuSpacer: {
         width: toolbarHeight, height: toolbarHeight,
     },
-    menuButtonHidden: {
-        display: 'none',
+
+    menuButton: {
+        width: toolbarHeight, height: toolbarHeight,
     },
+
+
     title: {
         flexGrow: 1,
     },
@@ -151,7 +153,10 @@ const GridListTileBar2 = withStyles({
 
 export const MeetingRoom = () => {
     const { userId, idToken, accessToken, refreshToken } = useAppState()
-    const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees, stateCounter } = useMeetingState()
+    const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees,
+             audioInput, audioInputEnable, setAudioInputEnable,
+             videoInput, videoInputEnable, setVideoInputEnable,
+             audioOutput, audioOutputEnable, setAudioOutputEnable} = useMeetingState()
     const { handleSignOut } = useSignInState()
     const classes = useStyles()
     const history = useHistory()
@@ -161,22 +166,14 @@ export const MeetingRoom = () => {
     const toggleDrawerOpen = () => {
         setOpen(!open);
     };
-
-    const onJoinMeetingClicked = () => {
-        joinMeeting(meetingName || "", userName || "", userId, idToken, accessToken, refreshToken).then(() => {
-            history.push(routes.WAITING_ROOM)
-        }).catch(e => {
-            console.log(e)
-            setMessage("Exception", "Enter Room Failed", [`a`, `a`] )     
-        })
+    const toggleAudioInputEnable = () =>{
+        setAudioInputEnable(!audioInputEnable)
     }
-    
-    const onSignOutClicked = () => {
-        handleSignOut(userId).then(() => {
-            history.push(routes.HOME)
-        }).catch(e => {
-            history.push(routes.HOME)
-        })
+    const toggleVideoInputEnable = () =>{
+        setVideoInputEnable(!videoInputEnable)
+    }
+    const toggleAudioOutputEnable = () =>{
+        setAudioOutputEnable(!audioOutputEnable)
     }
 
     return (
@@ -200,11 +197,47 @@ export const MeetingRoom = () => {
                         <Typography color="inherit" noWrap className={classes.title}>
                             Meeting
                     </Typography>
+
+                    {audioInputEnable?
+                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioInputEnable}>
+                            <Mic />
+                        </IconButton>
+                        :
+                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioInputEnable}>
+                            <MicOff />
+                        </IconButton>
+                    }
+                    {videoInputEnable?
+                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleVideoInputEnable}>
+                            <Videocam />
+                        </IconButton>
+                        :
+                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleVideoInputEnable}>
+                            <VideocamOff />
+                        </IconButton>
+                    }
+                    {audioOutputEnable?
+                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioOutputEnable}>
+                            <VolumeUp />
+                        </IconButton>
+                        :
+                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioOutputEnable}>
+                            <VolumeOff />
+                        </IconButton>
+                    }
+
                         <IconButton color="inherit" className={clsx(classes.menuButton)} >
-                            <Notifications />
+                            <Settings />
+                        </IconButton>
+                        <span className={clsx(classes.menuSpacer)}>  </span>
+                        <IconButton color="inherit" className={clsx(classes.menuButton)} >
+                            <ExitToApp />
                         </IconButton>
                     </Toolbar>
                 </AppBar>
+
+
+
 
                 <Drawer
                     variant="permanent"
