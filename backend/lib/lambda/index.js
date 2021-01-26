@@ -62,10 +62,10 @@ exports.postMeeting = async (event, context, callback) => {
 
   console.log(idToken, meetingName, userName, region, userId, accessToken)
 
-  const {created, meetingId} = await meeting.createMeeting(userId, meetingName, region)
+  const {created, meetingId, ownerId} = await meeting.createMeeting(userId, meetingName, region)
   const response = utils.getResponseTemplate()
   console.log(meetingId)
-  response.body = JSON.stringify({ success: true, meetingName: meetingName, created:created, meetingId:meetingId})  
+  response.body = JSON.stringify({ success: true, meetingName: meetingName, created:created, meetingId:meetingId, ownerId:ownerId})  
   callback(null, response)
 }
 

@@ -101,17 +101,23 @@ exports.createMeeting = async (userId, meetingName, region) => {
         TableName: meetingTableName,
         Item: item,
     }).promise();
-    return { created: true, meetingId: newMeetingInfo.Meeting.MeetingId }
+    return { created: true, meetingId: newMeetingInfo.Meeting.MeetingId, meetingName: meetingName, ownerId: userId }
 }
 
 
 exports.joinMeeting = async (meetingName, userName) => {
     let meetingInfo = await getMeetingInfo(meetingName);
     if (meetingInfo === null) {
-        return null
+        return {
+            code: 'MeetingNotFound',
+            message: 'No meeting is found. Please check meeting name.'
+        }
     }
     if (userName === "") {
-        return null
+        return {
+            code: 'InvalidInput',
+            message: 'Username you input is invalid.'
+        }
     }
 
     console.info('Adding new attendee');
@@ -161,7 +167,7 @@ exports.getAttendeeIfno = async (meetingName, userId) => {
         }
     }).promise();
     if (!result.Item) {
-        return 'Unknown';
+        return {AttendeeId:userId, UserName:"no entry", Query:`${meetingName}/${userId}`};
     }
     console.log(result)
     return {AttendeeId:result.Item.AttendeeId.S, UserName:result.Item.UserName.S}

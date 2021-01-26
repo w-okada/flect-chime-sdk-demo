@@ -18,8 +18,6 @@ const userPool = new CognitoUserPool({
   ClientId: awsConfiguration.clientId,
 })
 
-
-
 interface SignInStateValue {
   userId: string,
   password: string,
