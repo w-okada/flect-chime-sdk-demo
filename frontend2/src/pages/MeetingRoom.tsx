@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
 import clsx from 'clsx';
-import { Container, Avatar, Typography, TextField, Button, Grid, Link, Box, CssBaseline, CircularProgress, FormControlLabel, Checkbox, AppBar, Drawer, Toolbar, IconButton, Divider, GridList, GridListTile, ListSubheader, GridListTileBar } from '@material-ui/core'
+import { Container, Avatar, Typography, TextField, Button, Grid, Link, Box, CssBaseline, CircularProgress, FormControlLabel, Checkbox, AppBar, Drawer, Toolbar, IconButton, Divider, GridList, GridListTile, ListSubheader, GridListTileBar, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, Input, MenuItem, DialogActions } from '@material-ui/core'
 import { Menu, Notifications, ChevronLeft, ChevronRight, ExpandMore, AllOut, Info, Settings, ExitToApp, Videocam, VideocamOff, Mic, MicOff, VolumeMute, VolumeOff, VolumeUp } from '@material-ui/icons'
 import { createMuiTheme, makeStyles, ThemeProvider, withStyles } from '@material-ui/core/styles';
 import routes from "../constants/routes"
@@ -13,6 +13,7 @@ import { AttendeesTable } from "../components/AttendeesTable";
 import { CustomAccordion } from "../components/CustomAccordion";
 import { VideoTilesView } from "../components/VideoTileView";
 import { useMessageState } from "../providers/MessageStateProvider";
+import { useDeviceState } from "../providers/DeviceStateProvider";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -113,6 +114,21 @@ const useStyles = makeStyles((theme) => ({
     icon: {
         color: 'rgba(255, 255, 255, 0.54)',
     },
+
+    ////////////////////
+    // dialog
+    ////////////////////
+    form: {
+        width: '100%',
+        marginTop: theme.spacing(1),
+    },
+    formControl: {
+        margin: theme.spacing(1),
+        width: '100%'
+        // minWidth: 120,
+    },    
+
+
 }));
 
 
@@ -142,29 +158,24 @@ const tileData = [
 ]
 
 
-const GridListTileBar2 = withStyles({
-    root: {
-      height: 15,
-    },
-    title: {
-        fontSize:10,
-    },
-  })(GridListTileBar);
-
 export const MeetingRoom = () => {
     const { userId, idToken, accessToken, refreshToken } = useAppState()
+    const { audioInputList, videoInputList, audioOutputList } = useDeviceState()    
     const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees,
              audioInput, audioInputEnable, setAudioInputEnable,
              videoInput, videoInputEnable, setVideoInputEnable,
-             audioOutput, audioOutputEnable, setAudioOutputEnable} = useMeetingState()
+             audioOutput, audioOutputEnable, setAudioOutputEnable,
+             setVideoInput, setVirtualBG, setAudioInput, setAudioOutput,
+             virtualBG } = useMeetingState()
     const { handleSignOut } = useSignInState()
     const classes = useStyles()
     const history = useHistory()
     const {setMessage} = useMessageState()
     
-    const [open, setOpen] = React.useState(false);
+    const [drawerOpen, setDrawerOpen] = React.useState(false);
+    const [dialogOpen, setDialogOpen] = React.useState(false);
     const toggleDrawerOpen = () => {
-        setOpen(!open);
+        setDrawerOpen(!drawerOpen);
     };
     const toggleAudioInputEnable = () =>{
         setAudioInputEnable(!audioInputEnable)
@@ -176,6 +187,41 @@ export const MeetingRoom = () => {
         setAudioOutputEnable(!audioOutputEnable)
     }
 
+
+    const onInputVideoChange = async (e: any) => {
+        if (e.target.value === "None") {
+            setVideoInput(null)
+        } else if (e.target.value === "File") {
+            // fileInputRef.current!.click()
+        } else {
+            setVideoInput(e.target.value)
+        }
+    }
+    const onVirtualBGChange = async (e: any) => {
+        if (e.target.value === "None") {
+            setVirtualBG(null)
+        } else {
+            setVirtualBG(e.target.value)
+        }
+    }
+
+    const onInputAudioChange = async (e: any) => {
+        if (e.target.value === "None") {
+            setAudioInput(null)
+        } else {
+            setAudioInput(e.target.value)
+        }
+    }
+    const onOutputAudioChange = async (e: any) => {
+        if (e.target.value === "None") {
+            setAudioOutput(null)
+        } else {
+            setAudioOutput(e.target.value)
+        }
+    }
+
+
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -185,7 +231,7 @@ export const MeetingRoom = () => {
                 <AppBar position="absolute" className={clsx(classes.appBar)}>
                     <Toolbar className={classes.toolbar}>
                         {
-                            open ?
+                            drawerOpen ?
                                 <Button color="inherit" className={clsx(classes.menuButton)} startIcon={<ChevronLeft />} onClick={toggleDrawerOpen}>
                                     menu
                         </Button>
@@ -226,7 +272,7 @@ export const MeetingRoom = () => {
                         </IconButton>
                     }
 
-                        <IconButton color="inherit" className={clsx(classes.menuButton)} >
+                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{setDialogOpen(true)}}>
                             <Settings />
                         </IconButton>
                         <span className={clsx(classes.menuSpacer)}>  </span>
@@ -238,13 +284,88 @@ export const MeetingRoom = () => {
 
 
 
+                <Dialog disableBackdropClick disableEscapeKeyDown open={dialogOpen} onClose={(e)=>{setDialogOpen(false)}} >
+                <DialogTitle>Setting</DialogTitle>
+                <DialogContent>
+                    <form className={classes.form} noValidate>
+                        <FormControl className={classes.formControl} >
+                            <InputLabel>Camera</InputLabel>
+                            <Select onChange={onInputVideoChange} value={videoInput}>
+                                <MenuItem disabled value="Video">
+                                    <em>Video</em>
+                                </MenuItem>
+                                <MenuItem value="None">
+                                    <em>None</em>
+                                </MenuItem>
+                                {videoInputList?.map(dev => {
+                                    return <MenuItem value={dev.deviceId} key={dev.deviceId}>{dev.label}</MenuItem>
+                                })}
+                            </Select>
+                        </FormControl>
+                        <FormControl className={classes.formControl} >
+                            <InputLabel>VirtualBG</InputLabel>
+                            <Select onChange={onVirtualBGChange} value={virtualBG} >
+                                <MenuItem disabled value="Video">
+                                    <em>VirtualBG</em>
+                                </MenuItem>
+                                <MenuItem value="None">
+                                    <em>None</em>
+                                </MenuItem>
+                                <MenuItem value="BodyPix">
+                                    <em>BodyPix</em>
+                                </MenuItem>
+                                <MenuItem value="GoogleMeet">
+                                    <em>GoogleMeet</em>
+                                </MenuItem>
+                            </Select>
+                        </FormControl>
+                        
+                        <FormControl className={classes.formControl} >
+                            <InputLabel>Microhpone</InputLabel>
+                            <Select onChange={onInputAudioChange} value={audioInput} >
+                                <MenuItem disabled value="Video">
+                                    <em>Microphone</em>
+                                </MenuItem>
+                                <MenuItem value="None">
+                                    <em>None</em>
+                                </MenuItem>
+                                {audioInputList?.map(dev => {
+                                    return <MenuItem value={dev.deviceId} key={dev.deviceId}>{dev.label}</MenuItem>
+                                })}
+                            </Select>
+                        </FormControl>
+
+                        <FormControl className={classes.formControl} >
+                            <InputLabel>Speaker</InputLabel>
+                            <Select onChange={onOutputAudioChange} value={audioOutput} >
+                                <MenuItem disabled value="Video">
+                                    <em>Speaker</em>
+                                </MenuItem>
+                                <MenuItem value="None">
+                                    <em>None</em>
+                                </MenuItem>
+                                {audioOutputList?.map(dev => {
+                                    return <MenuItem value={dev.deviceId} key={dev.deviceId} >{dev.label}</MenuItem>
+                                })}
+                            </Select>
+                        </FormControl>
+                    </form>                    
+                </DialogContent>
+                    <DialogActions>
+                        <Button onClick={(e)=>{setDialogOpen(false)}} color="primary">
+                            Ok
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+
 
                 <Drawer
                     variant="permanent"
                     classes={{
-                        paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
+                        paper: clsx(classes.drawerPaper, !drawerOpen && classes.drawerPaperClose),
                     }}
-                    open={open}
+                    open={drawerOpen}
                 >
                     <div className={classes.appBarSpacer} />
                     <CustomAccordion title="Member">

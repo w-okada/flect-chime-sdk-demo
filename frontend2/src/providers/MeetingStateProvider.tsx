@@ -147,21 +147,29 @@ export const MeetingStateProvider = ({ children }: Props) => {
                     video, // device id string
                     [virtualBackgroundProcessor!])
                 await meetingSession?.audioVideo.chooseVideoInputDevice(videoProcessor)
-                meetingSession?.audioVideo.startLocalVideoTile()
-                // (3)
-                if(inMeeting){
-                    meetingSession?.audioVideo.startLocalVideoTile()
-                }
                 virtualBackgroundProcessor!.setVirtualBackgroundType(vbg)
             } else {
                 await meetingSession?.audioVideo.chooseVideoInputDevice(video)
-                // (3)
-                if(inMeeting){
-                    meetingSession?.audioVideo.startLocalVideoTile()
-                }
+            }
+            // (3)
+            if(inMeeting){
+                meetingSession?.audioVideo.startLocalVideoTile()
+            }else{
+                // stopPreview()
+                // if(previewVideoElement){
+                //     startPreview(previewVideoElement)
+                // }
             }
         } else {
-            await meetingSession?.audioVideo.chooseVideoInputDevice(null)
+            await meetingSession!.audioVideo.chooseVideoInputDevice(null)
+            if(inMeeting){
+                meetingSession?.audioVideo.startLocalVideoTile()
+            }else{
+                stopPreview()
+                if(previewVideoElement){
+                    startPreview(previewVideoElement)
+                }
+            }
         }
     }
 

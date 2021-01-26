@@ -137,7 +137,8 @@ export const WaitingRoom = () => {
                 <form className={classes.form} noValidate>
                     <FormControl className={classes.formControl} >
                         <InputLabel>Camera</InputLabel>
-                        <Select onChange={onInputVideoChange}>
+                        {/* <Select onChange={onInputVideoChange} value={videoInputList!.length>0?videoInputList![0].deviceId:"None"}> */}
+                        <Select onChange={onInputVideoChange} defaultValue={"None"}>
                             <MenuItem disabled value="Video">
                                 <em>Video</em>
                             </MenuItem>
@@ -156,7 +157,7 @@ export const WaitingRoom = () => {
 
                     <FormControl className={classes.formControl} >
                         <InputLabel>VirtualBG</InputLabel>
-                        <Select onChange={onVirtualBGChange}>
+                        <Select onChange={onVirtualBGChange} defaultValue="None">
                             <MenuItem disabled value="Video">
                                 <em>VirtualBG</em>
                             </MenuItem>
@@ -174,7 +175,7 @@ export const WaitingRoom = () => {
 
                     <FormControl className={classes.formControl} >
                         <InputLabel>Microhpone</InputLabel>
-                        <Select onChange={onInputAudioChange}>
+                        <Select onChange={onInputAudioChange} defaultValue={"None"}>
                             <MenuItem disabled value="Video">
                                 <em>Microphone</em>
                             </MenuItem>
@@ -189,7 +190,7 @@ export const WaitingRoom = () => {
 
                     <FormControl className={classes.formControl} >
                         <InputLabel>Speaker</InputLabel>
-                        <Select onChange={onOutputAudioChange} >
+                        <Select onChange={onOutputAudioChange} defaultValue={"None"} >
                             <MenuItem disabled value="Video">
                                 <em>Speaker</em>
                             </MenuItem>
