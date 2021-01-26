@@ -94,6 +94,7 @@ export class VirtualBackground implements VideoFrameProcessor {
         return p
     })()
     googlemeetManager = (() => {
+        console.log("GOOGLE!")
         const m = new GoogleMeetSegmentationWorkerManager()
         m.init(this.googlemeetConfig)
         return m
@@ -104,6 +105,7 @@ export class VirtualBackground implements VideoFrameProcessor {
     // constructor & destory ///
     ////////////////////////////
     constructor() {
+        console.log("NEWVBGP!!!")
         const bg = new Image();
         bg.src = "/bg1.jpg"
         bg.onload = () => {

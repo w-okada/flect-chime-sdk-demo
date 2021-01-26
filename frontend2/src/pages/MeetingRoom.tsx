@@ -127,11 +127,7 @@ const useStyles = makeStyles((theme) => ({
         width: '100%'
         // minWidth: 120,
     },    
-
-
 }));
-
-
 
 
 const tileData = [
@@ -161,7 +157,7 @@ const tileData = [
 export const MeetingRoom = () => {
     const { userId, idToken, accessToken, refreshToken } = useAppState()
     const { audioInputList, videoInputList, audioOutputList } = useDeviceState()    
-    const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees,
+    const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees, leaveMeeting,
              audioInput, audioInputEnable, setAudioInputEnable,
              videoInput, videoInputEnable, setVideoInputEnable,
              audioOutput, audioOutputEnable, setAudioOutputEnable,
@@ -173,7 +169,8 @@ export const MeetingRoom = () => {
     const {setMessage} = useMessageState()
     
     const [drawerOpen, setDrawerOpen] = React.useState(false);
-    const [dialogOpen, setDialogOpen] = React.useState(false);
+    const [settingDialogOpen, setSettingDialogOpen] = React.useState(false);
+    const [leaveDialogOpen, setLeaveDialogOpen] = React.useState(false);
     const toggleDrawerOpen = () => {
         setDrawerOpen(!drawerOpen);
     };
@@ -241,42 +238,43 @@ export const MeetingRoom = () => {
                         </Button>
                         }
                         <Typography color="inherit" noWrap className={classes.title}>
-                            Meeting
-                    </Typography>
+                            {meetingName}
+                        </Typography>
 
-                    {audioInputEnable?
-                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioInputEnable}>
-                            <Mic />
-                        </IconButton>
-                        :
-                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioInputEnable}>
-                            <MicOff />
-                        </IconButton>
-                    }
-                    {videoInputEnable?
-                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleVideoInputEnable}>
-                            <Videocam />
-                        </IconButton>
-                        :
-                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleVideoInputEnable}>
-                            <VideocamOff />
-                        </IconButton>
-                    }
-                    {audioOutputEnable?
-                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioOutputEnable}>
-                            <VolumeUp />
-                        </IconButton>
-                        :
-                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioOutputEnable}>
-                            <VolumeOff />
-                        </IconButton>
-                    }
-
-                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{setDialogOpen(true)}}>
+                        {audioInputEnable?
+                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioInputEnable}>
+                                <Mic />
+                            </IconButton>
+                            :
+                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioInputEnable}>
+                                <MicOff />
+                            </IconButton>
+                        }
+                        {videoInputEnable?
+                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleVideoInputEnable}>
+                                <Videocam />
+                            </IconButton>
+                            :
+                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleVideoInputEnable}>
+                                <VideocamOff />
+                            </IconButton>
+                        }
+                        {audioOutputEnable?
+                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioOutputEnable}>
+                                <VolumeUp />
+                            </IconButton>
+                            :
+                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioOutputEnable}>
+                                <VolumeOff />
+                            </IconButton>
+                        }
+                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{setSettingDialogOpen(true)}}>
                             <Settings />
                         </IconButton>
                         <span className={clsx(classes.menuSpacer)}>  </span>
-                        <IconButton color="inherit" className={clsx(classes.menuButton)} >
+                        <span className={clsx(classes.menuSpacer)}>  </span>
+                        
+                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{setLeaveDialogOpen(true)}}>
                             <ExitToApp />
                         </IconButton>
                     </Toolbar>
@@ -284,80 +282,95 @@ export const MeetingRoom = () => {
 
 
 
-                <Dialog disableBackdropClick disableEscapeKeyDown open={dialogOpen} onClose={(e)=>{setDialogOpen(false)}} >
-                <DialogTitle>Setting</DialogTitle>
-                <DialogContent>
-                    <form className={classes.form} noValidate>
-                        <FormControl className={classes.formControl} >
-                            <InputLabel>Camera</InputLabel>
-                            <Select onChange={onInputVideoChange} value={videoInput}>
-                                <MenuItem disabled value="Video">
-                                    <em>Video</em>
-                                </MenuItem>
-                                <MenuItem value="None">
-                                    <em>None</em>
-                                </MenuItem>
-                                {videoInputList?.map(dev => {
-                                    return <MenuItem value={dev.deviceId} key={dev.deviceId}>{dev.label}</MenuItem>
-                                })}
-                            </Select>
-                        </FormControl>
-                        <FormControl className={classes.formControl} >
-                            <InputLabel>VirtualBG</InputLabel>
-                            <Select onChange={onVirtualBGChange} value={virtualBG} >
-                                <MenuItem disabled value="Video">
-                                    <em>VirtualBG</em>
-                                </MenuItem>
-                                <MenuItem value="None">
-                                    <em>None</em>
-                                </MenuItem>
-                                <MenuItem value="BodyPix">
-                                    <em>BodyPix</em>
-                                </MenuItem>
-                                <MenuItem value="GoogleMeet">
-                                    <em>GoogleMeet</em>
-                                </MenuItem>
-                            </Select>
-                        </FormControl>
-                        
-                        <FormControl className={classes.formControl} >
-                            <InputLabel>Microhpone</InputLabel>
-                            <Select onChange={onInputAudioChange} value={audioInput} >
-                                <MenuItem disabled value="Video">
-                                    <em>Microphone</em>
-                                </MenuItem>
-                                <MenuItem value="None">
-                                    <em>None</em>
-                                </MenuItem>
-                                {audioInputList?.map(dev => {
-                                    return <MenuItem value={dev.deviceId} key={dev.deviceId}>{dev.label}</MenuItem>
-                                })}
-                            </Select>
-                        </FormControl>
+                <Dialog disableBackdropClick disableEscapeKeyDown open={settingDialogOpen} onClose={(e)=>{setSettingDialogOpen(false)}} >
+                    <DialogTitle>Setting</DialogTitle>
+                    <DialogContent>
+                        <form className={classes.form} noValidate>
+                            <FormControl className={classes.formControl} >
+                                <InputLabel>Camera</InputLabel>
+                                <Select onChange={onInputVideoChange} value={videoInput}>
+                                    <MenuItem disabled value="Video">
+                                        <em>Video</em>
+                                    </MenuItem>
+                                    <MenuItem value="None">
+                                        <em>None</em>
+                                    </MenuItem>
+                                    {videoInputList?.map(dev => {
+                                        return <MenuItem value={dev.deviceId} key={dev.deviceId}>{dev.label}</MenuItem>
+                                    })}
+                                </Select>
+                            </FormControl>
+                            <FormControl className={classes.formControl} >
+                                <InputLabel>VirtualBG</InputLabel>
+                                <Select onChange={onVirtualBGChange} value={virtualBG} >
+                                    <MenuItem disabled value="Video">
+                                        <em>VirtualBG</em>
+                                    </MenuItem>
+                                    <MenuItem value="None">
+                                        <em>None</em>
+                                    </MenuItem>
+                                    <MenuItem value="BodyPix">
+                                        <em>BodyPix</em>
+                                    </MenuItem>
+                                    <MenuItem value="GoogleMeet">
+                                        <em>GoogleMeet</em>
+                                    </MenuItem>
+                                </Select>
+                            </FormControl>
 
-                        <FormControl className={classes.formControl} >
-                            <InputLabel>Speaker</InputLabel>
-                            <Select onChange={onOutputAudioChange} value={audioOutput} >
-                                <MenuItem disabled value="Video">
-                                    <em>Speaker</em>
-                                </MenuItem>
-                                <MenuItem value="None">
-                                    <em>None</em>
-                                </MenuItem>
-                                {audioOutputList?.map(dev => {
-                                    return <MenuItem value={dev.deviceId} key={dev.deviceId} >{dev.label}</MenuItem>
-                                })}
-                            </Select>
-                        </FormControl>
-                    </form>                    
-                </DialogContent>
+                            <FormControl className={classes.formControl} >
+                                <InputLabel>Microhpone</InputLabel>
+                                <Select onChange={onInputAudioChange} value={audioInput} >
+                                    <MenuItem disabled value="Video">
+                                        <em>Microphone</em>
+                                    </MenuItem>
+                                    <MenuItem value="None">
+                                        <em>None</em>
+                                    </MenuItem>
+                                    {audioInputList?.map(dev => {
+                                        return <MenuItem value={dev.deviceId} key={dev.deviceId}>{dev.label}</MenuItem>
+                                    })}
+                                </Select>
+                            </FormControl>
+
+                            <FormControl className={classes.formControl} >
+                                <InputLabel>Speaker</InputLabel>
+                                <Select onChange={onOutputAudioChange} value={audioOutput} >
+                                    <MenuItem disabled value="Video">
+                                        <em>Speaker</em>
+                                    </MenuItem>
+                                    <MenuItem value="None">
+                                        <em>None</em>
+                                    </MenuItem>
+                                    {audioOutputList?.map(dev => {
+                                        return <MenuItem value={dev.deviceId} key={dev.deviceId} >{dev.label}</MenuItem>
+                                    })}
+                                </Select>
+                            </FormControl>
+                        </form>                    
+                    </DialogContent>
                     <DialogActions>
-                        <Button onClick={(e)=>{setDialogOpen(false)}} color="primary">
+                        <Button onClick={(e)=>{setSettingDialogOpen(false)}} color="primary">
                             Ok
                         </Button>
                     </DialogActions>
                 </Dialog>
 
+
+                <Dialog disableBackdropClick disableEscapeKeyDown open={leaveDialogOpen} onClose={(e)=>{setLeaveDialogOpen(false)}} >
+                    <DialogTitle>Leave meeting</DialogTitle>
+                    <DialogContent>
+                        You are leaving meeting.
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={(e)=>{setLeaveDialogOpen(false);leaveMeeting();history.push(routes.HOME)}} color="primary">
+                            Ok
+                        </Button>
+                        <Button onClick={(e)=>{setLeaveDialogOpen(false)}} color="secondary">
+                            Cancel
+                        </Button>
+                    </DialogActions>
+                </Dialog>
 
 
                 <Drawer

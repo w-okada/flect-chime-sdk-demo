@@ -106,6 +106,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
 
     const [virtualBackgroundProcessor, setVirtualBackgroundProcessor] = useState(null as VirtualBackground | null)
     if (virtualBackgroundProcessor === null) {
+        console.log("newVBGP")
         setVirtualBackgroundProcessor(new VirtualBackground())
     }
     const [previewVideoElement, setPreviewVideoElement] = useState(null as HTMLVideoElement | null)
@@ -141,7 +142,9 @@ export const MeetingStateProvider = ({ children }: Props) => {
     }
     const setupVideoInput = async (video: string | MediaStream | null, vbg: VirtualBackgroundType | null) => {
         if (video) {
+            console.log("video1, ",video)
             if (vbg) {
+                console.log("video2, ",vbg)
                 const videoProcessor = new DefaultVideoTransformDevice(
                     new ConsoleLogger('MeetingLogs', LogLevel.OFF),
                     video, // device id string
@@ -153,18 +156,25 @@ export const MeetingStateProvider = ({ children }: Props) => {
             }
             // (3)
             if(inMeeting){
+                console.log("video3, ")
                 meetingSession?.audioVideo.startLocalVideoTile()
             }else{
+                console.log("video4, ")
                 // stopPreview()
                 // if(previewVideoElement){
                 //     startPreview(previewVideoElement)
                 // }
             }
         } else {
+            console.log("video55, ")
+
             await meetingSession!.audioVideo.chooseVideoInputDevice(null)
             if(inMeeting){
+                console.log("video5, ")
                 meetingSession?.audioVideo.startLocalVideoTile()
             }else{
+                console.log("video6, ")
+
                 stopPreview()
                 if(previewVideoElement){
                     startPreview(previewVideoElement)
@@ -215,8 +225,10 @@ export const MeetingStateProvider = ({ children }: Props) => {
     ///////////////////////
 
     const createMeeting = async (meetingName: string, userName: string, region: string, userId: string, idToken: string, accessToken: string, refreshToken: string):Promise<void> => {
+        setIsLoading(true)
         const p = new Promise<void>(async(resolve, reject)=>{
             const res = await api.createMeeting(meetingName, userName, region, userId, idToken, accessToken, refreshToken)
+            setIsLoading(false)
             if (res.created) {
                 resolve()
             } else {
@@ -229,12 +241,14 @@ export const MeetingStateProvider = ({ children }: Props) => {
 
     const joinMeeting = async (meetingName: string, userName: string, userId: string, idToken: string, accessToken: string, refreshToken: string):Promise<void> => {
         console.log("joining!!!!")
+        setIsLoading(true)
         const p = new Promise<void>(async (resolve, reject)=>{
             
             const joinInfo = await api.joinMeeting(meetingName, userName, userId, idToken, accessToken, refreshToken)
             console.log("JoinInfo:", joinInfo)
             if(joinInfo['code']){
                 reject(joinInfo)
+                setIsLoading(false)
                 return
             }
             const meetingInfo = joinInfo.Meeting
@@ -324,6 +338,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
                 100)
             setMeetingSession(meetingSession)
 
+            setIsLoading(false)
             resolve()
         })
         return p
@@ -347,6 +362,8 @@ export const MeetingStateProvider = ({ children }: Props) => {
     }
 
     const enterMeetingRoom = async ():Promise<void> => {
+        setIsLoading(true)
+
         const p = new Promise<void>(async(resolve, reject)=>{
             if (!meetingSession) {
                 console.log("meetingsession is null?", meetingSession)
@@ -368,6 +385,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
             meetingSession?.audioVideo.startLocalVideoTile()
             // (3)
             setInMeeting(true)
+            setIsLoading(false)
             resolve()
 
         })
@@ -381,14 +399,24 @@ export const MeetingStateProvider = ({ children }: Props) => {
         await meetingSession?.audioVideo.chooseAudioInputDevice(null)
         await meetingSession?.audioVideo.chooseVideoInputDevice(null)
         await meetingSession?.audioVideo.chooseAudioOutputDevice(null)
+        internal_setVideoInput(null)
+        internal_setAudioOutput(null)
+        internal_setAudioInput(null)
+        internal_setVirtualBG(null)
+
         stopPreview()
         meetingSession?.audioVideo.stopLocalVideoTile()
-        virtualBackgroundProcessor?.destroy()
+        meetingSession?.audioVideo.stop()
+        // virtualBackgroundProcessor?.destroy()
         setMeetingSession(null)
+        setAttendees({})        
         // (3)
         setInMeeting(false)
     }
 
+
+
+    console.log("ATENDEES", attendees)
 
 
     const providerValue = {
