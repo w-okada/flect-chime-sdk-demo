@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
 import clsx from 'clsx';
-import { Container, Avatar, Typography, TextField, Button, Grid, Link, Box, CssBaseline, CircularProgress, FormControlLabel, Checkbox, AppBar, Drawer, Toolbar, IconButton, Divider, GridList, GridListTile, ListSubheader, GridListTileBar, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, Input, MenuItem, DialogActions } from '@material-ui/core'
+import { Container, Avatar, Typography, TextField, Button, Grid, Link, Box, CssBaseline, CircularProgress, FormControlLabel, Checkbox, AppBar, Drawer, Toolbar, IconButton, Divider, GridList, GridListTile, ListSubheader, GridListTileBar, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, Input, MenuItem, DialogActions, Tooltip } from '@material-ui/core'
 import { Menu, Notifications, ChevronLeft, ChevronRight, ExpandMore, AllOut, Info, Settings, ExitToApp, Videocam, VideocamOff, Mic, MicOff, VolumeMute, VolumeOff, VolumeUp } from '@material-ui/icons'
 import { createMuiTheme, makeStyles, ThemeProvider, withStyles } from '@material-ui/core/styles';
 import routes from "../constants/routes"
@@ -229,54 +229,74 @@ export const MeetingRoom = () => {
                     <Toolbar className={classes.toolbar}>
                         {
                             drawerOpen ?
-                                <Button color="inherit" className={clsx(classes.menuButton)} startIcon={<ChevronLeft />} onClick={toggleDrawerOpen}>
-                                    menu
-                        </Button>
+                                <Tooltip title="Drawer Close">
+                                    <Button color="inherit" className={clsx(classes.menuButton)} startIcon={<ChevronLeft />} onClick={toggleDrawerOpen}>
+                                        menu
+                                    </Button>
+                                </Tooltip>
                                 :
-                                <Button color="inherit" className={clsx(classes.menuButton)} endIcon={<ChevronRight />} onClick={toggleDrawerOpen}>
-                                    menu
-                        </Button>
+                                <Tooltip title="Drawer Open">
+                                    <Button color="inherit" className={clsx(classes.menuButton)} endIcon={<ChevronRight />} onClick={toggleDrawerOpen}>
+                                        menu
+                                    </Button>
+                                </Tooltip>
                         }
                         <Typography color="inherit" noWrap className={classes.title}>
                             {meetingName}
                         </Typography>
 
                         {audioInputEnable?
-                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioInputEnable}>
-                                <Mic />
-                            </IconButton>
+                            <Tooltip title="Mic Off">
+                                <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioInputEnable}>
+                                    <Mic />
+                                </IconButton>
+                            </Tooltip>
                             :
-                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioInputEnable}>
-                                <MicOff />
-                            </IconButton>
+                            <Tooltip title="Mic On">
+                                <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioInputEnable}>
+                                    <MicOff />
+                                </IconButton>
+                            </Tooltip>
                         }
                         {videoInputEnable?
-                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleVideoInputEnable}>
-                                <Videocam />
-                            </IconButton>
+                            <Tooltip title="Video Off">
+                                <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleVideoInputEnable}>
+                                    <Videocam />
+                                </IconButton>
+                            </Tooltip>
                             :
-                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleVideoInputEnable}>
-                                <VideocamOff />
-                            </IconButton>
+                            <Tooltip title="Video On">
+                                <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleVideoInputEnable}>
+                                    <VideocamOff />
+                                </IconButton>
+                            </Tooltip>
                         }
                         {audioOutputEnable?
-                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioOutputEnable}>
-                                <VolumeUp />
-                            </IconButton>
+                            <Tooltip title="Speaker Off">
+                                <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioOutputEnable}>
+                                    <VolumeUp />
+                                </IconButton>
+                            </Tooltip>
                             :
-                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioOutputEnable}>
-                                <VolumeOff />
-                            </IconButton>
+                            <Tooltip title="Speaker On">
+                                <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioOutputEnable}>
+                                    <VolumeOff />
+                                </IconButton>
+                            </Tooltip>
                         }
-                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{setSettingDialogOpen(true)}}>
-                            <Settings />
-                        </IconButton>
+                        <Tooltip title="Setting">
+                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{setSettingDialogOpen(true)}}>
+                                <Settings />
+                            </IconButton>
+                        </Tooltip>
                         <span className={clsx(classes.menuSpacer)}>  </span>
                         <span className={clsx(classes.menuSpacer)}>  </span>
                         
-                        <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{setLeaveDialogOpen(true)}}>
-                            <ExitToApp />
-                        </IconButton>
+                        <Tooltip title="Leave Meeting">
+                            <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{setLeaveDialogOpen(true)}}>
+                                <ExitToApp />
+                            </IconButton>
+                        </Tooltip>
                     </Toolbar>
                 </AppBar>
 
