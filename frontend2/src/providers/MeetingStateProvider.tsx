@@ -7,7 +7,6 @@ import { Attendee, ConsoleLogger, DefaultActiveSpeakerPolicy, DefaultDeviceContr
 import * as api from '../api/api'
 import { DeviceChangeObserverImpl } from "../observers/DeviceChangeObserverImpl";
 import AudioVideoObserverTemplate from "../observers/AudioVideoObserver";
-import { activeSpeakerDetectorSubscriber, attendeeIdPresenceSubscriber } from "../observers/subscriber";
 import { VirtualBackground, VirtualBackgroundType } from "../frameProcessors/VirtualBackground";
 
 type Props = {
@@ -18,7 +17,8 @@ export interface AttendeeState{
     attendeeId: string
     name: string
     active: boolean
-    volume: number
+    score: number // active score
+    volume: number // volume
     muted: boolean
     paused: boolean
     signalStrength: number
@@ -342,10 +342,12 @@ export const MeetingStateProvider = ({ children }: Props) => {
                             attendeeId: attendeeId,
                             name: attendeeName.name,
                             active: false,
+                            score: 0,
                             volume: 0,
                             muted: false,
                             paused: false,
                             signalStrength: 0
+
                         }
                         attendees[attendeeId] = new_attendee
 
@@ -378,13 +380,27 @@ export const MeetingStateProvider = ({ children }: Props) => {
             })
             meetingSession.audioVideo.subscribeToActiveSpeakerDetector(
                 new DefaultActiveSpeakerPolicy(),
-                activeSpeakers =>{
-                    activeSpeakers.forEach(s =>{
-                        // console.log("Active speacker score1:", s)
-                    })
+                (activeSpeakers:string[]) =>{
+                    for (const attendeeId in attendees) {
+                        attendees[attendeeId].active = false;
+                    }
+                    for (const attendeeId of activeSpeakers) {
+                        if (attendees[attendeeId]) {
+                            attendees[attendeeId].active = true;
+                            break
+                        }
+                    }
+                    internalCounter += 1
+                    setStateCounter(internalCounter)
                 },
-                scores => {
-                    // console.log("Active speacker score2:", scores)
+                (scores: { [attendeeId: string]: number })  => {
+                    for (const attendeeId in scores) {
+                        if (attendees[attendeeId]) {
+                          attendees[attendeeId].score = scores[attendeeId];
+                        }
+                    }
+                    internalCounter += 1
+                    setStateCounter(internalCounter)
                 }, 
                 100)
             setMeetingSession(meetingSession)

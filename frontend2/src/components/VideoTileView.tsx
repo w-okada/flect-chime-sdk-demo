@@ -16,6 +16,20 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
         // height: 450,
     },
+    videoTile:{
+        width:'100%', 
+        height:'100%',
+    },
+    videoTileActive:{
+        width:'100%', 
+        height:'100%',
+    },
+    videoTileBar:{
+    },
+    videoTileBarActive:{
+        backgroundColor:"#ee7777"
+    }
+
 }));
 
 const GridListTileBar2 = withStyles({
@@ -50,15 +64,15 @@ export const VideoTilesView = ({ tiles, attendees}: Props) =>  {
                     // console.log("TILELENGTH:", tiles.length)
                     return (
                         <GridListTile key={tile.id()} cols={1}>
-                            <video controls id={ generateVideoElementId(tile) } style={{width:'100%', height:'100%'}}/>
-                            <GridListTileBar2
+                            <video controls id={ generateVideoElementId(tile) } className={attendees[tile.state().boundAttendeeId!]?.active?classes.videoTileActive:classes.videoTile}/>
+                            <GridListTileBar2 className={attendees[tile.state().boundAttendeeId!]?.active?classes.videoTileBarActive:classes.videoTileBar}
                                 title={
                                     tile.state().boundAttendeeId! in attendees? 
                                     attendees[tile.state().boundAttendeeId!].name
                                     :
                                     tile.state().boundAttendeeId
 
-                                 }
+                                }
                             />
                         </GridListTile>
                     )
