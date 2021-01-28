@@ -1,7 +1,8 @@
 import React, { useEffect } from "react"
 import clsx from 'clsx';
 import { Container, Avatar, Typography, TextField, Button, Grid, Link, Box, CssBaseline, CircularProgress, FormControlLabel, Checkbox, AppBar, Drawer, Toolbar, IconButton, Divider, GridList, GridListTile, ListSubheader, GridListTileBar, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, Input, MenuItem, DialogActions, Tooltip } from '@material-ui/core'
-import { Menu, Notifications, ChevronLeft, ChevronRight, ExpandMore, AllOut, Info, Settings, ExitToApp, Videocam, VideocamOff, Mic, MicOff, VolumeMute, VolumeOff, VolumeUp } from '@material-ui/icons'
+import { Menu, Notifications, ChevronLeft, ChevronRight, ExpandMore, AllOut, Info, Settings, ExitToApp, Videocam, VideocamOff, 
+    Mic, MicOff, VolumeMute, VolumeOff, VolumeUp, ScreenShare, StopScreenShare } from '@material-ui/icons'
 import { createMuiTheme, makeStyles, ThemeProvider, withStyles } from '@material-ui/core/styles';
 import routes from "../constants/routes"
 import { useHistory } from "react-router-dom"
@@ -18,7 +19,6 @@ import { useDeviceState } from "../providers/DeviceStateProvider";
 const toolbarHeight = 20
 const drawerWidth = 240;
 const accordionSummaryHeight = 20
-
 
 const theme = createMuiTheme({
     mixins: {
@@ -157,7 +157,8 @@ const tileData = [
 export const MeetingRoom = () => {
     const { userId, idToken, accessToken, refreshToken } = useAppState()
     const { audioInputList, videoInputList, audioOutputList } = useDeviceState()    
-    const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees, leaveMeeting, setAudioOutputElement,
+    const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees, leaveMeeting, setAudioOutputElement, 
+            shareScreen, stopShareScreen, isScreenSharing,
              audioInput, audioInputEnable, setAudioInputEnable,
              videoInput, videoInputEnable, setVideoInputEnable,
              audioOutput, audioOutputEnable, setAudioOutputEnable,
@@ -215,6 +216,13 @@ export const MeetingRoom = () => {
         } else {
             setAudioOutput(e.target.value)
         }
+    }
+
+    const handleOnClickScreenShare = async()=>{
+        shareScreen()
+    }
+    const handleOnClickStopScreenShare = async() =>{
+        stopShareScreen()
     }
 
     useEffect(()=>{
@@ -294,7 +302,22 @@ export const MeetingRoom = () => {
                         </Tooltip>
                         <span className={clsx(classes.menuSpacer)}>  </span>
                         <span className={clsx(classes.menuSpacer)}>  </span>
-                        
+                        {isScreenSharing?
+                            <Tooltip title="Stop Share Screen">
+                                <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{handleOnClickStopScreenShare()}}>
+                                    <StopScreenShare />
+                                </IconButton>
+                            </Tooltip>
+                        :
+                            <Tooltip title="Share Screen">
+                                <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{handleOnClickScreenShare()}}>
+                                    <ScreenShare />
+                                </IconButton>
+                            </Tooltip>
+                        }
+                        <span className={clsx(classes.menuSpacer)}>  </span>
+                        <span className={clsx(classes.menuSpacer)}>  </span>
+
                         <Tooltip title="Leave Meeting">
                             <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{setLeaveDialogOpen(true)}}>
                                 <ExitToApp />

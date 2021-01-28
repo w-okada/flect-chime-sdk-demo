@@ -67,6 +67,11 @@ interface MeetingStateValue {
     startPreview: (val: HTMLVideoElement) => void
     enterMeetingRoom: () => Promise<void>
     leaveMeeting: () => void
+
+
+    shareScreen:() => Promise<void>
+    stopShareScreen:() => Promise<void>
+    isScreenSharing:boolean
 }
 
 const MeetingStateContext = React.createContext<MeetingStateValue | null>(null)
@@ -104,6 +109,10 @@ export const MeetingStateProvider = ({ children }: Props) => {
     const [audioInputEnable,  internal_setAudioInputEnable]  = useState(true)
     const [videoInputEnable,  internal_setVideoInputEnable]  = useState(true)
     const [audioOutputEnable, internal_setAudioOutputEnable] = useState(true)
+
+
+    const [isScreenSharing, setIsScreenSharing] = useState(false)
+
 
     const [virtualBackgroundProcessor, setVirtualBackgroundProcessor] = useState(null as VirtualBackground | null)
     if (virtualBackgroundProcessor === null) {
@@ -228,6 +237,26 @@ export const MeetingStateProvider = ({ children }: Props) => {
     }
     
 
+    ////////////////////////
+    // Features
+    ///////////////////////
+    const shareScreen = async () => {
+        // meetingSession?.audioVideo.startContentShareFromScreenCapture
+        const streamConstraints = {
+            frameRate: {
+                max: 15,
+            },
+        }        
+        // @ts-ignore https://github.com/microsoft/TypeScript/issues/31821
+        navigator.mediaDevices.getDisplayMedia(streamConstraints).then(media => {
+            meetingSession!.audioVideo.startContentShare(media)
+            setIsScreenSharing(true)
+        })        
+    }
+    const stopShareScreen = async () =>{
+        meetingSession!.audioVideo.stopContentShare()
+        setIsScreenSharing(false)
+    }
 
 
     ////////////////////////
@@ -465,6 +494,12 @@ export const MeetingStateProvider = ({ children }: Props) => {
         startPreview,
         enterMeetingRoom,
         leaveMeeting,
+
+
+        shareScreen,
+        stopShareScreen,
+        isScreenSharing,
+
     }
 
     return (
