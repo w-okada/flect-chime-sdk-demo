@@ -157,7 +157,7 @@ const tileData = [
 export const MeetingRoom = () => {
     const { userId, idToken, accessToken, refreshToken } = useAppState()
     const { audioInputList, videoInputList, audioOutputList } = useDeviceState()    
-    const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees, leaveMeeting,
+    const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees, leaveMeeting, setAudioOutputElement,
              audioInput, audioInputEnable, setAudioInputEnable,
              videoInput, videoInputEnable, setVideoInputEnable,
              audioOutput, audioOutputEnable, setAudioOutputEnable,
@@ -217,7 +217,10 @@ export const MeetingRoom = () => {
         }
     }
 
-
+    useEffect(()=>{
+        const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
+        setAudioOutputElement(audioElement)
+    },[])
 
     return (
         <ThemeProvider theme={theme}>
@@ -413,6 +416,10 @@ export const MeetingRoom = () => {
                     <VideoTilesView tiles={meetingSession!.audioVideo.getAllVideoTiles()} attendees={attendees}/>
                 </main>
             </div>
+            <div>
+                <audio id="for-speaker" />
+            </div>
+
         </ThemeProvider>
     )
 }

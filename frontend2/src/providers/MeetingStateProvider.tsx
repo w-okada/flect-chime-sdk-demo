@@ -56,6 +56,7 @@ interface MeetingStateValue {
     setAudioInputEnable:  (val:boolean)=>void
     setVideoInputEnable:  (val:boolean)=>void
     setAudioOutputEnable: (val:boolean)=>void
+    setAudioOutputElement: (val: HTMLAudioElement | null) => void
 
     // meetingSession: DefaultMeetingSession | null
     // joinMeeting: (meetingTitle: string, userName: string) => void
@@ -189,7 +190,10 @@ export const MeetingStateProvider = ({ children }: Props) => {
         }else{
             await meetingSession?.audioVideo.chooseAudioOutputDevice(null)
         }
-        internal_setAudioOutput(val)
+        if(audioOutputElement){
+            meetingSession?.audioVideo.bindAudioElement(audioOutputElement);
+        }
+    internal_setAudioOutput(val)
     }
 
     const setAudioInputEnable = async (val:boolean) => {
@@ -210,9 +214,15 @@ export const MeetingStateProvider = ({ children }: Props) => {
     }
     const setAudioOutputEnable = async (val:boolean) => {
         if(val){
+            console.log("audio not null", val, audioOutput)
+            if(audioOutputElement){
+                await meetingSession?.audioVideo.bindAudioElement(audioOutputElement)
+            }
             await meetingSession?.audioVideo.chooseAudioOutputDevice(audioOutput)
         }else{
-            await meetingSession?.audioVideo.chooseAudioOutputDevice(null)
+            console.log("audio null")
+            await meetingSession!.audioVideo.chooseAudioOutputDevice(null)
+            meetingSession!.audioVideo.unbindAudioElement()
         }        
         internal_setAudioOutputEnable(val)
     }
@@ -448,7 +458,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
         setAudioInputEnable,
         setVideoInputEnable,
         setAudioOutputEnable,
-
+        setAudioOutputElement,
 
         createMeeting,
         joinMeeting,

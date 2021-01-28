@@ -29,6 +29,7 @@ export const DeviceStateProvider = ({ children }: Props) => {
     if (!deviceList) {
         console.log("getDevice List")
         getDeviceLists().then(res => {
+            console.log("device list:::", res)
             setDeviceList(res)
         })
     }
