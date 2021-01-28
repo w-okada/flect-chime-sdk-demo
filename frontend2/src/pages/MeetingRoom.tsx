@@ -15,6 +15,7 @@ import { CustomAccordion } from "../components/CustomAccordion";
 import { VideoTilesView } from "../components/VideoTileView";
 import { useMessageState } from "../providers/MessageStateProvider";
 import { useDeviceState } from "../providers/DeviceStateProvider";
+import { ChatArea } from "../components/ChatArea";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -432,6 +433,16 @@ export const MeetingRoom = () => {
                             <AttendeesTable attendees={attendees}/>
                         </div>
                     </CustomAccordion>
+
+
+                    <CustomAccordion title="Chat">
+                        <div style={{ height: 400, width: '100%'}}>
+                            <ChatArea/>
+                        </div>
+                    </CustomAccordion>
+
+                    
+
                 </Drawer>
 
                 <main className={classes.content}>

@@ -3,7 +3,7 @@ import { useAppState } from "./AppStateProvider"
 import React from "react"
 import routes from "../constants/routes";
 import { DEFAULT_REGION } from "../constants";
-import { ConsoleLogger, DefaultActiveSpeakerPolicy, DefaultDeviceController, DefaultMeetingSession, DefaultVideoTransformDevice, LogLevel, MeetingSessionConfiguration, VideoTileState } from "amazon-chime-sdk-js";
+import { Attendee, ConsoleLogger, DefaultActiveSpeakerPolicy, DefaultDeviceController, DefaultMeetingSession, DefaultVideoTransformDevice, LogLevel, MeetingSessionConfiguration, VideoTileState } from "amazon-chime-sdk-js";
 import * as api from '../api/api'
 import { DeviceChangeObserverImpl } from "../observers/DeviceChangeObserverImpl";
 import AudioVideoObserverTemplate from "../observers/AudioVideoObserver";
@@ -35,9 +35,12 @@ interface MeetingStateValue {
     meetingName: string | null
     userName: string | null
     region: string
+    userAttendeeId: string
     setMeetingName: (val: string) => void
     setUserName: (val: string) => void
     setRegion: (val: string) => void
+    setUserAttendeeId: (val: string) => void
+
 
 
     audioInput: string | null
@@ -72,6 +75,8 @@ interface MeetingStateValue {
     shareScreen:() => Promise<void>
     stopShareScreen:() => Promise<void>
     isScreenSharing:boolean
+
+    getUserNameByAttendeeIdFromList: (attendeeId:string) => string
 }
 
 const MeetingStateContext = React.createContext<MeetingStateValue | null>(null)
@@ -97,6 +102,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
     const [meetingName, setMeetingName] = useState("")
     const [userName, setUserName] = useState("")
     const [region, setRegion] = useState(DEFAULT_REGION)
+    const [userAttendeeId, setUserAttendeeId] = useState("")
     const [meetingSession, setMeetingSession] = useState(null as DefaultMeetingSession | null)
     const [attendees, setAttendees] = useState({} as { [attendeeId: string]: AttendeeState })
     const [newTileState, setNewTileState] = useState(null as VideoTileState | null)
@@ -258,6 +264,12 @@ export const MeetingStateProvider = ({ children }: Props) => {
         setIsScreenSharing(false)
     }
 
+    //////////////////////////////
+    // Util
+    //////////////////////////
+    const getUserNameByAttendeeIdFromList = (attendeeId:string) =>{
+        return attendees[attendeeId].name
+    }
 
     ////////////////////////
     // Meeting Operation
@@ -376,6 +388,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
                 }, 
                 100)
             setMeetingSession(meetingSession)
+            setUserAttendeeId(attendeeInfo.AttendeeId)
 
             setIsLoading(false)
             resolve()
@@ -468,10 +481,11 @@ export const MeetingStateProvider = ({ children }: Props) => {
         meetingName,
         userName,
         region,
-
+        userAttendeeId,
         setMeetingName,
         setUserName,
         setRegion,
+        setUserAttendeeId,
 
         audioInput,
         videoInput,
@@ -500,6 +514,8 @@ export const MeetingStateProvider = ({ children }: Props) => {
         stopShareScreen,
         isScreenSharing,
 
+
+        getUserNameByAttendeeIdFromList,
     }
 
     return (

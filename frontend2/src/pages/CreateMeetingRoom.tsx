@@ -74,7 +74,7 @@ export const CreateMeetingRoom = () => {
 
         <Container maxWidth="xs">
             <CssBaseline />
-            <div className={classes.paper}>
+            <div className={classes.paper} style={{overflow:'auto'}}>
                 <Avatar className={classes.avatar}>
                     <MeetingRoom />
                 </Avatar>
