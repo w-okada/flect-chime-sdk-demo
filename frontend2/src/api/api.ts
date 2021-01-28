@@ -106,7 +106,8 @@ export const getUserNameByAttendeeId = async (meetingName:string, attendeeId:str
     
     const data = await res.json();
     return {
-        name: decodeURIComponent(data.UserName)
+        name: decodeURIComponent(data.UserName),
+        result: data.result
     };
 }
 

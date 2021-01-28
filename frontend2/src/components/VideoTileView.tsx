@@ -54,13 +54,17 @@ export const VideoTilesView = ({ tiles, attendees}: Props) =>  {
     })
 
     const classes = useStyles()
-    const cols = Math.ceil(Math.sqrt(tiles.length))
-    const heightRate = (100 / Math.ceil((tiles.length / cols))) + '%'
+    const sharedContents = tiles.filter(t =>{return t.state().isContent})
+    const sharedTileCols = Math.ceil(Math.sqrt(sharedContents.length))
+    const normalTiles = tiles.filter(t =>{return !t.state().isContent})
+    const normalTilecols = Math.ceil(Math.sqrt(normalTiles.length))
+
     
     return (
         <>
-            <GridList cellHeight='auto' className={classes.gridList} cols={ cols }>
-                {tiles.map((tile) => {
+            <GridList cellHeight='auto' className={classes.gridList} cols={ sharedTileCols }>
+
+                {sharedContents.map((tile) => {
                     // console.log("TILELENGTH:", tiles.length)
                     return (
                         <GridListTile key={tile.id()} cols={1}>
@@ -78,6 +82,35 @@ export const VideoTilesView = ({ tiles, attendees}: Props) =>  {
                     )
                 })}
             </GridList>
+
+
+
+
+
+            <GridList cellHeight='auto' className={classes.gridList} cols={ normalTilecols }>
+                {normalTiles.map((tile) => {
+                    // console.log("TILELENGTH:", tiles.length)
+                    return (
+                        <GridListTile key={tile.id()} cols={1}>
+                            <video controls id={ generateVideoElementId(tile) } className={attendees[tile.state().boundAttendeeId!]?.active?classes.videoTileActive:classes.videoTile}/>
+                            <GridListTileBar2 className={attendees[tile.state().boundAttendeeId!]?.active?classes.videoTileBarActive:classes.videoTileBar}
+                                title={
+                                    tile.state().boundAttendeeId! in attendees? 
+                                    attendees[tile.state().boundAttendeeId!].name
+                                    :
+                                    tile.state().boundAttendeeId
+
+                                }
+                            />
+                        </GridListTile>
+                    )
+                })}
+            </GridList>
+
+
+
+
+
         </>
 
     )

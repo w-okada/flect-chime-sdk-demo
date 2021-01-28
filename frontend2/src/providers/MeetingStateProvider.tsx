@@ -268,7 +268,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
     // Util
     //////////////////////////
     const getUserNameByAttendeeIdFromList = (attendeeId:string) =>{
-        return attendees[attendeeId].name
+        return attendees[attendeeId]?attendees[attendeeId].name:attendeeId
     }
 
     ////////////////////////
@@ -321,6 +321,47 @@ export const MeetingStateProvider = ({ children }: Props) => {
             }
             const audioVideoOserver = new AudioVideoObserverImpl()
             meetingSession.audioVideo.addObserver(audioVideoOserver)
+            setMeetingSession(meetingSession)
+            setUserAttendeeId(attendeeInfo.AttendeeId)
+
+            setIsLoading(false)
+            resolve()
+        })
+        return p
+    }
+
+
+    const startPreview = (val: HTMLVideoElement) => {
+        meetingSession?.audioVideo.startVideoPreviewForVideoInput(val)
+        setPreviewVideoElement(val)
+    }
+    const stopPreview = () => {
+        if (previewVideoElement) {
+            meetingSession?.audioVideo.stopVideoPreviewForVideoInput(previewVideoElement)
+        }
+    }
+    const setAudioOutputElement = (val:HTMLAudioElement|null) => {
+        if(val){
+            meetingSession?.audioVideo.bindAudioElement(val);
+        }
+        internal_setAudioOutputElement(val)
+    }
+
+    const enterMeetingRoom = async ():Promise<void> => {
+        setIsLoading(true)
+
+        const p = new Promise<void>(async(resolve, reject)=>{
+            if (!meetingSession) {
+                console.log("meetingsession is null?", meetingSession)
+                reject("meetingsession is null?")
+                return
+            }
+
+            //https://github.com/aws/amazon-chime-sdk-js/issues/502#issuecomment-652665492
+            // When stop preview, camera stream is terminated!!? So when enter meeting I rechoose Devices as workaround. (2)
+            stopPreview()
+
+
             let internalCounter = 0
             meetingSession.audioVideo.realtimeSubscribeToAttendeeIdPresence(async (attendeeId: string, present: boolean)=>{
                 console.log(`${attendeeId} present = ${present}`);
@@ -337,10 +378,16 @@ export const MeetingStateProvider = ({ children }: Props) => {
                 }else{
                     if(attendeeId in attendees === false){
                         const attendeeName = await api.getUserNameByAttendeeId(meetingName, attendeeId, idToken, accessToken, refreshToken)
+                        let userName = ""
+                        if(attendeeName.result==="success"){
+                            userName = attendeeName.name
+                        }else{
+                            userName = attendeeId
+                        }
                         // Add to Attendee List
                         const new_attendee:AttendeeState = {
                             attendeeId: attendeeId,
-                            name: attendeeName.name,
+                            name: userName,
                             active: false,
                             score: 0,
                             volume: 0,
@@ -401,46 +448,8 @@ export const MeetingStateProvider = ({ children }: Props) => {
                     }
                     internalCounter += 1
                     setStateCounter(internalCounter)
-                }, 
-                100)
-            setMeetingSession(meetingSession)
-            setUserAttendeeId(attendeeInfo.AttendeeId)
+                }, 1000)
 
-            setIsLoading(false)
-            resolve()
-        })
-        return p
-    }
-
-
-    const startPreview = (val: HTMLVideoElement) => {
-        meetingSession?.audioVideo.startVideoPreviewForVideoInput(val)
-        setPreviewVideoElement(val)
-    }
-    const stopPreview = () => {
-        if (previewVideoElement) {
-            meetingSession?.audioVideo.stopVideoPreviewForVideoInput(previewVideoElement)
-        }
-    }
-    const setAudioOutputElement = (val:HTMLAudioElement|null) => {
-        if(val){
-            meetingSession?.audioVideo.bindAudioElement(val);
-        }
-        internal_setAudioOutputElement(val)
-    }
-
-    const enterMeetingRoom = async ():Promise<void> => {
-        setIsLoading(true)
-
-        const p = new Promise<void>(async(resolve, reject)=>{
-            if (!meetingSession) {
-                console.log("meetingsession is null?", meetingSession)
-                reject("meetingsession is null?")
-            }
-
-            //https://github.com/aws/amazon-chime-sdk-js/issues/502#issuecomment-652665492
-            // When stop preview, camera stream is terminated!!? So when enter meeting I rechoose Devices as workaround. (2)
-            stopPreview()
             if(audioOutputElement){
                 await meetingSession?.audioVideo.bindAudioElement(audioOutputElement);
             }
@@ -451,6 +460,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
 
             meetingSession?.audioVideo.start()
             meetingSession?.audioVideo.startLocalVideoTile()
+
             // (3)
             setInMeeting(true)
             setIsLoading(false)
