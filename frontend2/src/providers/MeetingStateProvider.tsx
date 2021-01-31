@@ -8,6 +8,7 @@ import * as api from '../api/api'
 import { DeviceChangeObserverImpl } from "../observers/DeviceChangeObserverImpl";
 import AudioVideoObserverTemplate from "../observers/AudioVideoObserver";
 import { VirtualBackground, VirtualBackgroundType } from "../frameProcessors/VirtualBackground";
+import { showDiff } from "../utils";
 
 type Props = {
     children: ReactNode;
@@ -64,9 +65,6 @@ interface MeetingStateValue {
     setAudioOutputEnable: (val:boolean)=>void
     setAudioOutputElement: (val: HTMLAudioElement | null) => void
 
-    // meetingSession: DefaultMeetingSession | null
-    // joinMeeting: (meetingTitle: string, userName: string) => void
-
     createMeeting: (meetingName: string, userName: string, region: string, userId: string, idToken: string, accessToken: string, refreshToken: string) =>Promise<void>
     joinMeeting: (meetingName: string, userName: string, userId: string, idToken: string, accessToken: string, refreshToken: string) => Promise<void>
 
@@ -120,9 +118,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
     const [videoInputEnable,  internal_setVideoInputEnable]  = useState(true)
     const [audioOutputEnable, internal_setAudioOutputEnable] = useState(true)
 
-
-    const [isScreenSharing, setIsScreenSharing] = useState(false)
-
+    const [isScreenSharing, setIsScreenSharing] = useState(false) // used for gui. toggle button.
 
     const [virtualBackgroundProcessor, setVirtualBackgroundProcessor] = useState(null as VirtualBackground | null)
     if (virtualBackgroundProcessor === null) {
@@ -212,7 +208,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
         if(audioOutputElement){
             meetingSession?.audioVideo.bindAudioElement(audioOutputElement);
         }
-    internal_setAudioOutput(val)
+        internal_setAudioOutput(val)
     }
 
     const setAudioInputEnable = async (val:boolean) => {
@@ -235,10 +231,11 @@ export const MeetingStateProvider = ({ children }: Props) => {
     const setAudioOutputEnable = async (val:boolean) => {
         if(val){
             console.log("audio not null", val, audioOutput)
+            await meetingSession?.audioVideo.chooseAudioOutputDevice(audioOutput)
             if(audioOutputElement){
+                console.log("audio not null-- bind element", val, audioOutput)
                 await meetingSession?.audioVideo.bindAudioElement(audioOutputElement)
             }
-            await meetingSession?.audioVideo.chooseAudioOutputDevice(audioOutput)
         }else{
             console.log("audio null")
             await meetingSession!.audioVideo.chooseAudioOutputDevice(null)
@@ -382,50 +379,18 @@ export const MeetingStateProvider = ({ children }: Props) => {
                     }
 
                     const prev_videoTileState = videoTileStates[tileState.boundAttendeeId]
-                    ///// Chage Check!!! START//////////
-                    const pre_map:{[key:string]:any}={}
-                    Object.entries(prev_videoTileState).forEach(p=>{
-                        const key = p[0]
-                        const value = p[1]
-                        pre_map[key]=value
-                    })
-                    const cur_map:{[key:string]:any}={}
-                    Object.entries(tileState).forEach(p=>{
-                        const key = p[0]
-                        const value = p[1]
-                        cur_map[key] =value
-                    })
-
-                    const diffs:{[key:string]:any}={}
-                    Object.keys(cur_map).forEach(k=>{
-                        if(pre_map[k] !== cur_map[k]){
-                            if(!diffs['diffs']){
-                                diffs['diffs'] =[]
-                            }
-                            diffs['diffs'][k]=[pre_map[k], cur_map[k]]
-                        }else{
-                            if(!diffs['same']){
-                                diffs['same'] =[]
-                            }
-                            diffs['same'][k]=[pre_map[k], cur_map[k]]
-                        }
-                    })
-                    console.log("DIFFS!!!",diffs)
-                    ///// Chage Check!!! END//////////
+                    showDiff(prev_videoTileState, tileState)
 
                     if(prev_videoTileState.tileId !== tileState.tileId){
-                        console.log("NEW TILE1", tileState)
                         videoTileStates[tileState.boundAttendeeId] = tileState
                         setNewTileState(tileState)
                     }else{
                         videoTileStates[tileState.boundAttendeeId] = tileState
-                        console.log("NEW TILE2 --- no update", tileState)
                     }
                 }
                 videoTileWasRemoved(tileId:number): void {
                     // There are the risk to overwrite new commer who is assgined same tileid, but tile id is generally incremented one by one
                     // so, the probability to have this problem is very low: TODO: fix
-                    console.log("NEW REMOVED", tileId)
                     meetingSession?.audioVideo.unbindVideoElement(tileId)
                     setNewTileState(null)
                 }
@@ -483,7 +448,6 @@ export const MeetingStateProvider = ({ children }: Props) => {
                     meetingSession.audioVideo.realtimeUnsubscribeFromVolumeIndicator(attendeeId)
                     ///// same as (1)
                     // setAttendees(attendees)
-                    console.log("update !!!! 3")
                     internalCounter += 1
                     setStateCounter(internalCounter)                    
                     return;
@@ -491,8 +455,6 @@ export const MeetingStateProvider = ({ children }: Props) => {
                     if(attendeeId in attendees === false){
                         const new_attendee = await newAttendee(attendeeId)
                         attendees[attendeeId] = new_attendee
-                        console.log("ATENDEES_2[name]", attendees, new_attendee)                        
-                        console.log("update !!!! 1")
                         internalCounter += 1
                         setStateCounter(internalCounter)
                     }
@@ -511,7 +473,6 @@ export const MeetingStateProvider = ({ children }: Props) => {
                             break
                         }
                     }
-                    console.log("update !!!! b")
                     internalCounter += 1
                     setStateCounter(internalCounter)
                 },
@@ -521,10 +482,15 @@ export const MeetingStateProvider = ({ children }: Props) => {
                           attendees[attendeeId].score = scores[attendeeId];
                         }
                     }
-                    console.log("update !!!! c")
                     internalCounter += 1
                     setStateCounter(internalCounter)
                 }, 1000)
+
+                //// chooseAudioOutputDevice uses the internal cache 
+                //// so beforehand, we must get thses information. (auidoinput, videoinput are maybe optional)
+                await meetingSession?.audioVideo.listAudioInputDevices()
+                await meetingSession?.audioVideo.listVideoInputDevices()
+                await meetingSession?.audioVideo.listAudioOutputDevices()
 
             if(audioOutputElement){
                 await meetingSession?.audioVideo.bindAudioElement(audioOutputElement);
@@ -568,10 +534,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
         setInMeeting(false)
     }
 
-
-
     console.log("ATENDEES_1", attendees)
-
 
     const providerValue = {
         meetingSession,

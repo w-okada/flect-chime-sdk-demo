@@ -2,7 +2,7 @@ import React, { useEffect } from "react"
 import clsx from 'clsx';
 import { Container, Avatar, Typography, TextField, Button, Grid, Link, Box, CssBaseline, CircularProgress, FormControlLabel, Checkbox, AppBar, Drawer, Toolbar, IconButton, Divider, GridList, GridListTile, ListSubheader, GridListTileBar, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, Input, MenuItem, DialogActions, Tooltip } from '@material-ui/core'
 import { Menu, Notifications, ChevronLeft, ChevronRight, ExpandMore, AllOut, Info, Settings, ExitToApp, Videocam, VideocamOff, 
-    Mic, MicOff, VolumeMute, VolumeOff, VolumeUp, ScreenShare, StopScreenShare } from '@material-ui/icons'
+    Mic, MicOff, VolumeMute, VolumeOff, VolumeUp, ScreenShare, StopScreenShare, ViewComfy, ViewCompact } from '@material-ui/icons'
 import { createMuiTheme, makeStyles, ThemeProvider, withStyles } from '@material-ui/core/styles';
 import routes from "../constants/routes"
 import { useHistory } from "react-router-dom"
@@ -17,6 +17,7 @@ import { useMessageState } from "../providers/MessageStateProvider";
 import { useDeviceState } from "../providers/DeviceStateProvider";
 import { ChatArea } from "../components/ChatArea";
 import { useEnvironmentState } from "../providers/EvironmentStateProvider";
+import { useState } from "react";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -29,6 +30,8 @@ const theme = createMuiTheme({
         }
     },
 });
+
+type ViewMode = "FeatureView" | "GridView"
 
 
 const useStyles = makeStyles((theme) => ({
@@ -60,6 +63,11 @@ const useStyles = makeStyles((theme) => ({
 
     menuButton: {
         width: toolbarHeight, height: toolbarHeight,
+    },
+
+    menuButtonActive: {
+        width: toolbarHeight, height: toolbarHeight,
+        color: "#ee7777"
     },
 
 
@@ -136,24 +144,24 @@ const useStyles = makeStyles((theme) => ({
 
 
 export const MeetingRoom = () => {
-    const { userId, idToken, accessToken, refreshToken } = useAppState()
     const { screenHeight, screenWidth } = useEnvironmentState()
     const { audioInputList, videoInputList, audioOutputList } = useDeviceState()    
-    const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees, videoTileStates, leaveMeeting, setAudioOutputElement, 
+    const { meetingName, meetingSession, attendees, videoTileStates, leaveMeeting, setAudioOutputElement, 
             shareScreen, stopShareScreen, isScreenSharing,
              audioInput, audioInputEnable, setAudioInputEnable,
              videoInput, videoInputEnable, setVideoInputEnable,
              audioOutput, audioOutputEnable, setAudioOutputEnable,
              setVideoInput, setVirtualBG, setAudioInput, setAudioOutput,
              virtualBG } = useMeetingState()
-    const { handleSignOut } = useSignInState()
     const classes = useStyles()
     const history = useHistory()
-    const {setMessage} = useMessageState()
     
-    const [drawerOpen, setDrawerOpen] = React.useState(false);
-    const [settingDialogOpen, setSettingDialogOpen] = React.useState(false);
-    const [leaveDialogOpen, setLeaveDialogOpen] = React.useState(false);
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [settingDialogOpen, setSettingDialogOpen] = useState(false);
+    const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+    const [viewMode, setViewMode] = useState("FeatureView" as ViewMode)
+
+
     const toggleDrawerOpen = () => {
         setDrawerOpen(!drawerOpen);
     };
@@ -209,6 +217,9 @@ export const MeetingRoom = () => {
 
     useEffect(()=>{
         const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
+        audioElement.autoplay=false
+
+        console.log("AUDIO ELEMENT SETTING!!!", audioElement)
         setAudioOutputElement(audioElement)
     },[])
 
@@ -299,6 +310,21 @@ export const MeetingRoom = () => {
                         }
                         <span className={clsx(classes.menuSpacer)}>  </span>
                         <span className={clsx(classes.menuSpacer)}>  </span>
+
+                        <Tooltip title="Feature View">
+                            <IconButton color="inherit" className={viewMode === "FeatureView" ? classes.menuButtonActive : classes.menuButton} onClick={(e)=>{setViewMode("FeatureView")}}>
+                                <ViewCompact/>  
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Feature View">
+                            <IconButton color="inherit" className={viewMode === "GridView" ? classes.menuButtonActive : classes.menuButton} onClick={(e)=>{setViewMode("GridView")}}>
+                                <ViewComfy/>  
+                            </IconButton>
+                        </Tooltip>
+
+                        <span className={clsx(classes.menuSpacer)}>  </span>
+                        <span className={clsx(classes.menuSpacer)}>  </span>
+
 
                         <Tooltip title="Leave Meeting">
                             <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={(e)=>{setLeaveDialogOpen(true)}}>
@@ -423,13 +449,22 @@ export const MeetingRoom = () => {
 
                 {/* <main className={classes.content} style={{height:`${screenHeight}px`}}> */}
                 <main style={{height:`${screenHeight-toolbarHeight-bufferHeight}px`}}>
-                    <VideoTilesView tiles={meetingSession!.audioVideo.getAllVideoTiles()} attendees={attendees} videoTileStates={videoTileStates}
-                    height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth}/>
+                    {
+                        (()=>{
+                            switch(viewMode){
+                                case "FeatureView":
+                                    return <VideoTilesView tiles={meetingSession!.audioVideo.getAllVideoTiles()} attendees={attendees} videoTileStates={videoTileStates}
+                                                height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth}/>
+                                case "GridView":
+                                    return <div>GRID</div>
+                            }
+                        })()
+                    }
                 </main>
                 </div>
             </div>
             <div>
-                <audio id="for-speaker" />
+                <audio id="for-speaker" style={{display:"none"}}/>
             </div>
 
         </ThemeProvider>
