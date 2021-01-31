@@ -88,10 +88,10 @@ export const Home = () => {
                         value={localPassword}
                         onChange={(e) => setLocalPassword(e.target.value)}
                     />
-                    <FormControlLabel
+                    {/* <FormControlLabel
                         control={<Checkbox value="remember" color="primary" />}
                         label="Remember me"
-                    />
+                    /> */}
                     {
                         isLoading ?
                             <CircularProgress />

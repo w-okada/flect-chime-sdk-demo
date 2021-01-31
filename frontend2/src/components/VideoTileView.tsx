@@ -8,7 +8,6 @@ import { VideoTilesFeatureView } from "./VideoTileFeatureView";
 import { VideoTilesLineView } from "./VideoTileLineView";
 
 type Props = {
-    tiles: VideoTile[]
     attendees: { [attendeeId: string]: AttendeeState }
     videoTileStates:  { [attendeeId: string]: VideoTileState }
     width: number
@@ -46,58 +45,12 @@ const GridListTileBar2 = withStyles({
     },
 })(GridListTileBar);
 
-export const VideoTilesView = ({ tiles, attendees, videoTileStates, width, height}: Props) =>  {
-    
-
-    const generateVideoElementId = (tile:VideoTile) => `video-tile-${tile.id()}`
-    const classes = useStyles()
-    const sharedContents = tiles.filter(t =>{return t.state().isContent})
-    const sharedTileCols = Math.ceil(Math.sqrt(sharedContents.length))
-    const speakerUserIds = Object.values(attendees).filter(s=>{
-        return s.active
-    }).map(s=>{
-        return s.attendeeId
-    })
-    const speakerUserTiles = tiles.filter(t=>{
-        return speakerUserIds.indexOf(t.state().boundAttendeeId!)!==-1
-    })
-
-    const normalTiles = tiles.filter(t =>{return !t.state().isContent}).filter(t=>{return t.state().boundAttendeeId! in speakerUserIds})
-    const normalTilecols = Math.ceil(Math.sqrt(normalTiles.length))
-
-
-    
+export const VideoTilesView = ({ attendees, videoTileStates, width, height}: Props) =>  {
+        
     return (
         <div style={{width:"100%", height:height}}>
-            <VideoTilesFeatureView  tiles={tiles} attendees={attendees} videoTileStates={videoTileStates} pictureInPicture="TOP_RIGHT" focusTarget="SharedContent" height={height-lineTileHeight} width={width}/>
-            <VideoTilesLineView tiles={tiles} attendees={attendees} videoTileStates={videoTileStates} excludeSpeaker={false} height={lineTileHeight} width={width}/>
-
-
-{/* 
-            <GridList cellHeight='auto' className={classes.gridList} cols={ normalTilecols }>
-                {tiles.map((tile) => {
-                    // console.log("TILELENGTH:", tiles.length)
-                    return (
-                        <GridListTile key={tile.id()} cols={1}>
-                            <video controls id={ generateVideoElementId(tile) } className={attendees[tile.state().boundAttendeeId!]?.active?classes.videoTileActive:classes.videoTile}/>
-                            <GridListTileBar2 className={attendees[tile.state().boundAttendeeId!]?.active?classes.videoTileBarActive:classes.videoTileBar}
-                                title={
-                                    tile.state().boundAttendeeId! in attendees? 
-                                    attendees[tile.state().boundAttendeeId!].name
-                                    :
-                                    tile.state().boundAttendeeId
-
-                                }
-                            />
-                        </GridListTile>
-                    )
-                })}
-            </GridList> */}
-
-
-
-
-
+            <VideoTilesFeatureView attendees={attendees} videoTileStates={videoTileStates} pictureInPicture="TOP_RIGHT" focusTarget="SharedContent" height={height-lineTileHeight} width={width}/>
+            <VideoTilesLineView attendees={attendees} videoTileStates={videoTileStates} excludeSpeaker={false} height={lineTileHeight} width={width}/>
         </div>
 
     )

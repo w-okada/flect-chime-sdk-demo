@@ -7,7 +7,6 @@ import { AttendeeState, useMeetingState } from "../providers/MeetingStateProvide
 import { VideoTilesFeatureView } from "./VideoTileFeatureView";
 
 type Props = {
-    tiles: VideoTile[]
     attendees: { [attendeeId: string]: AttendeeState }
     videoTileStates:  { [attendeeId: string]: VideoTileState }
     excludeSpeaker: boolean
@@ -49,7 +48,7 @@ const GridListTileBar2 = withStyles({
     },
 })(GridListTileBar);
 
-export const VideoTilesLineView = ({ tiles, attendees, videoTileStates, excludeSpeaker, width, height}: Props) =>  {
+export const VideoTilesLineView = ({ attendees, videoTileStates, excludeSpeaker, width, height}: Props) =>  {
     const classes = useStyles()
     const { meetingSession } = useMeetingState()
     const attendeeStates = Object.values(attendees).filter(s=>{return !s.isSharedContent})

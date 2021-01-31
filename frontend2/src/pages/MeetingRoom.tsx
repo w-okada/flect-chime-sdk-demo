@@ -18,6 +18,7 @@ import { useDeviceState } from "../providers/DeviceStateProvider";
 import { ChatArea } from "../components/ChatArea";
 import { useEnvironmentState } from "../providers/EvironmentStateProvider";
 import { useState } from "react";
+import { VideoGridView } from "../components/VideoGridView";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -453,10 +454,11 @@ export const MeetingRoom = () => {
                         (()=>{
                             switch(viewMode){
                                 case "FeatureView":
-                                    return <VideoTilesView tiles={meetingSession!.audioVideo.getAllVideoTiles()} attendees={attendees} videoTileStates={videoTileStates}
+                                    return <VideoTilesView attendees={attendees} videoTileStates={videoTileStates}
                                                 height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth}/>
                                 case "GridView":
-                                    return <div>GRID</div>
+                                    return <VideoGridView attendees={attendees} videoTileStates={videoTileStates} onlyCameraView={false}
+                                                height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth} />
                             }
                         })()
                     }

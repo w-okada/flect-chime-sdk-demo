@@ -8,9 +8,6 @@ import { AttendeeState, useMeetingState } from "../providers/MeetingStateProvide
 export type PictureInPictureType = "None" | "TOP_LEFT" | "TOP_RIGHT" | "BOTTOM_LEFT" | "BOTTOM_RIGHT"
 export type FocustTarget = "SharedContent" | "Speaker"
 type Props = {
-    // sharedContents: VideoTile[]
-    // speakerUserTiles: VideoTile[]
-    tiles: VideoTile[]
     attendees: { [attendeeId: string]: AttendeeState }
     videoTileStates:  { [attendeeId: string]: VideoTileState }
     pictureInPicture: PictureInPictureType
@@ -56,7 +53,7 @@ const GridListTileBar2 = withStyles({
 })(GridListTileBar);
 
 
-export const VideoTilesFeatureView = ({ tiles, attendees, videoTileStates, pictureInPicture, focusTarget, width, height}: Props) =>  {
+export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPicture, focusTarget, width, height}: Props) =>  {
     const classes = useStyles()
     const { meetingSession } = useMeetingState()
 
