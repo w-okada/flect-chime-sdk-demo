@@ -24,14 +24,14 @@ type Order = 'asc' | 'desc';
 function getComparator<Key extends keyof any>(
   order: Order,
   orderBy: Key,
-): (a: { [key in Key]: number | string | boolean }, b: { [key in Key]: number | string | boolean }) => number {
+): (a: { [key in Key]: number | string | boolean |HTMLVideoElement | null}, b: { [key in Key]: number | string | boolean | HTMLVideoElement | null}) => number {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
 function stableSort<T>(array: T[], comparator: (a: T, b: T) => number) {
-    const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
+  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
   // stabilizedThis.sort((a, b) => {
   //   const order = comparator(a[0], b[0]);
   //   if (order !== 0) return order;

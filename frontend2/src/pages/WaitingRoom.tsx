@@ -114,7 +114,7 @@ export const WaitingRoom = () => {
         // console.log("effect1", meetingSession, videoEl)
         // console.log("effect2", meetingSession?.audioVideo.getLocalVideoTile())
         // meetingSession?.audioVideo.startVideoPreviewForVideoInput(videoEl)
-    })
+    },[videoInput])
 
     return (
         <Container maxWidth="xs" >

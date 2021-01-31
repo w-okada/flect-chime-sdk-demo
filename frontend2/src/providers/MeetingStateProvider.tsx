@@ -22,6 +22,8 @@ export interface AttendeeState{
     muted: boolean
     paused: boolean
     signalStrength: number
+    isSharedContent: boolean
+    ownerId: string
 }
 
 
@@ -30,7 +32,8 @@ interface MeetingStateValue {
     newTileState: VideoTileState | null
     stateCounter: number
     meetingSession: DefaultMeetingSession | null
-    attendees: { [attendeeId: string]: AttendeeState }
+    attendees: { [attendeeId: string]: AttendeeState  }
+    videoTileStates: { [attendeeId: string]: VideoTileState }
 
     meetingName: string | null
     userName: string | null
@@ -105,6 +108,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
     const [userAttendeeId, setUserAttendeeId] = useState("")
     const [meetingSession, setMeetingSession] = useState(null as DefaultMeetingSession | null)
     const [attendees, setAttendees] = useState({} as { [attendeeId: string]: AttendeeState })
+    const [videoTileStates, setVideoTileStates] = useState({} as { [attendeeId: string]: VideoTileState })
     const [newTileState, setNewTileState] = useState(null as VideoTileState | null)
 
     const [audioInput, internal_setAudioInput] = useState(null as string | null)
@@ -187,7 +191,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
             await meetingSession!.audioVideo.chooseVideoInputDevice(null)
             if(inMeeting){
                 console.log("video5, ")
-                meetingSession?.audioVideo.startLocalVideoTile()
+                meetingSession?.audioVideo.stopLocalVideoTile()
             }else{
                 console.log("video6, ")
 
@@ -223,6 +227,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
         if(val){
             await setupVideoInput(videoInput, virtualBG)
         }else{
+            console.log("video null")
             await setupVideoInput(null, virtualBG)
         }
         internal_setVideoInputEnable(val)
@@ -272,6 +277,59 @@ export const MeetingStateProvider = ({ children }: Props) => {
     }
 
     ////////////////////////
+    // Attendee Management
+    ///////////////////////
+    const newAttendee = async (attendeeId:string) =>{
+        const attendeeName = await api.getUserNameByAttendeeId(meetingName, attendeeId, idToken, accessToken, refreshToken)
+        let userName = ""
+        if(attendeeName.result==="success"){
+            userName = attendeeName.name
+        }else{
+            userName = attendeeId
+        }
+        // Add to Attendee List
+        const new_attendee:AttendeeState = {
+            attendeeId: attendeeId,
+            name: userName,
+            active: false,
+            score: 0,
+            volume: 0,
+            muted: false,
+            paused: false,
+            signalStrength: 0,
+            isSharedContent:false,
+            ownerId:"",
+        }
+        if(attendeeId.split("#").length === 2){
+            new_attendee.isSharedContent = true
+            new_attendee.ownerId = attendeeId.split("#")[0]
+        }
+
+        // Add Subscribe volume Indicator
+        let internalCounter = 0
+        meetingSession?.audioVideo.realtimeSubscribeToVolumeIndicator(attendeeId,
+            async (
+                attendeeId: string,
+                volume: number | null,
+                muted: boolean | null,
+                signalStrength: number | null
+            ) => {
+                new_attendee.volume = volume || 0
+                new_attendee.muted = muted || false
+                new_attendee.signalStrength =  signalStrength ||0
+                //// multiple user join at the same time, there are the risk conflict the timing to update and overwritten.
+                //// -> skip "clone and set the attribute" and only update the contents of array --- (1)
+                // setAttendees(attendees)
+                console.log("update !!!! 2")
+                internalCounter += 1
+                setStateCounter(internalCounter)
+            }
+        )
+        return new_attendee
+    }
+
+
+    ////////////////////////
     // Meeting Operation
     ///////////////////////
 
@@ -312,10 +370,63 @@ export const MeetingStateProvider = ({ children }: Props) => {
             const configuration = new MeetingSessionConfiguration(meetingInfo, attendeeInfo)
             const meetingSession = new DefaultMeetingSession(configuration, logger, deviceController)
             class AudioVideoObserverImpl extends AudioVideoObserverTemplate {
-                videoTileDidUpdate(tileState: VideoTileState): void {
-                    setNewTileState(tileState)
+                videoTileDidUpdate(tileState: VideoTileState){
+                    if(!tileState.boundAttendeeId){
+                        return
+                    }
+                    if(!videoTileStates[tileState.boundAttendeeId]){
+                        console.log("NEW TILE-", tileState)
+                        videoTileStates[tileState.boundAttendeeId] = tileState
+                        setNewTileState(tileState)
+                        return
+                    }
+
+                    const prev_videoTileState = videoTileStates[tileState.boundAttendeeId]
+                    ///// Chage Check!!! START//////////
+                    const pre_map:{[key:string]:any}={}
+                    Object.entries(prev_videoTileState).forEach(p=>{
+                        const key = p[0]
+                        const value = p[1]
+                        pre_map[key]=value
+                    })
+                    const cur_map:{[key:string]:any}={}
+                    Object.entries(tileState).forEach(p=>{
+                        const key = p[0]
+                        const value = p[1]
+                        cur_map[key] =value
+                    })
+
+                    const diffs:{[key:string]:any}={}
+                    Object.keys(cur_map).forEach(k=>{
+                        if(pre_map[k] !== cur_map[k]){
+                            if(!diffs['diffs']){
+                                diffs['diffs'] =[]
+                            }
+                            diffs['diffs'][k]=[pre_map[k], cur_map[k]]
+                        }else{
+                            if(!diffs['same']){
+                                diffs['same'] =[]
+                            }
+                            diffs['same'][k]=[pre_map[k], cur_map[k]]
+                        }
+                    })
+                    console.log("DIFFS!!!",diffs)
+                    ///// Chage Check!!! END//////////
+
+                    if(prev_videoTileState.tileId !== tileState.tileId){
+                        console.log("NEW TILE1", tileState)
+                        videoTileStates[tileState.boundAttendeeId] = tileState
+                        setNewTileState(tileState)
+                    }else{
+                        videoTileStates[tileState.boundAttendeeId] = tileState
+                        console.log("NEW TILE2 --- no update", tileState)
+                    }
                 }
-                videoTileWasRemoved(): void {
+                videoTileWasRemoved(tileId:number): void {
+                    // There are the risk to overwrite new commer who is assgined same tileid, but tile id is generally incremented one by one
+                    // so, the probability to have this problem is very low: TODO: fix
+                    console.log("NEW REMOVED", tileId)
+                    meetingSession?.audioVideo.unbindVideoElement(tileId)
                     setNewTileState(null)
                 }
             }
@@ -372,53 +483,16 @@ export const MeetingStateProvider = ({ children }: Props) => {
                     meetingSession.audioVideo.realtimeUnsubscribeFromVolumeIndicator(attendeeId)
                     ///// same as (1)
                     // setAttendees(attendees)
+                    console.log("update !!!! 3")
                     internalCounter += 1
                     setStateCounter(internalCounter)                    
                     return;
                 }else{
                     if(attendeeId in attendees === false){
-                        const attendeeName = await api.getUserNameByAttendeeId(meetingName, attendeeId, idToken, accessToken, refreshToken)
-                        let userName = ""
-                        if(attendeeName.result==="success"){
-                            userName = attendeeName.name
-                        }else{
-                            userName = attendeeId
-                        }
-                        // Add to Attendee List
-                        const new_attendee:AttendeeState = {
-                            attendeeId: attendeeId,
-                            name: userName,
-                            active: false,
-                            score: 0,
-                            volume: 0,
-                            muted: false,
-                            paused: false,
-                            signalStrength: 0
-
-                        }
+                        const new_attendee = await newAttendee(attendeeId)
                         attendees[attendeeId] = new_attendee
-
-                        // Add Subscribe volume Indicator
-                        meetingSession.audioVideo.realtimeSubscribeToVolumeIndicator(attendeeId,
-                            async (
-                                attendeeId: string,
-                                volume: number | null,
-                                muted: boolean | null,
-                                signalStrength: number | null
-                            ) => {
-                                attendees[attendeeId].volume = volume || 0
-                                attendees[attendeeId].muted = muted || false
-                                attendees[attendeeId].signalStrength =  signalStrength ||0
-                                //// multiple user join at the same time, there are the risk conflict the timing to update and overwritten.
-                                //// -> skip "clone and set the attribute" and only update the contents of array --- (1)
-                                // setAttendees(attendees)
-                                internalCounter += 1
-                                setStateCounter(internalCounter)
-                            }
-                        )
-                        // update attendees
-                        ///// same as (1)
-                        //setAttendees(attendees)
+                        console.log("ATENDEES_2[name]", attendees, new_attendee)                        
+                        console.log("update !!!! 1")
                         internalCounter += 1
                         setStateCounter(internalCounter)
                     }
@@ -437,6 +511,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
                             break
                         }
                     }
+                    console.log("update !!!! b")
                     internalCounter += 1
                     setStateCounter(internalCounter)
                 },
@@ -446,6 +521,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
                           attendees[attendeeId].score = scores[attendeeId];
                         }
                     }
+                    console.log("update !!!! c")
                     internalCounter += 1
                     setStateCounter(internalCounter)
                 }, 1000)
@@ -494,13 +570,14 @@ export const MeetingStateProvider = ({ children }: Props) => {
 
 
 
-    console.log("ATENDEES", attendees)
+    console.log("ATENDEES_1", attendees)
 
 
     const providerValue = {
         meetingSession,
         stateCounter,
         attendees,
+        videoTileStates,
         isLoading,
         newTileState,
 

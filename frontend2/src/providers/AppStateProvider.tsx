@@ -1,5 +1,6 @@
 import React, { useContext, useState, ReactNode } from 'react';
 import { DeviceStateProvider } from './DeviceStateProvider';
+import { EnvironmentStateProvider } from './EvironmentStateProvider';
 import { MeetingStateProvider } from './MeetingStateProvider';
 import { MessageStateProvider } from './MessageStateProvider';
 import { SignInStateProvider } from './SignInStateProvider';
@@ -65,15 +66,17 @@ export const AppStateProvider = ({ children }: Props) => {
 
     return (
         <AppStateContext.Provider value={providerValue} >
-            <MessageStateProvider>
-                <SignInStateProvider>
-                    <DeviceStateProvider>
-                        <MeetingStateProvider>
-                            {children}
-                        </MeetingStateProvider>
-                    </DeviceStateProvider>
-                </SignInStateProvider>
-            </MessageStateProvider>
+            <EnvironmentStateProvider>
+                <MessageStateProvider>
+                    <SignInStateProvider>
+                        <DeviceStateProvider>
+                            <MeetingStateProvider>
+                                {children}
+                            </MeetingStateProvider>
+                        </DeviceStateProvider>
+                    </SignInStateProvider>
+                </MessageStateProvider>
+            </EnvironmentStateProvider>
         </AppStateContext.Provider>
     )
 }

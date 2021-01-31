@@ -16,11 +16,12 @@ import { VideoTilesView } from "../components/VideoTileView";
 import { useMessageState } from "../providers/MessageStateProvider";
 import { useDeviceState } from "../providers/DeviceStateProvider";
 import { ChatArea } from "../components/ChatArea";
+import { useEnvironmentState } from "../providers/EvironmentStateProvider";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
 const accordionSummaryHeight = 20
-
+const bufferHeight = 20
 const theme = createMuiTheme({
     mixins: {
         toolbar: {
@@ -33,6 +34,10 @@ const theme = createMuiTheme({
 const useStyles = makeStyles((theme) => ({
     root: {
         display: 'flex',
+        width:'100%',
+        height:'100%',
+        overflowX:'hidden',
+        overflowY:'hidden',
     },
 
     ////////////////
@@ -44,9 +49,10 @@ const useStyles = makeStyles((theme) => ({
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
         }),
+        height: toolbarHeight
     },
     toolbar: {
-        // paddingRight: 24, // keep right padding when drawer closed
+        height: toolbarHeight
     },
     menuSpacer: {
         width: toolbarHeight, height: toolbarHeight,
@@ -69,8 +75,6 @@ const useStyles = makeStyles((theme) => ({
     ////////////////
     drawerPaper: {
         // marginLeft: drawerWidth,
-        marginTop: theme.mixins.toolbar.height,
-
         position: 'relative',
         whiteSpace: 'nowrap',
         width: drawerWidth,
@@ -85,9 +89,10 @@ const useStyles = makeStyles((theme) => ({
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
         }),
-        width: theme.spacing(3),
-        [theme.breakpoints.up('sm')]: {
-            width: theme.spacing(3),
+        // width: theme.spacing(3),
+        [theme.breakpoints.up('xs')]: {
+            // width: theme.spacing(0),
+            width: 0,
         },
     },
     toolbarIcon: {
@@ -105,15 +110,14 @@ const useStyles = makeStyles((theme) => ({
     ////////////////
     content: {
         flexGrow: 1,
-        height: '100vh',
-        overflow: 'auto',
-    },
-    gridList: {
-        width: '100%',
-        // height: 450,
-    },
-    icon: {
-        color: 'rgba(255, 255, 255, 0.54)',
+        // width: `calc(100%-drawerWidth)`,
+        // height: "100%",
+        // height: `calc(100%-toolbarHeight)`,
+        // width: 'auto',
+        // height: 'auto',
+        // overflow:'auto',
+        overflow:'hidden',
+
     },
 
     ////////////////////
@@ -131,34 +135,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-const tileData = [
-    {
-        userName: 'AAAA1',
-        info: 'infooooo'
-    },
-    {
-        userName: 'AAAA12',
-        info: 'infooooo'
-    },
-    {
-        userName: 'AAAA3',
-        info: 'infooooo'
-    },
-    {
-        userName: 'AAAA4',
-        info: 'infooooo'
-    },
-    {
-        userName: 'AAAA5',
-        info: 'infooooo'
-    },
-]
-
-
 export const MeetingRoom = () => {
     const { userId, idToken, accessToken, refreshToken } = useAppState()
+    const { screenHeight, screenWidth } = useEnvironmentState()
     const { audioInputList, videoInputList, audioOutputList } = useDeviceState()    
-    const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees, leaveMeeting, setAudioOutputElement, 
+    const { meetingName, userName, isLoading, joinMeeting, meetingSession, attendees, videoTileStates, leaveMeeting, setAudioOutputElement, 
             shareScreen, stopShareScreen, isScreenSharing,
              audioInput, audioInputEnable, setAudioInputEnable,
              videoInput, videoInputEnable, setVideoInputEnable,
@@ -419,36 +400,33 @@ export const MeetingRoom = () => {
                     </DialogActions>
                 </Dialog>
 
+                <div style={{marginTop:toolbarHeight, position:"absolute", display:"flex"}}>
+                    <Drawer
+                        variant="permanent"
+                        classes={{
+                            paper: clsx(classes.drawerPaper, !drawerOpen && classes.drawerPaperClose),
+                        }}
+                        open={drawerOpen}
+                    >
+                        <CustomAccordion title="Member">
+                            <div style={{ height: 200, width: '100%' }}>
+                                <AttendeesTable attendees={attendees}/>
+                            </div>
+                        </CustomAccordion>
 
-                <Drawer
-                    variant="permanent"
-                    classes={{
-                        paper: clsx(classes.drawerPaper, !drawerOpen && classes.drawerPaperClose),
-                    }}
-                    open={drawerOpen}
-                >
-                    <div className={classes.appBarSpacer} />
-                    <CustomAccordion title="Member">
-                        <div style={{ height: 200, width: '100%' }}>
-                            <AttendeesTable attendees={attendees}/>
-                        </div>
-                    </CustomAccordion>
+                        <CustomAccordion title="Chat">
+                            <div style={{ height: 400, width: '100%'}}>
+                                <ChatArea/>
+                            </div>
+                        </CustomAccordion>
+                    </Drawer>
 
-
-                    <CustomAccordion title="Chat">
-                        <div style={{ height: 400, width: '100%'}}>
-                            <ChatArea/>
-                        </div>
-                    </CustomAccordion>
-
-                    
-
-                </Drawer>
-
-                <main className={classes.content}>
-                    <div className={classes.appBarSpacer} />
-                    <VideoTilesView tiles={meetingSession!.audioVideo.getAllVideoTiles()} attendees={attendees}/>
+                {/* <main className={classes.content} style={{height:`${screenHeight}px`}}> */}
+                <main style={{height:`${screenHeight-toolbarHeight-bufferHeight}px`}}>
+                    <VideoTilesView tiles={meetingSession!.audioVideo.getAllVideoTiles()} attendees={attendees} videoTileStates={videoTileStates}
+                    height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth}/>
                 </main>
+                </div>
             </div>
             <div>
                 <audio id="for-speaker" />
