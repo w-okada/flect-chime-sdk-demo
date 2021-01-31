@@ -167,8 +167,8 @@ exports.getAttendeeIfno = async (meetingName, userId) => {
         }
     }).promise();
     if (!result.Item) {
-        return {AttendeeId:userId, UserName:"no entry", Query:`${meetingName}/${userId}`};
+        return {AttendeeId:userId, UserName:"no entry", Query:`${meetingName}/${userId}`, result:'fail'};
     }
     console.log(result)
-    return {AttendeeId:result.Item.AttendeeId.S, UserName:result.Item.UserName.S}
+    return {AttendeeId:result.Item.AttendeeId.S, UserName:result.Item.UserName.S, result:'success'}
 }
