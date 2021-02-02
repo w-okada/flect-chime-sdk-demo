@@ -161,7 +161,7 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
     return (
         <div style={{display:"flex", flexWrap:"nowrap", width:`${width}px`, height:`${height}px`}}>
             {focusStates?.map((s, i) => {
-                console.log("ELEMENT:USEFOCoS1111::", focusVideoElementId(s.attendeeId), videoTileStates[s.attendeeId].tileId!>=0)
+                // console.log("ELEMENT:USEFOCoS1111::", focusVideoElementId(s.attendeeId), videoTileStates[s.attendeeId].tileId!>=0)
                 console.log("ELEMENT:USEFOCoS1112::", attendees)
                 return (
                     <div key={s.attendeeId} style={{height:height-2, margin:"1px", flex:"0 0 auto", position:"relative"}} >
