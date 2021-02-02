@@ -79,7 +79,13 @@ export const VideoGridView = ({ attendees, videoTileStates, onlyCameraView, widt
                 {targetStates.map((s) => {
                     return (
                         <GridListTile key={s.attendeeId} cols={1}>
-                            <video controls id={ gridVideoElementId(s.attendeeId) } className={classes.videoTile}/>
+                            {videoTileStates[s.attendeeId] && videoTileStates[s.attendeeId].tileId!>=0?
+                                <video id={ gridVideoElementId(s.attendeeId) } className={classes.videoTile}/>
+                                :
+                                <>no image</>
+                            }
+
+
                             <GridListTileBar2 className={s.active?classes.videoTileBarActive:classes.videoTileBar} title={s.name} />
                         </GridListTile>
                     )

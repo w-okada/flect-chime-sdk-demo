@@ -349,7 +349,17 @@ export const MeetingStateProvider = ({ children }: Props) => {
         console.log("joining!!!!")
         setIsLoading(true)
         const p = new Promise<void>(async (resolve, reject)=>{
-            
+            if(meetingName === ""){
+                reject({message:"Meeting name is invalid", code:"INVALID_MEETING_NAME"})
+                setIsLoading(false)
+                return
+            }
+            if(userName === ""){
+                reject({message:"Username is invalid", code:"INVALID_USER_NAME"})
+                setIsLoading(false)
+                return
+            }
+
             const joinInfo = await api.joinMeeting(meetingName, userName, userId, idToken, accessToken, refreshToken)
             console.log("JoinInfo:", joinInfo)
             if(joinInfo['code']){
