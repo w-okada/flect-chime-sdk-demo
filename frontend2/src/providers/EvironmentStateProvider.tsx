@@ -1,5 +1,4 @@
 import React, { useState, ReactNode, useContext, useEffect } from 'react';
-import { getDeviceLists } from '../utils';
 
 type Props = {
     children: ReactNode;

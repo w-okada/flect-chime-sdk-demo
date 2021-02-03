@@ -1,8 +1,7 @@
-import React, { useEffect } from "react"
-import clsx from 'clsx';
-import { GridList, GridListTile, GridListTileBar } from '@material-ui/core'
+import { useEffect } from "react"
+import { GridListTileBar } from '@material-ui/core'
 import { makeStyles, withStyles } from '@material-ui/core/styles';
-import { VideoTile, VideoTileState } from "amazon-chime-sdk-js";
+import { VideoTileState } from "amazon-chime-sdk-js";
 import { AttendeeState, useMeetingState } from "../providers/MeetingStateProvider";
 
 export type PictureInPictureType = "None" | "TOP_LEFT" | "TOP_RIGHT" | "BOTTOM_LEFT" | "BOTTOM_RIGHT"

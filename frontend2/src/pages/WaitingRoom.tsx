@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { Container, Avatar, Typography, TextField, Button, Grid, Link, Box, CssBaseline, CircularProgress, FormControlLabel, Checkbox } from '@material-ui/core'
+import { Container, Avatar, Typography, Button, Grid, Link, Box, CssBaseline, CircularProgress } from '@material-ui/core'
 import { FormControl, InputLabel, Select, MenuItem } from '@material-ui/core'
 import { MeetingRoom } from '@material-ui/icons'
 import { Copyright } from "../components/Copyright"
@@ -45,7 +45,7 @@ export const WaitingRoom = () => {
     const { userId } = useAppState()
     const { audioInputList, videoInputList, audioOutputList } = useDeviceState()
     const { meetingName, userName, isLoading, leaveMeeting, enterMeetingRoom } = useMeetingState()
-    const { audioInputDeviceSetting, setAudioInputDeviceSetting, videoInputDeviceSetting, setVideoInputDeviceSetting, audioOutputDeviceSetting, setAudioOutputDeviceSetting } = useMeetingState()
+    const { audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting } = useMeetingState()
     const { handleSignOut } = useSignInState()
     const classes = useStyles()
     const history = useHistory()

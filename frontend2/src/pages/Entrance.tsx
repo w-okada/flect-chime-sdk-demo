@@ -1,6 +1,5 @@
-import React, { useEffect } from "react"
-import { Container, Avatar, Typography, TextField, Button, Grid, Link, Box, CssBaseline, CircularProgress, FormControlLabel, Checkbox } from '@material-ui/core'
-import { FormControl, InputLabel, Select, MenuItem } from '@material-ui/core'
+import React from "react"
+import { Container, Avatar, Typography, TextField, Button, Grid, Link, Box, CssBaseline, CircularProgress } from '@material-ui/core'
 import { MeetingRoom } from '@material-ui/icons'
 import { Copyright } from "../components/Copyright"
 import { makeStyles } from '@material-ui/core/styles';
@@ -9,7 +8,6 @@ import { useHistory } from "react-router-dom"
 import { useSignInState } from "../providers/SignInStateProvider"
 import { useAppState } from "../providers/AppStateProvider";
 import { useMeetingState } from "../providers/MeetingStateProvider";
-import { useDeviceState } from "../providers/DeviceStateProvider";
 import { useMessageState } from "../providers/MessageStateProvider"
 
 const useStyles = makeStyles((theme) => ({

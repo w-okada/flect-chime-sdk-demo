@@ -1,19 +1,16 @@
 import React, { useEffect } from "react"
 import clsx from 'clsx';
-import { Container, Avatar, Typography, TextField, Button, Grid, Link, Box, CssBaseline, CircularProgress, FormControlLabel, Checkbox, AppBar, Drawer, Toolbar, IconButton, Divider, GridList, GridListTile, ListSubheader, GridListTileBar, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, Input, MenuItem, DialogActions, Tooltip } from '@material-ui/core'
-import { Menu, Notifications, ChevronLeft, ChevronRight, ExpandMore, AllOut, Info, Settings, ExitToApp, Videocam, VideocamOff, 
-    Mic, MicOff, VolumeMute, VolumeOff, VolumeUp, ScreenShare, StopScreenShare, ViewComfy, ViewCompact } from '@material-ui/icons'
-import { createMuiTheme, makeStyles, ThemeProvider, withStyles } from '@material-ui/core/styles';
+import { Typography, Button, CssBaseline, AppBar, Drawer, Toolbar, IconButton, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, MenuItem, DialogActions, Tooltip } from '@material-ui/core'
+import {  ChevronLeft, ChevronRight, Settings, ExitToApp, Videocam, VideocamOff, 
+    Mic, MicOff, VolumeOff, VolumeUp, ScreenShare, StopScreenShare, ViewComfy, ViewCompact } from '@material-ui/icons'
+import { createMuiTheme, makeStyles, ThemeProvider} from '@material-ui/core/styles';
 import routes from "../constants/routes"
 import { useHistory } from "react-router-dom"
-import { useSignInState } from "../providers/SignInStateProvider"
-import { useAppState } from "../providers/AppStateProvider";
 import { useMeetingState } from "../providers/MeetingStateProvider";
 import { AttendeesTable } from "../components/AttendeesTable";
 
 import { CustomAccordion } from "../components/CustomAccordion";
 import { VideoTilesView } from "../components/VideoTileView";
-import { useMessageState } from "../providers/MessageStateProvider";
 import { useDeviceState } from "../providers/DeviceStateProvider";
 import { ChatArea } from "../components/ChatArea";
 import { useEnvironmentState } from "../providers/EvironmentStateProvider";
@@ -148,7 +145,7 @@ export const MeetingRoom = () => {
     const { screenHeight, screenWidth } = useEnvironmentState()
     const { audioInputList, videoInputList, audioOutputList } = useDeviceState()    
     const { meetingName, meetingSession, attendees, videoTileStates, leaveMeeting, shareScreen, stopShareScreen, isScreenSharing } = useMeetingState()
-    const { audioInputDeviceSetting, setAudioInputDeviceSetting, videoInputDeviceSetting, setVideoInputDeviceSetting, audioOutputDeviceSetting, setAudioOutputDeviceSetting } = useMeetingState()
+    const { audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting } = useMeetingState()
 
     const [guiCounter, setGuiCounter] = useState(0)
 

@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
-import { AttendeeState, useMeetingState } from '../providers/MeetingStateProvider';
-import { Button, Card, CardActions, CardContent, CssBaseline, InputAdornment, Paper, TextField, Typography } from '@material-ui/core';
+import {  useMeetingState } from '../providers/MeetingStateProvider';
+import { Button, TextField, Typography } from '@material-ui/core';
 import { useRealitimeSubscribeChatState } from '../providers/realtime/RealtimeSubscribeChatProvider';
-import { Chat } from '@material-ui/icons';
 
 
 const useStyles = makeStyles((theme: Theme) =>

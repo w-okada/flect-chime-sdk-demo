@@ -4,8 +4,6 @@ import { DataMessage } from "amazon-chime-sdk-js";
 import { v4 } from 'uuid';
 import { RealtimeData } from "./RealtimeSubscribeProvider";
 import { useMeetingState } from "../MeetingStateProvider";
-import { useAppState } from "../AppStateProvider";
-
 
 type Props = {
     children: ReactNode;

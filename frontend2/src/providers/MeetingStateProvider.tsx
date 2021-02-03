@@ -1,13 +1,11 @@
 import { useContext, useState, ReactNode } from "react"
 import { useAppState } from "./AppStateProvider"
 import React from "react"
-import routes from "../constants/routes";
 import { DEFAULT_REGION } from "../constants";
-import { Attendee, ConsoleLogger, DefaultActiveSpeakerPolicy, DefaultDeviceController, DefaultMeetingSession, DefaultVideoTransformDevice, LogLevel, MeetingSessionConfiguration, VideoTileState } from "amazon-chime-sdk-js";
+import { ConsoleLogger, DefaultActiveSpeakerPolicy, DefaultDeviceController, DefaultMeetingSession, LogLevel, MeetingSessionConfiguration, VideoTileState } from "amazon-chime-sdk-js";
 import * as api from '../api/api'
 import { DeviceChangeObserverImpl } from "../observers/DeviceChangeObserverImpl";
 import AudioVideoObserverTemplate from "../observers/AudioVideoObserver";
-import { VirtualBackground } from "../frameProcessors/VirtualBackground";
 import { showDiff } from "../utils";
 import { AudioInputDeviceSetting } from "./helper/AudioInputDeviceSetting";
 import { VideoInputDeviceSetting } from "./helper/VideoInputDeviceSetting";
@@ -65,9 +63,7 @@ interface MeetingStateValue {
     audioInputDeviceSetting: AudioInputDeviceSetting | null
     videoInputDeviceSetting: VideoInputDeviceSetting | null
     audioOutputDeviceSetting: AudioOutputDeviceSetting | null
-    setAudioInputDeviceSetting: (val: AudioInputDeviceSetting) => void
-    setVideoInputDeviceSetting: (val: VideoInputDeviceSetting) => void
-    setAudioOutputDeviceSetting: (val: AudioOutputDeviceSetting) => void
+
 }
 
 const MeetingStateContext = React.createContext<MeetingStateValue | null>(null)
@@ -180,7 +176,6 @@ export const MeetingStateProvider = ({ children }: Props) => {
                 //// multiple user join at the same time, there are the risk conflict the timing to update and overwritten.
                 //// -> skip "clone and set the attribute" and only update the contents of array --- (1)
                 // setAttendees(attendees)
-                console.log("update !!!! 2")
                 internalCounter += 1
                 setStateCounter(internalCounter)
             }
@@ -429,9 +424,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
         audioInputDeviceSetting,
         videoInputDeviceSetting,
         audioOutputDeviceSetting,
-        setAudioInputDeviceSetting,
-        setVideoInputDeviceSetting,
-        setAudioOutputDeviceSetting,
+
 
         createMeeting,
         joinMeeting,
