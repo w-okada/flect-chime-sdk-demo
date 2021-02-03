@@ -61,7 +61,6 @@ export const VideoTilesLineView = ({ attendees, videoTileStates, excludeSpeaker,
         attendeeStates.forEach((s)=>{
             const elementId =  lineVideoElementId(s.attendeeId)
             const lineVideoElement = document.getElementById(elementId)! as HTMLVideoElement
-            console.log("update!",elementId, lineVideoElement)
             if(lineVideoElement){
                 meetingSession?.audioVideo.bindVideoElement(videoTileStates[s.attendeeId].tileId!, lineVideoElement)
             }

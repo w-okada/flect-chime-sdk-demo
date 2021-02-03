@@ -4,7 +4,7 @@ import { generateGoogleMeetSegmentationDefaultConfig, generateDefaultGoogleMeetS
 
 
 
-export type VirtualBackgroundType = "None" | "BodyPix" | "GoogleMeet"
+export type VirtualBackgroundSegmentationType = "None" | "BodyPix" | "GoogleMeet"
 export type BackgroundMode = "Image" | "Blur" | "Color"
 
 interface VirtualBackgroundConfig {
@@ -16,7 +16,7 @@ interface VirtualBackgroundConfig {
     width: number,          // pixel (output size. If =<0, fit the background canvas size )
     height: number,         // pixel (output size. If =<0, fit the background canvas size )
 
-    type: VirtualBackgroundType,
+    type: VirtualBackgroundSegmentationType,
     backgroundMode: BackgroundMode,
     backgroundImage: HTMLCanvasElement | HTMLImageElement | null,
     backgroundColor: string,
@@ -56,10 +56,11 @@ export class VirtualBackground implements VideoFrameProcessor {
     targetCanvasCtx = this.targetCanvas!.getContext('2d')
     canvasVideoFrameBuffer = new CanvasVideoFrameBuffer(this.targetCanvas!);
 
-
+    
     /////////////////////
     // WorkerManagers  //
     /////////////////////
+    bodyPixModelReady = false
     bodyPixConfig = (() => {
         const c = generateBodyPixDefaultConfig()
         c.model = ModelConfigMobileNetV1_05
@@ -74,9 +75,15 @@ export class VirtualBackground implements VideoFrameProcessor {
     })()
     bodyPixManager = (() => {
         const m = new BodypixWorkerManager()
-        m.init(this.bodyPixConfig)
+        m.init(this.bodyPixConfig).then(
+            ()=>{
+                this.bodyPixModelReady=true
+            }
+        )
         return m
     })()
+    
+    googlemeetModelReady = false
     googlemeetConfig = (() => {
         const c = generateGoogleMeetSegmentationDefaultConfig()
         c.processOnLocal = false
@@ -96,7 +103,11 @@ export class VirtualBackground implements VideoFrameProcessor {
     googlemeetManager = (() => {
         console.log("GOOGLE!")
         const m = new GoogleMeetSegmentationWorkerManager()
-        m.init(this.googlemeetConfig)
+        m.init(this.googlemeetConfig).then(
+            ()=>{
+                this.googlemeetModelReady=true
+            }
+        )
         return m
     })()
 
@@ -123,7 +134,7 @@ export class VirtualBackground implements VideoFrameProcessor {
     ///////////////////////
     // Parameter Setter ///
     ///////////////////////
-    setVirtualBackgroundType(type: VirtualBackgroundType) {
+    setVirtualBackgroundType(type: VirtualBackgroundSegmentationType) {
         this.config.type = type
     }
 
@@ -167,13 +178,17 @@ export class VirtualBackground implements VideoFrameProcessor {
                 switch (this.config.type) {
                     case "BodyPix":
                         // result = await this.bodyPixManager!.predict(canvas, this.bodyPixParams!)
-                        result = await this.bodyPixManager!.predict(canvas, this.bodyPixParams!)
-                        this.convert_bodypix(canvas, this.canvasBackground, result, this.config)
+                        if(this.bodyPixModelReady){
+                            result = await this.bodyPixManager!.predict(canvas, this.bodyPixParams!)
+                            this.convert_bodypix(canvas, this.canvasBackground, result, this.config)
+                        }
                         break
                     case "GoogleMeet":
                         // result = await this.googleMeetManager!.predict(canvas, this.googleMeetParams!)
-                        result = await this.googlemeetManager!.predict(canvas, this.googlemeetParams!)
-                        this.convert_googlemeet(canvas, this.canvasBackground, result, this.config)
+                        if(this.googlemeetModelReady){
+                            result = await this.googlemeetManager!.predict(canvas, this.googlemeetParams!)
+                            this.convert_googlemeet(canvas, this.canvasBackground, result, this.config)
+                        }
                         break
                     default:
                         result = null

@@ -147,13 +147,11 @@ const useStyles = makeStyles((theme) => ({
 export const MeetingRoom = () => {
     const { screenHeight, screenWidth } = useEnvironmentState()
     const { audioInputList, videoInputList, audioOutputList } = useDeviceState()    
-    const { meetingName, meetingSession, attendees, videoTileStates, leaveMeeting, setAudioOutputElement, 
-            shareScreen, stopShareScreen, isScreenSharing,
-             audioInput, audioInputEnable, setAudioInputEnable,
-             videoInput, videoInputEnable, setVideoInputEnable,
-             audioOutput, audioOutputEnable, setAudioOutputEnable,
-             setVideoInput, setVirtualBG, setAudioInput, setAudioOutput,
-             virtualBG } = useMeetingState()
+    const { meetingName, meetingSession, attendees, videoTileStates, leaveMeeting, shareScreen, stopShareScreen, isScreenSharing } = useMeetingState()
+    const { audioInputDeviceSetting, setAudioInputDeviceSetting, videoInputDeviceSetting, setVideoInputDeviceSetting, audioOutputDeviceSetting, setAudioOutputDeviceSetting } = useMeetingState()
+
+    const [guiCounter, setGuiCounter] = useState(0)
+
     const classes = useStyles()
     const history = useHistory()
     
@@ -166,46 +164,59 @@ export const MeetingRoom = () => {
     const toggleDrawerOpen = () => {
         setDrawerOpen(!drawerOpen);
     };
-    const toggleAudioInputEnable = () =>{
-        setAudioInputEnable(!audioInputEnable)
+    const toggleAudioInputEnable = async() =>{
+        await audioInputDeviceSetting!.setAudioInputEnable(!audioInputDeviceSetting!.audioInputEnable)
+        setGuiCounter(guiCounter+1)
     }
-    const toggleVideoInputEnable = () =>{
-        setVideoInputEnable(!videoInputEnable)
+    const toggleVideoInputEnable = async() =>{
+        await videoInputDeviceSetting!.setVideoInputEnable(!videoInputDeviceSetting!.videoInputEnable)
+        setGuiCounter(guiCounter+1)
     }
-    const toggleAudioOutputEnable = () =>{
-        setAudioOutputEnable(!audioOutputEnable)
+    const toggleAudioOutputEnable = async() =>{
+        await audioOutputDeviceSetting!.setAudioOutputEnable(!audioOutputDeviceSetting!.audioOutputEnable)
+        setGuiCounter(guiCounter+1)
     }
 
 
     const onInputVideoChange = async (e: any) => {
         if (e.target.value === "None") {
-            setVideoInput(null)
+            videoInputDeviceSetting!.setVideoInput(null)
+            setGuiCounter(guiCounter+1)
         } else if (e.target.value === "File") {
             // fileInputRef.current!.click()
         } else {
-            setVideoInput(e.target.value)
+            videoInputDeviceSetting!.setVideoInput(e.target.value)
+            setGuiCounter(guiCounter+1)
         }
     }
     const onVirtualBGChange = async (e: any) => {
         if (e.target.value === "None") {
-            setVirtualBG(null)
+            videoInputDeviceSetting!.setVirtualBackgrounEnable(false)
+            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType("None")
+            setGuiCounter(guiCounter+1)
         } else {
-            setVirtualBG(e.target.value)
+            videoInputDeviceSetting!.setVirtualBackgrounEnable(true)
+            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType(e.target.value)
+            setGuiCounter(guiCounter+1)
         }
     }
 
     const onInputAudioChange = async (e: any) => {
         if (e.target.value === "None") {
-            setAudioInput(null)
+            await audioInputDeviceSetting!.setAudioInput(null)
+            setGuiCounter(guiCounter+1)
         } else {
-            setAudioInput(e.target.value)
+            await audioInputDeviceSetting!.setAudioInput(e.target.value)
+            setGuiCounter(guiCounter+1)
         }
     }
     const onOutputAudioChange = async (e: any) => {
         if (e.target.value === "None") {
-            setAudioOutput(null)
+            await audioOutputDeviceSetting!.setAudioOutput(null)
+            setGuiCounter(guiCounter+1)
         } else {
-            setAudioOutput(e.target.value)
+            await audioOutputDeviceSetting!.setAudioOutput(e.target.value)
+            setGuiCounter(guiCounter+1)
         }
     }
 
@@ -219,9 +230,8 @@ export const MeetingRoom = () => {
     useEffect(()=>{
         const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
         audioElement.autoplay=false
+        audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
 
-        console.log("AUDIO ELEMENT SETTING!!!", audioElement)
-        setAudioOutputElement(audioElement)
     },[])
 
     return (
@@ -250,7 +260,7 @@ export const MeetingRoom = () => {
                             {meetingName}
                         </Typography>
 
-                        {audioInputEnable?
+                        {audioInputDeviceSetting!.audioInputEnable?
                             <Tooltip title="Mic Off">
                                 <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioInputEnable}>
                                     <Mic />
@@ -263,7 +273,7 @@ export const MeetingRoom = () => {
                                 </IconButton>
                             </Tooltip>
                         }
-                        {videoInputEnable?
+                        {videoInputDeviceSetting!.videoInputEnable?
                             <Tooltip title="Video Off">
                                 <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleVideoInputEnable}>
                                     <Videocam />
@@ -276,7 +286,7 @@ export const MeetingRoom = () => {
                                 </IconButton>
                             </Tooltip>
                         }
-                        {audioOutputEnable?
+                        {audioOutputDeviceSetting!.audioOutputEnable?
                             <Tooltip title="Speaker Off">
                                 <IconButton color="inherit" className={clsx(classes.menuButton)} onClick={toggleAudioOutputEnable}>
                                     <VolumeUp />
@@ -343,7 +353,7 @@ export const MeetingRoom = () => {
                         <form className={classes.form} noValidate>
                             <FormControl className={classes.formControl} >
                                 <InputLabel>Camera</InputLabel>
-                                <Select onChange={onInputVideoChange} value={videoInput}>
+                                <Select onChange={onInputVideoChange} value={videoInputDeviceSetting!.videoInput}>
                                     <MenuItem disabled value="Video">
                                         <em>Video</em>
                                     </MenuItem>
@@ -357,7 +367,7 @@ export const MeetingRoom = () => {
                             </FormControl>
                             <FormControl className={classes.formControl} >
                                 <InputLabel>VirtualBG</InputLabel>
-                                <Select onChange={onVirtualBGChange} value={virtualBG} >
+                                <Select onChange={onVirtualBGChange} value={videoInputDeviceSetting!.virtualBackgroundSegmentationType} >
                                     <MenuItem disabled value="Video">
                                         <em>VirtualBG</em>
                                     </MenuItem>
@@ -375,7 +385,7 @@ export const MeetingRoom = () => {
 
                             <FormControl className={classes.formControl} >
                                 <InputLabel>Microhpone</InputLabel>
-                                <Select onChange={onInputAudioChange} value={audioInput} >
+                                <Select onChange={onInputAudioChange} value={audioInputDeviceSetting!.audioInput} >
                                     <MenuItem disabled value="Video">
                                         <em>Microphone</em>
                                     </MenuItem>
@@ -390,7 +400,7 @@ export const MeetingRoom = () => {
 
                             <FormControl className={classes.formControl} >
                                 <InputLabel>Speaker</InputLabel>
-                                <Select onChange={onOutputAudioChange} value={audioOutput} >
+                                <Select onChange={onOutputAudioChange} value={audioOutputDeviceSetting!.audioOutput} >
                                     <MenuItem disabled value="Video">
                                         <em>Speaker</em>
                                     </MenuItem>

@@ -86,7 +86,6 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
         focusStates?.forEach((s)=>{
             const elementId =  focusVideoElementId(s.attendeeId)
             const focusVideoElement = document.getElementById(elementId)! as HTMLVideoElement
-            console.log("ELEMENT:USEFOCoS::", elementId, focusVideoElement, videoTileStates[s.attendeeId]?.tileId!)
             if(focusVideoElement){
                 meetingSession?.audioVideo.bindVideoElement(videoTileStates[s.attendeeId].tileId!, focusVideoElement)
             }
@@ -121,48 +120,9 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
         }
     })
 
-    // return (
-    //     // <div className={classes.root}>
-    //         <GridList cellHeight='auto' className={classes.gridList} cols={ focusStates? focusStates.length : 1 } style={{height:height}}>
-    //             {focusStates?.map((s, i) => {
-    //                 console.log("ELEMENT:USEFOCoS1111::", focusVideoElementId(s.attendeeId), s.tileId>=0)
-    //                 return (
-    //                     <GridListTile key={s.attendeeId} cols={1} style={{ position:"relative"}}>
-    //                         <video id={ focusVideoElementId(s.attendeeId)} style={{width:width, height:height }}/>
-    //                         {s.isSharedContent?
-    //                             <></>
-    //                             :
-    //                             <GridListTileBar2 title={s.name} />
-    //                         }
-    //                         <div style={{ width:"100px",  position:"absolute", left:"0px", top:"0px", margin:"30px"}}>
-    //                             {s.isSharedContent?
-
-    //                                 <GridList cellHeight='auto' className={classes.gridList} cols={ 1 }>
-    //                                     <video id={ pictureInPictureElementId(s.ownerId)} style={{width:"100%", border:"1px solid #cccccc"}}/>
-    //                                     <GridListTileBar2 title={attendees[s.ownerId].name} style={{height:"15px"}} /> 
-    //                                 </GridList>
-
-    //                                 :
-    //                                 <></>
-    //                             }
-    //                         </div>
-    //                         {/* <div style={{ width:"100%", height:"100%", position:"absolute", left:"0px", top:"0px", margin:"0px", border:"4px solid #00cccc"}}> */}
-    //                             <canvas id="whiteboard" style={{ width:"100%", height:"100%", position:"absolute", left:"0px", top:"0px", margin:"0px"}}/>
-    //                         {/* </div> */}
-
- 
-    //                     </GridListTile>
-    //                 )
-    //             })}
-    //         </GridList>
-    //     // </div>
-    // )
-
     return (
         <div style={{display:"flex", flexWrap:"nowrap", width:`${width}px`, height:`${height}px`}}>
             {focusStates?.map((s, i) => {
-                // console.log("ELEMENT:USEFOCoS1111::", focusVideoElementId(s.attendeeId), videoTileStates[s.attendeeId].tileId!>=0)
-                console.log("ELEMENT:USEFOCoS1112::", attendees)
                 return (
                     <div key={s.attendeeId} style={{height:height-2, margin:"1px", flex:"0 0 auto", position:"relative"}} >
                         {videoTileStates[s.attendeeId] && videoTileStates[s.attendeeId].tileId!>=0?

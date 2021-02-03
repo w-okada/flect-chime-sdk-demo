@@ -44,8 +44,8 @@ const useStyles = makeStyles((theme) => ({
 export const WaitingRoom = () => {
     const { userId } = useAppState()
     const { audioInputList, videoInputList, audioOutputList } = useDeviceState()
-    const { meetingName, userName, isLoading,
-        videoInput, setVideoInput, setVirtualBG, setAudioInput, setAudioOutput, startPreview, leaveMeeting, enterMeetingRoom } = useMeetingState()
+    const { meetingName, userName, isLoading, leaveMeeting, enterMeetingRoom } = useMeetingState()
+    const { audioInputDeviceSetting, setAudioInputDeviceSetting, videoInputDeviceSetting, setVideoInputDeviceSetting, audioOutputDeviceSetting, setAudioOutputDeviceSetting } = useMeetingState()
     const { handleSignOut } = useSignInState()
     const classes = useStyles()
     const history = useHistory()
@@ -73,48 +73,48 @@ export const WaitingRoom = () => {
 
     const onInputVideoChange = async (e: any) => {
         if (e.target.value === "None") {
-            setVideoInput(null)
+            await videoInputDeviceSetting!.setVideoInput(null,true)
+            await videoInputDeviceSetting!.setVideoInputEnable(false,true)
+            videoInputDeviceSetting!.stopPreview()
         } else if (e.target.value === "File") {
             // fileInputRef.current!.click()
         } else {
-            setVideoInput(e.target.value)
+            await videoInputDeviceSetting!.setVideoInput(e.target.value,true)
+            await videoInputDeviceSetting!.setVideoInputEnable(true,true)
+            videoInputDeviceSetting!.startPreview()
         }
     }
     const onVirtualBGChange = async (e: any) => {
         if (e.target.value === "None") {
-            setVirtualBG(null)
+            videoInputDeviceSetting!.setVirtualBackgrounEnable(false,true)
+            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType("None",true)
         } else {
-            setVirtualBG(e.target.value)
+            videoInputDeviceSetting!.setVirtualBackgrounEnable(true,true)
+            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType(e.target.value,true)
         }
     }
 
     const onInputAudioChange = async (e: any) => {
         if (e.target.value === "None") {
-            setAudioInput(null)
+            audioInputDeviceSetting!.setAudioInput(null)
         } else {
-            setAudioInput(e.target.value)
+            audioInputDeviceSetting!.setAudioInput(e.target.value)
         }
     }
     const onOutputAudioChange = async (e: any) => {
         if (e.target.value === "None") {
-            setAudioOutput(null)
+            audioOutputDeviceSetting!.setAudioOutput(null)
         } else {
-            setAudioOutput(e.target.value)
+            audioOutputDeviceSetting!.setAudioOutput(e.target.value)
         }
     }
 
     useEffect(() => {
         const videoEl = document.getElementById("camera-preview") as HTMLVideoElement
-        // const divel = document.getElementById("camera-preview-div") as HTMLDivElement
-        // const videoEl = document.createElement("video")
-        // divel.appendChild(videoEl)
-        startPreview(videoEl)
-
-        // meetingSession?.audioVideo.getLocalVideoTile()?.bindVideoElement(videoEl)
-        // console.log("effect1", meetingSession, videoEl)
-        // console.log("effect2", meetingSession?.audioVideo.getLocalVideoTile())
-        // meetingSession?.audioVideo.startVideoPreviewForVideoInput(videoEl)
-    },[videoInput])
+        videoInputDeviceSetting!.setPreviewVideoElement(videoEl)
+        // videoInputDeviceSetting!.startPreview()
+        // return ()=>{videoInputDeviceSetting!.stopPreview()}
+    })
 
     return (
         <Container maxWidth="xs" >
