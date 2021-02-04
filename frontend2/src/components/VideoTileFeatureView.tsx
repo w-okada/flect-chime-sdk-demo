@@ -259,16 +259,25 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
 
         return ()=>{
             focusStates?.forEach((s)=>{
-                const canvasElementId = whiteboardCanvasElementId(s.attendeeId) 
-                const focusElementCanvas = document.getElementById(canvasElementId)! as HTMLCanvasElement
-                focusElementCanvas.removeEventListener("mousedown", drawingStart)
-                focusElementCanvas.removeEventListener("mouseup", drawingEnd)
-                focusElementCanvas.removeEventListener("mouseleave", drawingEnd)
-                focusElementCanvas.removeEventListener("mousemove", drawing)
+                try{
+                    const canvasElementId = whiteboardCanvasElementId(s.attendeeId) 
+                    const focusElementCanvas = document.getElementById(canvasElementId)! as HTMLCanvasElement
+                    if(focusElementCanvas===null){
+                        return
+                    }
+                    focusElementCanvas.removeEventListener("mousedown", drawingStart)
+                    focusElementCanvas.removeEventListener("mouseup", drawingEnd)
+                    focusElementCanvas.removeEventListener("mouseleave", drawingEnd)
+                    focusElementCanvas.removeEventListener("mousemove", drawing)
+    
+                    focusElementCanvas.removeEventListener("touchstart", touchStart)
+                    focusElementCanvas.removeEventListener("touchend", touchEnd)
+                    focusElementCanvas.removeEventListener("touchmove", touchMove) 
+    
+                }catch(e){
+                    console.log("canvas already removed")
+                }
 
-                focusElementCanvas.removeEventListener("touchstart", touchStart)
-                focusElementCanvas.removeEventListener("touchend", touchEnd)
-                focusElementCanvas.removeEventListener("touchmove", touchMove) 
             })
         }
     })

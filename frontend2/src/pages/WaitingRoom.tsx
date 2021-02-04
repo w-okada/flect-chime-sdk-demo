@@ -128,9 +128,9 @@ export const WaitingRoom = () => {
                     Waiting Meeting
                 </Typography>
                 <Typography>
-                    <p>You will join room <br />
+                    You will join room <br />
                 (user:{userName}, room:{meetingName}) <br />
-                Setup your devices. </p>
+                Setup your devices.
                 </Typography>
 
 

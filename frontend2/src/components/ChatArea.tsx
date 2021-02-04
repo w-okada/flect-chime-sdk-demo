@@ -55,9 +55,7 @@ export const ChatArea = () => {
                                 <Typography className={classes.title} color="textSecondary">
                                     {getUserNameByAttendeeIdFromList(d.senderId)}
                                 </Typography>
-                                <Typography style={{ width: '100%', wordWrap: "break-word", whiteSpace: "normal" }}>
-                                    {(d.data as string).split("\n").map(l => { return <div>{l}</div> })}
-                                </Typography>
+                                {(d.data as string).split("\n").map((l,j) => { return <div key={`detail${j}`}>{l}</div> })}
                             </div>
                         )
                     })
@@ -79,7 +77,7 @@ export const ChatArea = () => {
             <div style={{ textAlign: 'right' }}>
                 <Button variant="outlined" color="primary" size="small" onClick={sendMessage}>
                     send
-        </Button>
+                </Button>
             </div>
         </div>
     );
