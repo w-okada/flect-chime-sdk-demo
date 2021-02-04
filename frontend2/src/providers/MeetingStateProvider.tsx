@@ -368,7 +368,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
                     }
                     internalCounter += 1
                     setStateCounter(internalCounter)
-                }, 1000)
+                }, 5000)
 
             meetingSession?.audioVideo.start()
             //meetingSession?.audioVideo.startLocalVideoTile()

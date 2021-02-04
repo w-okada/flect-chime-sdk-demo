@@ -4,6 +4,7 @@ import { EnvironmentStateProvider } from './EvironmentStateProvider';
 import { MeetingStateProvider } from './MeetingStateProvider';
 import { MessageStateProvider } from './MessageStateProvider';
 import { SignInStateProvider } from './SignInStateProvider';
+import { WebSocketStateProvider } from './websocket/WebScoketProvider';
 
 type Props = {
     children: ReactNode;
@@ -71,7 +72,9 @@ export const AppStateProvider = ({ children }: Props) => {
                     <SignInStateProvider>
                         <DeviceStateProvider>
                             <MeetingStateProvider>
-                                {children}
+                                <WebSocketStateProvider>
+                                    {children}
+                                </WebSocketStateProvider>
                             </MeetingStateProvider>
                         </DeviceStateProvider>
                     </SignInStateProvider>

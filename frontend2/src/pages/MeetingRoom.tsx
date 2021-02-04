@@ -16,6 +16,8 @@ import { ChatArea } from "../components/ChatArea";
 import { useEnvironmentState } from "../providers/EvironmentStateProvider";
 import { useState } from "react";
 import { VideoGridView } from "../components/VideoGridView";
+import { useWebSocketWhiteboardState } from "../providers/websocket/WebScoketWhiteboardProvider";
+import { useWebSocketState } from "../providers/websocket/WebScoketProvider";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -146,6 +148,7 @@ export const MeetingRoom = () => {
     const { audioInputList, videoInputList, audioOutputList } = useDeviceState()    
     const { meetingName, meetingSession, attendees, videoTileStates, leaveMeeting, shareScreen, stopShareScreen, isScreenSharing } = useMeetingState()
     const { audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting } = useMeetingState()
+    const { initWebSocketManager } = useWebSocketState()
 
     const [guiCounter, setGuiCounter] = useState(0)
 
@@ -229,6 +232,11 @@ export const MeetingRoom = () => {
         audioElement.autoplay=false
         audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
 
+    },[])
+
+    useEffect(()=>{
+        console.log("[MeetingRoom] generateWebSocketManager")
+        initWebSocketManager()
     },[])
 
     return (
