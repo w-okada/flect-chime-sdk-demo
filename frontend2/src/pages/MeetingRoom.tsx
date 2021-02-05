@@ -18,6 +18,7 @@ import { useState } from "react";
 import { VideoGridView } from "../components/VideoGridView";
 import { useWebSocketWhiteboardState } from "../providers/websocket/WebScoketWhiteboardProvider";
 import { useWebSocketState } from "../providers/websocket/WebScoketProvider";
+import { WhiteboardPanel } from "../components/WhiteboardPanel";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -459,6 +460,12 @@ export const MeetingRoom = () => {
                         <CustomAccordion title="Chat">
                             <div style={{ height: 400, width: '100%'}}>
                                 <ChatArea/>
+                            </div>
+                        </CustomAccordion>
+
+                        <CustomAccordion title="Whiteboard">
+                            <div style={{ height: 400, width: '100%'}}>
+                                <WhiteboardPanel/>
                             </div>
                         </CustomAccordion>
                     </Drawer>

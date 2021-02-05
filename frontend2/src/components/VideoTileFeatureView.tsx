@@ -62,7 +62,7 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
     const [inDrawing, setInDrawing] = useState(false)
     const [previousPosition, setPreviousPosition] = useState([0, 0])
     const [lastSendingTime, setLastSendingTime] = useState(Date.now())
-    const { sendDrawingData, drawingDatas, drawingMode, drawingStroke } = useWebSocketWhiteboardState()
+    const { sendDrawingData, drawingDatas, drawingMode, drawingStroke, lineWidth } = useWebSocketWhiteboardState()
 
     const sharedContentStates = Object.values(attendees).filter(a=>{return a.isSharedContent})
     const speakerStates = Object.values(attendees).filter(a=>{return a.active})
@@ -162,7 +162,7 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
                     endXR: endXR,
                     endYR: endYR,
                     stroke: drawingStroke,
-                    lineWidth: 2
+                    lineWidth: lineWidth
                 }
                 return drawingData
             } else { // heightにあまりがある
@@ -181,7 +181,7 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
                     endXR: endXR,
                     endYR: endYR,
                     stroke: drawingStroke,
-                    lineWidth: 2
+                    lineWidth: lineWidth
                 }
                 return drawingData
             }
@@ -245,13 +245,20 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
             ctx.lineWidth = 3;
             ctx.clearRect(0,0, focusElementCanvas.width,  focusElementCanvas.height)
             drawingDatas.forEach((data)=>{
-                ctx.beginPath();
-                ctx.moveTo(data.startXR * focusElementCanvas.width, data.startYR * focusElementCanvas.height);
-                ctx.lineTo(data.endXR   * focusElementCanvas.width, data.endYR   * focusElementCanvas.height);
-                ctx.strokeStyle = data.stroke
-                ctx.lineWidth   = data.lineWidth
-                ctx.stroke();
-                ctx.closePath();
+                if(data.drawingCmd === "DRAW"){
+                    ctx.beginPath();
+                    ctx.moveTo(data.startXR * focusElementCanvas.width, data.startYR * focusElementCanvas.height);
+                    ctx.lineTo(data.endXR   * focusElementCanvas.width, data.endYR   * focusElementCanvas.height);
+                    ctx.strokeStyle = data.stroke
+                    ctx.lineWidth   = data.lineWidth
+                    ctx.stroke();
+                    ctx.closePath();
+                }else if(data.drawingCmd === "ERASE"){
+                    const startX = data.startXR * focusElementCanvas.width - (data.lineWidth/2)
+                    const startY = data.startYR * focusElementCanvas.height - (data.lineWidth/2)
+                    ctx.clearRect(startX, startY, data.lineWidth, data.lineWidth)
+
+                }
             })
 
 

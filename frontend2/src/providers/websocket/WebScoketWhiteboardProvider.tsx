@@ -34,6 +34,9 @@ export interface WebSocketWhiteboardStateValue {
     drawingMode: DrawingMode
     setDrawingMode: (mode:DrawingMode) => void
 
+    setLineWidth:(val:number) => void
+    lineWidth:number
+
     drawingStroke: string
     setDrawingStroke: (stroke: string) => void
 
@@ -112,6 +115,7 @@ export const WebSocketWhiteboardStateProvider = ({ children }: Props) => {
     const [ drawingMode, setDrawingMode ] = useState("DISABLE" as DrawingMode)    
     const [ drawingDatas, setDrawingDatas ] = useState([] as DrawingData[])
     const [ drawingStroke, setDrawingStroke ] = useState("black")
+    const [ lineWidth, setLineWidth] = useState(10)
     const { userId } = useAppState()
 
     const sender = DrawingDataBufferSender.getInstance()
@@ -150,8 +154,9 @@ export const WebSocketWhiteboardStateProvider = ({ children }: Props) => {
         drawingMode,
         setDrawingMode,
         drawingStroke, 
-        setDrawingStroke
-
+        setDrawingStroke,
+        lineWidth, 
+        setLineWidth,
     }
     return (
         <WebSocketWhiteboardStateContext.Provider value={providerValue}>
