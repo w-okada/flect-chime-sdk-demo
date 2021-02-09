@@ -220,8 +220,12 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
 
     useEffect(()=>{
         focusStates?.forEach((s)=>{
+            if(!videoTileStates[s.attendeeId] || videoTileStates[s.attendeeId].tileId!<0){
+                return
+            }
             const elementId =  focusVideoElementId(s.attendeeId)
             const focusVideoElement = document.getElementById(elementId)! as HTMLVideoElement
+
             const canvasElementId = whiteboardCanvasElementId(s.attendeeId) 
             const focusElementCanvas = document.getElementById(canvasElementId)! as HTMLCanvasElement
             focusElementCanvas.width = focusVideoElement.videoWidth

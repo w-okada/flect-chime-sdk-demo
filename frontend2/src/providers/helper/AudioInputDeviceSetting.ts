@@ -63,7 +63,7 @@ export class AudioInputDeviceSetting{
         }
 
         /// set transformDevice
-        if(this.voiceFocusTransformDevice){
+        if(this.voiceFocusTransformDevice){            
             console.log("[DeviceSetting] AudioInput use suppression.")
             await this.meetingSession.audioVideo.chooseAudioInputDevice(this.voiceFocusTransformDevice)
         }else{

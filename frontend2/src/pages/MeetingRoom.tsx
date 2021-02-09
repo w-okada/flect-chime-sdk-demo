@@ -211,6 +211,17 @@ export const MeetingRoom = () => {
             setGuiCounter(guiCounter+1)
         }
     }
+    const onSuppressionChange = async (e:any) =>{
+        if (e.target.value === "None") {
+            await audioInputDeviceSetting!.setAudioSuppressionEnable(false)
+            setGuiCounter(guiCounter+1)
+        } else {
+            await audioInputDeviceSetting!.setAudioSuppressionEnable(true)
+            await audioInputDeviceSetting!.setVoiceFocusSpec({variant:e.target.value})
+            setGuiCounter(guiCounter+1)
+        }
+    }
+
     const onOutputAudioChange = async (e: any) => {
         if (e.target.value === "None") {
             await audioOutputDeviceSetting!.setAudioOutput(null)
@@ -403,6 +414,19 @@ export const MeetingRoom = () => {
                                     })}
                                 </Select>
                             </FormControl>
+
+                            <FormControl className={classes.formControl} >
+                                <InputLabel>Noise Suppression</InputLabel>
+                                <Select onChange={onSuppressionChange} value={audioInputDeviceSetting!.audioSuppressionEnable ? audioInputDeviceSetting!.voiceFocusSpec?.variant: "None" } >
+                                    <MenuItem disabled value="Video">
+                                        <em>Microphone</em>
+                                    </MenuItem>
+                                    {["None", "auto", "c100", "c50", "c20", "c10"].map(val => {
+                                        return <MenuItem value={val} key={val}>{val}</MenuItem>
+                                    })}
+                                </Select>
+                            </FormControl>
+
 
                             <FormControl className={classes.formControl} >
                                 <InputLabel>Speaker</InputLabel>
