@@ -10,7 +10,7 @@ export class AudioInputDeviceSetting{
     audioInput:string|null = null
     audioInputEnable:boolean = true
     audioSuppressionEnable:boolean = true
-    voiceFocusSpec:VoiceFocusSpec | null = null
+    voiceFocusSpec:VoiceFocusSpec | null = {variant:"auto"}
 
 
     constructor(meetingSession:MeetingSession){
