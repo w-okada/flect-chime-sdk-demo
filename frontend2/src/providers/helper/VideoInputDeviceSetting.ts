@@ -111,6 +111,13 @@ export class VideoInputDeviceSetting {
         this.applyAttributes()
         this.setVisiblity(preview)
     }
+    setBackgroundImagePath = async (path: string) => {
+        if(this.virtualBackgroundProcessor){
+            this.virtualBackgroundProcessor.setBackgroundImage(path)
+        }
+    }
+
+    
     
     setPreviewVideoElement = (val:HTMLVideoElement, preview?:boolean) =>{
         this.previewVideoElement=val

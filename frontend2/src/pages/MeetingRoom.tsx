@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { createRef, useEffect } from "react"
 import clsx from 'clsx';
 import { Typography, Button, CssBaseline, AppBar, Drawer, Toolbar, IconButton, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, MenuItem, DialogActions, Tooltip } from '@material-ui/core'
 import {  ChevronLeft, ChevronRight, Settings, ExitToApp, Videocam, VideocamOff, 
@@ -161,6 +161,7 @@ export const MeetingRoom = () => {
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
     const [viewMode, setViewMode] = useState("FeatureView" as ViewMode)
 
+    const bgFileInputRef = createRef<HTMLInputElement>()
 
     const toggleDrawerOpen = () => {
         setDrawerOpen(!drawerOpen);
@@ -201,6 +202,13 @@ export const MeetingRoom = () => {
             setGuiCounter(guiCounter+1)
         }
     }
+    const setBackgroundImage = (path:string, fileType:string) =>{
+        if(fileType.startsWith("image")){
+            videoInputDeviceSetting!.setBackgroundImagePath(path)
+        }else{
+            console.log("not supported filetype", fileType)
+        }
+    }    
 
     const onInputAudioChange = async (e: any) => {
         if (e.target.value === "None") {
@@ -382,23 +390,29 @@ export const MeetingRoom = () => {
                                     })}
                                 </Select>
                             </FormControl>
-                            <FormControl className={classes.formControl} >
-                                <InputLabel>VirtualBG</InputLabel>
-                                <Select onChange={onVirtualBGChange} value={videoInputDeviceSetting!.virtualBackgroundSegmentationType} >
-                                    <MenuItem disabled value="Video">
-                                        <em>VirtualBG</em>
-                                    </MenuItem>
-                                    <MenuItem value="None">
-                                        <em>None</em>
-                                    </MenuItem>
-                                    <MenuItem value="BodyPix">
-                                        <em>BodyPix</em>
-                                    </MenuItem>
-                                    <MenuItem value="GoogleMeet">
-                                        <em>GoogleMeet</em>
-                                    </MenuItem>
-                                </Select>
-                            </FormControl>
+                            <div style={{display:"flex"}}>
+                                <FormControl className={classes.formControl} >
+                                    <InputLabel>VirtualBG</InputLabel>
+                                    <Select onChange={onVirtualBGChange} value={videoInputDeviceSetting!.virtualBackgroundSegmentationType} >
+                                        <MenuItem disabled value="Video">
+                                            <em>VirtualBG</em>
+                                        </MenuItem>
+                                        <MenuItem value="None">
+                                            <em>None</em>
+                                        </MenuItem>
+                                        <MenuItem value="BodyPix">
+                                            <em>BodyPix</em>
+                                        </MenuItem>
+                                        <MenuItem value="GoogleMeet">
+                                            <em>GoogleMeet</em>
+                                        </MenuItem>
+                                    </Select>
+                                </FormControl>
+
+                                <Button variant="outlined" color="primary" onClick={()=>{bgFileInputRef.current!.click()}}>
+                                    choose image file
+                                </Button>
+                            </div>
 
                             <FormControl className={classes.formControl} >
                                 <InputLabel>Microhpone</InputLabel>
@@ -511,8 +525,17 @@ export const MeetingRoom = () => {
                 </main>
                 </div>
             </div>
+
+            {/* ************************************** */}
+            {/* *****   Hidden Elements          ***** */}
+            {/* ************************************** */}
             <div>
                 <audio id="for-speaker" style={{display:"none"}}/>
+                <input type="file" hidden ref={bgFileInputRef} onChange={(e: any) => {
+                    const path = URL.createObjectURL(e.target.files[0]);
+                    const fileType = e.target.files[0].type
+                    setBackgroundImage(path, fileType)
+                }} />
             </div>
 
         </ThemeProvider>
