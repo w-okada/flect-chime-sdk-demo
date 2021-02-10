@@ -64,9 +64,6 @@ export const WhiteboardPanel = () => {
         setMessage("")
     }
 
-    console.log("MESSAGE!!", chatData)
-    console.log(drawingStroke)
-
     return (
         <div style={{ height: '100%', width: "100%", wordWrap: "break-word", whiteSpace: "normal" }}>
             <Typography className={classes.title} color="textSecondary">

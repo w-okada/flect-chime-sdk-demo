@@ -5,6 +5,7 @@
   "dependencies": {
     "@dannadori/bodypix-worker-js": "^1.0.28",
     "@dannadori/googlemeet-segmentation-worker-js": "^1.0.10",
+    "@ffmpeg/ffmpeg": "^0.9.7",
     "@material-ui/core": "^4.11.2",
     "@material-ui/data-grid": "^4.0.0-alpha.17",
     "@material-ui/icons": "^4.11.2",

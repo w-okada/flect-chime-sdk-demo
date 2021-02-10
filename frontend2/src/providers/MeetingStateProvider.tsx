@@ -10,6 +10,7 @@ import { showDiff } from "../utils";
 import { AudioInputDeviceSetting } from "./helper/AudioInputDeviceSetting";
 import { VideoInputDeviceSetting } from "./helper/VideoInputDeviceSetting";
 import { AudioOutputDeviceSetting } from "./helper/AudioOutputDeviceSetting";
+import { Recorder } from "./helper/Recorder";
 
 type Props = {
     children: ReactNode;
@@ -63,6 +64,7 @@ interface MeetingStateValue {
     audioInputDeviceSetting: AudioInputDeviceSetting | null
     videoInputDeviceSetting: VideoInputDeviceSetting | null
     audioOutputDeviceSetting: AudioOutputDeviceSetting | null
+    recorder: Recorder | null
 
 }
 
@@ -101,7 +103,10 @@ export const MeetingStateProvider = ({ children }: Props) => {
     const [audioInputDeviceSetting, setAudioInputDeviceSetting] = useState(null as AudioInputDeviceSetting | null)
     const [videoInputDeviceSetting, setVideoInputDeviceSetting] = useState(null as VideoInputDeviceSetting | null)
     const [audioOutputDeviceSetting, setAudioOutputDeviceSetting] = useState(null as AudioOutputDeviceSetting | null)
-
+    const [recorder, setRecorder] = useState(null as Recorder|null)
+    if(!recorder){
+        setRecorder(new Recorder())
+    }
 
 
     ////////////////////////
@@ -424,7 +429,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
         audioInputDeviceSetting,
         videoInputDeviceSetting,
         audioOutputDeviceSetting,
-
+        recorder,
 
         createMeeting,
         joinMeeting,

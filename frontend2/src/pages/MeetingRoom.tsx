@@ -1,13 +1,15 @@
 import React, { createRef, useEffect } from "react"
 import clsx from 'clsx';
-import { Typography, Button, CssBaseline, AppBar, Drawer, Toolbar, IconButton, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, MenuItem, DialogActions, Tooltip } from '@material-ui/core'
+import { Typography, Button, CssBaseline, AppBar, Drawer, Toolbar, IconButton, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, MenuItem, DialogActions, Tooltip, Icon } from '@material-ui/core'
 import {  ChevronLeft, ChevronRight, Settings, ExitToApp, Videocam, VideocamOff, 
-    Mic, MicOff, VolumeOff, VolumeUp, ScreenShare, StopScreenShare, ViewComfy, ViewCompact } from '@material-ui/icons'
+    Mic, MicOff, VolumeOff, VolumeUp, ScreenShare, StopScreenShare, ViewComfy, ViewCompact,
+    FiberManualRecord, Album} from '@material-ui/icons'
 import { createMuiTheme, makeStyles, ThemeProvider} from '@material-ui/core/styles';
 import routes from "../constants/routes"
 import { useHistory } from "react-router-dom"
 import { useMeetingState } from "../providers/MeetingStateProvider";
 import { AttendeesTable } from "../components/AttendeesTable";
+
 
 import { CustomAccordion } from "../components/CustomAccordion";
 import { VideoTilesView } from "../components/VideoTileView";
@@ -19,6 +21,7 @@ import { VideoGridView } from "../components/VideoGridView";
 import { useWebSocketWhiteboardState } from "../providers/websocket/WebScoketWhiteboardProvider";
 import { useWebSocketState } from "../providers/websocket/WebScoketProvider";
 import { WhiteboardPanel } from "../components/WhiteboardPanel";
+import { VideoRecorderView } from "../components/VideoRecorderView";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -32,7 +35,7 @@ const theme = createMuiTheme({
     },
 });
 
-type ViewMode = "FeatureView" | "GridView"
+type ViewMode = "FeatureView" | "GridView" | "RecorderView"
 
 
 const useStyles = makeStyles((theme) => ({
@@ -148,7 +151,7 @@ export const MeetingRoom = () => {
     const { screenHeight, screenWidth } = useEnvironmentState()
     const { audioInputList, videoInputList, audioOutputList } = useDeviceState()    
     const { meetingName, meetingSession, attendees, videoTileStates, leaveMeeting, shareScreen, stopShareScreen, isScreenSharing } = useMeetingState()
-    const { audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting } = useMeetingState()
+    const { audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, recorder } = useMeetingState()
     const { initWebSocketManager } = useWebSocketState()
 
     const [guiCounter, setGuiCounter] = useState(0)
@@ -160,6 +163,7 @@ export const MeetingRoom = () => {
     const [settingDialogOpen, setSettingDialogOpen] = useState(false);
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
     const [viewMode, setViewMode] = useState("FeatureView" as ViewMode)
+    const [recorderCanvasElement, setRecorderCanvasElement] = useState(null as HTMLCanvasElement|null)
 
     const bgFileInputRef = createRef<HTMLInputElement>()
 
@@ -247,6 +251,34 @@ export const MeetingRoom = () => {
         stopShareScreen()
     }
 
+    const handleOnClickStartRecording = async() =>{
+        const audioElem = document.getElementById("for-speaker") as HTMLAudioElement
+        const stream =  new MediaStream();
+
+        // @ts-ignore
+        const audioStream = audioElem.captureStream() as MediaStream
+        // @ts-ignore
+        const videoStream = recorderCanvasElement?.captureStream() as MediaStream
+
+        [audioStream, videoStream].forEach(s=>{
+            s?.getTracks().forEach(t=>{
+                console.log("added tracks:", t)
+                stream.addTrack(t)
+            })
+        });
+
+        // @ts-ignore
+        // const audioStream = audioElem.captureStream()
+        recorder?.startRecording(stream)
+        // recorder?.startRecording(audioStream)
+        // recorder?.startRecording(videoStream)
+        
+    }
+    const handleOnClickStopRecording = async() =>{
+        recorder?.stopRecording()
+        recorder?.toMp4()
+    }
+
     useEffect(()=>{
         const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
         audioElement.autoplay=false
@@ -258,6 +290,7 @@ export const MeetingRoom = () => {
         console.log("[MeetingRoom] generateWebSocketManager")
         initWebSocketManager()
     },[])
+
 
     return (
         <ThemeProvider theme={theme}>
@@ -344,6 +377,16 @@ export const MeetingRoom = () => {
                                 </IconButton>
                             </Tooltip>
                         }
+
+                        <Tooltip title={recorder?.isRecording?"stop recording":"start recording"}>
+                            <IconButton color="inherit" className={recorder?.isRecording ? classes.menuButtonActive : classes.menuButton} 
+                                onClick={(e)=>{
+                                    recorder?.isRecording? handleOnClickStopRecording(): handleOnClickStartRecording()
+                                }}>
+                                <FiberManualRecord />
+                            </IconButton>
+                        </Tooltip>
+                        
                         <span className={clsx(classes.menuSpacer)}>  </span>
                         <span className={clsx(classes.menuSpacer)}>  </span>
 
@@ -358,6 +401,11 @@ export const MeetingRoom = () => {
                             </IconButton>
                         </Tooltip>
 
+                        <Tooltip title="RecorderView">
+                            <IconButton color="inherit" className={viewMode === "RecorderView" ? classes.menuButtonActive : classes.menuButton} onClick={(e)=>{setViewMode("RecorderView")}}>
+                                <Album />
+                            </IconButton>
+                        </Tooltip>
                         <span className={clsx(classes.menuSpacer)}>  </span>
                         <span className={clsx(classes.menuSpacer)}>  </span>
 
@@ -519,6 +567,10 @@ export const MeetingRoom = () => {
                                 case "GridView":
                                     return <VideoGridView attendees={attendees} videoTileStates={videoTileStates} onlyCameraView={false}
                                                 height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth} />
+                                case "RecorderView":
+                                    return <VideoRecorderView attendees={attendees} videoTileStates={videoTileStates} onlyCameraView={false}
+                                    height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth} focusTarget="SharedContent"
+                                    setRecorderCanvasElement={setRecorderCanvasElement} />
                             }
                         })()
                     }
