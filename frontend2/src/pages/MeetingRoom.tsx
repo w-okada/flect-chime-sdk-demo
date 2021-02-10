@@ -22,6 +22,7 @@ import { useWebSocketWhiteboardState } from "../providers/websocket/WebScoketWhi
 import { useWebSocketState } from "../providers/websocket/WebScoketProvider";
 import { WhiteboardPanel } from "../components/WhiteboardPanel";
 import { VideoRecorderView } from "../components/VideoRecorderView";
+import { DefaultDeviceController } from "amazon-chime-sdk-js";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -166,6 +167,7 @@ export const MeetingRoom = () => {
     const [recorderCanvasElement, setRecorderCanvasElement] = useState(null as HTMLCanvasElement|null)
 
     const bgFileInputRef = createRef<HTMLInputElement>()
+    const inputMovieFileInputRef = createRef<HTMLInputElement>()
 
     const toggleDrawerOpen = () => {
         setDrawerOpen(!drawerOpen);
@@ -195,6 +197,70 @@ export const MeetingRoom = () => {
             setGuiCounter(guiCounter+1)
         }
     }
+    const setInputMovieFile = (path:string, fileType:string) =>{
+        if(fileType.startsWith("video")){
+            const videoElem = document.getElementById("for-input-movie")! as HTMLVideoElement
+            videoElem.pause()
+            videoElem.srcObject=null
+            videoElem.src=path            
+            videoElem.currentTime=0
+            videoElem.autoplay=true
+            videoElem.play()
+
+            videoElem.onloadedmetadata = (e) =>{
+                // @ts-ignore
+                const mediaStream = videoElem.captureStream() as MediaStream
+                // videoInputDeviceSetting!.setVideoInput(mediaStream)
+
+                // console.log("VIDEO CAPTURE!!!!")
+
+                const stream =  new MediaStream();
+                if(mediaStream.getAudioTracks().length>0){
+                    mediaStream.getAudioTracks().forEach(t=>{
+                        console.log("AUDIO TRACK",t)
+                        stream.addTrack(t)
+                    })
+                    console.log("AUDIO ",stream)
+                    // audioInputDeviceSetting!.setAudioInput(mediaStream)
+                }else{
+                    console.log("NO AUDIO TRACK")
+                    // audioInputDeviceSetting!.setAudioInput(null)
+                }
+
+                const audioContext = DefaultDeviceController.getAudioContext();
+                var sourceNode = audioContext.createMediaStreamSource(stream); // chiko
+                const outputNode = audioContext.createMediaStreamDestination();
+                sourceNode.connect(outputNode)
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = 0.1;
+                gainNode.connect(outputNode);
+                const oscillatorNode = audioContext.createOscillator();
+                oscillatorNode.frequency.value = 440;
+                oscillatorNode.connect(gainNode);
+                oscillatorNode.start();
+                audioInputDeviceSetting!.setAudioInput(outputNode.stream) 
+                outputNode.stream.getAudioTracks().forEach(t=>{
+                    console.log("AUDIO TRACK2",t)
+                })
+                console.log("AUDIO TRACK2", outputNode.stream)
+
+                if(mediaStream.getVideoTracks().length>0){
+                    const stream =  new MediaStream();
+                    mediaStream.getVideoTracks().forEach(t=>{
+                        stream.addTrack(t)
+                    })
+                    videoInputDeviceSetting!.setVideoInput(mediaStream)
+                }else{
+                    videoInputDeviceSetting!.setVideoInput(null)
+                }
+            }
+
+
+        }else{
+            console.log("not supported filetype", fileType)
+        }
+    }    
+
     const onVirtualBGChange = async (e: any) => {
         if (e.target.value === "None") {
             videoInputDeviceSetting!.setVirtualBackgrounEnable(false)
@@ -424,6 +490,10 @@ export const MeetingRoom = () => {
                     <DialogTitle>Setting</DialogTitle>
                     <DialogContent>
                         <form className={classes.form} noValidate>
+
+                            <Button variant="outlined" color="primary" onClick={()=>{inputMovieFileInputRef.current!.click()}}>
+                                choose movie file
+                            </Button>                            
                             <FormControl className={classes.formControl} >
                                 <InputLabel>Camera</InputLabel>
                                 <Select onChange={onInputVideoChange} value={videoInputDeviceSetting!.videoInput}>
@@ -588,6 +658,13 @@ export const MeetingRoom = () => {
                     const fileType = e.target.files[0].type
                     setBackgroundImage(path, fileType)
                 }} />
+                <input type="file" hidden ref={inputMovieFileInputRef} onChange={(e: any) => {
+                    const path = URL.createObjectURL(e.target.files[0]);
+                    const fileType = e.target.files[0].type
+                    setInputMovieFile(path, fileType)
+                }} />
+                <video id="for-input-movie"  loop hidden />
+
             </div>
 
         </ThemeProvider>

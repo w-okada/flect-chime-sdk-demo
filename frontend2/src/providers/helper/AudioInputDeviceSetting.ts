@@ -1,4 +1,4 @@
-import { MeetingSession, VoiceFocusDeviceTransformer, VoiceFocusSpec, VoiceFocusTransformDevice } from "amazon-chime-sdk-js"
+import { DefaultDeviceController, MeetingSession, VoiceFocusDeviceTransformer, VoiceFocusSpec, VoiceFocusTransformDevice } from "amazon-chime-sdk-js"
 
 
 
@@ -7,7 +7,7 @@ export class AudioInputDeviceSetting{
     private voiceFocusDeviceTransformer:VoiceFocusDeviceTransformer|null = null
     private voiceFocusTransformDevice:VoiceFocusTransformDevice|null = null
 
-    audioInput:string|null = null
+    audioInput:MediaStream|string|null = null
     audioInputEnable:boolean = true
     audioSuppressionEnable:boolean = true
     voiceFocusSpec:VoiceFocusSpec | null = {variant:"auto"}
@@ -19,7 +19,7 @@ export class AudioInputDeviceSetting{
     ///////////////
     // AudioInput
     ///////////////
-    private setAudioInputCommon = async (device: string|null, enable:boolean, suppression:boolean, suppressionSpec?:VoiceFocusSpec) => {
+    private setAudioInputCommon = async (device: MediaStream|string|null, enable:boolean, suppression:boolean, suppressionSpec?:VoiceFocusSpec) => {
         /// no use audio input
         if(device===null || enable===false){
             console.log("[DeviceSetting] AudioInput is null or disabled.")
@@ -30,6 +30,29 @@ export class AudioInputDeviceSetting{
         /// for standard audio input
         if(suppression===false){
             console.log("[DeviceSetting] AudioInput doesn't use suppression.")
+            //// Background music mixin!!! 
+            // if(typeof (device) == "string"){
+            //     const stream = await navigator.mediaDevices.getUserMedia({audio:{deviceId:device}});
+
+                // const audioContext = DefaultDeviceController.getAudioContext();
+                // var sourceNode = audioContext.createMediaStreamSource(stream); 
+                // const outputNode = audioContext.createMediaStreamDestination();
+                // sourceNode.connect(outputNode)
+                // const gainNode = audioContext.createGain();
+                // gainNode.gain.value = 0.1;
+                // gainNode.connect(outputNode);
+                // const oscillatorNode = audioContext.createOscillator();
+                // oscillatorNode.frequency.value = 440;
+                // oscillatorNode.connect(gainNode);
+                // oscillatorNode.start();
+                // console.log("[DeviceSetting] AudioInput doesn't use suppression2.")
+                // await this.meetingSession.audioVideo.chooseAudioInputDevice(outputNode.stream)
+
+
+            // }else{
+            //     console.log("[DeviceSetting] AudioInput doesn't use suppression3.")
+            // }
+
             await this.meetingSession.audioVideo.chooseAudioInputDevice(device)
             return
         }
@@ -72,7 +95,7 @@ export class AudioInputDeviceSetting{
         }
     }
 
-    setAudioInput = async (val: string | null) => {
+    setAudioInput = async (val: MediaStream|string | null) => {
         this.audioInput = val
         await this.setAudioInputCommon(this.audioInput, this.audioInputEnable, this.audioSuppressionEnable)
     }

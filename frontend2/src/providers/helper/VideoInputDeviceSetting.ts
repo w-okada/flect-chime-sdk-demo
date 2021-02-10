@@ -6,7 +6,7 @@ export class VideoInputDeviceSetting {
     private virtualBackgroundProcessor: VirtualBackground | null = null
     private videoTransformDevice: DefaultVideoTransformDevice | null = null
 
-    videoInput: string | null = null
+    videoInput: MediaStream | string | null = null
     videoInputEnable: boolean = true
     virtualBackgroundEnable:boolean=false
     virtualForeGroundEnable:boolean=false
@@ -25,7 +25,7 @@ export class VideoInputDeviceSetting {
     ///////////////
     // VideoInput
     ///////////////
-    private setVideoInputCommon = async (device: string | null, enable: boolean, vbgEnable: boolean, vfgEnable: boolean,) => {
+    private setVideoInputCommon = async (device: MediaStream | string | null, enable: boolean, vbgEnable: boolean, vfgEnable: boolean,) => {
         /// no use video input
         if (device === null || enable === false) {
             console.log("[DeviceSetting] VideoInput is null or disabled.")
@@ -81,7 +81,7 @@ export class VideoInputDeviceSetting {
     }
 
 
-    setVideoInput = async (val: string | null, preview?:boolean) => {
+    setVideoInput = async (val: MediaStream | string | null, preview?:boolean) => {
         this.videoInput = val
         await this.setVideoInputCommon(this.videoInput, this.videoInputEnable, this.virtualBackgroundEnable, this.virtualForeGroundEnable)
         await this.applyAttributes()
