@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { Typography, Button, CssBaseline, AppBar, Drawer, Toolbar, IconButton, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, MenuItem, DialogActions, Tooltip, Icon, Divider } from '@material-ui/core'
 import {  ChevronLeft, ChevronRight, Settings, ExitToApp, Videocam, VideocamOff, 
     Mic, MicOff, VolumeOff, VolumeUp, ScreenShare, StopScreenShare, ViewComfy, ViewCompact,
-    FiberManualRecord, Album} from '@material-ui/icons'
+    FiberManualRecord, Album, CropOriginal} from '@material-ui/icons'
 import { createMuiTheme, makeStyles, ThemeProvider} from '@material-ui/core/styles';
 import routes from "../constants/routes"
 import { useHistory } from "react-router-dom"
@@ -385,7 +385,7 @@ export const MeetingRoom = () => {
         // recorder?.startRecording(videoStream)
         
     }
-    
+
     const handleOnClickStopRecording = async() =>{
         recorder?.stopRecording()
         recorder?.toMp4()
@@ -489,15 +489,6 @@ export const MeetingRoom = () => {
                                 </IconButton>
                             </Tooltip>
                         }
-
-                        <Tooltip title={recorder?.isRecording?"stop recording":"start recording"}>
-                            <IconButton color="inherit" className={recorder?.isRecording ? classes.menuButtonActive : classes.menuButton} 
-                                onClick={(e)=>{
-                                    recorder?.isRecording? handleOnClickStopRecording(): handleOnClickStartRecording()
-                                }}>
-                                <FiberManualRecord />
-                            </IconButton>
-                        </Tooltip>
                         
                         <span className={clsx(classes.menuSpacer)}>  </span>
                         <span className={clsx(classes.menuSpacer)}>  </span>
@@ -507,7 +498,7 @@ export const MeetingRoom = () => {
                                 <ViewCompact/>  
                             </IconButton>
                         </Tooltip>
-                        <Tooltip title="Feature View">
+                        <Tooltip title="Grid View">
                             <IconButton color="inherit" className={viewMode === "GridView" ? classes.menuButtonActive : classes.menuButton} onClick={(e)=>{setViewMode("GridView")}}>
                                 <ViewComfy/>  
                             </IconButton>
@@ -515,7 +506,7 @@ export const MeetingRoom = () => {
 
                         <Tooltip title="RecorderView">
                             <IconButton color="inherit" className={viewMode === "RecorderView" ? classes.menuButtonActive : classes.menuButton} onClick={(e)=>{setViewMode("RecorderView")}}>
-                                <Album />
+                                <CropOriginal/>
                             </IconButton>
                         </Tooltip>
                         <span className={clsx(classes.menuSpacer)}>  </span>

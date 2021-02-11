@@ -44,7 +44,13 @@ export const RecorderPanel = ({ startRecord, stopRecord}: Props) => {
     return (
         <div style={{ height: '100%', width: "100%", wordWrap: "break-word", whiteSpace: "normal" }}>
             <Typography className={classes.title} color="textSecondary">
-                Record Meeting (Experimenta)
+                This feature is experimental.
+            </Typography>
+            <Typography className={classes.title} color="textSecondary">
+                If you record the screen, change screen to "Recorder View". You can change on toolbar.
+            </Typography>
+            <Typography className={classes.title} color="textSecondary">
+                Note: local audio can not be muted. and can not be dynamically canged.
             </Typography>
 
             <Tooltip title={recorder?.isRecording?"stop recording":"start recording"}>
