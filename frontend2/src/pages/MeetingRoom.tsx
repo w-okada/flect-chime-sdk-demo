@@ -23,6 +23,7 @@ import { useWebSocketState } from "../providers/websocket/WebScoketProvider";
 import { WhiteboardPanel } from "../components/WhiteboardPanel";
 import { VideoRecorderView } from "../components/VideoRecorderView";
 import { DefaultDeviceController } from "amazon-chime-sdk-js";
+import { RecorderPanel } from "../components/RecorderPanel";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -346,16 +347,15 @@ export const MeetingRoom = () => {
         const audioElem = document.getElementById("for-speaker") as HTMLAudioElement
         const stream =  new MediaStream();
 
+        //// For Audio
         // @ts-ignore
-        const audioStream = audioElem.captureStream() as MediaStream
-        let localAudioStream = audioInputDeviceSetting?.audioInputForRecord
-        console.log("[Recording] 1")
+        const audioStream = audioElem.captureStream() as MediaStream         // Remote
+        let localAudioStream = audioInputDeviceSetting?.audioInputForRecord  // Local
         if(typeof localAudioStream === "string"){
-            console.log("[Recording] 2,", localAudioStream)
             localAudioStream = await navigator.mediaDevices.getUserMedia({audio:{deviceId:localAudioStream}})
         }
-        console.log("[Recording] 3", localAudioStream)
 
+        //// For Video
         // @ts-ignore
         const videoStream = recorderCanvasElement?.captureStream() as MediaStream
 
@@ -695,6 +695,12 @@ export const MeetingRoom = () => {
                         <CustomAccordion title="Whiteboard">
                             <div style={{ height: 400, width: '100%'}}>
                                 <WhiteboardPanel/>
+                            </div>
+                        </CustomAccordion>
+
+                        <CustomAccordion title="RecordMeeting (exp.)">
+                            <div style={{ height: 400, width: '100%'}}>
+                                <RecorderPanel startRecord={handleOnClickStartRecording} stopRecord={handleOnClickStopRecording} />
                             </div>
                         </CustomAccordion>
                     </Drawer>
