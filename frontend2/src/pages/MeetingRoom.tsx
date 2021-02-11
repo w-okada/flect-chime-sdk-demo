@@ -347,19 +347,31 @@ export const MeetingRoom = () => {
         const audioElem = document.getElementById("for-speaker") as HTMLAudioElement
         const stream =  new MediaStream();
 
-        //// For Audio
         // @ts-ignore
-        const audioStream = audioElem.captureStream() as MediaStream         // Remote
-        let localAudioStream = audioInputDeviceSetting?.audioInputForRecord  // Local
+        const audioStream = audioElem.captureStream() as MediaStream
+        let localAudioStream = audioInputDeviceSetting?.audioInputForRecord
+        console.log("[Recording] 1")
         if(typeof localAudioStream === "string"){
+            console.log("[Recording] 2,", localAudioStream)
             localAudioStream = await navigator.mediaDevices.getUserMedia({audio:{deviceId:localAudioStream}})
         }
+        console.log("[Recording] 3", localAudioStream)
 
-        //// For Video
+
+        const audioContext = DefaultDeviceController.getAudioContext();
+        const outputNode = audioContext.createMediaStreamDestination();
+        const sourceNode1 = audioContext.createMediaStreamSource(audioStream);
+        sourceNode1.connect(outputNode)
+        if(localAudioStream){
+            const sourceNode2 = audioContext.createMediaStreamSource(localAudioStream as MediaStream);
+            sourceNode2.connect(outputNode)
+        }
+
         // @ts-ignore
         const videoStream = recorderCanvasElement?.captureStream() as MediaStream
 
-        [audioStream, videoStream, localAudioStream].forEach(s=>{
+        [outputNode.stream, videoStream].forEach(s=>{
+//        [audioStream, videoStream, localAudioStream].forEach(s=>{
             s?.getTracks().forEach(t=>{
                 console.log("added tracks:", t)
                 stream.addTrack(t)
@@ -373,6 +385,7 @@ export const MeetingRoom = () => {
         // recorder?.startRecording(videoStream)
         
     }
+    
     const handleOnClickStopRecording = async() =>{
         recorder?.stopRecording()
         recorder?.toMp4()
