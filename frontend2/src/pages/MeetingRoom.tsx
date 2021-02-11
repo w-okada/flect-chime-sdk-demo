@@ -242,6 +242,7 @@ export const MeetingRoom = () => {
                     // audioInputDeviceSetting!.setAudioInput(null)
                 }
 
+
                 const audioContext = DefaultDeviceController.getAudioContext();
                 const sourceNode = audioContext.createMediaStreamSource(stream);
                 const outputNode = audioContext.createMediaStreamDestination();
@@ -347,10 +348,18 @@ export const MeetingRoom = () => {
 
         // @ts-ignore
         const audioStream = audioElem.captureStream() as MediaStream
+        let localAudioStream = audioInputDeviceSetting?.audioInputForRecord
+        console.log("[Recording] 1")
+        if(typeof localAudioStream === "string"){
+            console.log("[Recording] 2,", localAudioStream)
+            localAudioStream = await navigator.mediaDevices.getUserMedia({audio:{deviceId:localAudioStream}})
+        }
+        console.log("[Recording] 3", localAudioStream)
+
         // @ts-ignore
         const videoStream = recorderCanvasElement?.captureStream() as MediaStream
 
-        [audioStream, videoStream].forEach(s=>{
+        [audioStream, videoStream, localAudioStream].forEach(s=>{
             s?.getTracks().forEach(t=>{
                 console.log("added tracks:", t)
                 stream.addTrack(t)
