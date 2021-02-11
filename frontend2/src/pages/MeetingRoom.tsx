@@ -1,6 +1,6 @@
 import React, { createRef, useEffect } from "react"
 import clsx from 'clsx';
-import { Typography, Button, CssBaseline, AppBar, Drawer, Toolbar, IconButton, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, MenuItem, DialogActions, Tooltip, Icon } from '@material-ui/core'
+import { Typography, Button, CssBaseline, AppBar, Drawer, Toolbar, IconButton, Dialog, DialogTitle, DialogContent, FormControl, InputLabel, Select, MenuItem, DialogActions, Tooltip, Icon, Divider } from '@material-ui/core'
 import {  ChevronLeft, ChevronRight, Settings, ExitToApp, Videocam, VideocamOff, 
     Mic, MicOff, VolumeOff, VolumeUp, ScreenShare, StopScreenShare, ViewComfy, ViewCompact,
     FiberManualRecord, Album} from '@material-ui/icons'
@@ -35,6 +35,8 @@ const theme = createMuiTheme({
         }
     },
 });
+const lineSpacerHeihgt = 10
+
 
 type ViewMode = "FeatureView" | "GridView" | "RecorderView"
 
@@ -144,7 +146,10 @@ const useStyles = makeStyles((theme) => ({
         margin: theme.spacing(1),
         width: '100%'
         // minWidth: 120,
-    },    
+    },
+    lineSpacer:{
+        height:lineSpacerHeihgt,
+    },
 }));
 
 
@@ -168,6 +173,7 @@ export const MeetingRoom = () => {
 
     const bgFileInputRef = createRef<HTMLInputElement>()
     const inputMovieFileInputRef = createRef<HTMLInputElement>()
+    const [exp_noise, exp_setNoise] = useState(false)
 
     const toggleDrawerOpen = () => {
         setDrawerOpen(!drawerOpen);
@@ -187,6 +193,14 @@ export const MeetingRoom = () => {
 
 
     const onInputVideoChange = async (e: any) => {
+        //// for input movie experiment [start]
+        const videoElem = document.getElementById("for-input-movie")! as HTMLVideoElement
+        videoElem.pause()
+        videoElem.srcObject=null
+        videoElem.src=""
+
+        //// for input movie experiment [end]
+
         if (e.target.value === "None") {
             videoInputDeviceSetting!.setVideoInput(null)
             setGuiCounter(guiCounter+1)
@@ -206,14 +220,15 @@ export const MeetingRoom = () => {
             videoElem.currentTime=0
             videoElem.autoplay=true
             videoElem.play()
+            
 
-            videoElem.onloadedmetadata = (e) =>{
+            // can not capturestream with onloadedmetadata
+            videoElem.onloadeddata = async (e) =>{
                 // @ts-ignore
                 const mediaStream = videoElem.captureStream() as MediaStream
-                // videoInputDeviceSetting!.setVideoInput(mediaStream)
 
-                // console.log("VIDEO CAPTURE!!!!")
 
+                /////// Generate AudioInput Source
                 const stream =  new MediaStream();
                 if(mediaStream.getAudioTracks().length>0){
                     mediaStream.getAudioTracks().forEach(t=>{
@@ -228,28 +243,30 @@ export const MeetingRoom = () => {
                 }
 
                 const audioContext = DefaultDeviceController.getAudioContext();
-                var sourceNode = audioContext.createMediaStreamSource(stream); // chiko
+                const sourceNode = audioContext.createMediaStreamSource(stream);
                 const outputNode = audioContext.createMediaStreamDestination();
                 sourceNode.connect(outputNode)
-                const gainNode = audioContext.createGain();
-                gainNode.gain.value = 0.1;
-                gainNode.connect(outputNode);
-                const oscillatorNode = audioContext.createOscillator();
-                oscillatorNode.frequency.value = 440;
-                oscillatorNode.connect(gainNode);
-                oscillatorNode.start();
+                if(exp_noise){
+                    const gainNode = audioContext.createGain();
+                    gainNode.gain.value = 0.1;
+                    gainNode.connect(outputNode);
+                    const oscillatorNode = audioContext.createOscillator();
+                    oscillatorNode.frequency.value = 440;
+                    oscillatorNode.connect(gainNode);
+                    oscillatorNode.start();
+                }
                 audioInputDeviceSetting!.setAudioInput(outputNode.stream) 
-                outputNode.stream.getAudioTracks().forEach(t=>{
-                    console.log("AUDIO TRACK2",t)
-                })
-                console.log("AUDIO TRACK2", outputNode.stream)
 
+                
+                /////// Generate VideoInput Source
                 if(mediaStream.getVideoTracks().length>0){
                     const stream =  new MediaStream();
                     mediaStream.getVideoTracks().forEach(t=>{
                         stream.addTrack(t)
                     })
-                    videoInputDeviceSetting!.setVideoInput(mediaStream)
+                    await videoInputDeviceSetting!.setVideoInput(mediaStream)
+                    await videoInputDeviceSetting!.setVirtualBackgrounEnable(true)
+                    await videoInputDeviceSetting!.setVirtualBackgroundSegmentationType("None")
                 }else{
                     videoInputDeviceSetting!.setVideoInput(null)
                 }
@@ -281,6 +298,13 @@ export const MeetingRoom = () => {
     }    
 
     const onInputAudioChange = async (e: any) => {
+        //// for input movie experiment [start]
+        const videoElem = document.getElementById("for-input-movie")! as HTMLVideoElement
+        videoElem.pause()
+        videoElem.srcObject=null
+        videoElem.src=""
+        //// for input movie experiment [end]
+
         if (e.target.value === "None") {
             await audioInputDeviceSetting!.setAudioInput(null)
             setGuiCounter(guiCounter+1)
@@ -486,14 +510,17 @@ export const MeetingRoom = () => {
 
 
 
-                <Dialog disableBackdropClick disableEscapeKeyDown open={settingDialogOpen} onClose={(e)=>{setSettingDialogOpen(false)}} >
-                    <DialogTitle>Setting</DialogTitle>
+                <Dialog disableBackdropClick disableEscapeKeyDown scroll="paper" open={settingDialogOpen} onClose={(e)=>{setSettingDialogOpen(false)}} >
+                    <DialogTitle>
+                        <Typography variant="h4" gutterBottom>
+                            Settings
+                        </Typography>
+                    </DialogTitle>
                     <DialogContent>
+                        <Typography variant="h5" gutterBottom>
+                            Devices and Effects
+                        </Typography>
                         <form className={classes.form} noValidate>
-
-                            <Button variant="outlined" color="primary" onClick={()=>{inputMovieFileInputRef.current!.click()}}>
-                                choose movie file
-                            </Button>                            
                             <FormControl className={classes.formControl} >
                                 <InputLabel>Camera</InputLabel>
                                 <Select onChange={onInputVideoChange} value={videoInputDeviceSetting!.videoInput}>
@@ -510,7 +537,7 @@ export const MeetingRoom = () => {
                             </FormControl>
                             <div style={{display:"flex"}}>
                                 <FormControl className={classes.formControl} >
-                                    <InputLabel>VirtualBG</InputLabel>
+                                    <InputLabel>Virtual Background</InputLabel>
                                     <Select onChange={onVirtualBGChange} value={videoInputDeviceSetting!.virtualBackgroundSegmentationType} >
                                         <MenuItem disabled value="Video">
                                             <em>VirtualBG</em>
@@ -527,8 +554,10 @@ export const MeetingRoom = () => {
                                     </Select>
                                 </FormControl>
 
-                                <Button variant="outlined" color="primary" onClick={()=>{bgFileInputRef.current!.click()}}>
-                                    choose image file
+                                <Button variant="outlined" color="primary" onClick={()=>{bgFileInputRef.current!.click()}} size="small" >
+                                    <Typography  variant="caption">
+                                        background image
+                                    </Typography>
                                 </Button>
                             </div>
 
@@ -574,6 +603,41 @@ export const MeetingRoom = () => {
                                     })}
                                 </Select>
                             </FormControl>
+
+
+                            <div className={classes.lineSpacer} />
+                            <div className={classes.lineSpacer} />
+                            <Divider  />
+                            <Typography variant="h5">
+                                Experimentals
+                            </Typography>
+                            <div style={{display:"flex"}}>
+                                <div style={{width:"50%"}}>
+                                    <Typography variant="body1" >
+                                        Movie Input
+                                    </Typography>
+                                    <Typography variant="body2" >
+                                        Input movie instead of the camera. 
+                                        When you use this featurem, camera device and microhpone device, virtual background are not choosen.
+                                    </Typography>
+                                </div>
+                                <div style={{width:"50%"}}>
+                                    <Button variant="outlined" color="primary" onClick={()=>{
+                                            inputMovieFileInputRef.current!.click()
+                                            exp_setNoise(false)
+                                        }}>
+                                        choose movie file
+                                    </Button>                            
+                                    <Button variant="outlined" color="primary" onClick={()=>{
+                                            inputMovieFileInputRef.current!.click()
+                                            exp_setNoise(true)
+                                        }}>
+                                        choose movie file (add noise)
+                                    </Button>
+                                </div>
+
+                            </div>
+
                         </form>                    
                     </DialogContent>
                     <DialogActions>
@@ -662,6 +726,11 @@ export const MeetingRoom = () => {
                     const path = URL.createObjectURL(e.target.files[0]);
                     const fileType = e.target.files[0].type
                     setInputMovieFile(path, fileType)
+
+                    // // See. https://stackoverflow.com/questions/27120757/failed-to-execute-createobjecturl-on-url
+                    // //      https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/srcObject
+                    // const fileType = e.target.files[0].type
+                    // setInputMovieFile(e.target.files[0], fileType)
                 }} />
                 <video id="for-input-movie"  loop hidden />
 

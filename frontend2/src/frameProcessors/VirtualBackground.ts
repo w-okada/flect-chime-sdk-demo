@@ -192,6 +192,7 @@ export class VirtualBackground implements VideoFrameProcessor {
                         break
                     default:
                         result = null
+                        this.convert_none(canvas)
                 }
             } catch (err) {
                 console.log("Exception:: ", err)
@@ -366,7 +367,9 @@ export class VirtualBackground implements VideoFrameProcessor {
 
 
 
-
+    convert_none = (foreground: HTMLCanvasElement) => {
+        this.targetCanvas.getContext("2d")!.drawImage(foreground, 0, 0, this.targetCanvas.width, this.targetCanvas.height)
+    }
 
 
 
