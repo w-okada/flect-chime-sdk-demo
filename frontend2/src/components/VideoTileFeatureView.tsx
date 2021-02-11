@@ -69,7 +69,19 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
 
     const focusStates = (()=>{
         if(sharedContentStates.length === 0 && speakerStates.length === 0){
-            return null
+            const dummy:AttendeeState = {
+                attendeeId: "NO_FOCUS",
+                name: "NO_FOCUS",
+                active: true,
+                score: 0,
+                volume: 0,
+                muted: true,
+                paused: false,
+                signalStrength: 0,
+                isSharedContent: false,
+                ownerId: ""
+            }
+            return [dummy]
         }else if(sharedContentStates.length === 0 && speakerStates.length > 0){
             return speakerStates
         }else if(sharedContentStates.length > 0 && speakerStates.length === 0){
@@ -96,9 +108,13 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
     useEffect(()=>{
         focusStates?.forEach((s)=>{
             const elementId =  focusVideoElementId(s.attendeeId)
-            const focusVideoElement = document.getElementById(elementId)! as HTMLVideoElement
-            if(focusVideoElement){
+            const focusVideoElement = document.getElementById(elementId)! as HTMLVideoElement | HTMLCanvasElement
+            if(focusVideoElement && focusVideoElement instanceof HTMLVideoElement){
                 meetingSession?.audioVideo.bindVideoElement(videoTileStates[s.attendeeId].tileId!, focusVideoElement)
+            }else if(focusVideoElement && focusVideoElement instanceof HTMLCanvasElement){
+                const ctx = focusVideoElement.getContext("2d")!
+                ctx.font = "italic bold 20px sans-serif";
+                ctx.fillText("No focus", 10, 60)
             }
             if(s.isSharedContent){
                 const owner = attendees[s.ownerId]
@@ -220,16 +236,30 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
 
     useEffect(()=>{
         focusStates?.forEach((s)=>{
-            if(!videoTileStates[s.attendeeId] || videoTileStates[s.attendeeId].tileId!<0){
-                return
-            }
+            // if(s.attendeeId === "NO_FOCUS"){
+            //     // no op. "NO_FOCUS" is for dummy, when no user
+            // }else if(!videoTileStates[s.attendeeId] || videoTileStates[s.attendeeId].tileId!<0){
+            //     return
+            // }
+
             const elementId =  focusVideoElementId(s.attendeeId)
-            const focusVideoElement = document.getElementById(elementId)! as HTMLVideoElement
+            const focusVideoElement = document.getElementById(elementId)! as HTMLVideoElement | HTMLCanvasElement
 
             const canvasElementId = whiteboardCanvasElementId(s.attendeeId) 
             const focusElementCanvas = document.getElementById(canvasElementId)! as HTMLCanvasElement
-            focusElementCanvas.width = focusVideoElement.videoWidth
-            focusElementCanvas.height = focusVideoElement.videoHeight
+
+            //// adjust whiteboard canvas to the content.
+            //// ( without this, original canvas width is widen to content by css and resolution becomes lower.)
+            if(focusVideoElement instanceof HTMLVideoElement){
+                focusElementCanvas.width = focusVideoElement.videoWidth
+                focusElementCanvas.height = focusVideoElement.videoHeight
+            }else if(focusVideoElement instanceof HTMLCanvasElement){
+                const cs = getComputedStyle(focusVideoElement)
+                const width = parseInt(cs.getPropertyValue("width"))
+                const height = parseInt(cs.getPropertyValue("height"))
+                focusElementCanvas.width = width
+                focusElementCanvas.height = height
+            }
             
 
 
@@ -264,8 +294,6 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
 
                 }
             })
-
-
         })
 
         return ()=>{
@@ -284,12 +312,12 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
                     focusElementCanvas.removeEventListener("touchstart", touchStart)
                     focusElementCanvas.removeEventListener("touchend", touchEnd)
                     focusElementCanvas.removeEventListener("touchmove", touchMove) 
-    
                 }catch(e){
                     console.log("canvas already removed")
                 }
 
             })
+
         }
     })
 
@@ -301,12 +329,9 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
                         {videoTileStates[s.attendeeId] && videoTileStates[s.attendeeId].tileId!>=0?
                             <video id={ focusVideoElementId(s.attendeeId)} style={{objectFit:"contain", position:"absolute", height:height-2, width:width}}/>
                             :
-                            <div style={{height:"100%"}}>no image</div>
+                            <canvas id={ focusVideoElementId(s.attendeeId)} width={width} height={height-2} style={{objectFit:"contain", position:"absolute"}}/>
 
                         }
-                        {/* <div style={{position:"absolute", lineHeight:1, fontSize:14, height:15, top:height-20, left:5, background:s.active?"#ee7777cc":"#777777cc"}}>
-                            {s.name}
-                        </div> */}
                         <canvas id={whiteboardCanvasElementId(s.attendeeId)} style={{objectFit:"contain", position:"absolute", height:height-2, width:width}} />
                     </div>
                 )
