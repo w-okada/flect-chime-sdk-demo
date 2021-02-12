@@ -2,6 +2,7 @@ import { VideoTileState } from "amazon-chime-sdk-js"
 
 export const getDeviceLists = async () => {
     const list = await navigator.mediaDevices.enumerateDevices()
+    console.log("DEVICE:::::::::",list)
 
     const audioInputDevices = list.filter((x: InputDeviceInfo | MediaDeviceInfo) => {
         return x.kind === "audioinput"

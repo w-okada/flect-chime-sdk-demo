@@ -52,7 +52,7 @@ export const VideoTilesLineView = ({ attendees, videoTileStates, excludeSpeaker,
     const attendeeStates = Object.values(attendees).filter(s=>{return !s.isSharedContent})
     // const attendeeStates = Object.values(attendees)
 
-    const lineVideoElementIdPrefix = "focus-video-element"
+    const lineVideoElementIdPrefix = "line-video-element"
     const lineVideoElementId = (attendeeId:string) => `${lineVideoElementIdPrefix}-${attendeeId}`
 
     useEffect(()=>{

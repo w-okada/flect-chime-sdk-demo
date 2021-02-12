@@ -86,8 +86,13 @@ class CanvasRenderer{
         const num = this.focusVideoElements.length
         const gridWidth = this.width / num
         const ctx = canvas.getContext("2d")!
-        // ctx.fillRect(0, 0, this.width, this.height)
-        // ctx.clearRect(0, 0, this.width, this.height)
+        if(canvas.width !== this.width || canvas.height !== this.height){
+            console.log("[Recoerder View] change canvs size")
+            canvas.width = this.width
+            canvas.height = this.height
+        }
+
+
         this.focusVideoElements.forEach((e,i)=>{
             if(this.previousVideoSizes[i] && this.previousVideoSizes[i].videoWidth === e.videoWidth && this.previousVideoSizes[i].videoHeight === e.videoHeight){
                 ctx.drawImage(e, gridWidth*i + this.previousVideoSizes[i].offsetX, this.previousVideoSizes[i].offsetY, 
@@ -203,7 +208,8 @@ export const VideoRecorderView = ({ attendees, videoTileStates, onlyCameraView, 
     return (
         <div style={{width:"100%", height:height}}>
            {/* {canvas} */}
-           <canvas width="1920" height="1080" id="recorderCanvas" style={{width:"100%", height:"100%", objectFit:"contain" }}/>
+           {/* <canvas width="1920" height="1080" id="recorderCanvas" style={{width:"100%", height:"100%", objectFit:"contain" }}/> */}
+           <canvas id="recorderCanvas" style={{width:"100%", height:"100%", objectFit:"contain" }}/>
         </div>
     )
 }

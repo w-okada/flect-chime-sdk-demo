@@ -9,6 +9,7 @@ interface DeviceStateValue {
     audioInputList: MediaDeviceInfo[] | null,
     videoInputList: MediaDeviceInfo[] | null,
     audioOutputList: MediaDeviceInfo[] | null,
+    reloadDeivces: ()=>void
 }
 
 const DeviceStateContext = React.createContext<DeviceStateValue | null>(null)
@@ -34,10 +35,18 @@ export const DeviceStateProvider = ({ children }: Props) => {
         })
     }
 
+    const reloadDeivces = () =>{
+        getDeviceLists().then(res => {
+            console.log("device list:::", res)
+            setDeviceList(res)
+        })
+    }
+
     const providerValue: DeviceStateValue = {
         audioInputList: deviceList ? deviceList['audioinput'] : null,
         videoInputList: deviceList ? deviceList['videoinput'] : null,
         audioOutputList: deviceList ? deviceList['audiooutput'] : null,
+        reloadDeivces
 
     }
 

@@ -43,12 +43,16 @@ const useStyles = makeStyles((theme) => ({
 
 export const WaitingRoom = () => {
     const { userId } = useAppState()
-    const { audioInputList, videoInputList, audioOutputList } = useDeviceState()
+    const { audioInputList, videoInputList, audioOutputList, reloadDeivces } = useDeviceState()
     const { meetingName, userName, isLoading, leaveMeeting, enterMeetingRoom } = useMeetingState()
     const { audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting } = useMeetingState()
     const { handleSignOut } = useSignInState()
     const classes = useStyles()
     const history = useHistory()
+
+    const onReloadDeviceClicked = () =>{
+        reloadDeivces()
+    }
 
     const onEnterClicked = () => {
         enterMeetingRoom().then(()=>{
@@ -135,6 +139,16 @@ export const WaitingRoom = () => {
 
 
                 <form className={classes.form} noValidate>
+
+                    <Button
+                        fullWidth
+                        variant="outlined"
+                        color="primary"
+                        onClick={onReloadDeviceClicked}
+                    >
+                        reload device list
+                    </Button>
+
                     <FormControl className={classes.formControl} >
                         <InputLabel>Camera</InputLabel>
                         {/* <Select onChange={onInputVideoChange} value={videoInputList!.length>0?videoInputList![0].deviceId:"None"}> */}
@@ -215,7 +229,7 @@ export const WaitingRoom = () => {
                                 onClick={onEnterClicked}
                             >
                                 Enter
-                        </Button>
+                            </Button>
 
                     }
                     <Grid container direction="column" >

@@ -58,7 +58,7 @@ const GridListTileBar2 = withStyles({
 
 export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPicture, focusTarget, width, height}: Props) =>  {
     const classes = useStyles()
-    const { meetingSession } = useMeetingState()
+    const { meetingSession, meetingName } = useMeetingState()
     const [inDrawing, setInDrawing] = useState(false)
     const [previousPosition, setPreviousPosition] = useState([0, 0])
     const [lastSendingTime, setLastSendingTime] = useState(Date.now())
@@ -114,7 +114,7 @@ export const VideoTilesFeatureView = ({ attendees, videoTileStates, pictureInPic
             }else if(focusVideoElement && focusVideoElement instanceof HTMLCanvasElement){
                 const ctx = focusVideoElement.getContext("2d")!
                 ctx.font = "italic bold 20px sans-serif";
-                ctx.fillText("No focus", 10, 60)
+                ctx.fillText(`You are in ${meetingName}`, 10, 60)
             }
             if(s.isSharedContent){
                 const owner = attendees[s.ownerId]

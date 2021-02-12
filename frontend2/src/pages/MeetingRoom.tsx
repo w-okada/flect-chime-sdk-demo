@@ -178,6 +178,12 @@ export const MeetingRoom = () => {
 
     const toggleDrawerOpen = () => {
         setDrawerOpen(!drawerOpen);
+        meetingSession?.audioVideo.listAudioOutputDevices().then(list=>{
+            console.log("DEVICESSSSSS1",list)
+        })
+        meetingSession?.audioVideo.listAudioInputDevices().then(list=>{
+            console.log("DEVICESSSSSS2",list)
+        })
     };
     const toggleAudioInputEnable = async() =>{
         await audioInputDeviceSetting!.setAudioInputEnable(!audioInputDeviceSetting!.audioInputEnable)
