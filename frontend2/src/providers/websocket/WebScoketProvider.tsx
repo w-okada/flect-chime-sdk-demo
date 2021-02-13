@@ -79,7 +79,7 @@ class WebSocketManager{
             this.listener[topic] = []
         }
         this.listener[topic].push(f)
-        console.log("Listener", this.listener)
+        // console.log("Listener", this.listener)
     }
     removeEventListener = (topic:string, f:(mess:WebSocketMessage)=>void) =>{
         if(this.listener[topic]){

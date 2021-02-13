@@ -43,7 +43,7 @@ export const ChatArea = () => {
         setMessage("")
     }
 
-    console.log("MESSAGE!!", chatData)
+    // console.log("MESSAGE!!", chatData)
 
     return (
         <div style={{ height: '100%', width: "100%" }}>
