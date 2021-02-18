@@ -6,6 +6,7 @@ export class AudioInputDeviceSetting {
     private voiceFocusDeviceTransformer: VoiceFocusDeviceTransformer | null = null
     private voiceFocusTransformDevice: VoiceFocusTransformDevice | null = null
     private midNode:AudioNode|null = null
+    private mixNode:AudioNode|null = null
     private outputNode:MediaStreamAudioDestinationNode|null = null
 
     audioInput: MediaStream | string | null = null
@@ -98,96 +99,9 @@ export class AudioInputDeviceSetting {
         }
         this.midNode.connect(this.outputNode)
         await this.meetingSession.audioVideo.chooseAudioInputDevice(this.outputNode.stream)
-
-
-
-
-        // /// for standard audio input
-        // if (suppression === false) {
-        //     console.log("[DeviceSetting] AudioInput doesn't use suppression.")
-        //     //// Background music mixin!!! 
-        //     // if(typeof (device) == "string"){
-        //     //     const stream = await navigator.mediaDevices.getUserMedia({audio:{deviceId:device}});
-
-        //     // const audioContext = DefaultDeviceController.getAudioContext();
-        //     // var sourceNode = audioContext.createMediaStreamSource(stream); 
-        //     // const outputNode = audioContext.createMediaStreamDestination();
-        //     // sourceNode.connect(outputNode)
-        //     // const gainNode = audioContext.createGain();
-        //     // gainNode.gain.value = 0.1;
-        //     // gainNode.connect(outputNode);
-        //     // const oscillatorNode = audioContext.createOscillator();
-        //     // oscillatorNode.frequency.value = 440;
-        //     // oscillatorNode.connect(gainNode);
-        //     // oscillatorNode.start();
-        //     // console.log("[DeviceSetting] AudioInput doesn't use suppression2.")
-        //     // await this.meetingSession.audioVideo.chooseAudioInputDevice(outputNode.stream)
-
-
-        //     // }else{
-        //     //     console.log("[DeviceSetting] AudioInput doesn't use suppression3.")
-        //     // }
-        //     this.audioInputForRecord = device
-        //     await this.meetingSession.audioVideo.chooseAudioInputDevice(device)
-        //     return
-        // }
-
-
-
-
-        // /// set transformDevice
-        // if (this.voiceFocusTransformDevice) {
-        //     console.log("[DeviceSetting] AudioInput use suppression.")
-        //     // await this.meetingSession.audioVideo.chooseAudioInputDevice(this.voiceFocusTransformDevice)
-
-        //     const audioContext = DefaultDeviceController.getAudioContext();
-        //     const outputNode = audioContext.createMediaStreamDestination();
-        //     let nodes;
-        //     try {
-        //         //////
-        //         // TBD: Suppression for record is not supported. following sentence doesn't work...
-        //         //////
-        //         const inner = await this.voiceFocusTransformDevice.intrinsicDevice()
-        //         // @ts-ignore
-        //         let ms = this.intrinsicDeviceAsMediaStream(inner)
-        //         console.log("[DeviceSetting] [Suppression] ", ms)
-        //         if(ms){
-        //             console.log("[DeviceSetting] [Suppression] M<EDIASTREAM")
-
-        //         }else{
-        //             console.log("[DeviceSetting] [Suppression] DEVICE")
-                                  
-    
-        //         }
-
-        //         nodes = await this.voiceFocusTransformDevice.createAudioNode(audioContext) 
-        //         sourceNode.connect(nodes.start)
-        //         nodes.end.connect(outputNode)
-
-        //         await this.meetingSession.audioVideo.chooseAudioInputDevice(outputNode.stream)
-
-        //         //   this.audioInputForRecord = outputNode.stream
-        //         ///// instedof suppression audio, we use original input...
-        //         this.audioInputForRecord = device
-        //         console.log("[DeviceSetting] [Debug] ", nodes, this.audioInputForRecord)
-        //     } catch (e) {
-        //         console.log("[DeviceSetting] Generate audioInputForRecord failed. ", e)
-        //         this.audioInputForRecord = device
-        //     }
-        // } else {
-        //     console.log("[DeviceSetting] Transformer can not create transfomrm device.")
-        //     await this.meetingSession.audioVideo.chooseAudioInputDevice(device)
-        //     this.audioInputForRecord = device
-        // }
     }
 
-    private intrinsicDeviceAsMediaStream(device: Device): MediaStream | null {
-        // @ts-ignore
-        return device && device.id ? device : null;
-    }
-    private transform?: { nodes: AudioNodeSubgraph | undefined; device: AudioTransformDevice };
     private browserBehavior: DefaultBrowserBehavior = new DefaultBrowserBehavior();    
-
 
     private calculateAudioMediaStreamConstraints(deviceId: string): MediaStreamConstraints | null {
         let trackConstraints: MediaTrackConstraints = {};
@@ -260,5 +174,17 @@ export class AudioInputDeviceSetting {
     setVoiceFocusSpec = async (val: VoiceFocusSpec) => {
         this.voiceFocusSpec = val
         await this.setAudioInputCommon(this.audioInput, this.audioInputEnable, this.audioSuppressionEnable, this.voiceFocusSpec)
+    }
+
+    setBackgroundMusic = async (stream:MediaStream) => {
+        if(this.mixNode){
+            this.mixNode.disconnect()
+        }
+        const audioContext = DefaultDeviceController.getAudioContext();
+        this.mixNode = audioContext.createMediaStreamSource(stream)
+        if(!this.outputNode){
+            this.outputNode = audioContext.createMediaStreamDestination();
+        }
+        this.mixNode.connect(this.outputNode)
     }
 }

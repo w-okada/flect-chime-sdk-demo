@@ -178,12 +178,6 @@ export const MeetingRoom = () => {
 
     const toggleDrawerOpen = () => {
         setDrawerOpen(!drawerOpen);
-        meetingSession?.audioVideo.listAudioOutputDevices().then(list=>{
-            console.log("DEVICESSSSSS1",list)
-        })
-        meetingSession?.audioVideo.listAudioInputDevices().then(list=>{
-            console.log("DEVICESSSSSS2",list)
-        })
     };
     const toggleAudioInputEnable = async() =>{
         await audioInputDeviceSetting!.setAudioInputEnable(!audioInputDeviceSetting!.audioInputEnable)
@@ -254,14 +248,18 @@ export const MeetingRoom = () => {
                 const sourceNode = audioContext.createMediaStreamSource(stream);
                 const outputNode = audioContext.createMediaStreamDestination();
                 sourceNode.connect(outputNode)
+
+
                 if(exp_noise){
+                    const outputNodeForMix = audioContext.createMediaStreamDestination();
                     const gainNode = audioContext.createGain();
                     gainNode.gain.value = 0.1;
-                    gainNode.connect(outputNode);
+                    gainNode.connect(outputNodeForMix);
                     const oscillatorNode = audioContext.createOscillator();
                     oscillatorNode.frequency.value = 440;
                     oscillatorNode.connect(gainNode);
                     oscillatorNode.start();
+                    audioInputDeviceSetting!.setBackgroundMusic(outputNodeForMix.stream)
                 }
                 audioInputDeviceSetting!.setAudioInput(outputNode.stream) 
 
