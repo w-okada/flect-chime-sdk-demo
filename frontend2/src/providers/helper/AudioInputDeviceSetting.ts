@@ -1,4 +1,4 @@
-import { DefaultDeviceController, MeetingSession, VoiceFocusDeviceTransformer, VoiceFocusSpec, VoiceFocusTransformDevice } from "amazon-chime-sdk-js"
+import { AudioNodeSubgraph, AudioTransformDevice, DefaultBrowserBehavior, DefaultDeviceController, Device, DeviceSelection, MeetingSession, VoiceFocusDeviceTransformer, VoiceFocusSpec, VoiceFocusTransformDevice } from "amazon-chime-sdk-js"
 
 
 
@@ -91,7 +91,7 @@ export class AudioInputDeviceSetting {
         /// set transformDevice
         if (this.voiceFocusTransformDevice) {
             console.log("[DeviceSetting] AudioInput use suppression.")
-            await this.meetingSession.audioVideo.chooseAudioInputDevice(this.voiceFocusTransformDevice)
+            // await this.meetingSession.audioVideo.chooseAudioInputDevice(this.voiceFocusTransformDevice)
 
             const audioContext = DefaultDeviceController.getAudioContext();
             const outputNode = audioContext.createMediaStreamDestination();
@@ -100,8 +100,31 @@ export class AudioInputDeviceSetting {
                 //////
                 // TBD: Suppression for record is not supported. following sentence doesn't work...
                 //////
-                //   nodes = await this.voiceFocusTransformDevice.createAudioNode(audioContext) 
-                //   nodes.end.connect(outputNode)
+                const inner = await this.voiceFocusTransformDevice.intrinsicDevice()
+                // @ts-ignore
+                let ms = this.intrinsicDeviceAsMediaStream(inner)
+                console.log("[DeviceSetting] [Suppression] ", ms)
+                if(ms){
+                    console.log("[DeviceSetting] [Suppression] M<EDIASTREAM")
+
+                }else{
+                    console.log("[DeviceSetting] [Suppression] DEVICE")
+                    const proposedConstraints: MediaStreamConstraints|null = this.calculateMediaStreamConstraints(
+                        "audio",
+                        inner
+                    );                
+                    ms = await navigator.mediaDevices.getUserMedia(proposedConstraints!);
+    
+                }
+                const sourceNode = DefaultDeviceController.getAudioContext().createMediaStreamSource(
+                    ms
+                );
+                nodes = await this.voiceFocusTransformDevice.createAudioNode(audioContext) 
+                sourceNode.connect(nodes.start)
+                nodes.end.connect(outputNode)
+
+                await this.meetingSession.audioVideo.chooseAudioInputDevice(outputNode.stream)
+
                 //   this.audioInputForRecord = outputNode.stream
                 ///// instedof suppression audio, we use original input...
                 this.audioInputForRecord = device
@@ -117,7 +140,93 @@ export class AudioInputDeviceSetting {
         }
     }
 
+    private intrinsicDeviceAsMediaStream(device: Device): MediaStream | null {
+        // @ts-ignore
+        return device && device.id ? device : null;
+    }
+    private transform?: { nodes: AudioNodeSubgraph | undefined; device: AudioTransformDevice };
+    private browserBehavior: DefaultBrowserBehavior = new DefaultBrowserBehavior();    
 
+
+    private calculateMediaStreamConstraints(
+        kind: string,
+        device: Device
+      ): MediaStreamConstraints | null {
+        let trackConstraints: MediaTrackConstraints = {};
+        if (device === '') {
+          device = null;
+        }
+        const stream = this.intrinsicDeviceAsMediaStream(device);
+        if (device === null) {
+          return null;
+        } else if (typeof device === 'string') {
+          if (
+            this.browserBehavior.requiresNoExactMediaStreamConstraints() &&
+            this.browserBehavior.requiresGroupIdMediaStreamConstraints()
+          ) {
+            // In Samsung Internet browser, navigator.mediaDevices.enumerateDevices()
+            // returns same deviceId but different groupdId for some audioinput and videoinput devices.
+            // To handle this, we select appropriate device using deviceId + groupId.
+            trackConstraints.deviceId = device;
+            // trackConstraints.groupId = this.getGroupIdFromDeviceId(kind, device);
+          } else if (this.browserBehavior.requiresNoExactMediaStreamConstraints()) {
+            trackConstraints.deviceId = device;
+          } else {
+            trackConstraints.deviceId = { exact: device };
+          }
+        } else if (stream) {
+          // @ts-ignore - create a fake track constraint using the stream id
+          trackConstraints.streamId = stream.id;
+        } else {
+          // Take the input set of constraints. Note that this allows
+          // the builder to specify overrides for properties like `autoGainControl`.
+          // @ts-ignore - device is a MediaTrackConstraints
+          trackConstraints = device;
+        }
+        const defaultSampleRate = 48000;
+        const defaultSampleSize = 16;
+        const defaultChannelCount = 1;    
+        if (kind === 'audio' && this.supportSampleRateConstraint()) {
+          trackConstraints.sampleRate = { ideal: defaultSampleRate };
+        }
+        if (kind === 'audio' && this.supportSampleSizeConstraint()) {
+          trackConstraints.sampleSize = { ideal: defaultSampleSize };
+        }
+        if (kind === 'audio' && this.supportChannelCountConstraint()) {
+          trackConstraints.channelCount = { ideal: defaultChannelCount };
+        }
+        if (kind === 'audio') {
+          const augmented = {
+            echoCancellation: true,
+            googEchoCancellation: true,
+            googEchoCancellation2: true,
+            googAutoGainControl: true,
+            googAutoGainControl2: true,
+            googNoiseSuppression: true,
+            googNoiseSuppression2: true,
+            googHighpassFilter: true,
+    
+            // We allow the provided constraints to override these sensible defaults.
+            ...trackConstraints,
+          };
+          trackConstraints = augmented as MediaTrackConstraints;
+        }
+        return kind === 'audio' ? { audio: trackConstraints } : { video: trackConstraints };
+    }
+
+    supportSampleRateConstraint(): boolean {
+        return !!navigator.mediaDevices.getSupportedConstraints().sampleRate;
+      }
+    
+    supportSampleSizeConstraint(): boolean {
+        return !!navigator.mediaDevices.getSupportedConstraints().sampleSize;
+    }
+    
+    supportChannelCountConstraint(): boolean {
+        return !!navigator.mediaDevices.getSupportedConstraints().channelCount;
+    }
+
+    
     setAudioInput = async (val: MediaStream | string | null) => {
         this.audioInput = val
         await this.setAudioInputCommon(this.audioInput, this.audioInputEnable, this.audioSuppressionEnable)
