@@ -94,11 +94,12 @@ export class AudioInputDeviceSetting {
             this.midNode = audioContext.createMediaStreamSource(inputMediaStream);
         }
 
-        if(!this.outputNode){
-            this.outputNode = audioContext.createMediaStreamDestination();
-        }
+        this.outputNode?.disconnect()
+        this.outputNode = audioContext.createMediaStreamDestination();
+
         this.midNode.connect(this.outputNode)
         await this.meetingSession.audioVideo.chooseAudioInputDevice(this.outputNode.stream)
+        this.audioInputForRecord=this.outputNode.stream
     }
 
     private browserBehavior: DefaultBrowserBehavior = new DefaultBrowserBehavior();    
