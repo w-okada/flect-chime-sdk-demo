@@ -7,6 +7,8 @@ export class AudioInputDeviceSetting {
     private voiceFocusTransformDevice: VoiceFocusTransformDevice | null = null
     private midNode:AudioNode|null = null
     private mixNode:AudioNode|null = null
+    private mixSoundeVolume:number = 0.3
+    private mixGainNode:GainNode|null = null
     private outputNode:MediaStreamAudioDestinationNode|null = null
 
     audioInput: MediaStream | string | null = null
@@ -27,8 +29,11 @@ export class AudioInputDeviceSetting {
         /// no use audio input
         if (device === null || enable === false) {
             console.log("[DeviceSetting] AudioInput is null or disabled.")
-            await this.meetingSession.audioVideo.chooseAudioInputDevice(null)
             this.audioInputForRecord = null
+            if(this.outputNode){
+                this.midNode?.disconnect()
+                await this.meetingSession.audioVideo.chooseAudioInputDevice(this.outputNode.stream)
+            }
             return
         }
 
@@ -94,8 +99,10 @@ export class AudioInputDeviceSetting {
             this.midNode = audioContext.createMediaStreamSource(inputMediaStream);
         }
 
-        this.outputNode?.disconnect()
-        this.outputNode = audioContext.createMediaStreamDestination();
+        // this.outputNode?.disconnect()
+        if(!this.outputNode){
+            this.outputNode = audioContext.createMediaStreamDestination();
+        }
 
         this.midNode.connect(this.outputNode)
         await this.meetingSession.audioVideo.chooseAudioInputDevice(this.outputNode.stream)
@@ -178,14 +185,27 @@ export class AudioInputDeviceSetting {
     }
 
     setBackgroundMusic = async (stream:MediaStream) => {
-        if(this.mixNode){
-            this.mixNode.disconnect()
-        }
-        const audioContext = DefaultDeviceController.getAudioContext();
+        this.mixNode?.disconnect()
+
+        const audioContext = DefaultDeviceController.getAudioContext()
         this.mixNode = audioContext.createMediaStreamSource(stream)
         if(!this.outputNode){
-            this.outputNode = audioContext.createMediaStreamDestination();
+            this.outputNode = audioContext.createMediaStreamDestination()
         }
-        this.mixNode.connect(this.outputNode)
+        if(!this.mixGainNode){
+            this.mixGainNode = audioContext.createGain()
+        }
+
+        this.mixGainNode.gain.value = this.mixSoundeVolume
+        this.mixGainNode.connect(this.outputNode)
+
+        this.mixNode.connect(this.mixGainNode)
     }
+    setBackgroundMusicVolume = async (volume:number) => {
+        if(this.mixGainNode){
+            this.mixGainNode.gain.value = volume
+        }
+        this.mixSoundeVolume = volume
+    }
+    getBackgroundMusicVolume = () => {return this.mixSoundeVolume}
 }

@@ -24,6 +24,8 @@ import { WhiteboardPanel } from "../components/WhiteboardPanel";
 import { VideoRecorderView } from "../components/VideoRecorderView";
 import { DefaultDeviceController } from "amazon-chime-sdk-js";
 import { RecorderPanel } from "../components/RecorderPanel";
+import { CreditPanel } from "../components/CreditPanel";
+import { BGMPanel } from "../components/BGMPanel";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -37,7 +39,6 @@ const theme = createMuiTheme({
     },
 });
 const lineSpacerHeihgt = 10
-
 
 type ViewMode = "FeatureView" | "GridView" | "RecorderView"
 
@@ -711,6 +712,19 @@ export const MeetingRoom = () => {
                                 <RecorderPanel startRecord={handleOnClickStartRecording} stopRecord={handleOnClickStopRecording} />
                             </div>
                         </CustomAccordion>
+                        
+                        <CustomAccordion title="BGM/SE">
+                            <div style={{ height: 400, width: '100%'}}>
+                                <BGMPanel />
+                            </div>
+                        </CustomAccordion>
+                        
+                        <CustomAccordion title="About">
+                            <div style={{ height: 400, width: '100%'}}>
+                                <CreditPanel />
+                            </div>
+                        </CustomAccordion>
+
                     </Drawer>
 
                 {/* <main className={classes.content} style={{height:`${screenHeight}px`}}> */}
