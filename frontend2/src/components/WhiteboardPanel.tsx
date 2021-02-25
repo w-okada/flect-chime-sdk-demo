@@ -67,6 +67,9 @@ export const WhiteboardPanel = () => {
     return (
         <div style={{ height: '100%', width: "100%", wordWrap: "break-word", whiteSpace: "normal" }}>
             <Typography className={classes.title} color="textSecondary">
+                This feature can be used currently only in 'Feature View'.
+            </Typography>
+            <Typography className={classes.title} color="textSecondary">
                 Color and Erase
             </Typography>
             {colors.map((color) => (
@@ -84,9 +87,6 @@ export const WhiteboardPanel = () => {
                     }}/>
             </Tooltip>
 
-            <Typography className={classes.title} color="textSecondary">
-                Clear
-            </Typography>
             <Button variant="outlined" size="small" color="primary" className={classes.margin}  onClick={() => {
             const drawingData: DrawingData = {
                     drawingCmd: "CLEAR",
