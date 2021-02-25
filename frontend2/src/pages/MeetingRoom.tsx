@@ -26,6 +26,7 @@ import { DefaultDeviceController } from "amazon-chime-sdk-js";
 import { RecorderPanel } from "../components/RecorderPanel";
 import { CreditPanel } from "../components/CreditPanel";
 import { BGMPanel } from "../components/BGMPanel";
+import { VBGPanel } from "../components/VBGPanel";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -724,6 +725,14 @@ export const MeetingRoom = () => {
                                 <CreditPanel />
                             </div>
                         </CustomAccordion>
+
+
+                        <CustomAccordion title="Virtual Back Ground(exp.)">
+                            <div style={{ height: 400, width: '100%'}}>
+                                <VBGPanel />
+                            </div>
+                        </CustomAccordion>
+                                               
 
                     </Drawer>
 
