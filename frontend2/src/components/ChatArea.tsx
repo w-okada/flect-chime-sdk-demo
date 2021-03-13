@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import {  useMeetingState } from '../providers/MeetingStateProvider';
 import { Button, TextField, Typography } from '@material-ui/core';
@@ -12,22 +12,15 @@ const useStyles = makeStyles((theme: Theme) =>
             height: '100%',
 
         },
-        container: {
-            maxHeight: `calc(100% - 10px)`,
-        },
-        paper: {
-            width: '100%',
-            marginBottom: theme.spacing(2),
-            maxHeight: `calc(100% - 10px)`,
-            orverflow: 'scroll',
-
-        },
         margin: {
             margin: theme.spacing(1),
         },
-        title: {
-            fontSize: 14,
+        sendButton:{
+            textAlign: 'right',
         },
+        title:{
+            fontSize: "14"
+        }
     }),
 );
 
@@ -43,10 +36,8 @@ export const ChatArea = () => {
         setMessage("")
     }
 
-    // console.log("MESSAGE!!", chatData)
-
-    return (
-        <div style={{ height: '100%', width: "100%" }}>
+    const chatViewArea = useMemo(()=>{
+        return(
             <div style={{ height: '70%', width: "100%", overflow: 'auto' }}>
                 {
                     chatData.map((d, i) => {
@@ -60,8 +51,17 @@ export const ChatArea = () => {
                         )
                     })
                 }
-            </div>
-            <div style={{ margin: "10px" }}>
+            </div>            
+        )
+    },[chatData])
+
+
+
+    return (
+        <div className={classes.root}>
+
+            <div className={classes.margin}>
+                {chatViewArea}
             </div>
             <div>
                 <TextField
@@ -74,7 +74,7 @@ export const ChatArea = () => {
                     variant="outlined"
                 />
             </div>
-            <div style={{ textAlign: 'right' }}>
+            <div className={classes.sendButton}>
                 <Button variant="outlined" color="primary" size="small" onClick={sendMessage}>
                     send
                 </Button>

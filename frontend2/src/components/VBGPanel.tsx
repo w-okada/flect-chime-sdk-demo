@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import {  useMeetingState } from '../providers/MeetingStateProvider';
-import { Button, Grid, Slider, TextField, Tooltip, Typography } from '@material-ui/core';
-import { useRealitimeSubscribeChatState } from '../providers/realtime/RealtimeSubscribeChatProvider';
-import { RadioButtonUnchecked, FiberManualRecord, VolumeDown, VolumeUp } from '@material-ui/icons'
-import { DrawingData, useWebSocketWhiteboardState } from '../providers/websocket/WebScoketWhiteboardProvider';
-import { RS_SE } from '../resources';
+import { Grid, Slider, Typography } from '@material-ui/core';
+
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -41,7 +38,6 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export const VBGPanel = () => {
     const classes = useStyles();
-    const [ isPlaying, setIsPlaying ] = useState(false)
     const { videoInputDeviceSetting } = useMeetingState()
     const [ JBFSize, setJBFSize] = React.useState(256);
 

@@ -1,4 +1,4 @@
-import { useContext, useState, ReactNode } from "react"
+import { useContext, useState, ReactNode, useReducer, Reducer } from "react"
 import { useAppState } from "./AppStateProvider"
 import React from "react"
 import { DEFAULT_REGION } from "../constants";
@@ -78,6 +78,24 @@ export const useMeetingState = (): MeetingStateValue => {
     return state
 }
 
+type ChangeAttenndeeActionType = "ADD"|"DEL"|"CLEAR"
+type ChangeAttenndeeAction = {type:ChangeAttenndeeActionType, attendeeId?:string, info?:AttendeeState}
+const changeAttendeeReducer:Reducer<{ [attendeeId: string]: AttendeeState }, ChangeAttenndeeAction>  = (state:{ [attendeeId: string]: AttendeeState }, action:ChangeAttenndeeAction) =>{
+    console.log("CHANGE ATENDEE", action)
+    switch (action.type){        
+        case 'ADD':
+            state[action.attendeeId!]=action.info!
+            return {...state}
+        case 'DEL':
+            delete state[action.attendeeId!]
+            return {...state}
+        case 'CLEAR':
+            return {}
+        default:
+            return state
+    }
+}
+
 export const MeetingStateProvider = ({ children }: Props) => {
     const [isLoading, setIsLoading] = useState(false)
     const { userId, idToken, accessToken, refreshToken } = useAppState()
@@ -93,7 +111,10 @@ export const MeetingStateProvider = ({ children }: Props) => {
     const [region, setRegion] = useState(DEFAULT_REGION)
     const [userAttendeeId, setUserAttendeeId] = useState("")
     const [meetingSession, setMeetingSession] = useState(null as DefaultMeetingSession | null)
-    const [attendees, setAttendees] = useState({} as { [attendeeId: string]: AttendeeState })
+    // const [attendees, setAttendees] = useState({} as { [attendeeId: string]: AttendeeState })
+
+    const [attendees, changeAttendees] = useReducer(changeAttendeeReducer, {})
+
     const [videoTileStates, setVideoTileStates] = useState({} as { [attendeeId: string]: VideoTileState })
     const [newTileState, setNewTileState] = useState(null as VideoTileState | null)
 
@@ -108,6 +129,7 @@ export const MeetingStateProvider = ({ children }: Props) => {
         setRecorder(new Recorder())
     }
 
+    
 
     ////////////////////////
     // Features
@@ -167,7 +189,6 @@ export const MeetingStateProvider = ({ children }: Props) => {
         }
 
         // Add Subscribe volume Indicator
-        let internalCounter = 0
         meetingSession?.audioVideo.realtimeSubscribeToVolumeIndicator(attendeeId,
             async (
                 attendeeId: string,
@@ -178,11 +199,12 @@ export const MeetingStateProvider = ({ children }: Props) => {
                 new_attendee.volume = volume || 0
                 new_attendee.muted = muted || false
                 new_attendee.signalStrength = signalStrength || 0
-                //// multiple user join at the same time, there are the risk conflict the timing to update and overwritten.
-                //// -> skip "clone and set the attribute" and only update the contents of array --- (1)
-                // setAttendees(attendees)
-                internalCounter += 1
-                setStateCounter(internalCounter)
+
+                changeAttendees({
+                    type:"ADD",
+                    attendeeId:attendeeId,
+                    info:new_attendee
+                })
             }
         )
         return new_attendee
@@ -330,21 +352,23 @@ export const MeetingStateProvider = ({ children }: Props) => {
             meetingSession.audioVideo.realtimeSubscribeToAttendeeIdPresence(async (attendeeId: string, present: boolean) => {
                 console.log(`${attendeeId} present = ${present}`);
                 if (!present) {
-                    // Delete from Attendee List
-                    delete attendees[attendeeId]
                     // Delete Subscribe volume Indicator   
                     meetingSession.audioVideo.realtimeUnsubscribeFromVolumeIndicator(attendeeId)
-                    ///// same as (1)
-                    // setAttendees(attendees)
+                    changeAttendees({
+                        type:"DEL",
+                        attendeeId: attendeeId
+                    })
                     internalCounter += 1
                     setStateCounter(internalCounter)
                     return;
                 } else {
                     if (attendeeId in attendees === false) {
                         const new_attendee = await newAttendee(attendeeId)
-                        attendees[attendeeId] = new_attendee
-                        internalCounter += 1
-                        setStateCounter(internalCounter)
+                        changeAttendees({
+                            type:"ADD",
+                            attendeeId: attendeeId,
+                            info:new_attendee
+                        })
                     }
                     return;
                 }
@@ -362,8 +386,8 @@ export const MeetingStateProvider = ({ children }: Props) => {
                             break
                         }
                     }
-                    internalCounter += 1
-                    setStateCounter(internalCounter)
+                    // internalCounter += 1
+                    // setStateCounter(internalCounter)
                 },
                 (scores: { [attendeeId: string]: number }) => {
                     for (const attendeeId in scores) {
@@ -371,8 +395,8 @@ export const MeetingStateProvider = ({ children }: Props) => {
                             attendees[attendeeId].score = scores[attendeeId];
                         }
                     }
-                    internalCounter += 1
-                    setStateCounter(internalCounter)
+                    // internalCounter += 1
+                    // setStateCounter(internalCounter)
                 }, 5000)
 
             meetingSession?.audioVideo.start()
@@ -402,7 +426,9 @@ export const MeetingStateProvider = ({ children }: Props) => {
         meetingSession?.audioVideo.stop()
         // virtualBackgroundProcessor?.destroy()
         setMeetingSession(null)
-        setAttendees({})
+        changeAttendees({
+            type: "CLEAR",
+        })
         // (3)
         setInMeeting(false)
     }

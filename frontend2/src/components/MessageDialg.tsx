@@ -1,6 +1,5 @@
 import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, makeStyles } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
-import { Person, Error, ErrorOutline, Lock, Info} from "@material-ui/icons";
+import { ErrorOutline, Info} from "@material-ui/icons";
 import React from "react";
 import { useMessageState } from "../providers/MessageStateProvider";
 

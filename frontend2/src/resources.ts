@@ -1,1 +1,1 @@
-export const RS_SE = ['resources/se/Onmtp-Inspiration08-1.mp3','resources/se/Onmtp-Inspiration08-2.mp3','resources/se/Onmtp-Inspiration08-3.mp3','resources/se/Onmtp-Inspiration08-4.mp3','resources/se/Onmtp-Inspiration08-5.mp3','resources/se/Onmtp-Inspiration08-6.mp3','resources/se/Outer Space.mp3']
+export const RS_SE = ['resources/se/01.Pin1.mp3','resources/se/02.Pinpon.mp3','resources/se/03.Dwoon.mp3','resources/se/04.Pop.mp3','resources/se/05.Hit.mp3','resources/se/06.Chime.mp3','resources/se/10.OuterSpace.mp3']
