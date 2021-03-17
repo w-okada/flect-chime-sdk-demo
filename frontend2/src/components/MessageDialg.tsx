@@ -3,8 +3,6 @@ import { ErrorOutline, Info} from "@material-ui/icons";
 import React from "react";
 import { useMessageState } from "../providers/MessageStateProvider";
 
-
-
 const useStyles = makeStyles((theme) => ({
   avatarForInformation: {
     marginTop: theme.spacing(2),
@@ -18,7 +16,6 @@ const useStyles = makeStyles((theme) => ({
     margin: "auto",
   },
 }));
-
 
 export const MessageDialog = () =>{
     const { messageActive, message, resolve } = useMessageState()

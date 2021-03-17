@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useMemo } from "react"
 import { GridList, GridListTile, GridListTileBar } from '@material-ui/core'
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import { VideoTileState } from "amazon-chime-sdk-js";
@@ -12,7 +12,7 @@ type Props = {
     height: number
 
 };
-const lineTileHeight = 150
+
 const useStyles = makeStyles((theme) => ({
     gridList: {
         width: '100%',
@@ -48,10 +48,14 @@ const GridListTileBar2 = withStyles({
 export const VideoGridView = ({ attendees, videoTileStates, onlyCameraView, width, height}: Props) =>  {
     const classes = useStyles()
     const { meetingSession } = useMeetingState()
-    const targetStates = onlyCameraView? Object.values(attendees).filter(s=>{
-        const cameraAttendees = Object.keys(videoTileStates)
-        return s.attendeeId in cameraAttendees
-    }):Object.values(attendees)
+    const targetStates = useMemo(()=>{
+        return(
+            onlyCameraView? Object.values(attendees).filter(s=>{
+                const cameraAttendees = Object.keys(videoTileStates)
+                return s.attendeeId in cameraAttendees
+            }):Object.values(attendees)
+        )
+    },[onlyCameraView, attendees, videoTileStates])
 
     const cols = Math.min(Math.ceil(Math.sqrt(targetStates.length)), 5)
     
@@ -68,10 +72,11 @@ export const VideoGridView = ({ attendees, videoTileStates, onlyCameraView, widt
                 }
             }
         })
-    })
+    },[targetStates, videoTileStates])
 
-    return (
-        <div style={{width:"100%", height:height}}>
+    const grid = useMemo(()=>{
+        console.log("GRIDOOOOOO")
+        return(
             <GridList cellHeight='auto' className={classes.gridList} cols={ cols }>
                 {targetStates.map((s) => {
                     return (
@@ -81,13 +86,17 @@ export const VideoGridView = ({ attendees, videoTileStates, onlyCameraView, widt
                                 :
                                 <>no image</>
                             }
-
-
                             <GridListTileBar2 className={s.active?classes.videoTileBarActive:classes.videoTileBar} title={s.name} />
                         </GridListTile>
                     )
                 })}
             </GridList>
+        )
+    },[targetStates, videoTileStates])
+
+    return (
+        <div style={{width:"100%", height:height}}>
+            {grid}
         </div>
 
     )

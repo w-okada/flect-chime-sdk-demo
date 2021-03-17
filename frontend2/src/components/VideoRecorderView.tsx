@@ -1,9 +1,8 @@
-import React, { memo, useEffect, useMemo, useState } from "react"
-import { Divider, GridList, GridListTile, GridListTileBar, Typography } from '@material-ui/core'
+import React, { memo, useEffect, useState } from "react"
+import { Divider, GridListTileBar, Typography } from '@material-ui/core'
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import { MeetingSession, VideoTileState } from "amazon-chime-sdk-js";
 import { AttendeeState, useMeetingState } from "../providers/MeetingStateProvider";
-import { render } from "@testing-library/react";
 
 export type FocustTarget = "SharedContent" | "Speaker"
 
@@ -214,14 +213,9 @@ export const VideoRecorderView = ({ attendees, videoTileStates, onlyCameraView, 
         }
     }, [])
 
-    // const canvas = useMemo(()=>{
-    //     return <canvas width="1920" height="1080" id="recorderCanvas" style={{width:"100%", height:"100%", objectFit:"contain" }}/>
-    // },[])
-
     return (
         <div style={{ width: "100%", height: height }}>
-            {/* {canvas} */}
-            {/* <canvas width="1920" height="1080" id="recorderCanvas" style={{width:"100%", height:"100%", objectFit:"contain" }}/> */}
+
             <canvas id="recorderCanvas" style={{ width: "100%", height: "80%", objectFit: "contain" }} />
 
             <div style={{ width: "100%", height: "20%", objectFit: "contain" }}>
