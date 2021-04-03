@@ -227,6 +227,7 @@ export const WaitingRoom = () => {
                                 color="primary"
                                 className={classes.submit}
                                 onClick={onEnterClicked}
+                                id="submit"
                             >
                                 Enter
                             </Button>

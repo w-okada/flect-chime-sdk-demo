@@ -1,14 +1,14 @@
 import React, { useState, ReactNode, useContext } from 'react';
-import { getDeviceLists } from '../utils';
+import { DeviceInfo, DeviceInfoList, getDeviceLists } from '../utils';
 
 type Props = {
     children: ReactNode;
 };
 
 interface DeviceStateValue {
-    audioInputList: MediaDeviceInfo[] | null,
-    videoInputList: MediaDeviceInfo[] | null,
-    audioOutputList: MediaDeviceInfo[] | null,
+    audioInputList: DeviceInfo[] | null,
+    videoInputList: DeviceInfo[] | null,
+    audioOutputList: DeviceInfo[] | null,
     reloadDeivces: ()=>void
 }
 
@@ -25,11 +25,12 @@ export const useDeviceState = (): DeviceStateValue => {
 
 
 export const DeviceStateProvider = ({ children }: Props) => {
-    const [deviceList, setDeviceList] = useState(null as { [key: string]: MediaDeviceInfo[] } | null)
+    const [deviceList, setDeviceList] = useState<DeviceInfoList|null>(null)
 
     if (!deviceList) {
         console.log("getDevice List")
         getDeviceLists().then(res => {
+            addtionalDevice(res)
             console.log("device list:::", res)
             setDeviceList(res)
         })
@@ -37,11 +38,22 @@ export const DeviceStateProvider = ({ children }: Props) => {
 
     const reloadDeivces = () =>{
         getDeviceLists().then(res => {
+            addtionalDevice(res)
             console.log("device list:::", res)
             setDeviceList(res)
         })
     }
 
+    const addtionalDevice = (l:DeviceInfoList) =>{
+        if(l){
+            l.audioinput?.push({
+                deviceId:"dummy",
+                groupId:"dummy",
+                kind:"audioinput",
+                label:"dummy"
+            })
+        }
+    }
     const providerValue: DeviceStateValue = {
         audioInputList: deviceList ? deviceList['audioinput'] : null,
         videoInputList: deviceList ? deviceList['videoinput'] : null,

@@ -29,8 +29,11 @@ export const RecorderPanel = ({ startRecord, stopRecord}: Props) => {
     const { recorder } = useMeetingState()
 
     const handleOnClickStartRecord = () => {
+        console.log("CLICK RECORDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         if(!recorder?.isRecording){
             startRecord()
+        }else{
+            console.log("CLICK RECORDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT instance")
         }
     }
     const handleOnClickStopRecord = () => {
@@ -58,6 +61,7 @@ export const RecorderPanel = ({ startRecord, stopRecord}: Props) => {
                     className={recorder?.isRecording ? classes.activatedButton : classes.button}
                     startIcon={<FiberManualRecord />}
                     onClick={handleOnClickStartRecord}
+                    id="recorder-start"
                 >
                     Rec.
                 </Button>
@@ -69,6 +73,7 @@ export const RecorderPanel = ({ startRecord, stopRecord}: Props) => {
                     className={classes.button}
                     startIcon={<Pause />}
                     onClick={handleOnClickStopRecord}
+                    id="recorder-stop"
                 >
                     Stop
                 </Button>

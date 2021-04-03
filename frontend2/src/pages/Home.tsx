@@ -83,7 +83,7 @@ export const Home = () => {
 
                         label="Password"
                         // type="password"
-                        // id="password"
+                        id="password"
                         // autoComplete="off"
                         value={localPassword}
                         onChange={(e) => setLocalPassword(e.target.value)}
@@ -97,6 +97,7 @@ export const Home = () => {
                             <CircularProgress />
                             :
                             <Button
+                                id="submit"
                                 type="submit"
                                 fullWidth
                                 variant="contained"

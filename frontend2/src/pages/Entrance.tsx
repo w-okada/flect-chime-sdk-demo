@@ -113,6 +113,7 @@ export const Entrance = () => {
                                 color="primary"
                                 className={classes.submit}
                                 onClick={onJoinMeetingClicked}
+                                id="submit"
                             >
                                 Join Meeting
                         </Button>

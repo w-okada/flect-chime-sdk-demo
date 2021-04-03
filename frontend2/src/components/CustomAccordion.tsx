@@ -58,7 +58,7 @@ const AccordionDetails = withStyles((theme) => ({
 export const CustomAccordion = ({ title, children }: Props) => {
     return (
         <>
-            <Accordion square>
+            <Accordion square expanded={true}>
                 <AccordionSummary expandIcon={<ExpandMore />}>
                     {title}
                 </AccordionSummary>

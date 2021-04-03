@@ -1,2 +1,2 @@
-export const BACKEND_STACK_NAME = 'BackendStack'
-export const FRONTEND_LOCAL_DEV = true
+export const BACKEND_STACK_NAME = 'f-BackendStack'
+export const FRONTEND_LOCAL_DEV = false

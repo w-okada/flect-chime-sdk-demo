@@ -1,17 +1,51 @@
 import { VideoTileState } from "amazon-chime-sdk-js"
 
-export const getDeviceLists = async () => {
+export type DeviceInfo={
+    deviceId:string,
+    groupId:string,
+    kind:string,
+    label:string,
+}
+export type DeviceInfoList = {
+    audioinput: DeviceInfo[] | null,
+    videoinput: DeviceInfo[] | null,
+    audiooutput: DeviceInfo[] | null,
+}
+
+
+export const getDeviceLists = async ():Promise<DeviceInfoList> => {
     const list = await navigator.mediaDevices.enumerateDevices()
     console.log("DEVICE:::::::::",list)
 
-    const audioInputDevices = list.filter((x: InputDeviceInfo | MediaDeviceInfo) => {
+    const audioInputDevices:DeviceInfo[] = list.filter((x: InputDeviceInfo | MediaDeviceInfo) => {
         return x.kind === "audioinput"
+    }).map(x=>{
+        return {
+            deviceId:x.deviceId,
+            groupId:x.groupId,
+            kind:x.kind,
+            label:x.label
+        }
     })
-    const videoInputDevices = list.filter((x: InputDeviceInfo | MediaDeviceInfo) => {
+    const videoInputDevices:DeviceInfo[] = list.filter((x: InputDeviceInfo | MediaDeviceInfo) => {
         return x.kind === "videoinput"
+    }).map(x=>{
+        return {
+            deviceId:x.deviceId,
+            groupId:x.groupId,
+            kind:x.kind,
+            label:x.label
+        }
     })
-    const audioOutputDevices = list.filter((x: InputDeviceInfo | MediaDeviceInfo) => {
+    const audioOutputDevices:DeviceInfo[] = list.filter((x: InputDeviceInfo | MediaDeviceInfo) => {
         return x.kind === "audiooutput"
+    }).map(x=>{
+        return {
+            deviceId:x.deviceId,
+            groupId:x.groupId,
+            kind:x.kind,
+            label:x.label
+        }
     })
     return {
         audioinput: audioInputDevices,

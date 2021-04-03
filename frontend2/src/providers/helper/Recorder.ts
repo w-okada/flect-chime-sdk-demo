@@ -7,6 +7,7 @@ export class Recorder{
     ffmpeg:FFmpeg|null = createFFmpeg({log:true})
 
     startRecording = (stream:MediaStream) => {
+        console.log("[Recorder] recorder start!!!!!!!!!!!!!!!!!")
         const options = {
             mimeType : 'video/webm;codecs=h264,opus'
         };
@@ -21,12 +22,14 @@ export class Recorder{
 
     }
     stopRecording = () => {
+        console.log("[Recorder] recorder stop!!!!!!!!!!!!!!!!!")
         this.recorder?.stop()
         this.isRecording=false
     }
 
 
     toMp4 = async () => {    
+        console.log("[Recorder] recorder mp4!!!!!!!!!!!!!!!!!")
         const name = 'record.webm'
         const outName = 'out.mp4'
         const a = document.createElement("a")
@@ -38,12 +41,26 @@ export class Recorder{
             console.log("progress:", ratio);
           });
         }
+
+
+        // var videoBlob = new Blob(this.chunks);
+        // const blobUrl = window.URL.createObjectURL(videoBlob);
+        // a.href=blobUrl
+        // a.download = 'recorded.webm';
+        // a.click()
+
         // @ts-ignore
         this.ffmpeg.FS('writeFile', name, await fetchFile(new Blob(this.chunks)));
+        console.log("FFMPEG START!")
         await this.ffmpeg!.run('-i', name,  '-c', 'copy', outName);
+        console.log("FFMPEG DONE!")
         const data = this.ffmpeg!.FS('readFile', outName)
+        console.log("FFMPEG DONE2!")
     
         a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+        console.log("FFMPEG DONE3!")
         a.click()
+        console.log("FFMPEG DONE4!")
+
     }
 }
