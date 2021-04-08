@@ -106,7 +106,7 @@ export const Home = () => {
                                 onClick={onSignInClicked}
                             >
                                 Sign in
-                        </Button>
+                            </Button>
 
                     }
                     <Grid container direction="column" >

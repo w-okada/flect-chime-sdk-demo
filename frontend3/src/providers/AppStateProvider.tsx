@@ -17,6 +17,7 @@ import { useRealtimeSubscribeChat } from "./hooks/RealtimeSubscribers/useRealtim
 import { RealtimeData } from "./hooks/RealtimeSubscribers/const";
 import { DrawingMode, useWebSocketWhiteBoard } from "./hooks/WebSocketApp/useWebSocketWhiteBoard";
 import { DrawingData } from "./hooks/WebSocketApp/helper/WebSocketWhiteBoardClient";
+import { Recorder } from "./helper/Recorder";
 
 
 type Props = {
@@ -53,11 +54,14 @@ interface AppStateValue {
     stopShareScreen: () => Promise<void>
     getUserNameByAttendeeIdFromList: (attendeeId: string) => string
     meetingSession: DefaultMeetingSession | undefined
+    recorder: Recorder
     audioInputDeviceSetting: AudioInputDeviceSetting | undefined
     videoInputDeviceSetting: VideoInputDeviceSetting | undefined
     audioOutputDeviceSetting: AudioOutputDeviceSetting | undefined
     isShareContent:boolean
     activeSpeakerId:string|null
+    recorderCanvas: HTMLCanvasElement | null
+    setRecorderCanvas: (val:HTMLCanvasElement | null) => void
 
     /** For Device State */
     audioInputList: DeviceInfo[] | null
@@ -132,7 +136,8 @@ export const AppStateProvider = ({ children }: Props) => {
     const { meetingName, meetingId, joinToken, userName, attendeeId, attendees, videoTileStates, 
             createMeeting, joinMeeting, enterMeeting, leaveMeeting, 
             startShareScreen, stopShareScreen, getUserNameByAttendeeIdFromList,
-            meetingSession, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, isShareContent, activeSpeakerId} = useMeetingState({userId, idToken, accessToken, refreshToken,})
+            meetingSession, recorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, isShareContent, activeSpeakerId,
+            recorderCanvas, setRecorderCanvas,} = useMeetingState({userId, idToken, accessToken, refreshToken,})
     const { audioInputList, videoInputList, audioOutputList, reloadDevices } = useDeviceState()
     const { screenWidth, screenHeight} = useWindowSizeChangeListener()
     const { stage, setStage } = useStageManager({initialStage:query.get("mode") as STAGE|undefined})
@@ -192,11 +197,14 @@ export const AppStateProvider = ({ children }: Props) => {
         stopShareScreen,
         getUserNameByAttendeeIdFromList,
         meetingSession,
+        recorder,
         audioInputDeviceSetting, 
         videoInputDeviceSetting, 
         audioOutputDeviceSetting,
         isShareContent,
         activeSpeakerId,
+        recorderCanvas, 
+        setRecorderCanvas,
 
         /** For Device State */
         audioInputList,

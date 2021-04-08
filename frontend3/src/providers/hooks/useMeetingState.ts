@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import { VideoTileState } from "amazon-chime-sdk-js";
 import { AttendeeState, ChimeClient } from "../helper/ChimeClient";
+import { Recorder } from "../helper/Recorder";
 
 type UseMeetingStateProps = {
     userId?: string, 
@@ -21,7 +22,14 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
     const [activeSpeakerId, setActiveSpeakerId] = useState<string|null>(null)
     const [attendeeId, setAttendeeId] = useState<string>("")
 
-    const chimeClient = useMemo(()=>{return new ChimeClient()},[])    
+    const chimeClient = useMemo(()=>{return new ChimeClient()},[])
+
+    // For Recorder
+    const recorder    = useMemo(()=>{return new Recorder()},[])
+    const [recorderCanvas, setRecorderCanvas] = useState<HTMLCanvasElement|null>(null)
+
+
+    
     if(props.userId && props.idToken && props.accessToken && props.refreshToken){
         chimeClient.init(props.userId, props.idToken, props.accessToken, props.refreshToken)
         chimeClient.userNameUpdated = (val:string) => {setUserName(val)}
@@ -66,6 +74,7 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
     }
 
 
+
     ////////////////////////
     // Util
     ///////////////////////
@@ -74,11 +83,12 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
     }
 
     return { meetingName, meetingId, joinToken, attendeeId, userName, attendees, videoTileStates, 
-            meetingSession, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting,
+            meetingSession, recorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting,
             isShareContent, activeSpeakerId,
             createMeeting, joinMeeting, enterMeeting, leaveMeeting,
             startShareScreen, stopShareScreen,
             getUserNameByAttendeeIdFromList,
+            recorderCanvas, setRecorderCanvas,
         }
 
 

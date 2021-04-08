@@ -7,6 +7,8 @@ export type WebSocketMessage = {
     senderId: string
     data: any
 }
+const listener:{[topic:string]:((wsMessages:WebSocketMessage[])=>void)[]} = {}
+const wsMessages:{[topic:string]:WebSocketMessage[]} = {}
 
 export class WebSocketClient{
     //// CHANGE: This class is no more SINGLETON. Other WSS URL can be used.
@@ -17,7 +19,8 @@ export class WebSocketClient{
     //     }
     //     return this._instance
     // }
-    private wsMessages:{[topic:string]:WebSocketMessage[]} = {}
+    // private wsMessages:{[topic:string]:WebSocketMessage[]} = {}
+//    private wsMessages:{[topic:string]:WebSocketMessage[]} = {}
 
     private attendeeId:string
     private messagingURLWithQuery:string
@@ -41,35 +44,36 @@ export class WebSocketClient{
         console.log("WebSocket Created!!", this.websocketAdapter, (new Date()).toLocaleTimeString())
     }
     
-    // private listener:{[topic:string]:((topic:string, senderId:string, data:any)=>void)[]} = {}
-    // addEventListener = (topic:string, f:(topic:string, senderId:string, data:any)=>void) =>{
+    // private listener:{[topic:string]:((wsMessages:WebSocketMessage[])=>void)[]} = {}
+    // addEventListener = (topic:string, f:(wsMessages:WebSocketMessage[])=>void) =>{
     //     if(!this.listener[topic]){
     //         this.listener[topic] = []
     //     }
     //     this.listener[topic].push(f)
     //     // console.log("Listener", this.listener)
     // }
-    // removeEventListener = (topic:string, f:(topic:string, senderId:string, data:any)=>void) =>{
+    // removeEventListener = (topic:string, f:(wsMessages:WebSocketMessage[])=>void) =>{
     //     if(this.listener[topic]){
     //         this.listener[topic] = this.listener[topic].filter(x=>x!==f)
     //     }
     // }
-    private listener:{[topic:string]:((wsMessages:WebSocketMessage[])=>void)[]} = {}
+
     addEventListener = (topic:string, f:(wsMessages:WebSocketMessage[])=>void) =>{
-        if(!this.listener[topic]){
-            this.listener[topic] = []
+        if(!listener[topic]){
+            listener[topic] = []
         }
-        this.listener[topic].push(f)
+        listener[topic].push(f)
         // console.log("Listener", this.listener)
     }
     removeEventListener = (topic:string, f:(wsMessages:WebSocketMessage[])=>void) =>{
-        if(this.listener[topic]){
-            this.listener[topic] = this.listener[topic].filter(x=>x!==f)
+        if(listener[topic]){
+            listener[topic] = listener[topic].filter(x=>x!==f)
         }
     }
 
+
     reconnect = (e:Event) => {
-        setTimeout(()=>{
+        // setTimeout(()=>{
             console.log("reconnecting... ", e, (new Date()).toLocaleTimeString())
             this.websocketAdapter =  new DefaultWebSocketAdapter(this.logger)
             this.websocketAdapter!.create(
@@ -79,42 +83,36 @@ export class WebSocketClient{
             this.websocketAdapter!.addEventListener('message', this.receiveMessage)
             this.websocketAdapter!.addEventListener('close', this.reconnect)
             this.websocketAdapter!.addEventListener('error', this.reconnect)
-        },1*1000)
+        // },1*1000)
     }
     
     receiveMessage = (e:Event) => {
-        console.log("receive message", this.listener)
+        // console.log("receive message", this.listener)
+        console.log("receive message", listener)
         const event = e as MessageEvent
         const message = JSON.parse(event.data)  as WebSocketMessage
 
         // specify topic name
         const topic = message.topic
         this.updateWSMessageData(topic, message)
-        // if(!this.wsMessages[topic]){
-        //     this.wsMessages[topic] = []
-        // }
-        // // update data
-        // this.wsMessages[topic] = [...this.wsMessages[topic], message ]
+    }
 
-        // // notify
+    updateWSMessageData = (topic:string, wsMessage:WebSocketMessage) =>{
+        // update buffer
+        if(!wsMessages[topic]){
+            wsMessages[topic] = []
+        }
+        wsMessages[topic] = [...wsMessages[topic], wsMessage ]
+
+        // notify
         // if(this.listener[topic]){
         //     this.listener[topic].forEach(messageReceived=>{
         //         messageReceived(this.wsMessages[topic])
         //     })
         // }
-    }
-
-    updateWSMessageData = (topic:string, wsMessage:WebSocketMessage) =>{
-        // update buffer
-        if(!this.wsMessages[topic]){
-            this.wsMessages[topic] = []
-        }
-        this.wsMessages[topic] = [...this.wsMessages[topic], wsMessage ]
-
-        // notify
-        if(this.listener[topic]){
-            this.listener[topic].forEach(messageReceived=>{
-                messageReceived(this.wsMessages[topic])
+        if(listener[topic]){
+            listener[topic].forEach(messageReceived=>{
+                messageReceived(wsMessages[topic])
             })
         }
     }

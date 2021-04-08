@@ -2,9 +2,12 @@
   "name": "frontend3",
   "version": "0.1.0",
   "private": true,
+  "homepage": "./",
   "dependencies": {
     "@dannadori/bodypix-worker-js": "^1.0.31",
+    "@dannadori/googlemeet-segmentation-tflite-worker-js": "^1.0.13",
     "@dannadori/googlemeet-segmentation-worker-js": "^1.0.11",
+    "@ffmpeg/ffmpeg": "^0.9.7",
     "@material-ui/icons": "^4.11.2",
     "@testing-library/jest-dom": "^5.11.10",
     "@testing-library/react": "^11.2.6",

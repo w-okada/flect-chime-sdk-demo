@@ -1,10 +1,10 @@
 import { CanvasVideoFrameBuffer, VideoFrameBuffer, VideoFrameProcessor } from "amazon-chime-sdk-js";
 import { BodypixWorkerManager, generateBodyPixDefaultConfig, generateDefaultBodyPixParams, ModelConfigMobileNetV1_05, SemanticPersonSegmentation } from "@dannadori/bodypix-worker-js"
 import { generateGoogleMeetSegmentationDefaultConfig, generateDefaultGoogleMeetSegmentationParams, GoogleMeetSegmentationWorkerManager, GoogleMeetSegmentationSmoothingType } from '@dannadori/googlemeet-segmentation-worker-js'
+import { generateDefaultGoogleMeetSegmentationTFLiteParams, generateGoogleMeetSegmentationTFLiteDefaultConfig, GoogleMeetSegmentationTFLiteWorkerManager } from "@dannadori/googlemeet-segmentation-tflite-worker-js"
 
 
-
-export type VirtualBackgroundSegmentationType = "None" | "BodyPix" | "GoogleMeet"
+export type VirtualBackgroundSegmentationType = "None" | "BodyPix" | "GoogleMeet" | "GoogleMeetTFLite"
 export type BackgroundMode = "Image" | "Blur" | "Color"
 
 interface VirtualBackgroundConfig {
@@ -20,7 +20,6 @@ interface VirtualBackgroundConfig {
     backgroundMode: BackgroundMode,
     backgroundImage: HTMLCanvasElement | HTMLImageElement | null,
     backgroundColor: string,
-
 }
 
 export class VirtualBackground implements VideoFrameProcessor {
@@ -114,6 +113,39 @@ export class VirtualBackground implements VideoFrameProcessor {
 
     googleMeetLightWrappingEnable = true
 
+
+    googlemeetTFLiteModelReady = false
+    googlemeetTFLiteConfig = (() => {
+        const c = generateGoogleMeetSegmentationTFLiteDefaultConfig()
+        c.processOnLocal = false
+        c.modelPath = `${process.env.PUBLIC_URL}/models/96x160/segm_lite_v681.tflite`
+        // c.modelPath = `${process.env.PUBLIC_URL}/models/128x128/segm_lite_v509.tflite`
+        // c.modelPath = ${process.env.PUBLIC_URL}/models/144x256/segm_full_v679.tflite`
+        return c
+    })()
+    googlemeetTFLiteParams = (() => {
+        const p = generateDefaultGoogleMeetSegmentationTFLiteParams()
+        p.processWidth = 512
+        p.processHeight = 512
+        p.kernelSize    = 0
+        p.useSoftmax    = true
+        p.usePadding    = false
+        p.interpolation = 3
+        return p
+    })()
+    googlemeetTFLiteManager = (() => {
+        console.log("GOOGLE!")
+        const m = new GoogleMeetSegmentationTFLiteWorkerManager()
+        m.init(this.googlemeetTFLiteConfig).then(
+            ()=>{
+                this.googlemeetTFLiteModelReady=true
+            }
+        )
+        return m
+    })()
+    lwBlur = 30
+
+
     ////////////////////////////
     // constructor & destory ///
     ////////////////////////////
@@ -176,24 +208,31 @@ export class VirtualBackground implements VideoFrameProcessor {
             try {
                 // @ts-ignore
                 const canvas = f.asCanvasElement() as HTMLCanvasElement
-                let result: any
+                // let result: any
                 switch (this.config.type) {
                     case "BodyPix":
                         // result = await this.bodyPixManager!.predict(canvas, this.bodyPixParams!)
                         if(this.bodyPixModelReady){
-                            result = await this.bodyPixManager!.predict(canvas, this.bodyPixParams!)
+                            const result = await this.bodyPixManager!.predict(canvas, this.bodyPixParams!)
                             this.convert_bodypix(canvas, this.canvasBackground, result, this.config)
                         }
                         break
                     case "GoogleMeet":
                         // result = await this.googleMeetManager!.predict(canvas, this.googleMeetParams!)
                         if(this.googlemeetModelReady){
-                            result = await this.googlemeetManager!.predict(canvas, this.googlemeetParams!)
+                            const result = await this.googlemeetManager!.predict(canvas, this.googlemeetParams!)
                             this.convert_googlemeet(canvas, this.canvasBackground, result, this.config)
                         }
                         break
+                    case "GoogleMeetTFLite":
+                        // result = await this.googleMeetManager!.predict(canvas, this.googleMeetParams!)
+                        if(this.googlemeetTFLiteModelReady){
+                            const result = await this.googlemeetTFLiteManager!.predict(canvas, this.googlemeetTFLiteParams!)
+                            this.convert_googlemeet_tflite(canvas, this.canvasBackground, result, this.config)
+                        }
+                        break
                     default:
-                        result = null
+                        const result = null
                         this.convert_none(canvas)
                 }
             } catch (err) {
@@ -366,6 +405,60 @@ export class VirtualBackground implements VideoFrameProcessor {
         }
 
         this.targetCanvas.getContext("2d")!.drawImage(this.personCanvas, 0, 0, this.targetCanvas.width, this.targetCanvas.height)
+    }
+
+
+    convert_googlemeet_tflite = (foreground: HTMLCanvasElement, background: HTMLCanvasElement,
+        prediction: number[]|Uint8Array|null, conf: VirtualBackgroundConfig) => {
+
+        // (1) resize output canvas and draw background
+        if (conf.width <= 0 || conf.height <= 0) {
+            conf.width = foreground.width > background.width ? foreground.width : background.width
+            conf.height = foreground.height > background.height ? foreground.height : background.height
+        }
+
+        this.targetCanvas.width = conf.width
+        this.targetCanvas.height = conf.height
+        this.targetCanvas.getContext("2d")!.drawImage(background, 0, 0, conf.width, conf.height)
+        if (conf.type === "None") { // Depends on timing, bodypixResult is null
+            this.targetCanvas.getContext("2d")!.drawImage(foreground, 0, 0, this.targetCanvas.width, this.targetCanvas.height)
+            return this.targetCanvas
+        }
+
+        // (2) generate foreground transparent
+        if(!prediction){
+            return this.targetCanvas
+        }
+
+        const res = new ImageData(this.googlemeetTFLiteParams.processWidth, this.googlemeetTFLiteParams.processHeight)
+        for(let i = 0;i < this.googlemeetTFLiteParams.processWidth * this.googlemeetTFLiteParams.processHeight; i++){
+            res.data[i * 4 + 0] = prediction![i]
+            res.data[i * 4 + 1] = prediction![i]
+            res.data[i * 4 + 2] = prediction![i]
+            res.data[i * 4 + 3] = prediction![i]
+        }
+        this.personMaskCanvas.width = this.googlemeetTFLiteParams.processWidth
+        this.personMaskCanvas.height = this.googlemeetTFLiteParams.processHeight
+        this.personMaskCanvas.getContext("2d")!.putImageData(res, 0, 0)
+
+        // (3) generarte Person Canvas
+        this.personCanvas.width = conf.width
+        this.personCanvas.height = conf.height
+        const personCtx = this.personCanvas.getContext("2d")!
+        personCtx.clearRect(0, 0, this.personCanvas.width, this.personCanvas.height)
+        personCtx.drawImage(this.personMaskCanvas, 0, 0, this.personCanvas.width, this.personCanvas.height)        
+        personCtx.globalCompositeOperation = "source-atop";
+        personCtx.drawImage(foreground, 0, 0, this.personCanvas.width, this.personCanvas.height)
+        this.personCanvas.getContext("2d")!.globalCompositeOperation = "source-over";
+
+        // (4) apply LightWrapping
+        const dstCtx = this.targetCanvas.getContext("2d")!
+        dstCtx.filter = `blur(${this.lwBlur}px)`;
+        dstCtx.drawImage(this.personMaskCanvas, 0, 0, this.targetCanvas.width, this.targetCanvas.height)
+        dstCtx.filter = 'none';
+
+        // (5) draw personcanvas
+        dstCtx.drawImage(this.personCanvas, 0, 0, this.targetCanvas.width, this.targetCanvas.height)
     }
 
     convert_none = (foreground: HTMLCanvasElement) => {

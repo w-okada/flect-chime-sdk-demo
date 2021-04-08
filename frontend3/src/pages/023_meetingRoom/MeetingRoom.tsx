@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import clsx from 'clsx';
 import { CssBaseline, AppBar, Drawer, Toolbar } from '@material-ui/core'
 import { createMuiTheme, ThemeProvider} from '@material-ui/core/styles';
@@ -22,6 +22,7 @@ import { CreditPanel } from "./components/sidebars/CreditPanel";
 import { FullScreenView } from "./components/ScreenView/FullScreenView";
 import { FeatureView } from "./components/ScreenView/FeatureView";
 import { GridView } from "./components/ScreenView/GridView";
+import { RecorderView } from "./components/ScreenView/RecorderView";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -76,9 +77,10 @@ export const MeetingRoom = () => {
                 return <FullScreenView height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth} pictureInPicture={"None"} focusTarget={"SharedContent"}/>
             case "FeatureView":
                 return <FeatureView height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth} pictureInPicture={"None"} focusTarget={"SharedContent"}/>
-                
             case "GridView":
                 return <GridView  height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth} excludeSharedContent={false}/>
+            case "RecorderView":
+                return <RecorderView  height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth}/>
             default:
                 return (<>Not found screen type:{screenType}</>)
         }
@@ -148,11 +150,11 @@ export const MeetingRoom = () => {
 //         recorder?.toMp4()
 //     }
 
-//     useEffect(()=>{
-//         const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
-//         audioElement.autoplay=false
-//         audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
-//     },[])
+    useEffect(()=>{
+        const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
+        audioElement.autoplay=false
+        audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
+    },[])
 
 
     return (
@@ -215,7 +217,7 @@ export const MeetingRoom = () => {
                         </CustomAccordion>
 
                         <CustomAccordion title="RecordMeeting (exp.)">
-                            {/* <RecorderPanel startRecord={handleOnClickStartRecording} stopRecord={handleOnClickStopRecording} /> */}
+                            <RecorderPanel />
                         </CustomAccordion>
                         
                         <CustomAccordion title="BGM/SE">

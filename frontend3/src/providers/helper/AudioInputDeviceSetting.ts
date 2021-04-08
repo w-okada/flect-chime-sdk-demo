@@ -55,8 +55,13 @@ export class AudioInputDeviceSetting {
             inputMediaStream = dummyOutputNode.stream
         }else{
             const proposedConstraints: MediaStreamConstraints|null = this.calculateAudioMediaStreamConstraints(device);  
+            console.log(proposedConstraints)
             inputMediaStream = await navigator.mediaDevices.getUserMedia(proposedConstraints!);
+
+            // inputMediaStream = await navigator.mediaDevices.getUserMedia({audio:{deviceId:device}});
+                        
         }
+        
 
         if(suppression === true){
             /// suppression enable

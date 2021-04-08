@@ -165,6 +165,9 @@ export const WaitingRoom = () => {
                             <MenuItem value="GoogleMeet">
                                 <em>GoogleMeet</em>
                             </MenuItem>
+                            <MenuItem value="GoogleMeetTFLite">
+                                <em>GoogleMeetTFLite</em>
+                            </MenuItem>
                         </Select>
                     </FormControl>
 
