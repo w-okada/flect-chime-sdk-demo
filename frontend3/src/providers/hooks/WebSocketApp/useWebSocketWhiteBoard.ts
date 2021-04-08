@@ -35,7 +35,6 @@ export const useWebSocketWhiteBoard = (props:UseWebSocketWhiteBoardProps) =>{
     },[props.meetingId, props.attendeeId, props.joinToken,props.logger])
 
     useEffect(()=>{
-        console.log("USEEFFECT_IN_HOOK!!")
         const f = (wsMessages:WebSocketMessage[])=>{
             const newDrawingData = wsMessages.reduce<DrawingData[]>((sum:any[],cur:WebSocketMessage)=>{return [...sum, ...(cur.data as DrawingData[])]},[])
             setDrawingData(newDrawingData)

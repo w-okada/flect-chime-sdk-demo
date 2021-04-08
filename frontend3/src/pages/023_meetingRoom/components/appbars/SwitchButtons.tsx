@@ -1,8 +1,23 @@
-import { IconButton, Tooltip  } from "@material-ui/core"
+import { IconButton, makeStyles, Tooltip  } from "@material-ui/core"
 import { Stop, ViewCompact, ViewComfy} from '@material-ui/icons'
 import React, { useMemo } from "react"
-import { useStyles } from "../../css";
+// import { useStyles } from "../../css";
 import { FiberManualRecord } from '@material-ui/icons'
+
+const toolbarHeight = 20
+
+export const useStyles = makeStyles((theme) => ({
+    menuButton: {
+        width: toolbarHeight, height: toolbarHeight,
+    },
+
+    menuButtonActive: {
+        width: toolbarHeight, height: toolbarHeight,
+        color: "#ee7777"
+    },
+}));
+
+
 
 type SwitchButtonsType = "ScreenView"
 export type ScreenType = "FullView" | "FeatureView" | "GridView" | "RecorderView"
@@ -46,6 +61,7 @@ export const SwitchButtons = (props: SwitchButtonsProps) =>{
             return (
                 <Tooltip key={`tooltip_${index}`} title={tooltips[index]}>
                     <IconButton color="inherit" className={index === selectedIndex ? classes.menuButtonActive : classes.menuButton} onClick={(e)=>{props.onClick(switchLabelArray[index])}}>
+                    {/* <IconButton color="inherit" style={{color: "#ee7777"}} onClick={(e)=>{props.onClick(switchLabelArray[index])}}> */}
                         {icons[index]}
                     </IconButton>
                 </Tooltip>
