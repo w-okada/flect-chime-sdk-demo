@@ -131,7 +131,7 @@ export const getUserNameByAttendeeId = async (meetingName: string, attendeeId: s
 
 
 export const generateOnetimeCode = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string):
-    Promise<{ MeetingName: string, Meeting: any, Attendee: any, code?: string }> => { // 公式でもMeetingとAttendeeはanyで定義されている。 
+    Promise<{ uuid: string, code: string, ontimecodeExpireDate:number }> => { // 公式でもMeetingとAttendeeはanyで定義されている。 
 
     const url = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}/operations/generate-onetime-code`
 
