@@ -23,6 +23,7 @@ import { FullScreenView } from "./components/ScreenView/FullScreenView";
 import { FeatureView } from "./components/ScreenView/FeatureView";
 import { GridView } from "./components/ScreenView/GridView";
 import { RecorderView } from "./components/ScreenView/RecorderView";
+import { OnetimeCodePanel } from "./components/sidebars/OnetimeCodePanel";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -226,6 +227,10 @@ export const MeetingRoom = () => {
                         
                         <CustomAccordion title="About">
                             <CreditPanel />
+                        </CustomAccordion>
+
+                        <CustomAccordion title="OnetimeCode">
+                            <OnetimeCodePanel />
                         </CustomAccordion>
 
                     </Drawer>

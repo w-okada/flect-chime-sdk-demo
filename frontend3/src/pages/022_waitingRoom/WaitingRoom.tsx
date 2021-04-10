@@ -3,6 +3,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
 import { MeetingRoom } from '@material-ui/icons'
 import { Copyright } from "../000_common/Copyright";
+import { DeviceInfo } from "../../utils";
+import { VirtualBackgroundSegmentationType } from "../../frameProcessors/VirtualBackground";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -41,6 +43,23 @@ export const WaitingRoom = () => {
             setStage, handleSignOut, reloadDevices, enterMeeting} = useAppState()
     const [isLoading, setIsLoading] = useState(false)
 
+    //// Default Device ID
+    const defaultDeiceId = (deviceList: DeviceInfo[] | null) => {
+        if(!deviceList){
+            return "None"
+        }
+        const defaultDevice = deviceList.find(dev=>{return dev.deviceId !== "default"})
+        return defaultDevice ? defaultDevice.deviceId : "None"
+    }
+
+    const defaultAudioInputDevice  = defaultDeiceId(audioInputList)
+    const defaultVideoInputDevice  = defaultDeiceId(videoInputList)
+    const defaultAudioOutputDevice = defaultDeiceId(audioOutputList)
+    const [audioInputDeviceId,  setAudioInputDeviceId]  = useState(defaultAudioInputDevice)
+    const [videoInputDeviceId,  setVideoInputDeviceId]  = useState(defaultVideoInputDevice)
+    const [audioOutputDeviceId, setAudioOutputDeviceId] = useState(defaultAudioOutputDevice)
+    const [segmentationType, setSegmentationType] = useState<VirtualBackgroundSegmentationType>("GoogleMeetTFLite")
+
     const onReloadDeviceClicked = () =>{
         reloadDevices()
     }
@@ -56,49 +75,50 @@ export const WaitingRoom = () => {
         })
     }
 
-
-    const onInputVideoChange = async (e: any) => {
-        if (e.target.value === "None") {
-            await videoInputDeviceSetting!.setVideoInput(null,true)
-            await videoInputDeviceSetting!.setVideoInputEnable(false,true)
-            videoInputDeviceSetting!.stopPreview()
-        } else if (e.target.value === "File") {
-            // fileInputRef.current!.click()
-        } else {
-            await videoInputDeviceSetting!.setVideoInput(e.target.value,true)
-            await videoInputDeviceSetting!.setVideoInputEnable(true,true)
-            videoInputDeviceSetting!.startPreview()
-        }
-    }
-    const onVirtualBGChange = async (e: any) => {
-        if (e.target.value === "None") {
-            videoInputDeviceSetting!.setVirtualBackgrounEnable(false,true)
-            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType("None",true)
-        } else {
-            videoInputDeviceSetting!.setVirtualBackgrounEnable(true,true)
-            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType(e.target.value,true)
-        }
-    }
-
-    const onInputAudioChange = async (e: any) => {
-        if (e.target.value === "None") {
-            audioInputDeviceSetting!.setAudioInput(null)
-        } else {
-            audioInputDeviceSetting!.setAudioInput(e.target.value)
-        }
-    }
-    const onOutputAudioChange = async (e: any) => {
-        if (e.target.value === "None") {
-            audioOutputDeviceSetting!.setAudioOutput(null)
-        } else {
-            audioOutputDeviceSetting!.setAudioOutput(e.target.value)
-        }
-    }
-
     useEffect(() => {
         const videoEl = document.getElementById("camera-preview") as HTMLVideoElement
         videoInputDeviceSetting!.setPreviewVideoElement(videoEl)
     },[])// eslint-disable-line
+    
+    useEffect(() => {
+        if (videoInputDeviceId === "None") {
+            const p1 = videoInputDeviceSetting!.setVideoInput(null,true)
+            const p2 = videoInputDeviceSetting!.setVideoInputEnable(false,true)
+            Promise.all([p1, p2]).then(()=>{
+                videoInputDeviceSetting!.stopPreview()
+            }) 
+        } else if (videoInputDeviceId=== "File") {
+            // fileInputRef.current!.click()
+        } else {
+            const p1 = videoInputDeviceSetting!.setVideoInput(videoInputDeviceId,true)
+            const p2 = videoInputDeviceSetting!.setVideoInputEnable(true,true)
+            Promise.all([p1, p2]).then(()=>{
+                videoInputDeviceSetting!.startPreview()
+            })
+        }
+
+        if (segmentationType === "None") {
+            videoInputDeviceSetting!.setVirtualBackgrounEnable(false, true)
+            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType("None", true)
+        } else {
+            videoInputDeviceSetting!.setVirtualBackgrounEnable(true, true)
+            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType(segmentationType, true)
+        }
+    
+        if (audioInputDeviceId === "None") {
+            audioInputDeviceSetting!.setAudioInput(null)
+        } else {
+            audioInputDeviceSetting!.setAudioInput(audioInputDeviceId)
+        }
+
+        if (audioOutputDeviceId === "None") {
+            audioOutputDeviceSetting!.setAudioOutput(null)
+        } else {
+            audioOutputDeviceSetting!.setAudioOutput(audioOutputDeviceId)
+        }
+
+    },[audioInputDeviceId, segmentationType, videoInputDeviceId, audioOutputDeviceId])// eslint-disable-line
+
 
     const videoPreview = useMemo(()=>{
         return (<video id="camera-preview" className={classes.cameraPreview} />)
@@ -134,8 +154,7 @@ export const WaitingRoom = () => {
 
                     <FormControl className={classes.formControl} >
                         <InputLabel>Camera</InputLabel>
-                        {/* <Select onChange={onInputVideoChange} value={videoInputList!.length>0?videoInputList![0].deviceId:"None"}> */}
-                        <Select onChange={onInputVideoChange} defaultValue={"None"}>
+                        <Select onChange={(e)=>{setVideoInputDeviceId(e.target.value! as string)}} defaultValue={videoInputDeviceId}>
                             <MenuItem disabled value="Video">
                                 <em>Video</em>
                             </MenuItem>
@@ -152,7 +171,7 @@ export const WaitingRoom = () => {
 
                     <FormControl className={classes.formControl} >
                         <InputLabel>VirtualBG</InputLabel>
-                        <Select onChange={onVirtualBGChange} defaultValue="None">
+                        <Select onChange={(e)=>{setSegmentationType(e.target.value! as VirtualBackgroundSegmentationType)}} defaultValue={segmentationType}>
                             <MenuItem disabled value="Video">
                                 <em>VirtualBG</em>
                             </MenuItem>
@@ -173,7 +192,7 @@ export const WaitingRoom = () => {
 
                     <FormControl className={classes.formControl} >
                         <InputLabel>Microhpone</InputLabel>
-                        <Select onChange={onInputAudioChange} defaultValue={"None"}>
+                        <Select onChange={(e)=>{setAudioInputDeviceId(e.target.value! as string)}} defaultValue={audioInputDeviceId}>
                             <MenuItem disabled value="Video">
                                 <em>Microphone</em>
                             </MenuItem>
@@ -185,7 +204,7 @@ export const WaitingRoom = () => {
 
                     <FormControl className={classes.formControl} >
                         <InputLabel>Speaker</InputLabel>
-                        <Select onChange={onOutputAudioChange} defaultValue={"None"} >
+                        <Select onChange={(e)=>{setAudioOutputDeviceId(e.target.value! as string)}} defaultValue={audioOutputDeviceId}>
                             <MenuItem disabled value="Video">
                                 <em>Speaker</em>
                             </MenuItem>

@@ -79,7 +79,6 @@ export const joinMeeting = async (meetingName: string, userName: string, userId:
     return data;
 }
 
-
 export const endMeeting = async (meetingName: string, userName: string, userId: string, idToken: string, accessToken: string, refreshToken: string) => {
     const encodedMeetingName = encodeURIComponent(meetingName)
 
@@ -128,6 +127,37 @@ export const getUserNameByAttendeeId = async (meetingName: string, attendeeId: s
         name: decodeURIComponent(data.UserName),
         result: data.result
     };
+}
+
+
+export const generateOnetimeCode = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string):
+    Promise<{ MeetingName: string, Meeting: any, Attendee: any, code?: string }> => { // 公式でもMeetingとAttendeeはanyで定義されている。 
+
+    const url = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}/operations/generate-onetime-code`
+
+    const request = { 
+        meetingName: encodeURIComponent(meetingName), 
+    }
+
+    const requestBody = JSON.stringify(request)
+
+    const response = await fetch(url, {
+            method: 'POST',
+            body: requestBody,
+            headers: {
+                "Authorization": idToken,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                "X-Flect-Access-Token": accessToken
+            }
+        }
+    );
+
+    const data = await response.json();
+    if (data === null) {
+        throw new Error(`Server error: Join Meeting Failed`);
+    }
+    return data;
 }
 
 
