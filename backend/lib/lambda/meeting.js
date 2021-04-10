@@ -10,6 +10,10 @@ const getExpireDate = () => {
     return Math.floor(Date.now() / 1000) + 60 * 60 * 24
 }
 
+exports.getMeetingInfo2 = async (meetingName) =>{
+    return getMeetingInfo(meetingName)
+}
+
 const getMeetingInfo = async (meetingName) => {
     const result = await ddb.getItem({
         TableName: meetingTableName,

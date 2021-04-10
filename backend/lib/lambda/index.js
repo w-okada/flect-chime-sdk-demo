@@ -1,13 +1,14 @@
 
 var meeting = require('./meeting');
 var utils   = require('./utils')
+var attendeeOperations = require('./attendeeOperations')
 var AWS = require('aws-sdk');
 var provider = new AWS.CognitoIdentityServiceProvider();
 
 var userPoolId = process.env.USER_POOL_ID
 
 
-
+// (1) Root Function
 exports.handler = async (event, context, callback) => {
   console.log(event)
   console.log(context)
@@ -20,6 +21,7 @@ exports.handler = async (event, context, callback) => {
   callback(null, response);
 };
 
+// (2-1) Get Meetings
 exports.getMeetings = async (event, context, callback) => {
   console.log(event)
   console.log(context)
@@ -29,6 +31,7 @@ exports.getMeetings = async (event, context, callback) => {
   callback(null, response)
 }
 
+// (2-2) Post Meeting
 exports.postMeeting = async (event, context, callback) => {
   console.log(event)
   console.log(context)
@@ -69,6 +72,7 @@ exports.postMeeting = async (event, context, callback) => {
   callback(null, response)
 }
 
+// (2-3) Delete Meeting
 exports.deleteMeeting = async (event, context, callback) => {
   console.log(event)
   console.log(context)
@@ -84,6 +88,7 @@ exports.deleteMeeting = async (event, context, callback) => {
 
 }
 
+// (3-1) Get Attendee
 exports.getAttendee = async (event, context, callback) => {
   console.log(event)
   console.log(context)
@@ -112,6 +117,7 @@ exports.getAttendee = async (event, context, callback) => {
   callback(null, response)
 }
 
+// (3-2) Post Attendee
 exports.postAttendee = async (event, context, callback) => {
   console.log(event)
   console.log(context)
@@ -144,6 +150,40 @@ exports.postAttendee = async (event, context, callback) => {
   callback(null, response)
 }
 
+// (4-1) Post Attendee Operation　//// TODO WIP:
+exports.postAttendeeOperation = async (event, context, callback) => {
+  console.log(event)
+  console.log(context)
+  console.log(callback)
+  console.log("headers:::", event.headers)
+  const body = JSON.parse(event.body)
+  console.log("body:::", body)
+
+  const accessToken = event.headers["x-flect-access-token"]
+  const meetingName = event.pathParameters.meetingName
+  const userId      = event.pathParameters.userId      // attendeeId
+  const operation   = event.pathParameters.operation
+  
+
+  const p = await provider.getUser(
+    {AccessToken: accessToken}, (err,data) => {
+      console.log("getUser")
+      console.log(err)
+      console.log(data)
+    })
+  console.log(meetingName, userId, accessToken, operation, p)
+
+  const response = utils.getResponseTemplate()
+
+  console.log("ATTENDEE OPERATION.....", event.headers)
+  const operationResult = await attendeeOperations.dispatchAttendeeOperation(operation, meetingName, userId, event.headers, body)
+  console.log("ATTENDEE OPERATION RESULT:", operationResult)
+
+  response.body = JSON.stringify(operationResult)
+  callback(null, response)
+}
+
+// (5-1) Post Log
 exports.postLog = async (event, context, callback) => {
   console.log(event)
   console.log(context)
