@@ -37,8 +37,6 @@ export class AudioInputDeviceSetting {
             return
         }
 
-        if(device==="dummy"){
-        }
         let inputMediaStream
         if(device instanceof MediaStream){
             inputMediaStream = device
@@ -46,7 +44,7 @@ export class AudioInputDeviceSetting {
             const audioContext = DefaultDeviceController.getAudioContext();
             const dummyOutputNode = audioContext.createMediaStreamDestination();
             const gainNode = audioContext.createGain();
-            gainNode.gain.value = 0.1;
+            gainNode.gain.value = 0.0;
             gainNode.connect(dummyOutputNode);
             const oscillatorNode = audioContext.createOscillator();
             oscillatorNode.frequency.value = 440;

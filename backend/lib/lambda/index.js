@@ -150,7 +150,7 @@ exports.postAttendee = async (event, context, callback) => {
   callback(null, response)
 }
 
-// (4-1) Post Attendee Operation　//// TODO WIP:
+// (4-1) Post Attendee Operation
 exports.postAttendeeOperation = async (event, context, callback) => {
   console.log(event)
   console.log(context)
@@ -189,5 +189,25 @@ exports.postLog = async (event, context, callback) => {
   console.log(context)
   console.log(callback)
   const response = utils.getResponseTemplate()
+  callback(null, response)
+}
+
+// (a-1) Post Onetime Code Signin Request
+exports.postOperation = async (event, context, callback) => {
+  console.log(event)
+  console.log(context)
+  console.log(callback)
+  console.log("headers:::", event.headers)
+  const body = JSON.parse(event.body)
+  console.log("body:::", body)
+  const operation   = event.pathParameters.operation
+
+  const response = utils.getResponseTemplate()
+
+  console.log("OPERATION.....", event.headers)
+  const operationResult = await attendeeOperations.dispatchOperation(operation, event.headers, body)
+  console.log("OPERATION RESULT:", operationResult)
+
+  response.body = JSON.stringify(operationResult)
   callback(null, response)
 }

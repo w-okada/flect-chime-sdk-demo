@@ -29,7 +29,6 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
     const [recorderCanvas, setRecorderCanvas] = useState<HTMLCanvasElement|null>(null)
 
 
-    
     if(props.userId && props.idToken && props.accessToken && props.refreshToken){
         chimeClient.init(props.userId, props.idToken, props.accessToken, props.refreshToken)
         chimeClient.userNameUpdated = (val:string) => {setUserName(val)}

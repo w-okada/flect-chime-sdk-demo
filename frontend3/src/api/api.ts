@@ -60,6 +60,9 @@ export const joinMeeting = async (meetingName: string, userName: string, userId:
 
     const requestBody = JSON.stringify(request)
 
+    // console.log("[joinMeeting]", idToken, accessToken)
+
+
     const response = await fetch(url, {
             method: 'POST',
             body: requestBody,
@@ -160,4 +163,80 @@ export const generateOnetimeCode = async (meetingName: string, attendeeId: strin
     return data;
 }
 
+export type OnetimeCodeInfo = {
+    uuid: string,
+    codes: string[],
+    status:string,
+    meetingName:string,
+    attendeeId:string,
+}
+
+export const singinWithOnetimeCodeRequest = async (meetingName:string, attendeeId:string, uuid:string):
+    Promise<OnetimeCodeInfo> => { // 公式でもMeetingとAttendeeはanyで定義されている。 
+
+    const url = `${BASE_URL}operations/onetime-code-signin-request`
+
+    const request = { 
+        uuid:uuid,
+        meetingName: meetingName,
+        attendeeId: attendeeId,
+    }
+    const requestBody = JSON.stringify(request)
+
+    const response = await fetch(url, {
+            method: 'POST',
+            body: requestBody,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+
+    const data = await response.json();
+    console.log("[singinWithOnetimeCodeRequest]",data)
+    if (data === null) {
+        throw new Error(`Server error: Join Meeting Failed`);
+    }
+    return data;
+}
+
+
+export type OnetimeCodeSigninResult = {
+    result:boolean,
+    idToken?:string,
+    accessToken?:string,
+    userName?: string,
+}
+
+export const singinWithOnetimeCode = async (meetingName:string, attendeeId:string, uuid:string, code:string):
+    Promise<OnetimeCodeSigninResult> => { // 公式でもMeetingとAttendeeはanyで定義されている。 
+
+    const url = `${BASE_URL}operations/onetime-code-signin`
+
+    const request = { 
+        uuid:uuid,
+        meetingName: meetingName,
+        attendeeId: attendeeId,
+        code: code,
+    }
+    const requestBody = JSON.stringify(request)
+
+    const response = await fetch(url, {
+            method: 'POST',
+            body: requestBody,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+
+    const data = await response.json();
+    console.log("[singinWithOnetimeCode]",data)
+    if (data === null) {
+        throw new Error(`Server error: Join Meeting Failed`);
+    }
+    return data;
+}
 

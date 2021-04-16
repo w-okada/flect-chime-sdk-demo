@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { ReactNode } from "react";
 import { awsConfiguration, DEFAULT_PASSWORD, DEFAULT_USERID } from "../Config";
 import { AttendeeState } from "./helper/ChimeClient";
@@ -18,6 +18,7 @@ import { RealtimeData } from "./hooks/RealtimeSubscribers/const";
 import { DrawingMode, useWebSocketWhiteBoard } from "./hooks/WebSocketApp/useWebSocketWhiteBoard";
 import { DrawingData } from "./hooks/WebSocketApp/helper/WebSocketWhiteBoardClient";
 import { Recorder } from "./helper/Recorder";
+import { OnetimeCodeInfo, OnetimeCodeSigninResult } from "../api/api";
 
 
 type Props = {
@@ -25,6 +26,8 @@ type Props = {
 };
 
 interface AppStateValue {
+    forceLoadCounter:number
+    setForceLoadCounter: (val:number)=>void
     /** For Credential */
     userId?: string,
     password?: string,
@@ -38,6 +41,9 @@ interface AppStateValue {
     handleSendVerificationCodeForChangePassword: (inputUserId: string) => Promise<void>
     handleNewPassword: (inputUserId: string, inputVerifycode: string, inputPassword: string) => Promise<void>
     handleSignOut: (inputUserId: string) => Promise<void>
+    onetimeCodeInfo: OnetimeCodeInfo | null,
+    handleSinginWithOnetimeCodeRequest: (meetingName: string, attendeeId: string, uuid: string) => Promise<OnetimeCodeInfo>,
+    handleSinginWithOnetimeCode: (meetingName: string, attendeeId: string, uuid: string, code: string) => Promise<OnetimeCodeSigninResult>
 
     /** For MeetingState */
     meetingName?:string, 
@@ -72,6 +78,7 @@ interface AppStateValue {
     /** For Chat */
     chatData: RealtimeData[],
     sendChatData: (text: string) => void,
+    
     /** For WhiteBoard */
     addDrawingData: ((data: DrawingData) => void) | undefined
     drawingData: DrawingData[]
@@ -101,6 +108,7 @@ interface AppStateValue {
     messageDetail: string[], 
     setMessage: (type: MessageType, title: string, detail: string[]) => void,
     resolveMessage: () => void,
+
 }
 
 const AppStateContext = React.createContext<AppStateValue | null>(null);
@@ -126,12 +134,17 @@ export const AppStateProvider = ({ children }: Props) => {
         handleSendVerificationCodeForChangePassword,
         handleNewPassword,
         handleSignOut,
+        onetimeCodeInfo,
+        handleSinginWithOnetimeCodeRequest,
+        handleSinginWithOnetimeCode,
      } = useCredentials({
         UserPoolId:      awsConfiguration.userPoolId, 
         ClientId:        awsConfiguration.clientId,
         DefaultUserId:   DEFAULT_USERID,
         DefaultPassword: DEFAULT_PASSWORD,
     })
+    const [ forceLoadCounter, setForceLoadCounter] = useState(0)  // If use this, it is not good solution. reconsider it. -> used in onetime code.
+
 
     const { meetingName, meetingId, joinToken, userName, attendeeId, attendees, videoTileStates, 
             createMeeting, joinMeeting, enterMeeting, leaveMeeting, 
@@ -140,35 +153,18 @@ export const AppStateProvider = ({ children }: Props) => {
             recorderCanvas, setRecorderCanvas,} = useMeetingState({userId, idToken, accessToken, refreshToken,})
     const { audioInputList, videoInputList, audioOutputList, reloadDevices } = useDeviceState()
     const { screenWidth, screenHeight} = useWindowSizeChangeListener()
-    const { stage, setStage } = useStageManager({initialStage:query.get("mode") as STAGE|undefined})
+    const { stage, setStage } = useStageManager({
+        initialStage:query.get("mode") as STAGE|null,
+    })
     const { messageActive, messageType, messageTitle, messageDetail, setMessage, resolveMessage } = useMessageState()
     const { chatData, sendChatData} = useRealtimeSubscribeChat({meetingSession, attendeeId})
     const logger = meetingSession?.logger
     const { addDrawingData, drawingData, lineWidth, setLineWidth, drawingStroke, setDrawingStroke, drawingMode, setDrawingMode } = useWebSocketWhiteBoard({meetingId, attendeeId, joinToken, logger})
 
 
-    // import { awsConfiguration, DEFAULT_USERID, DEFAULT_PASSWORD } from "../Config";
-
-
-    // const [userId, setUserId] = useState(query.get('userId') || '');
-    // const [idToken, setIdToken] = useState(query.get('idToken') || '');
-    // const [accessToken, setAccessToken] = useState(query.get('accessToken') || '');
-    // const [refreshToken, setRefreshToken] = useState(query.get('refreshToken') || '');
-    // const [mode, setMode] = useState('Main' as AppMode)
-
-    // const setSignInInfo = (
-    //     userId: string,
-    //     idToken: string,
-    //     accessToken: string,
-    //     refreshToken: string
-    // ) => {
-    //     setUserId(userId)
-    //     setIdToken(idToken)
-    //     setAccessToken(accessToken)
-    //     setRefreshToken(refreshToken)
-    // };
-
     const providerValue = {
+        forceLoadCounter,
+        setForceLoadCounter,
         /** For Credential */
         userId,
         password, 
@@ -182,6 +178,9 @@ export const AppStateProvider = ({ children }: Props) => {
         handleSendVerificationCodeForChangePassword,
         handleNewPassword,
         handleSignOut,
+        onetimeCodeInfo,
+        handleSinginWithOnetimeCodeRequest,
+        handleSinginWithOnetimeCode,
 
         /** For MeetingState */
         meetingName, 
@@ -241,6 +240,7 @@ export const AppStateProvider = ({ children }: Props) => {
         messageDetail, 
         setMessage,
         resolveMessage,
+
     };
 
     return (

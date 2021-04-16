@@ -89,68 +89,6 @@ export const MeetingRoom = () => {
 
 
 
-//     const handleOnClickStartRecording = async() =>{
-//         console.log("RECORDER........................... 1", recorder)
-//         const audioElem = document.getElementById("for-speaker") as HTMLAudioElement
-//         const stream =  new MediaStream();
-//         console.log("RECORDER........................... 2", recorder)
-
-//         // @ts-ignore
-//         const audioStream = audioElem.captureStream() as MediaStream
-//         let localAudioStream = audioInputDeviceSetting?.audioInputForRecord
-//         console.log("[Recording] 1")
-//         if(typeof localAudioStream === "string"){
-//             console.log("[Recording] 2,", localAudioStream)
-//             localAudioStream = await navigator.mediaDevices.getUserMedia({audio:{deviceId:localAudioStream}})
-//         }
-//         console.log("[Recording] 3", localAudioStream)
-
-
-//         const audioContext = DefaultDeviceController.getAudioContext();
-//         console.log("RECORDER........................... 31", recorder)
-//         const outputNode = audioContext.createMediaStreamDestination();
-//         // console.log("RECORDER........................... 32 1", recorder, audioStream)
-//         // console.log(audioStream)
-//         // console.log("RECORDER........................... 32 2", recorder, audioStream)
-//         // const sourceNode1 = audioContext.createMediaStreamSource(audioStream);
-//         // console.log("RECORDER........................... 33", recorder)
-//         // sourceNode1.connect(outputNode)
-//         console.log("RECORDER........................... 34", recorder)
-//         if(localAudioStream){
-//             console.log("RECORDER........................... 35", recorder)
-//             const sourceNode2 = audioContext.createMediaStreamSource(localAudioStream as MediaStream);
-//             console.log("RECORDER........................... 36", recorder)
-//             sourceNode2.connect(outputNode)
-//             console.log("RECORDER........................... 37", recorder)
-//         }
-
-//         console.log("RECORDER........................... 38", recorder)
-//         // @ts-ignore
-//         const videoStream = recorderCanvasElement?.captureStream() as MediaStream
-
-//         [outputNode.stream, videoStream].forEach(s=>{
-// //        [audioStream, videoStream, localAudioStream].forEach(s=>{
-//             s?.getTracks().forEach(t=>{
-//                 console.log("added tracks:", t)
-//                 stream.addTrack(t)
-//             })
-//         });
-//         console.log("RECORDER........................... 4", recorder)
-
-//         // @ts-ignore
-//         // const audioStream = audioElem.captureStream()
-//         recorder?.startRecording(stream)
-//         // recorder?.startRecording(audioStream)
-//         // recorder?.startRecording(videoStream)
-//         console.log("RECORDER........................... 5", recorder)
-        
-//     }
-
-//     const handleOnClickStopRecording = async() =>{
-//         recorder?.stopRecording()
-//         recorder?.toMp4()
-//     }
-
     useEffect(()=>{
         const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
         audioElement.autoplay=false

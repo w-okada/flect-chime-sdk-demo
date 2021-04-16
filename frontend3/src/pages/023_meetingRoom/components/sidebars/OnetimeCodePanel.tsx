@@ -9,6 +9,7 @@ export const OnetimeCodePanel = () => {
     const classes = useStyles();
     const { meetingName, attendeeId, idToken, accessToken, refreshToken} = useAppState()
     const [url, setURL] = useState<string>()
+    const [onetimeCode, setOnetimeCode] = useState<string>()
 
     const qrcode = useMemo(()=>{
         return url ? <QRCode value={url} />:<></>
@@ -16,21 +17,35 @@ export const OnetimeCodePanel = () => {
 
     const handleGenerateOnetimeCode = async () =>{
         const res = await generateOnetimeCode(meetingName!, attendeeId!, idToken!, accessToken!, refreshToken!)
-        console.log("generatecode",res)
-        setURL(res.uuid)
+        const url = `${window.location.href}?mode=MEETING_MANAGER_SIGNIN&uuid=${res.uuid}&meetingName=${meetingName}&attendeeId=${attendeeId}`
+        console.log("generatecode",res, url)
+
+        setURL(url)
+        setOnetimeCode(res.code)
     }
 
     return (
             <div className={classes.root}>
                 <Typography variant="body1" color="textSecondary">
-                    About us
+                    One Time Code
                 </Typography>
 
                 <Link onClick={(e: any) => { handleGenerateOnetimeCode() }}>
-                            generateCode
+                    generateCode
                 </Link>
+
+                <Typography variant="body1" color="textSecondary">
+                    <a href={url}  target="_blank" rel="noopener noreferrer">{url}</a>
+                </Typography>
+
                 {qrcode}
+
+                <div>
+                    {onetimeCode}
+                </div>
 
             </div>
     );
 }
+
+ 

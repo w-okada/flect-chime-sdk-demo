@@ -220,7 +220,21 @@ export class BackendStack extends cdk.Stack {
     })
     addCommonSetting(lambdaFunctionPostAttendee)
 
-    //// (4-1) Post Log
+    
+
+    //// (4-1) Post Attendee Operation
+    const lambdaFunctionPostAttendeeOperation: lambda.Function = new lambda.Function(this, "funcPostAttendeeOperation", {
+      functionName: `${id}_postAttendeeOperation`,
+      runtime: lambda.Runtime.NODEJS_12_X,
+      code: lambda.Code.asset(`${__dirname}/lambda`),
+      handler: "index.postAttendeeOperation",
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(10),
+    })
+    addCommonSetting(lambdaFunctionPostAttendeeOperation)    
+
+
+    //// (5-1) Post Log
     const lambdaFunctionPostLog: lambda.Function = new lambda.Function(this, "funcPostLog", {
       functionName: `${id}_postLog`,
       runtime: lambda.Runtime.NODEJS_12_X,
@@ -231,6 +245,17 @@ export class BackendStack extends cdk.Stack {
     })
     addCommonSetting(lambdaFunctionPostLog)
 
+    //// (a-1) Post Onetime Code Signin Request
+    const lambdaFunctionPostOperation: lambda.Function = new lambda.Function(this, "funcPostOperation", {
+      functionName: `${id}_postOperation`,
+      runtime: lambda.Runtime.NODEJS_12_X,
+      code: lambda.Code.asset(`${__dirname}/lambda`),
+      handler: "index.postOperation",
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(10),
+    })
+    addCommonSetting(lambdaFunctionPostOperation)
+
     ///////////////////////////////
     //// API Gateway
     ///////////////////////////////
@@ -240,8 +265,8 @@ export class BackendStack extends cdk.Stack {
     const addCorsOptions = (apiResource: IResource) => {
       let origin
       if (FRONTEND_LOCAL_DEV) {
-        origin = "'https://localhost:3000'"
-        // origin = "'https://192.168.1.4:3000'"
+        // origin = "'https://localhost:3000'"
+        origin = "'https://192.168.0.4:3000'"
       } else {
         origin = `'https://${bucket.bucketDomainName}'`
       }
@@ -342,7 +367,7 @@ export class BackendStack extends cdk.Stack {
 
     //// (3-1) Get Attendee
     apiAttendee.addMethod("GET", new LambdaIntegration(lambdaFunctionGetAttendee), {
-      operationName: `${id}_postAttendee`,
+      operationName: `${id}_getAttendee`,
       authorizationType: AuthorizationType.COGNITO,
       authorizer: {
         authorizerId: authorizer.ref
@@ -358,18 +383,40 @@ export class BackendStack extends cdk.Stack {
       },
     })
 
-    //// (4) Log
-    const apiLogs = restApi.root.addResource("logs")
-    addCorsOptions(apiLogs)
-    //// (4-1) Post Log
-    apiLogs.addMethod("POST", new LambdaIntegration(lambdaFunctionPostLog), {
-      operationName: `${id}_postLog`,
-      // authorizationType: AuthorizationType.COGNITO,
-      // authorizer: {
-      //   authorizerId: authorizer.ref
-      // },
+    ///// (4) Attendee Operations
+    const apiAttendeeOperations = apiAttendee.addResource("operations")
+    const apiAttendeeOperation = apiAttendeeOperations.addResource("{operation}")
+    addCorsOptions(apiAttendeeOperations)
+    addCorsOptions(apiAttendeeOperation)
+
+    //// (4-1) Post Attendee Operation
+    apiAttendeeOperation.addMethod("POST", new LambdaIntegration(lambdaFunctionPostAttendeeOperation), {
+      operationName: `${id}_postAttendeeOperation`,
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: {
+        authorizerId: authorizer.ref
+      },
     })
 
+
+
+    //// (5) Log
+    const apiLogs = restApi.root.addResource("logs")
+    addCorsOptions(apiLogs)
+    //// (5-1) Post Log
+    apiLogs.addMethod("POST", new LambdaIntegration(lambdaFunctionPostLog), {
+      operationName: `${id}_postLog`,
+    })
+
+    //// (a) Operation 
+    const apiOperations = restApi.root.addResource("operations")
+    const apiOperation = apiOperations.addResource("{operation}")
+    addCorsOptions(apiOperations)
+    addCorsOptions(apiOperation)
+    //// (a-1) Post Onetime Code Signin Request
+    apiOperation.addMethod("POST", new LambdaIntegration(lambdaFunctionPostOperation), {
+      operationName: `${id}_postOperation`,
+    })
 
     /////////
     // WebSocket

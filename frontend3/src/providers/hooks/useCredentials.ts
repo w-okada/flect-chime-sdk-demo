@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
 import { CognitoUser, AuthenticationDetails, CognitoUserPool, CognitoUserAttribute } from 'amazon-cognito-identity-js';
+import { OnetimeCodeInfo, singinWithOnetimeCode, singinWithOnetimeCodeRequest } from "../../api/api";
 
 
 type UseCredentialsProps = {
@@ -17,6 +18,7 @@ type UseCredentialsStates = {
     refreshToken?: string
 }
 
+
 export const useCredentials = (props:UseCredentialsProps) => {
     const userPool = useMemo(()=>{
         return new CognitoUserPool({
@@ -30,6 +32,7 @@ export const useCredentials = (props:UseCredentialsProps) => {
         password: props.DefaultPassword,
     })
 
+    const [onetimeCodeInfo, setOnetimeCodeInfo] = useState<OnetimeCodeInfo|null>(null)
 
 
     // (1) Sign in
@@ -170,6 +173,26 @@ export const useCredentials = (props:UseCredentialsProps) => {
         setState( {...state, userId:"", password:"", idToken:"", accessToken:"", refreshToken:""})
     }
 
+    ///////////////////
+    ///  Ontime Code signin
+    ///////////////
+
+    // (a-1) Signin request
+    const handleSinginWithOnetimeCodeRequest = async (meetingName:string, attendeeId:string, uuid:string) =>{
+        const res = await singinWithOnetimeCodeRequest(meetingName, attendeeId, uuid)
+        setOnetimeCodeInfo(res)
+        return res
+    }
+
+    // (a-2) Signin
+    const handleSinginWithOnetimeCode = async (meetingName:string, attendeeId:string, uuid:string, code:string) =>{
+        const res = await singinWithOnetimeCode(onetimeCodeInfo!.meetingName, onetimeCodeInfo!.attendeeId, onetimeCodeInfo!.uuid, code)
+        setState( {...state, userId:"-", idToken:res.idToken, accessToken:res.accessToken, refreshToken:"-"})
+        return res
+    }
+    
+
+
 
     return {
         ...state, 
@@ -179,7 +202,10 @@ export const useCredentials = (props:UseCredentialsProps) => {
         handleResendVerification, 
         handleSendVerificationCodeForChangePassword, 
         handleNewPassword,
-        handleSignOut
+        handleSignOut,
+        onetimeCodeInfo,
+        handleSinginWithOnetimeCodeRequest,
+        handleSinginWithOnetimeCode,
     }
 }
 

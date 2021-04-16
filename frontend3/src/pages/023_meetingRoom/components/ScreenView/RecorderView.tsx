@@ -12,21 +12,6 @@ type Props = {
     height: number
 };
 
-
-// interface PreviousVideoSize {
-//     videoWidth: number,
-//     videoHeight: number,
-//     localWidth: number,
-//     localHeight: number,
-//     offsetX: number,
-//     offsetY: number,
-// }
-
-
-// const RecorderCanvas = memo(props => {
-//     return <canvas width="1920" height="1080" id="recorderCanvas" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-// })
-
 export const RecorderView = ({ width, height }: Props) => {
 
     const { videoTileStates, activeSpeakerId, meetingSession, recorder, setRecorderCanvas } = useAppState()
@@ -75,7 +60,7 @@ export const RecorderView = ({ width, height }: Props) => {
     }, [])
 
     return (
-        <div style={{ width: "100%", height: height }}>
+        <div style={{ width: width, height: height }}>
 
             <div style={{ width: "100%", height: "70%", objectFit: "contain", background:"#bbbbbb"}}>
                 <canvas width="1920" height="1080" id="recorderCanvas" style={{ width: "100%", height: "100%", border: "medium solid #ffaaaa"}} />

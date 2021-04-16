@@ -10,11 +10,15 @@ import { Entrance } from './pages/020_entrance';
 import { CreateMeetingRoom } from './pages/021_createMeetingRoom';
 import { WaitingRoom } from './pages/022_waitingRoom/WaitingRoom';
 import { MeetingRoom } from './pages/023_meetingRoom/MeetingRoom';
+import { MeetingManagerSignin } from './pages/100_MeetingManagerSignin/MeetingManagerSingin';
+import { MeetingManager } from './pages/101_MeetingManager/MeetingManager';
 import { AppStateProvider, useAppState } from './providers/AppStateProvider';
 
 
 const Router = () => {
-    const { stage} = useAppState()
+    const { stage } = useAppState()
+    console.log(`[App] stage:${stage}`)
+
     const page = (()=>{
         switch(stage){
             case "SIGNIN":
@@ -35,6 +39,13 @@ const Router = () => {
                 return <WaitingRoom />
             case "MEETING_ROOM":
                 return <MeetingRoom />
+            case "MEETING_MANAGER_SIGNIN":
+                return <MeetingManagerSignin />
+            case "MEETING_MANAGER":
+                return <MeetingManager />
+            default:
+                return <div>no view</div>
+
         }
     })()
     return (
