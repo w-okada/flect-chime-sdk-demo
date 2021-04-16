@@ -1,6 +1,5 @@
-import React, { memo, useEffect, useMemo, useState } from "react"
-import { Divider, GridListTileBar, Typography } from '@material-ui/core'
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import React, { useEffect, useMemo } from "react"
+import { Divider, Typography } from '@material-ui/core'
 import { VideoTileState } from "amazon-chime-sdk-js";
 import { useAppState } from "../../../../providers/AppStateProvider";
 import { RendererForRecorder } from "./helper/RendererForRecorder";
@@ -14,8 +13,8 @@ type Props = {
 
 export const RecorderView = ({ width, height }: Props) => {
 
-    const { videoTileStates, activeSpeakerId, meetingSession, recorder, setRecorderCanvas } = useAppState()
-    const renderer = useMemo(()=>{return new RendererForRecorder(meetingSession!)},[])
+    const { videoTileStates, activeSpeakerId, meetingSession, setRecorderCanvas } = useAppState()
+    const renderer = useMemo(()=>{return new RendererForRecorder(meetingSession!)},[]) // eslint-disable-line
     
     const contentsTiles = Object.values(videoTileStates).filter(tile=>{return tile.isContent})
     const activeSpekerTile = activeSpeakerId && videoTileStates[activeSpeakerId] ? videoTileStates[activeSpeakerId] : null
@@ -32,21 +31,20 @@ export const RecorderView = ({ width, height }: Props) => {
             console.log("destroy renderer", renderer)
             renderer.destroy()
         }
-    }, [])
+    }, []) // eslint-disable-line
 
     //// setTargetTileNum
     useEffect(()=>{
         console.log("TARGET CHANGE!", targetTilesId)
         const videoElems = [...Array(targetTiles.length)].map((v,i)=>{return document.getElementById(`video${i}`) as HTMLVideoElement})        
         console.log(videoElems)
-        const promises:Promise<void>[]=[]
         targetTiles.forEach((tile,index)=>{
             if(tile.tileId){
                 meetingSession?.audioVideo.bindVideoElement(tile.tileId, videoElems[index])
             }
         })
         renderer.setSrcVideoElements(videoElems)
-    },[targetTilesId])
+    },[targetTilesId]) // eslint-disable-line
 
     // notify recorder canvas to parent
     useEffect(() => {
@@ -57,7 +55,7 @@ export const RecorderView = ({ width, height }: Props) => {
             console.log("remove recorder canvas")
             setRecorderCanvas(null)
         }
-    }, [])
+    }, []) // eslint-disable-line
 
     return (
         <div style={{ width: width, height: height }}>

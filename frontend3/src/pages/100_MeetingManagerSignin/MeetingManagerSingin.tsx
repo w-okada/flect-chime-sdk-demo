@@ -42,8 +42,7 @@ export const MeetingManagerSignin = () => {
     const uuid = query.get('uuid') || null
 
     const { onetimeCodeInfo,  handleSinginWithOnetimeCodeRequest, handleSinginWithOnetimeCode, setStage, setMessage, joinMeeting, enterMeeting,
-            audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, forceLoadCounter, setForceLoadCounter,
-            audioOutputList } = useAppState()
+            audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, forceLoadCounter, setForceLoadCounter } = useAppState()
     const [ isLoading, setIsLoading] = useState(false)
     // const [ internalStage, setInternalStage] = useState<InternalStage>("Signining")
     // const [ userName, setUserName ] = useState<string>()
@@ -81,7 +80,7 @@ export const MeetingManagerSignin = () => {
             const p2 = videoInputDeviceSetting!.setVideoInput(null)
             // const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
             // const p3 = audioOutputDeviceSetting!.setAudioOutput(audioOutput)
-            const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
+            // const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
             const p3 = audioOutputDeviceSetting!.setAudioOutput(null)
             enterMeeting().then(()=>{
                 Promise.all([p1,p2,p3]).then(()=>{
@@ -93,7 +92,7 @@ export const MeetingManagerSignin = () => {
                 console.log(e)
             })
         }
-    },[state.internalStage, state.userName])
+    },[state.internalStage, state.userName]) // eslint-disable-line
 
     let passwordSelector
     if(isLoading){

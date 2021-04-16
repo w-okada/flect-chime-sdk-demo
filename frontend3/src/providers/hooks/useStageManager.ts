@@ -1,11 +1,7 @@
-import { useEffect, useMemo, useState } from "react"
-import { OnetimeCodeInfo, singinWithOnetimeCodeRequest } from "../../api/api"
+import {  useState } from "react"
 
 type UseStageManagerProps = {
     initialStage : STAGE | null,
-    // uuid  : string | null,
-    // meetingName  : string | null, // meeting name is already encoded
-    // attendeeId   : string | null,
 }
 
 export type STAGE = "SIGNIN" | "SIGNUP" | "VERIFY" | "REQUEST_NEW_PASSWORD" | "NEW_PASSWORD" 

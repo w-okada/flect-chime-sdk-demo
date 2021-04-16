@@ -193,7 +193,7 @@ export class VirtualBackground implements VideoFrameProcessor {
     ////////////////
 
     async process(buffers: VideoFrameBuffer[]) {
-        if (buffers.length == 0) {
+        if (buffers.length === 0) {
             return Promise.resolve(buffers);
         }
         // @ts-ignore
@@ -232,7 +232,6 @@ export class VirtualBackground implements VideoFrameProcessor {
                         }
                         break
                     default:
-                        const result = null
                         this.convert_none(canvas)
                 }
             } catch (err) {
@@ -392,10 +391,6 @@ export class VirtualBackground implements VideoFrameProcessor {
 
         // Background
         // (3) merge Front into Bacground
-        const frontPositionX = conf.width * conf.frontPositionX
-        const frontPositionY = conf.height * conf.frontPositionY
-        const frontWidth = conf.width * conf.frontWidth
-        const frontHeight = conf.height * conf.frontHeight
         const targetCtx = this.targetCanvas.getContext("2d")!
         targetCtx.drawImage(this.canvasBackground, 0, 0, this.targetCanvas.width, this.targetCanvas.height)
         if(this.googleMeetLightWrappingEnable){

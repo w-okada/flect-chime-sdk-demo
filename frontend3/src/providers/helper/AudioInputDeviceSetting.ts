@@ -1,4 +1,4 @@
-import { AudioNodeSubgraph, AudioTransformDevice, DefaultBrowserBehavior, DefaultDeviceController, Device, DeviceSelection, MeetingSession, VoiceFocusDeviceTransformer, VoiceFocusSpec, VoiceFocusTransformDevice } from "amazon-chime-sdk-js"
+import { DefaultBrowserBehavior, DefaultDeviceController, MeetingSession, VoiceFocusDeviceTransformer, VoiceFocusSpec, VoiceFocusTransformDevice } from "amazon-chime-sdk-js"
 
 
 export class AudioInputDeviceSetting {

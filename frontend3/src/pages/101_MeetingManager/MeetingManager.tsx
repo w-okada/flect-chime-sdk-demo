@@ -50,7 +50,7 @@ export const MeetingManager = () => {
             audioElement.volume = 0
             audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
         })
-    },[])
+    },[]) // eslint-disable-line
 
 
     return (
