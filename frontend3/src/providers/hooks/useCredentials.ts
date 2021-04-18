@@ -52,7 +52,7 @@ export const useCredentials = (props:UseCredentialsProps) => {
                     const accessToken = result.getAccessToken().getJwtToken()
                     const idToken = result.getIdToken().getJwtToken()
                     const refreshToken = result.getRefreshToken().getToken()
-                    setState( {...state,  idToken:idToken, accessToken:accessToken, refreshToken:refreshToken})
+                    setState( {...state, userId:inputUserId, idToken:idToken, accessToken:accessToken, refreshToken:refreshToken})
                     resolve()
                 },
                 onFailure: (err) => {
