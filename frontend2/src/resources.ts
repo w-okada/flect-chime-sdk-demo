@@ -1,1 +1,0 @@
-export const RS_SE = ['resources/se/01.Pin1.mp3','resources/se/02.Pinpon.mp3','resources/se/03.Dwoon.mp3','resources/se/04.Pop.mp3','resources/se/05.Hit.mp3','resources/se/06.Chime.mp3','resources/se/10.OuterSpace.mp3']

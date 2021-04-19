@@ -54,7 +54,7 @@ $ npm run build_all
 ```
 
 ## Build frontend
-Note: frontend is depricated. Please use fontend2
+Note: frontend and fontend2 are depricated. Please use frontend3
 
 ### (1) build
 when you run `npm run build`, you get the information of backend
