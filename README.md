@@ -60,7 +60,7 @@ Note: frontend and fontend2 are depricated. Please use frontend3
 when you run `npm run build`, you get the information of backend
 
 ```
-$ cd frontend2
+$ cd frontend3
 $ npm install
 $ npm run build
 ```
