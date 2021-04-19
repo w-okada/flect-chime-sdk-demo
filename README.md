@@ -60,7 +60,7 @@ Note: frontend and fontend2 are depricated. Please use frontend3
 when you run `npm run build`, you get the information of backend
 
 ```
-$ cd frontend2
+$ cd frontend3
 $ npm install
 $ npm run build
 ```
@@ -75,6 +75,18 @@ You can find URL of demo in `demo_url.txt`. Please access this URL with browser.
 
 
 # Delete Stack
+At first, delete all data from backet. You can get the bucket name with this command.
+```
+$ cd backend
+$ cat cfn_outputs.json |grep -e "Bucket"
+    "BucketDomainName": "xxxxxxxxxxxx.s3.amazonaws.com",
+    "Bucket": "xxxxxxxxxxxxxxxxxxxx",                       <- this is bucket name
+    "BucketWebsiteDomainName": "xxxxxxxxxxxxxx.s3-website-us-east-1.amazonaws.com"
+
+```
+
+
+Then, execute this command.
 ```
 $ cdk destroy
 ```
