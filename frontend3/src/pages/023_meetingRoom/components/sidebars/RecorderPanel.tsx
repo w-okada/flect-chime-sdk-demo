@@ -73,13 +73,9 @@ export const RecorderPanel = () => {
     return (
         <div className={classes.root}>
             <Typography className={classes.title} color="textSecondary">
-                This feature is experimental.
-            </Typography>
-            <Typography className={classes.title} color="textSecondary">
-                If you record the screen, change screen to "Recorder View". You can change on toolbar.
-            </Typography>
-            <Typography className={classes.title} color="textSecondary">
-                Note: local audio can not be muted. and can not be dynamically canged.
+                Push REC button to start recording. Push STOP button to end recording and download file.
+                Note: Please confirm the screen below shows the movie you want to record. 
+                Depends on the browser or its version, you should display the screen below in order to update image on the screen below.
             </Typography>
 
             <Tooltip title={recorder?.isRecording?"stop recording":"start recording"}>

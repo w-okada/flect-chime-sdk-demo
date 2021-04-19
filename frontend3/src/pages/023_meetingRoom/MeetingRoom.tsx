@@ -80,8 +80,6 @@ export const MeetingRoom = () => {
                 return <FeatureView height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth} pictureInPicture={"None"} focusTarget={"SharedContent"}/>
             case "GridView":
                 return <GridView  height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth} excludeSharedContent={false}/>
-            case "RecorderView":
-                return <RecorderView  height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth}/>
             default:
                 return (<>Not found screen type:{screenType}</>)
         }

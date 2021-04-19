@@ -2,7 +2,6 @@ import { IconButton, makeStyles, Tooltip  } from "@material-ui/core"
 import { Stop, ViewCompact, ViewComfy} from '@material-ui/icons'
 import React, { useMemo } from "react"
 // import { useStyles } from "../../css";
-import { FiberManualRecord } from '@material-ui/icons'
 
 const toolbarHeight = 20
 
@@ -20,7 +19,7 @@ export const useStyles = makeStyles((theme) => ({
 
 
 type SwitchButtonsType = "ScreenView"
-export type ScreenType = "FullView" | "FeatureView" | "GridView" | "RecorderView"
+export type ScreenType = "FullView" | "FeatureView" | "GridView"
 type SwitchButtonsProps = {
     type: SwitchButtonsType
     selected: ScreenType | "" // "" is placeholder
@@ -33,7 +32,7 @@ export const SwitchButtons = (props: SwitchButtonsProps) =>{
     const switchLabelArray:ScreenType[] = useMemo(()=>{
         switch(props.type){
             case "ScreenView":
-                return ["FullView", "FeatureView", "GridView", "RecorderView"]
+                return ["FullView", "FeatureView", "GridView"]
         }
     },[props.type, props.selected]) // eslint-disable-line
 
@@ -44,14 +43,14 @@ export const SwitchButtons = (props: SwitchButtonsProps) =>{
     const icons = useMemo(()=>{
         switch(props.type){
             case "ScreenView":
-                return [<Stop/>, <ViewCompact/>, <ViewComfy/>, <FiberManualRecord />]
+                return [<Stop/>, <ViewCompact/>, <ViewComfy/>]
         }
     },[props.type, props.selected]) // eslint-disable-line
     
     const tooltips = useMemo(()=>{
         switch(props.type){
             case "ScreenView":
-                return ["Full Screen", "Feature View", "Grid View", "Recorder View"]
+                return ["Full Screen", "Feature View", "Grid View"]
         }
     },[props.type, props.selected]) // eslint-disable-line
 
