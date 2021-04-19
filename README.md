@@ -79,6 +79,19 @@ You can find URL of demo in `demo_url.txt`. Please access this URL with browser.
 $ cdk destroy
 ```
 
+
+# Warning!!
+In this demo, google meet model for virtual background is used. At the time I started develop, the license of the model is APACHE-2.0. But currently the license is changed and not APACHE-2.0 any more. I'm not a lawyer, and I don't know much about it, but I generally believe that license changes do not apply retroactively to previous deliverables. However, you should obtain and(or) use the model at your own risk. 
+
+Detail about this is [here](https://github.com/tensorflow/tfjs/issues/4177)
+
+# Acknowledgement
+## Resources
+1. Images from https://www.irasutoya.com/
+2. Sounds from https://otologic.jp
+3. movie from https://www.youtube.com/, https://pixabay.com/ja/videos/
+
+
 # Appendix
 ## update cdk
 ```
@@ -88,10 +101,3 @@ $ sudo npm update -g aws-cdk
 ```
 aws logs tail --follow  API-Gateway-Execution-Logs_gvrxxxx89/prod
 ```
-
-# Acknowledgement
-## Resources
-1. Images from https://www.irasutoya.com/
-2. Sounds from https://otologic.jp
-3. movie from https://www.youtube.com/, https://pixabay.com/ja/videos/
-

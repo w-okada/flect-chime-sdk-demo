@@ -26,8 +26,8 @@ export const RecorderPanel = () => {
     // }
 
     const handleOnClickStartRecord = async() =>{
-        const audioElem = document.getElementById("for-speaker") as HTMLAudioElement
         const stream =  new MediaStream();
+        const audioElem = document.getElementById("for-speaker") as HTMLAudioElement
 
         // @ts-ignore
         const audioStream = audioElem.captureStream() as MediaStream
