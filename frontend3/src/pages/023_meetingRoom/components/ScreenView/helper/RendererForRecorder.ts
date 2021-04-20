@@ -60,7 +60,19 @@ export class RendererForRecorder {
     focusVideoElements: HTMLVideoElement[] = []
 
     private renderVideos = () => {
-        if(!this.srcVideos || this.srcVideos.length === 0 || !this.dstCanvas){
+        if(!this.dstCanvas){
+            requestAnimationFrame(() => { this.renderVideos() })
+            return
+        }else if(!this.srcVideos || this.srcVideos.length === 0){
+            const date = new Date();
+            const utc = date.toUTCString();
+            const ctx = this.dstCanvas!.getContext("2d")!
+            ctx.clearRect(0,0,this.dstCanvas!.width,this.dstCanvas!.height)
+            ctx.fillStyle="#ffffff"
+            const fontsize = Math.floor(this.dstCanvas!.height / 15)
+            ctx.font = `${fontsize}px Arial`
+            ctx.fillText(`${utc}`, this.dstCanvas!.width / 10 , (this.dstCanvas!.height / 10) * 2)
+            ctx.fillText(`There is no active speaker or no shared contents.`, this.dstCanvas!.width / 10 , (this.dstCanvas!.height / 10) * 3)
             requestAnimationFrame(() => { this.renderVideos() })
             return
         }

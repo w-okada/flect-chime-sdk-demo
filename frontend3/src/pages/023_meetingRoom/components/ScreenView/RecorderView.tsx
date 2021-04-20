@@ -46,7 +46,8 @@ export const RecorderView = ({ width, height }: Props) => {
         renderer.setSrcVideoElements(videoElems)
     },[targetTilesId]) // eslint-disable-line
 
-    // notify recorder canvas to parent
+
+    // notify recorder canvas to parent (to access from sidebar pane)
     useEffect(() => {
         console.log("set recorder canvas")
         const dstCanvas = document.getElementById("recorderCanvas") as HTMLCanvasElement
