@@ -1,5 +1,5 @@
-import React  from 'react';
-import { Button, Tooltip, Typography } from '@material-ui/core';
+import React, { useState }  from 'react';
+import { Button, CircularProgress, Tooltip, Typography } from '@material-ui/core';
 import { Pause, FiberManualRecord } from '@material-ui/icons'
 import { useStyles } from './css';
 import { useAppState } from '../../../../providers/AppStateProvider';
@@ -10,20 +10,8 @@ export const RecorderPanel = () => {
     const classes = useStyles();
     // const { recorder } = useMeetingState()
     const { recorder, audioInputDeviceSetting, recorderCanvas } = useAppState()
+    const [ isEncoding, setIsEncoding ] = useState(false)
 
-    // const handleOnClickStartRecord = () => {
-    //     console.log("CLICK RECORDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    //     if(!recorder?.isRecording){
-    //         startRecord()
-    //     }else{
-    //         console.log("CLICK RECORDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT instance")
-    //     }
-    // }
-    // const handleOnClickStopRecord = () => {
-    //     if(recorder?.isRecording){
-    //         stopRecord()
-    //     }
-    // }
 
     const handleOnClickStartRecord = async() =>{
         const stream =  new MediaStream();
@@ -66,7 +54,9 @@ export const RecorderPanel = () => {
 
     const handleOnClickStopRecord = async() =>{
         recorder?.stopRecording()
-        recorder?.toMp4()
+        setIsEncoding(true)
+        await recorder?.toMp4()
+        setIsEncoding(false)
     }
 
 
@@ -91,16 +81,25 @@ export const RecorderPanel = () => {
                 </Button>
             </Tooltip> 
             <Tooltip title={recorder?.isRecording?"stop recording":"start recording"}>
-                <Button
-                    size="small"
-                    variant="outlined"
-                    className={classes.button}
-                    startIcon={<Pause />}
-                    onClick={handleOnClickStopRecord}
-                    id="recorder-stop"
-                >
-                    Stop
-                </Button>
+                {
+                    isEncoding?
+                    (
+                        <CircularProgress />
+                    )
+                    :
+                    (
+                        <Button
+                        size="small"
+                        variant="outlined"
+                        className={classes.button}
+                        startIcon={<Pause />}
+                        onClick={handleOnClickStopRecord}
+                        id="recorder-stop"
+                    >
+                        Stop
+                    </Button>
+                    )
+                }
             </Tooltip> 
 
             <RecorderView height={200} width={200} />
