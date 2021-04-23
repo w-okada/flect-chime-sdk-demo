@@ -155,13 +155,13 @@ export class AudioInputDeviceSetting {
         }
         const augmented = {
             echoCancellation: true,
-            googEchoCancellation: true,
-            googEchoCancellation2: true,
-            googAutoGainControl: true,
-            googAutoGainControl2: true,
-            googNoiseSuppression: true,
-            googNoiseSuppression2: true,
-            googHighpassFilter: true,
+            // googEchoCancellation: true,
+            // googEchoCancellation2: true,
+            // googAutoGainControl: true,
+            // googAutoGainControl2: true,
+            // googNoiseSuppression: true,
+            // googNoiseSuppression2: true,
+            // googHighpassFilter: true,
 
             // We allow the provided constraints to override these sensible defaults.
             ...trackConstraints,
