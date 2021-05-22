@@ -7,10 +7,10 @@ export const RealtimeDataApp = {
 
 
 export type RealtimeData = {
-    uuid: string
-    senderId: string
-    createdDate: number
-    action: RealtimeDataAction
-    app: keyof typeof RealtimeDataApp
-    data: any
+    uuid        : string
+    senderId    : string   // for remember the sender. (copied from DataMessage to RealtimeData) 
+    createdDate : number
+    action      : RealtimeDataAction
+    app         : keyof typeof RealtimeDataApp
+    data        : any
 }

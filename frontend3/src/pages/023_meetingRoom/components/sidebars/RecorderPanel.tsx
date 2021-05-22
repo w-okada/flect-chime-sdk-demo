@@ -8,7 +8,8 @@ import { RecorderView } from '../ScreenView/RecorderView';
 
 export const RecorderPanel = () => {
     const classes = useStyles();
-    const { recorder, audioInputDeviceSetting, recorderCanvas } = useAppState()
+    const { recorder, audioInputDeviceSetting } = useAppState()
+    const  [recorderCanvas, setRecorderCanvas] = useState<HTMLCanvasElement|null>(null)
     const [ isEncoding, setIsEncoding ] = useState(false)
     const [ isRecording, setIsRecording ] = useState(false)
 
@@ -132,7 +133,7 @@ export const RecorderPanel = () => {
             {startButton}
             {stopButton}
 
-            <RecorderView height={200} width={200} />
+            <RecorderView height={200} width={200} setRecorderCanvas={setRecorderCanvas}/>
         </div>
     );
 }

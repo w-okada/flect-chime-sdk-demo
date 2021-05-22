@@ -9,11 +9,12 @@ export type FocustTarget = "SharedContent" | "Speaker"
 type Props = {
     width: number
     height: number
+    setRecorderCanvas?: (c:HTMLCanvasElement|null)=>void
 };
 
-export const RecorderView = ({ width, height }: Props) => {
+export const RecorderView = ({ width, height, setRecorderCanvas }: Props) => {
 
-    const { videoTileStates, activeSpeakerId, meetingSession, setRecorderCanvas } = useAppState()
+    const { videoTileStates, activeSpeakerId, meetingSession } = useAppState()
     const renderer = useMemo(()=>{return new RendererForRecorder(meetingSession!)},[]) // eslint-disable-line
     
     const contentsTiles = Object.values(videoTileStates).filter(tile=>{return tile.isContent})
@@ -51,10 +52,10 @@ export const RecorderView = ({ width, height }: Props) => {
     useEffect(() => {
         console.log("set recorder canvas")
         const dstCanvas = document.getElementById("recorderCanvas") as HTMLCanvasElement
-        setRecorderCanvas(dstCanvas)
+        setRecorderCanvas!(dstCanvas)
         return () => {
             console.log("remove recorder canvas")
-            setRecorderCanvas(null)
+            setRecorderCanvas!(null)
         }
     }, []) // eslint-disable-line
 

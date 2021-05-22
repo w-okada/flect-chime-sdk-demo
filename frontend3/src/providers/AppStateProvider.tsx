@@ -65,8 +65,8 @@ interface AppStateValue {
     audioOutputDeviceSetting: AudioOutputDeviceSetting | undefined
     isShareContent:boolean
     activeSpeakerId:string|null
-    recorderCanvas: HTMLCanvasElement | null
-    setRecorderCanvas: (val:HTMLCanvasElement | null) => void
+    // recorderCanvas: HTMLCanvasElement | null
+    // setRecorderCanvas: (val:HTMLCanvasElement | null) => void
 
     /** For Device State */
     audioInputList: DeviceInfo[] | null
@@ -149,7 +149,7 @@ export const AppStateProvider = ({ children }: Props) => {
             createMeeting, joinMeeting, enterMeeting, leaveMeeting, 
             startShareScreen, stopShareScreen, getUserNameByAttendeeIdFromList,
             meetingSession, recorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, isShareContent, activeSpeakerId,
-            recorderCanvas, setRecorderCanvas,} = useMeetingState({userId, idToken, accessToken, refreshToken,})
+           } = useMeetingState({userId, idToken, accessToken, refreshToken,})
     const { audioInputList, videoInputList, audioOutputList, reloadDevices } = useDeviceState()
     const { screenWidth, screenHeight} = useWindowSizeChangeListener()
     const { stage, setStage } = useStageManager({
@@ -200,8 +200,8 @@ export const AppStateProvider = ({ children }: Props) => {
         audioOutputDeviceSetting,
         isShareContent,
         activeSpeakerId,
-        recorderCanvas, 
-        setRecorderCanvas,
+        // recorderCanvas, 
+        // setRecorderCanvas,
 
         /** For Device State */
         audioInputList,

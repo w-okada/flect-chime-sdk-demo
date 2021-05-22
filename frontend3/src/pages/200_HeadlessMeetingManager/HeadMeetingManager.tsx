@@ -1,6 +1,7 @@
 import { Button, CircularProgress, Container, createStyles, CssBaseline, makeStyles } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
+import { RecorderView } from "./components/views/RecorderView";
 
 type InternalStage = "Signining" | "Joining" | "Entering" | "Managing"
 
@@ -76,6 +77,7 @@ export const HeadlessMeetingManager = () => {
     
     return (
         <>
+            <RecorderView height={200} width={500}/>
         </>
     )
 }
