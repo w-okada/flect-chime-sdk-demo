@@ -6,7 +6,8 @@ type UseStageManagerProps = {
 
 export type STAGE = "SIGNIN" | "SIGNUP" | "VERIFY" | "REQUEST_NEW_PASSWORD" | "NEW_PASSWORD" 
                     | "ENTRANCE" | "CREATE_MEETING_ROOM" | "WAITING_ROOM" | "MEETING_ROOM"
-                    | "MEETING_MANAGER_SIGNIN" | "MEETING_MANAGER"
+                    | "MEETING_MANAGER_SIGNIN" | "MEETING_MANAGER" 
+                    | "HEADLESS_MEETING_MANAGER"
 
 
 

@@ -134,7 +134,7 @@ export const getUserNameByAttendeeId = async (meetingName: string, attendeeId: s
 
 
 export const generateOnetimeCode = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string):
-    Promise<{ uuid: string, code: string, ontimecodeExpireDate:number }> => { // 公式でもMeetingとAttendeeはanyで定義されている。 
+    Promise<{ uuid: string, code: string, ontimecodeExpireDate:number }> => { 
 
     const url = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}/operations/generate-onetime-code`
 
@@ -172,7 +172,7 @@ export type OnetimeCodeInfo = {
 }
 
 export const singinWithOnetimeCodeRequest = async (meetingName:string, attendeeId:string, uuid:string):
-    Promise<OnetimeCodeInfo> => { // 公式でもMeetingとAttendeeはanyで定義されている。 
+    Promise<OnetimeCodeInfo> => { 
 
     const url = `${BASE_URL}operations/onetime-code-signin-request`
 
@@ -210,7 +210,7 @@ export type OnetimeCodeSigninResult = {
 }
 
 export const singinWithOnetimeCode = async (meetingName:string, attendeeId:string, uuid:string, code:string):
-    Promise<OnetimeCodeSigninResult> => { // 公式でもMeetingとAttendeeはanyで定義されている。 
+    Promise<OnetimeCodeSigninResult> => {
 
     const url = `${BASE_URL}operations/onetime-code-signin`
 
@@ -240,3 +240,36 @@ export const singinWithOnetimeCode = async (meetingName:string, attendeeId:strin
     return data;
 }
 
+
+
+
+
+export const startManager = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string):
+    Promise<{ code: string, url:string }> => {
+
+    const url = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}/operations/start-manager`
+
+    const request = { 
+        meetingName: encodeURIComponent(meetingName), 
+    }
+
+    const requestBody = JSON.stringify(request)
+
+    const response = await fetch(url, {
+            method: 'POST',
+            body: requestBody,
+            headers: {
+                "Authorization": idToken,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                "X-Flect-Access-Token": accessToken
+            }
+        }
+    );
+
+    const data = await response.json();
+    if (data === null) {
+        throw new Error(`Server error: Join Meeting Failed`);
+    }
+    return data;
+}

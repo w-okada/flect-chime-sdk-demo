@@ -1,7 +1,8 @@
 type RealtimeDataAction = "sendmessage"
 export const RealtimeDataApp = {
     CHAT:"CHAT",
-    WHITEBOARD:"WHITEBOARD"
+    WHITEBOARD:"WHITEBOARD",
+    HMM: "HMM" //HEADLESS_MEETING_MANAGER
 } as const
 
 

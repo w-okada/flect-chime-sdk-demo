@@ -42,7 +42,7 @@ export const MeetingManagerSignin = () => {
     const uuid = query.get('uuid') || null
 
     const { onetimeCodeInfo,  handleSinginWithOnetimeCodeRequest, handleSinginWithOnetimeCode, setStage, setMessage, joinMeeting, enterMeeting,
-            audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, forceLoadCounter, setForceLoadCounter } = useAppState()
+            audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting} = useAppState()
     const [ isLoading, setIsLoading] = useState(false)
     // const [ internalStage, setInternalStage] = useState<InternalStage>("Signining")
     // const [ userName, setUserName ] = useState<string>()
@@ -67,7 +67,6 @@ export const MeetingManagerSignin = () => {
         }else if(state.internalStage === "Joining" && state.userName){
             console.log("joining...")
             joinMeeting(onetimeCodeInfo!.meetingName!, state.userName).then(()=>{
-                setForceLoadCounter(forceLoadCounter+1)
                 setState({...state, internalStage:"Entering"})
             }).catch(e=>{
                 console.log(e)

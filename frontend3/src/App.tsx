@@ -12,6 +12,7 @@ import { WaitingRoom } from './pages/022_waitingRoom/WaitingRoom';
 import { MeetingRoom } from './pages/023_meetingRoom/MeetingRoom';
 import { MeetingManagerSignin } from './pages/100_MeetingManagerSignin/MeetingManagerSingin';
 import { MeetingManager } from './pages/101_MeetingManager/MeetingManager';
+import { HeadlessMeetingManager } from './pages/200_HeadlessMeetingManager/HeadMeetingManager';
 import { AppStateProvider, useAppState } from './providers/AppStateProvider';
 
 
@@ -43,6 +44,8 @@ const Router = () => {
                 return <MeetingManagerSignin />
             case "MEETING_MANAGER":
                 return <MeetingManager />
+            case "HEADLESS_MEETING_MANAGER":
+                return <HeadlessMeetingManager />
             default:
                 return <div>no view</div>
 

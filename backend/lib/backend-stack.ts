@@ -10,6 +10,10 @@ import * as s3 from '@aws-cdk/aws-s3'
 import { ManagedPolicy, Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 import { Role, ServicePrincipal } from "@aws-cdk/aws-iam";
 import { FRONTEND_LOCAL_DEV } from '../bin/config';
+import * as ec2 from '@aws-cdk/aws-ec2';
+import * as ecs from "@aws-cdk/aws-ecs";
+import * as logs from "@aws-cdk/aws-logs";
+
 
 export class BackendStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -57,12 +61,19 @@ export class BackendStack extends cdk.Stack {
       'chime:GetAttendee',
       'chime:ListAttendees',
 
-      'execute-api:ManageConnections'
+      'execute-api:ManageConnections',
+
+      'ecs:RunTask',
+      'iam:PassRole',
     )
     statement.addResources(userPool.userPoolArn)
     statement.addResources("arn:*:chime::*:meeting/*")
     statement.addResources("arn:aws:execute-api:*:*:**/@connections/*")
+    statement.addResources("arn:aws:ecs:*")
+    statement.addResources("arn:aws:iam::*:*")
 
+
+        
     //////////////////////////////////////
     //// Storage Resources (S3)
     //////////////////////////////////////
@@ -127,6 +138,31 @@ export class BackendStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
     });
 
+    /////////////////////
+    /// Fargate
+    /////////////////////      userPoolName: `${id}_UserPool`,
+    const vpc = new ec2.Vpc(this, `${id}_vpc`, { maxAzs: 2 });
+    const cluster = new ecs.Cluster(this, `${id}_cluster`, { vpc });
+    const logGroup = new logs.LogGroup(this, `${id}_logGroup`, {
+      logGroupName: `/${id}-fargate`,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });        
+
+    // create a task definition with CloudWatch Logs
+    const logging = new ecs.AwsLogDriver({
+      logGroup: logGroup,
+      streamPrefix: "fargate",
+    })
+
+    const taskDefinition = new ecs.FargateTaskDefinition(this, `${id}_fargate_task`);
+    const container = taskDefinition.addContainer("DefaultContainer", {
+      containerName: `${id}_manager_container`,
+      image: ecs.ContainerImage.fromAsset("lib/manager"),
+      memoryLimitMiB: 512,
+      cpu: 256,
+      logging: logging,
+    });
+    bucket.grantReadWrite(taskDefinition.taskRole)    
 
     ///////////////////////////////
     //// Lambda Layers
@@ -149,6 +185,14 @@ export class BackendStack extends cdk.Stack {
       f.addEnvironment("ATTENDEE_TABLE_NAME", attendeeTable.tableName)
       f.addEnvironment("CONNECTION_TABLE_NAME", connectionTable.tableName)
       f.addEnvironment("USER_POOL_ID", userPool.userPoolId)
+      f.addEnvironment("VPC_ID", vpc.vpcId)
+      f.addEnvironment("SUBNET_ID", vpc.privateSubnets[0].subnetId)
+      f.addEnvironment("CLUSTER_ARN", cluster.clusterArn)
+      f.addEnvironment("TASK_DIFINITION_ARN_MANAGER", taskDefinition.taskDefinitionArn)
+      f.addEnvironment("BUCKET_DOMAIN_NAME", bucket.bucketDomainName)
+      f.addEnvironment("MANAGER_CONTAINER_NAME", `${id}_manager_container`)
+      f.addEnvironment("BUCKET_ARN", bucket.bucketArn)
+
       f.addLayers(nodeModulesLayer)
     }
 
@@ -383,7 +427,7 @@ export class BackendStack extends cdk.Stack {
       },
     })
 
-    ///// (4) Attendee Operations
+    ///// (4) Attendee Operations // Operation under Meeting 
     const apiAttendeeOperations = apiAttendee.addResource("operations")
     const apiAttendeeOperation = apiAttendeeOperations.addResource("{operation}")
     addCorsOptions(apiAttendeeOperations)
@@ -408,7 +452,7 @@ export class BackendStack extends cdk.Stack {
       operationName: `${id}_postLog`,
     })
 
-    //// (a) Operation 
+    //// (a) Operation  // Global Operation(before signin)
     const apiOperations = restApi.root.addResource("operations")
     const apiOperation = apiOperations.addResource("{operation}")
     addCorsOptions(apiOperations)
@@ -573,9 +617,6 @@ export class BackendStack extends cdk.Stack {
     dependencies.add(disconnectRoute)
     dependencies.add(messageRoute)
     deployment.node.addDependency(dependencies);
-
-
-
 
     ///////////////////////////////
     //// Output 

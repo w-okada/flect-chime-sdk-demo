@@ -24,6 +24,7 @@ import { FeatureView } from "./components/ScreenView/FeatureView";
 import { GridView } from "./components/ScreenView/GridView";
 import { RecorderView } from "./components/ScreenView/RecorderView";
 import { OnetimeCodePanel } from "./components/sidebars/OnetimeCodePanel";
+import { ManagerControllerPanel } from "./components/sidebars/ManagerControllerPanel";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -168,6 +169,11 @@ export const MeetingRoom = () => {
                         <CustomAccordion title="OnetimeCode">
                             <OnetimeCodePanel />
                         </CustomAccordion>
+
+                        <CustomAccordion title="StartManagerPanel">
+                            <ManagerControllerPanel />
+                        </CustomAccordion>
+                                                
 
                     </Drawer>
 

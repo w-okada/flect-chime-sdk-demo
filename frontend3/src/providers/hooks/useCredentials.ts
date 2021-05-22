@@ -46,6 +46,8 @@ export const useCredentials = (props:UseCredentialsProps) => {
             Pool: userPool
         })
 
+        console.log("handleSignIn:::", inputUserId, inputPassword)
+
         const p = new Promise<void>((resolve, reject)=>{
             cognitoUser.authenticateUser(authenticationDetails, {
                 onSuccess: (result) => {
@@ -186,7 +188,7 @@ export const useCredentials = (props:UseCredentialsProps) => {
 
     // (a-2) Signin
     const handleSinginWithOnetimeCode = async (meetingName:string, attendeeId:string, uuid:string, code:string) =>{
-        const res = await singinWithOnetimeCode(onetimeCodeInfo!.meetingName, onetimeCodeInfo!.attendeeId, onetimeCodeInfo!.uuid, code)
+        const res = await singinWithOnetimeCode(meetingName, attendeeId, uuid, code)
         setState( {...state, userId:"-", idToken:res.idToken, accessToken:res.accessToken, refreshToken:"-"})
         return res
     }

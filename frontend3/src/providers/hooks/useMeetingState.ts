@@ -11,6 +11,7 @@ type UseMeetingStateProps = {
 }
 
 export const useMeetingState = (props:UseMeetingStateProps) => {
+    const [stateCounter, setStateCounter] = useState(0) // Used for notifying chimeClient internal change.
 
     const [userName, setUserName] = useState("")
     const [meetingName, setMeetingName] = useState("")
@@ -46,7 +47,13 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
     }
 
     const createMeeting = chimeClient.createMeeting
-    const joinMeeting = chimeClient.joinMeeting
+    // const joinMeeting = chimeClient.joinMeeting
+
+    const joinMeeting = async (meetingName: string, userName: string) => {
+        await chimeClient.joinMeeting(meetingName, userName)
+        setStateCounter(stateCounter + 1 )
+    }
+    
     const enterMeeting = chimeClient.enterMeeting
     const leaveMeeting  = chimeClient.leaveMeeting
     const meetingSession = chimeClient._meetingSession

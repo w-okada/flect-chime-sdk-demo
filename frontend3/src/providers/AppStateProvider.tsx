@@ -19,6 +19,7 @@ import { DrawingMode, useWebSocketWhiteBoard } from "./hooks/WebSocketApp/useWeb
 import { DrawingData } from "./hooks/WebSocketApp/helper/WebSocketWhiteBoardClient";
 import { Recorder } from "./helper/Recorder";
 import { OnetimeCodeInfo, OnetimeCodeSigninResult } from "../api/api";
+import { useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
 
 
 type Props = {
@@ -26,8 +27,6 @@ type Props = {
 };
 
 interface AppStateValue {
-    forceLoadCounter:number
-    setForceLoadCounter: (val:number)=>void
     /** For Credential */
     userId?: string,
     password?: string,
@@ -78,6 +77,8 @@ interface AppStateValue {
     /** For Chat */
     chatData: RealtimeData[],
     sendChatData: (text: string) => void,
+    /** For HMM(Headless Meeting Manager) */
+    sendCommand: (text: string) => void,
     
     /** For WhiteBoard */
     addDrawingData: ((data: DrawingData) => void) | undefined
@@ -143,8 +144,6 @@ export const AppStateProvider = ({ children }: Props) => {
         DefaultUserId:   DEFAULT_USERID,
         DefaultPassword: DEFAULT_PASSWORD,
     })
-    const [ forceLoadCounter, setForceLoadCounter] = useState(0)  // If use this, it is not good solution. reconsider it. -> used in onetime code.
-
 
     const { meetingName, meetingId, joinToken, userName, attendeeId, attendees, videoTileStates, 
             createMeeting, joinMeeting, enterMeeting, leaveMeeting, 
@@ -158,13 +157,12 @@ export const AppStateProvider = ({ children }: Props) => {
     })
     const { messageActive, messageType, messageTitle, messageDetail, setMessage, resolveMessage } = useMessageState()
     const { chatData, sendChatData} = useRealtimeSubscribeChat({meetingSession, attendeeId})
+    const { sendCommand } = useRealtimeSubscribeHMM({meetingSession, attendeeId})
     const logger = meetingSession?.logger
     const { addDrawingData, drawingData, lineWidth, setLineWidth, drawingStroke, setDrawingStroke, drawingMode, setDrawingMode } = useWebSocketWhiteBoard({meetingId, attendeeId, joinToken, logger})
 
 
     const providerValue = {
-        forceLoadCounter,
-        setForceLoadCounter,
         /** For Credential */
         userId,
         password, 
@@ -218,6 +216,8 @@ export const AppStateProvider = ({ children }: Props) => {
         /** For Chat */
         chatData, 
         sendChatData,
+        /** For HMM(Headless Meeting Manager) */
+        sendCommand,
 
 
         /** For StageManager */
@@ -245,19 +245,7 @@ export const AppStateProvider = ({ children }: Props) => {
 
     return (
         <AppStateContext.Provider value={providerValue} >
-            {/* <EnvironmentStateProvider>
-                <MessageStateProvider>
-                    <SignInStateProvider>
-                        <DeviceStateProvider>
-                            <MeetingStateProvider>
-                                <WebSocketStateProvider> */}
-                                    {children}
-                                {/* </WebSocketStateProvider>
-                            </MeetingStateProvider>
-                        </DeviceStateProvider>
-                    </SignInStateProvider>
-                </MessageStateProvider>
-            </EnvironmentStateProvider> */}
+            {children}
         </AppStateContext.Provider>
     )
 }
