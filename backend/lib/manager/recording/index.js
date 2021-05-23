@@ -31,7 +31,7 @@ puppeteer.launch({
         '--enable-usermedia-screen-capturing',
         '--allow-http-screen-capture',
         '--auto-select-desktop-capture-source=pickme',
-        "--autoplay-policy=no-user-gesture-required",
+        '--autoplay-policy=no-user-gesture-required',
 
         '--no-sandbox',
         '--disable-setuid-sandbox',

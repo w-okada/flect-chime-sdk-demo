@@ -207,10 +207,10 @@ export const HeadlessMeetingManager = () => {
             console.log("entering...")
             const p1 = audioInputDeviceSetting!.setAudioInput("dummy")
             const p2 = videoInputDeviceSetting!.setVideoInput(null)
-            // const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
-            // console.log("Active Speaker::::::audio", audioOutput?audioOutput:"null")
-            // const p3 = audioOutputDeviceSetting!.setAudioOutput(audioOutput)
-            const p3 = audioOutputDeviceSetting!.setAudioOutput(null)
+            const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
+            console.log("Active Speaker::::::audio", audioOutput?audioOutput:"null")
+            const p3 = audioOutputDeviceSetting!.setAudioOutput(audioOutput)
+            // const p3 = audioOutputDeviceSetting!.setAudioOutput(null)
 
             enterMeeting().then(()=>{
                 Promise.all( [p1, p2, p3] ).then(()=>{
