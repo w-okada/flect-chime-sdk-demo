@@ -15,6 +15,8 @@ export class Recorder{
 
         this.recorder = new MediaRecorder(stream, options)
         this.recorder.ondataavailable = (e:BlobEvent) => {
+            console.log("ondata avaialbe!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            console.log("datasize", e.data.size)
             this.chunks!.push(e.data)
         }
         this.recorder!.start(1000)
@@ -25,6 +27,10 @@ export class Recorder{
         console.log("[Recorder] recorder stop!!!!!!!!!!!!!!!!!")
         this.recorder?.stop()
         this.isRecording=false
+    }
+
+    getDataURL = () => {
+        return URL.createObjectURL(new Blob(this.chunks,{type:"video/wbem"}))
     }
 
 

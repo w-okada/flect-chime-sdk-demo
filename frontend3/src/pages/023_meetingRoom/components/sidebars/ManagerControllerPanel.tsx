@@ -3,10 +3,11 @@ import { Link, Typography } from '@material-ui/core';
 import { useStyles } from './css';
 import { useAppState } from '../../../../providers/AppStateProvider';
 import { startManager } from '../../../../api/api';
+import { HMMCmd } from '../../../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM';
 
 export const ManagerControllerPanel = () => {
     const classes = useStyles();
-    const { meetingName, attendeeId, idToken, accessToken, refreshToken, sendCommand} = useAppState()
+    const { meetingName, attendeeId, idToken, accessToken, refreshToken, sendHMMCommand} = useAppState()
     const [ url, setURL] = useState<string>()
     // const [onetimeCode, setOnetimeCode] = useState<string>()
 
@@ -41,7 +42,8 @@ export const ManagerControllerPanel = () => {
                     <a href={url}  target="_blank" rel="noopener noreferrer">{url}</a>
                 </Typography>
 
-                <a onClick={()=>{sendCommand("clicked!!!!!afasfasdfasdf")}}>sendCommand</a>
+                <a onClick={()=>{sendHMMCommand(HMMCmd.START_RECORD)}}>START_RECORD</a>
+                <a onClick={()=>{sendHMMCommand(HMMCmd.STOP_RECORD)}}>STOP_RECORD</a>
 
 
             </div>

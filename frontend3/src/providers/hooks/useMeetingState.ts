@@ -26,8 +26,8 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
     const chimeClient = useMemo(()=>{return new ChimeClient()},[])
 
     // For Recorder
-    const recorder    = useMemo(()=>{return new Recorder()},[])
-    const [recorderCanvas, setRecorderCanvas] = useState<HTMLCanvasElement|null>(null)
+    const activeRecorder    = useMemo(()=>{return new Recorder()},[])
+    const allRecorder       = useMemo(()=>{return new Recorder()},[])
 
 
     if(props.userId && props.idToken && props.accessToken && props.refreshToken){
@@ -89,12 +89,11 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
     }
 
     return { meetingName, meetingId, joinToken, attendeeId, userName, attendees, videoTileStates, 
-            meetingSession, recorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting,
+            meetingSession, activeRecorder, allRecorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting,
             isShareContent, activeSpeakerId,
             createMeeting, joinMeeting, enterMeeting, leaveMeeting,
             startShareScreen, stopShareScreen,
             getUserNameByAttendeeIdFromList,
-            recorderCanvas, setRecorderCanvas,
         }
 
 

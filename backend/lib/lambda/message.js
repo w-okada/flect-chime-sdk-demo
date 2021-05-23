@@ -45,7 +45,7 @@ exports.authorize = async (event, context, callback) => {
             if (attendeeInfo.Attendee.JoinToken === event.queryStringParameters.joinToken) {
                 passedAuthCheck = true;
             } else {
-                console.error('failed to authenticate with join token');
+                console.error(`failed to authenticate with join token ${attendeeInfo.Attendee.JoinToken} - ${event.queryStringParameters.joinToken}` );
             }
         } catch (e) {
             console.error(`failed to authenticate with join token: ${e.message}`);

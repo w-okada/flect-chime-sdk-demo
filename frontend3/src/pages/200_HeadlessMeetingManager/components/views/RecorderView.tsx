@@ -12,12 +12,13 @@ export type FocustTarget = "SharedContent" | "Speaker"
 type Props = {
     width: number
     height: number
+    setActiveRecorderCanvas: (c:HTMLCanvasElement)=>void
+    setAllRecorderCanvas: (c:HTMLCanvasElement)=>void
 };
 
-export const RecorderView = ({ width, height }: Props) => {
+export const RecorderView = ({ width, height, setActiveRecorderCanvas, setAllRecorderCanvas }: Props) => {
 
     const { videoTileStates, activeSpeakerId, meetingSession } = useAppState()
-    const { sendCommand, recorder, audioInputDeviceSetting } = useAppState()
 
     const activeRenderer = useMemo(()=>{return new RendererForRecorder(meetingSession!)},[]) // eslint-disable-line
     const allRenderer    = useMemo(()=>{return new RendererForRecorder(meetingSession!)},[]) // eslint-disable-line
@@ -25,23 +26,22 @@ export const RecorderView = ({ width, height }: Props) => {
     /// Active Tiles
     const contentsTiles = Object.values(videoTileStates).filter(tile=>{return tile.isContent})
     const activeSpekerTile = activeSpeakerId && videoTileStates[activeSpeakerId] ? videoTileStates[activeSpeakerId] : null
-    console.log("Active speaker--------------------------->", activeSpeakerId)
 
     const activeTiles = (contentsTiles.length > 0 ? contentsTiles : [activeSpekerTile]).filter(tile=>{return tile!==null}) as VideoTileState[]
     const activeTilesId = activeTiles.reduce<string>((sum,cur)=>{return `${sum}-${cur.boundAttendeeId}`},"")
-    console.log("Active--------------------------->", activeTilesId)
     
     /// All Tiles
     const allTiles = Object.values(videoTileStates)
     const allTilesId = allTiles.reduce<string>((sum,cur)=>{return `${sum}-${cur.boundAttendeeId}`},"")
 
 
-    //// (1) Setup Renderer
+    //// (1) Setup Renderer, notify canvas to parent
     //// (1-1) setup for ActiveRenderer
     useEffect(() => {
         const activeDstCanvas = document.getElementById("ActiveRecorderCanvas") as HTMLCanvasElement
         activeRenderer.init(activeDstCanvas)
         activeRenderer.start()
+        setActiveRecorderCanvas(activeDstCanvas)
         return () => {
             console.log("destroy renderer", activeRenderer)
             activeRenderer.destroy()
@@ -53,6 +53,7 @@ export const RecorderView = ({ width, height }: Props) => {
         const allDstCanvas = document.getElementById("AllRecorderCanvas") as HTMLCanvasElement
         allRenderer.init(allDstCanvas)
         allRenderer.start()
+        setAllRecorderCanvas(allDstCanvas)
         return () => {
             console.log("destroy renderer", activeRenderer)
             activeRenderer.destroy()

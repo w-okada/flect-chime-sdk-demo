@@ -4,7 +4,7 @@ export class LocalLogger{
     constructor(module:string){
         this.module = module
     }
-    log = (...strs:string[]) =>{
-        console.log(this.module, ...strs)
+    log = (...strs:any[]) =>{
+        console.log(`[${this.module}]`, ...strs)
     }
 }

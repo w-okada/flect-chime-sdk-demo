@@ -8,7 +8,7 @@ import { RecorderView } from '../ScreenView/RecorderView';
 
 export const RecorderPanel = () => {
     const classes = useStyles();
-    const { recorder, audioInputDeviceSetting } = useAppState()
+    const { activeRecorder, audioInputDeviceSetting } = useAppState()
     const  [recorderCanvas, setRecorderCanvas] = useState<HTMLCanvasElement|null>(null)
     const [ isEncoding, setIsEncoding ] = useState(false)
     const [ isRecording, setIsRecording ] = useState(false)
@@ -42,13 +42,13 @@ export const RecorderPanel = () => {
                 stream.addTrack(t)
             })
         });
-        recorder?.startRecording(stream)
+        activeRecorder?.startRecording(stream)
     }
 
     const handleOnClickStopRecord = async() =>{
-        recorder?.stopRecording()
+        activeRecorder?.stopRecording()
         setIsEncoding(true)
-        await recorder?.toMp4()
+        await activeRecorder?.toMp4()
         console.log("---------------------------------------------------- 1")
         setIsEncoding(false)
         console.log("---------------------------------------------------- 2")
@@ -59,11 +59,11 @@ export const RecorderPanel = () => {
     const startButton = useMemo(()=>{
         return isRecording === false && isEncoding === false ? 
         (
-            <Tooltip title={recorder?.isRecording?"stop recording":"start recording"}>
+            <Tooltip title={activeRecorder?.isRecording?"stop recording":"start recording"}>
                 <Button
                     size="small"
                     variant="outlined"
-                    className={recorder?.isRecording ? classes.activatedButton : classes.button}
+                    className={activeRecorder?.isRecording ? classes.activatedButton : classes.button}
                     startIcon={<FiberManualRecord />}
                     onClick={handleOnClickStartRecord}
                     id="recorder-start"
@@ -74,11 +74,11 @@ export const RecorderPanel = () => {
         )
         :
         (
-            <Tooltip title={recorder?.isRecording?"stop recording":"start recording"}>
+            <Tooltip title={activeRecorder?.isRecording?"stop recording":"start recording"}>
                 <Button
                     size="small"
                     variant="outlined"
-                    className={recorder?.isRecording ? classes.activatedButton : classes.button}
+                    className={activeRecorder?.isRecording ? classes.activatedButton : classes.button}
                     startIcon={<FiberManualRecord />}
                     id="recorder-start"
                 >
@@ -92,7 +92,7 @@ export const RecorderPanel = () => {
     const stopButton = useMemo(()=>{
 
         if(isRecording === false && isEncoding === false){
-            return <Tooltip title={recorder?.isRecording?"stop recording":"start recording"}>
+            return <Tooltip title={activeRecorder?.isRecording?"stop recording":"start recording"}>
                 <Button
                 size="small"
                 variant="outlined"
@@ -105,7 +105,7 @@ export const RecorderPanel = () => {
                 </Button>
             </Tooltip> 
         }else if(isRecording === true && isEncoding === false){
-            return <Tooltip title={recorder?.isRecording?"stop recording":"start recording"}>
+            return <Tooltip title={activeRecorder?.isRecording?"stop recording":"start recording"}>
                 <Button
                 size="small"
                 variant="outlined"

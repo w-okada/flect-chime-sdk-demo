@@ -22,17 +22,21 @@ export const useWebSocketWhiteBoard = (props:UseWebSocketWhiteBoardProps) =>{
     const [lineWidth, setLineWidth] = useState(3)
     const [drawingStroke, setDrawingStroke] = useState("#aaaaaaaa")
     const [drawingMode, setDrawingMode] = useState<keyof typeof DrawingMode>(DrawingMode.DISABLE)
-
+    const [recreateCount, setRecreateCount ] = useState(0)
+    const recreate = () =>{
+        console.log("websocket recreate!!!!")
+        setRecreateCount(recreateCount+1)
+    }
     
     const WSWBClient = useMemo(()=>{
         if(props.meetingId === "" || props.attendeeId === "" || props.joinToken === "" || !props.logger){
             return null
         }else{
             const messagingURLWithQuery = `${WebSocketEndpoint}/Prod?joinToken=${props.joinToken}&meetingId=${props.meetingId}&attendeeId=${props.attendeeId}`
-            const WSWBClient = new WebSocketWhiteBoardClient(props.attendeeId, messagingURLWithQuery, props.logger)
+            const WSWBClient = new WebSocketWhiteBoardClient(props.attendeeId, messagingURLWithQuery, props.logger, recreate)
             return WSWBClient
         }
-    },[props.meetingId, props.attendeeId, props.joinToken,props.logger])
+    },[props.meetingId, props.attendeeId, props.joinToken, props.logger])
 
     useEffect(()=>{
         const f = (wsMessages:WebSocketMessage[])=>{
@@ -45,8 +49,6 @@ export const useWebSocketWhiteBoard = (props:UseWebSocketWhiteBoardProps) =>{
 
     const addDrawingData = WSWBClient?.addDrawindData 
 
-
-    
     return {addDrawingData, drawingData, lineWidth, setLineWidth, drawingStroke, setDrawingStroke, drawingMode, setDrawingMode}
 
 }

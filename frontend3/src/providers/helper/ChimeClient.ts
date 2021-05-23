@@ -245,7 +245,6 @@ export class ChimeClient {
             throw new Error("meetingsession is null?")
         }
 
-
         // (1) prepair
         //// https://github.com/aws/amazon-chime-sdk-js/issues/502#issuecomment-652665492
         //// When stop preview, camera stream is terminated!!? So when enter meeting I rechoose Devices as workaround. (2)
@@ -257,7 +256,7 @@ export class ChimeClient {
             if (present) {
                 if (attendeeId in this.attendees === false) {
                     let userName = ""
-                    if(attendeeId.indexOf("#")>0){
+                    if(attendeeId.indexOf("#")>0){                        
                         userName = attendeeId
                     }else{
                         try{
@@ -319,6 +318,7 @@ export class ChimeClient {
         this.meetingSession.audioVideo.subscribeToActiveSpeakerDetector(
             new DefaultActiveSpeakerPolicy(),
             (activeSpeakers: string[]) => {
+                console.log("Active Speaker::::::::::::::::::::", activeSpeakers)
                 let activeSpeakerId:string|null = null
                 for (const attendeeId in this.attendees) {
                     this.attendees[attendeeId].active = false;

@@ -26,11 +26,13 @@ export class WebSocketClient{
     private messagingURLWithQuery:string
     private logger:Logger
     private websocketAdapter:WebSocketAdapter|null = null
-    constructor(attendeeId:string, messagingURLWithQuery:string, logger:Logger){
+    private recreate:()=>void
+    constructor(attendeeId:string, messagingURLWithQuery:string, logger:Logger, recreate:()=>void){
         console.log("NEW WEBSOCKET CLIENT")
         this.attendeeId = attendeeId
         this.messagingURLWithQuery = messagingURLWithQuery
         this.logger = logger
+        this.recreate=recreate
     }
     connect = () =>{
         this.websocketAdapter =  new DefaultWebSocketAdapter(this.logger)
@@ -40,7 +42,7 @@ export class WebSocketClient{
         )
         this.websocketAdapter.addEventListener('message', this.receiveMessage)
         this.websocketAdapter.addEventListener('close', this.reconnect)
-        this.websocketAdapter.addEventListener('error', this.reconnect)
+        // this.websocketAdapter.addEventListener('error', this.reconnect)
         console.log("WebSocket Created!!", this.websocketAdapter, (new Date()).toLocaleTimeString())
     }
     
@@ -75,14 +77,14 @@ export class WebSocketClient{
     reconnect = (e:Event) => {
         // setTimeout(()=>{
             console.log("reconnecting... ", e, (new Date()).toLocaleTimeString())
-            this.websocketAdapter =  new DefaultWebSocketAdapter(this.logger)
-            this.websocketAdapter!.create(
-                this.messagingURLWithQuery,
-                []
-            )
-            this.websocketAdapter!.addEventListener('message', this.receiveMessage)
-            this.websocketAdapter!.addEventListener('close', this.reconnect)
-            this.websocketAdapter!.addEventListener('error', this.reconnect)
+            this.recreate()
+            // this.websocketAdapter =  new DefaultWebSocketAdapter(this.logger)
+            // this.websocketAdapter!.create(
+            //     this.messagingURLWithQuery,
+            //     []
+            // )
+            // this.websocketAdapter!.addEventListener('message', this.receiveMessage)
+            // this.websocketAdapter!.addEventListener('close', this.reconnect)
         // },1*1000)
     }
     

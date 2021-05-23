@@ -31,8 +31,8 @@ export class WebSocketWhiteBoardClient{
     private drawingDataBuffer:DrawingData[] =[]
     private wsClient:WebSocketClient
 
-    constructor(attendeeId:string, messagingURLWithQuery:string, logger:Logger){
-        this.wsClient = new WebSocketClient(attendeeId, messagingURLWithQuery, logger)
+    constructor(attendeeId:string, messagingURLWithQuery:string, logger:Logger, recreate:()=>void){
+        this.wsClient = new WebSocketClient(attendeeId, messagingURLWithQuery, logger, recreate)
         this.wsClient.connect()
         this.startMonitor()
     }
