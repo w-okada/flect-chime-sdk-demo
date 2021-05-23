@@ -15,8 +15,7 @@ export class Recorder{
 
         this.recorder = new MediaRecorder(stream, options)
         this.recorder.ondataavailable = (e:BlobEvent) => {
-            console.log("ondata avaialbe!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            console.log("datasize", e.data.size)
+            console.log("ondataavailable datasize", e.data.size)
             this.chunks!.push(e.data)
         }
         this.recorder!.start(1000)

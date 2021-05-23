@@ -54,8 +54,14 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
         setStateCounter(stateCounter + 1 )
     }
     
-    const enterMeeting = chimeClient.enterMeeting
-    const leaveMeeting  = chimeClient.leaveMeeting
+    const enterMeeting = async () => {
+        await chimeClient.enterMeeting()
+        setStateCounter(stateCounter + 1 )
+    }
+    const leaveMeeting = async() =>{
+        await chimeClient.leaveMeeting()
+        setStateCounter(stateCounter + 1 )
+    }
     const meetingSession = chimeClient._meetingSession
     const audioInputDeviceSetting = chimeClient._audioInputDeviceSetting
     const videoInputDeviceSetting = chimeClient._videoInputDeviceSetting

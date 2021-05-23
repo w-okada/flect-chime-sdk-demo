@@ -31,7 +31,7 @@ puppeteer.launch({
         '--enable-usermedia-screen-capturing',
         '--allow-http-screen-capture',
         '--auto-select-desktop-capture-source=pickme',
-
+        "--autoplay-policy=no-user-gesture-required",
 
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -45,25 +45,24 @@ puppeteer.launch({
             console.log(`${i}: ${msg._args[i]}`);
 	}
     });
-    
-
-    // await page.goto('https://f-backendstack-dev-bucket.s3.amazonaws.com/index.html');    
-
-    await page.exposeFunction('onCustomEvent', e => {
-        console.log(`ZZZZZZZZZZZZZZZZZZZZZ ${e.type} fired`, e.detail || '');
-    });
-
-    function listenFor(type) {
-        return page.evaluateOnNewDocument(type => {
-          document.addEventListener(type, e => {
-            window.onCustomEvent({type, detail: e.detail});
-          });
-        }, type);
-    }
-
-    await listenFor('recordeFin');
-
     await page.goto(meetingURL);    
+
+    // // await page.goto('https://f-backendstack-dev-bucket.s3.amazonaws.com/index.html');    
+
+    // await page.exposeFunction('onCustomEvent', e => {
+    //     console.log(`ZZZZZZZZZZZZZZZZZZZZZ ${e.type} fired`, e.detail || '');
+    // });
+
+    // function listenFor(type) {
+    //     return page.evaluateOnNewDocument(type => {
+    //       document.addEventListener(type, e => {
+    //         window.onCustomEvent({type, detail: e.detail});
+    //       });
+    //     }, type);
+    // }
+
+    // await listenFor('recordeFin1111');
+
 
     // await page.$eval("#email", element => element.value = 'mail2wokada@gmail.com');
     // await page.$eval("#password", element => element.value = 'test22');

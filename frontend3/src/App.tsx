@@ -13,6 +13,9 @@ import { MeetingRoom } from './pages/023_meetingRoom/MeetingRoom';
 import { MeetingManagerSignin } from './pages/100_MeetingManagerSignin/MeetingManagerSingin';
 import { MeetingManager } from './pages/101_MeetingManager/MeetingManager';
 import { HeadlessMeetingManager } from './pages/200_HeadlessMeetingManager/HeadMeetingManager';
+import { HeadlessMeetingManager2 } from './pages/201_HeadlessMeetingManager/MeetingManager';
+import { MeetingManagerSignin3 } from './pages/300_MeetingManagerSignin3/MeetingManagerSingin';
+import { MeetingManager3 } from './pages/301_MeetingManager3/MeetingManager';
 import { AppStateProvider, useAppState } from './providers/AppStateProvider';
 
 
@@ -46,6 +49,16 @@ const Router = () => {
                 return <MeetingManager />
             case "HEADLESS_MEETING_MANAGER":
                 return <HeadlessMeetingManager />
+            case "HEADLESS_MEETING_MANAGER2":
+                return <HeadlessMeetingManager2 />
+
+
+            // // case "MEETING_MANAGER_SIGNIN3":
+            // case "HEADLESS_MEETING_MANAGER":
+            //         return <MeetingManagerSignin3 />
+            // case "MEETING_MANAGER3":
+            //     return <MeetingManager3 />
+
             default:
                 return <div>no view</div>
 

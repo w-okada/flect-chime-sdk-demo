@@ -1,6 +1,7 @@
 import { Button, CircularProgress, Container, createStyles, CssBaseline, makeStyles } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
+import { LocalLogger } from "../../utils/localLogger";
 
 
 const lineSpacerHeihgt = 10
@@ -33,7 +34,9 @@ type State = {
     userName: string | null
 }
 
-export const MeetingManagerSignin = () => {
+const logger = new LocalLogger("HeadlessMeetingManager")
+
+export const MeetingManagerSignin3 = () => {
     const classes = useStyles();
     //// Query Parameters
     const query       = new URLSearchParams(window.location.search);
@@ -41,7 +44,11 @@ export const MeetingManagerSignin = () => {
     const attendeeId  = query.get('attendeeId') || null
     const uuid        = query.get('uuid') || null
 
-    const { onetimeCodeInfo,  handleSinginWithOnetimeCodeRequest, handleSinginWithOnetimeCode, setStage, setMessage, joinMeeting, enterMeeting,
+    //// Query Parameters
+    const code        = query.get('code') || null // OnetimeCode
+
+
+    const { onetimeCodeInfo,  handleSinginWithOnetimeCodeRequest, handleSinginWithOnetimeCode, setStage, setMessage, joinMeeting, enterMeeting,handleSinginWithOnetimeCodeRequest_dummy,
             audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting} = useAppState()
     const [ isLoading, setIsLoading] = useState(false)
 
@@ -62,10 +69,30 @@ export const MeetingManagerSignin = () => {
 
     useEffect(()=>{
         if(state.internalStage === "Signining"){
+            // handleSinginWithOnetimeCodeRequest_dummy(meetingName!, attendeeId!, uuid!)
             handleSinginWithOnetimeCodeRequest(meetingName!, attendeeId!, uuid!)
+
+            logger.log("Singining....")
+            if(!meetingName || !attendeeId || !uuid || !code){
+                logger.log(`"Exception: Signin error. Information is insufficent meetingName${meetingName}, attendeeId=${attendeeId}, uuid=${uuid}, code=${code}`)
+                return
+            }
+            console.log(meetingName)
+            handleSinginWithOnetimeCode(meetingName, attendeeId, uuid, code).then((res)=>{
+                console.log(res)
+                if(res.result){
+                    setState({...state, userName: res.userName||null, internalStage:"Joining"})
+                }else{
+                    logger.log("Exception: Signin error, can not sigin. please generate code and retry.", res)
+                }
+            })
+
+
         }else if(state.internalStage === "Joining" && state.userName){
             console.log("joining...")
-            joinMeeting(onetimeCodeInfo!.meetingName!, state.userName).then(()=>{
+            joinMeeting(meetingName!, "Manager").then(()=>{
+                // joinMeeting(meetingName!, state.userName).then(()=>{
+                    // joinMeeting(meetingName!, `anager[${state.userName!}]`).then(()=>{                
                 setState({...state, internalStage:"Entering"})
             }).catch(e=>{
                 console.log(e)
@@ -83,7 +110,7 @@ export const MeetingManagerSignin = () => {
             enterMeeting().then(()=>{
                 Promise.all([p1,p2,p3]).then(()=>{
                     setIsLoading(false)
-                    setStage("MEETING_MANAGER")
+                    setStage("MEETING_MANAGER3")
                 })
             }).catch(e=>{
                 setIsLoading(false)
