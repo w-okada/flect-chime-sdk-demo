@@ -2,21 +2,31 @@ import { Button, CircularProgress, Container, createStyles, CssBaseline, makeSty
 import { DefaultDeviceController } from "amazon-chime-sdk-js";
 import React, { useEffect, useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
+import { Recorder } from "../../providers/helper/Recorder";
 import { HMMCmd } from "../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
+import { getDataString } from "../../utils";
 import { LocalLogger } from "../../utils/localLogger";
 import { RecorderView } from "./components/views/RecorderView";
 
-type InternalStage = "Signining" | "Joining" | "Entering" | "Ready"
+// const AWS = require('aws-sdk');
+// const bucketName = "f-backendstack-dev-bucket"
+// const s3 = new AWS.S3({ params: { Bucket: bucketName } });
 
+type InternalStage = "Signining" | "Joining" | "Entering" | "Ready"
 type State = {
     internalStage: InternalStage,
     userName: string | null
 }
-
-
 const logger = new LocalLogger("HeadlessMeetingManager")
 
-const framerate = 8
+const framerate = 15
+
+function sleep(ms:number) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+} 
+
 
 export const HeadlessMeetingManager = () => {
     //// Query Parameters
@@ -25,6 +35,8 @@ export const HeadlessMeetingManager = () => {
     const attendeeId  = query.get('attendeeId') || null
     const uuid        = query.get('uuid') || null
     const code        = query.get('code') || null // OnetimeCode
+    const decodedMeetingName =  decodeURIComponent(meetingName!)
+
 
     const { handleSinginWithOnetimeCode, joinMeeting, enterMeeting, leaveMeeting, attendees, videoTileStates, setStage,
             audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting,
@@ -39,38 +51,13 @@ export const HeadlessMeetingManager = () => {
     const [ activeRecorderCanvas, setActiveRecorderCanvas] = useState<HTMLCanvasElement>()
     const [ allRecorderCanvas, setAllRecorderCanvas]       = useState<HTMLCanvasElement>()
 
-    // const setActiveRecorderCanvas = (canvas:HTMLCanvasElement)=>{        
-    //     console.log("AAAAAAAAAAAA setALLRECORADCANVAS")
-    //     // @ts-ignore
-    //     const videoStream = canvas.captureStream() as MediaStream
-    //     console.log("AAAAAAAAAAAAAAAAAAAA", videoStream)
-    //     const videoElem = document.getElementById("ActiveRecorderVideo") as HTMLVideoElement
-    //     videoElem.srcObject=videoStream
 
-    //     _setActiveRecorderCanvas(canvas)
-    // }
-    // const setAllRecorderCanvas = (canvas:HTMLCanvasElement)=>{
-    //     console.log("AAAAAAAAAAAAaa setALLRECORADCANVAS")
-    //     // @ts-ignore
-    //     const videoStream = canvas.captureStream() as MediaStream
-    //     console.log("AAAAAAAAAAAAAAAAAAAA", videoStream)
-    //     const videoElem = document.getElementById("AllRecorderVideo") as HTMLVideoElement
-    //     videoElem.srcObject=videoStream
-    //     _setAllRecorderCanvas(canvas)
-    // }
-
-    const startRecord = async () =>{
-        setIsRecording(true)
+    const startRecordInternal = async (recorder:Recorder, srcCanvas:HTMLCanvasElement) => {
         const audioElem = document.getElementById("for-speaker") as HTMLAudioElement
-        console.log("AUDIO ELEM:::::", audioElem.id, audioElem)
+        const stream =  new MediaStream();
 
-        ///////////////////
-        //// For Active Recorder
-        ///////////////////
-        const activeStream =  new MediaStream();
         // @ts-ignore
         const audioStream = audioElem.captureStream() as MediaStream
-        console.log("AUDIO STREAM:::::", audioStream)
         let localAudioStream = audioInputDeviceSetting?.audioInputForRecord
         if(typeof localAudioStream === "string"){
             localAudioStream = await navigator.mediaDevices.getUserMedia({audio:{deviceId:localAudioStream}})
@@ -85,77 +72,46 @@ export const HeadlessMeetingManager = () => {
             sourceNode2.connect(outputNode)
         }
         // @ts-ignore
-        const videoStream = activeRecorderCanvas.captureStream(framerate) as MediaStream
+        const videoStream = srcCanvas.captureStream(framerate) as MediaStream
 
         [outputNode.stream, videoStream].forEach(s=>{
             s?.getTracks().forEach(t=>{
-                console.log("added tracks:", t)
-                activeStream.addTrack(t)
+                stream.addTrack(t)
             })
         });
 
-        // const activeVideoElem = document.getElementById("ActiveRecorderVideo") as HTMLVideoElement
-        // activeVideoElem.srcObject = activeStream
-        // activeVideoElem.play()
-        // // @ts-ignore
-        // const activeVideoStream = activeVideoElem.captureStream() as MediaStream
+        recorder.startRecording(stream)
+    }
 
-        activeRecorder?.startRecording(activeStream)
-        // activeRecorder?.startRecording(activeVideoStream)
-        
-        ////////////////////////
-        //// For AllRecorder
-        ////////////////////////
-        const allStream =  new MediaStream();
-        // @ts-ignore
-        const allSudioStream = audioElem.captureStream() as MediaStream
-        const allOutputNode = audioContext.createMediaStreamDestination();
-        const allSourceNode1 = audioContext.createMediaStreamSource(audioStream);
-        allSourceNode1.connect(allOutputNode)
-        if(localAudioStream){
-            const allSourceNode2 = audioContext.createMediaStreamSource(localAudioStream as MediaStream);
-            allSourceNode2.connect(allOutputNode)
-        }
-        // @ts-ignore
-        const allVideoStream = allRecorderCanvas.captureStream(framerate) as MediaStream
+    const startRecord = async () =>{
+        setIsRecording(true)
+        startRecordInternal(activeRecorder, activeRecorderCanvas!)
+        startRecordInternal(allRecorder, allRecorderCanvas!)
+        const event = new CustomEvent('recordStart');
+        document.dispatchEvent(event)
 
-        [allOutputNode.stream, allVideoStream].forEach(s=>{
-            s?.getTracks().forEach(t=>{
-                console.log("added tracks:", t)
-                allStream.addTrack(t)
-            })
-        });
-
-
-
-        // const allVideoElem = document.getElementById("AllRecorderVideo") as HTMLVideoElement
-        // allVideoElem.srcObject = allStream
-        // allVideoElem.play()
-        // // @ts-ignore
-        // const allVideoStream2 = allVideoElem.captureStream() as MediaStream
-        // console.log("ZSFSDFSDFSDFDSFSDFSDFDSFSDFSDFSDF", allVideoStream2)
-        allRecorder?.startRecording(allStream)
-        // allRecorder?.startRecording(allVideoStream2)
     }
 
     const stopRecord = async () =>{
         activeRecorder?.stopRecording()
         allRecorder?.stopRecording()
         setIsEncoding(true)
-        const activeUrl = activeRecorder.getDataURL()
-        const allUrl = allRecorder.getDataURL()
-        const activeLink = document.getElementById("activeLink") as HTMLLinkElement
-        const allLink = document.getElementById("allLink") as HTMLLinkElement
-        activeLink.href = activeUrl
-        allLink.href = allUrl
+        // const activeUrl = await activeRecorder.getMp4URL()
+        // const allUrl    = await allRecorder.getMp4URL()
+        // const activeUrl = await activeRecorder.getDataURL()
+        // const allUrl    = await allRecorder.getDataURL()
+        // const activeLink = document.getElementById("activeVideoLink") as HTMLLinkElement
+        // const allLink    = document.getElementById("allVideoLink") as HTMLLinkElement
+        // activeLink.href = activeUrl
+        // allLink.href    = allUrl
 
-        // await activeRecorder?.toMp4()
-        // await allRecorder?.toMp4()
+        const dateString = getDataString()
+        await activeRecorder?.toMp4(`${dateString}_${decodedMeetingName}_active.mp4`)
+        await allRecorder?.toMp4(`${dateString}_${decodedMeetingName}_all.mp4`)
         setIsEncoding(false)
         setIsRecording(false)
 
-        const event = new CustomEvent('recordeFin1111');
-        const dispatcher = document.getElementById("eventDisptcher") as HTMLDivElement
+        const event = new CustomEvent('recordFin');
         document.dispatchEvent(event)
     }
 
@@ -174,6 +130,30 @@ export const HeadlessMeetingManager = () => {
                 logger.log("STOP RECORD")
                 stopRecord()
                 break
+            case HMMCmd.START_SHARE_TILEVIEW:
+                logger.log("Not Implemented")
+                break
+            case HMMCmd.STOP_SHARE_TILEVIEW:
+                logger.log("Not Implemented")
+                break
+            case HMMCmd.TERMINATE:
+                (async()=>{
+                    if(isRecording){
+                        logger.log("stop recording start")
+                        await stopRecord()
+                        logger.log("stop recording end")
+                        await sleep(20)
+                        logger.log("stop recording sleep end")
+
+                    }
+                    logger.log("terminate event fire")
+
+                    const event = new CustomEvent('terminate');
+                    document.dispatchEvent(event)
+                    logger.log("terminate event fired")
+
+                })()
+                break
             default:
                 logger.log("NO MATCH COMMAND", latestCommand.data)
                 break
@@ -187,9 +167,7 @@ export const HeadlessMeetingManager = () => {
                 logger.log(`"Exception: Signin error. Information is insufficent meetingName${meetingName}, attendeeId=${attendeeId}, uuid=${uuid}, code=${code}`)
                 return
             }
-            console.log(meetingName)
             handleSinginWithOnetimeCode(meetingName, attendeeId, uuid, code).then((res)=>{
-                console.log(res)
                 if(res.result){
                     setState({...state, userName: res.userName||null, internalStage:"Joining"})
                 }else{
@@ -204,11 +182,11 @@ export const HeadlessMeetingManager = () => {
                 logger.log("joining failed",e)
             })
         }else if(state.internalStage === "Entering"){
-            console.log("entering...")
+            logger.log("entering...")
             const p1 = audioInputDeviceSetting!.setAudioInput("dummy")
             const p2 = videoInputDeviceSetting!.setVideoInput(null)
             const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
-            console.log("Active Speaker::::::audio", audioOutput?audioOutput:"null")
+            logger.log("Active Speaker::::::audio", audioOutput?audioOutput:"null")
             const p3 = audioOutputDeviceSetting!.setAudioOutput(audioOutput)
             // const p3 = audioOutputDeviceSetting!.setAudioOutput(null)
 
@@ -221,54 +199,23 @@ export const HeadlessMeetingManager = () => {
                 logger.log("enter meeting failed",e)
             })
         }else if(state.internalStage === "Ready"){
-            console.log("entered...")
+            logger.log("ready....")
             const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
             audioElement.autoplay=false
             audioElement.volume = 0
             audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
-
-            // audioOutputDeviceSetting!.setAudioOutput(audioOutput).then(()=>{
-            //     const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
-            //     audioElement.autoplay=false
-            //     audioElement.volume = 0
-            //     audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
-            //     setTimeout(checkAttendees, 1000*5)
-            // })
         }
     },[state.internalStage])
     
-
-
-    // if(state.internalStage === "Ready" && Object.keys(videoTileStates).length > 0 && Object.keys(attendees).length === 0){
-    //     console.log("Active Speaker:::::::::::::: something wrong with attendees! 1 ", attendees, videoTileStates, attendeeCheckRetry)
-    //     console.log("Active Speaker:::::::::::::: something wrong with attendees! 2 ", ...Object.keys(attendees))
-    //     console.log("Active Speaker:::::::::::::: something wrong with attendees! 3 ", ...Object.keys(videoTileStates))
-
-    //     setTimeout( ()=>{setAttendeeCheckRetry(attendeeCheckRetry + 1)},1000*5)
-    //     if(attendeeCheckRetry === 5){
-    //         console.log("Active Speaker:::::::::::::: leave and rejoin!! ")
-    //         leaveMeeting()
-    //         setState({...state, internalStage:"Joining"})
-    //     }
-    // }else if(state.internalStage === "Ready"){
-    //     console.log("Active Speaker:::::::::::::: OK attendees fine!", attendees, videoTileStates, attendeeCheckRetry)
-    // }
-
-
     return (
         <>
             <RecorderView height={200} width={500} setActiveRecorderCanvas={setActiveRecorderCanvas} setAllRecorderCanvas={setAllRecorderCanvas}/>
             <div>recording:{isRecording?"true":"false"}</div>
             <div>encoding:{isEncoding?"true":"false"}</div>
-            <div>ATTTENDEES:{Object.keys(attendees)}</div>
+            <div>ATTTENDEES:{Object.keys(attendees).map(x=>{return `[${x}]`})}</div>
 
-            {/* <div>
-                <video width="1920" height="1080" id="ActiveRecorderVideo" autoPlay style={{ width: "20%", height: "20%", border: "medium solid #ffaaaa"}} />
-                <video width="1920" height="1080" id="AllRecorderVideo"    autoPlay style={{ width: "20%", height: "20%", border: "medium solid #ffaaaa"}} />
-            </div> */}
-
-            <a id="activeLink">active speaker</a>
-            <a id="allLink">all speaker</a>
+            <a id="activeVideoLink">active speaker</a>
+            <a id="allVideoLink">all speaker</a>
 
             <div>
                 <audio id="for-speaker" style={{display:"none"}}/>

@@ -82,3 +82,13 @@ export function showDiff<T>(before:T, after:T){
     })
     // console.log("DIFFS!GENERICS!!",diffs)
 }
+
+
+export const getDataString = ():string => {
+    var dt = new Date();
+    var y = dt.getFullYear();
+    var m = ("00" + (dt.getMonth()+1)).slice(-2);
+    var d = ("00" + dt.getDate()).slice(-2);
+    var result = y + "_" + m + "_" + d;
+    return result
+}

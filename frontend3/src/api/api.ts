@@ -133,6 +133,36 @@ export const getUserNameByAttendeeId = async (meetingName: string, attendeeId: s
 }
 
 
+/**
+ * List attendees *** maybe return attendee history. not current attendee???***
+ * @param meetingName 
+ * @param attendeeId 
+ * @param idToken 
+ * @param accessToken 
+ * @param refreshToken 
+ */
+export const getAttendeeList = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string) => {
+    const attendeeUrl = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees`
+    const res = await fetch(attendeeUrl, {
+        method: 'GET',
+        headers: {
+            "Authorization": idToken,
+            "X-Flect-Access-Token": accessToken
+        }
+    });
+    if (!res.ok) {
+        throw new Error('Invalid server response');
+    }
+
+    const data = await res.json();
+    console.log(data)
+    return {
+        name: decodeURIComponent(data.UserName),
+        result: data.result
+    };
+}
+
+
 export const generateOnetimeCode = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string):
     Promise<{ uuid: string, code: string, ontimecodeExpireDate:number }> => { 
 

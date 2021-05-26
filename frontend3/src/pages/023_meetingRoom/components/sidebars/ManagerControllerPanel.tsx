@@ -7,7 +7,7 @@ import { HMMCmd } from '../../../../providers/hooks/RealtimeSubscribers/useRealt
 
 export const ManagerControllerPanel = () => {
     const classes = useStyles();
-    const { meetingName, attendeeId, idToken, accessToken, refreshToken, sendHMMCommand} = useAppState()
+    const { meetingName, attendeeId, idToken, accessToken, refreshToken, sendHMMCommand, countAttendees} = useAppState()
     const [ url, setURL] = useState<string>()
     // const [onetimeCode, setOnetimeCode] = useState<string>()
 
@@ -45,6 +45,13 @@ export const ManagerControllerPanel = () => {
                 <a onClick={()=>{sendHMMCommand(HMMCmd.START_RECORD)}}>START_RECORD</a>
                 <a onClick={()=>{sendHMMCommand(HMMCmd.STOP_RECORD)}}>STOP_RECORD</a>
 
+
+                <div>
+                    <a onClick={()=>{countAttendees()}}>count</a>
+                </div>
+                <div>
+                    <a onClick={()=>{sendHMMCommand(HMMCmd.TERMINATE)}}>TERMINATE</a>
+                </div>
 
             </div>
 

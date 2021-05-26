@@ -188,6 +188,7 @@ export const useCredentials = (props:UseCredentialsProps) => {
 
     // (a-2) Signin
     const handleSinginWithOnetimeCode = async (meetingName:string, attendeeId:string, uuid:string, code:string) =>{
+        console.log("Active Speaker::::::: one timecode signin")
         const res = await singinWithOnetimeCode(meetingName, attendeeId, uuid, code)
         console.log("Active Speaker::::::: one time code res:", res)
         setState( {...state, userId:"-", idToken:res.idToken, accessToken:res.accessToken, refreshToken:"-"})

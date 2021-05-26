@@ -9,6 +9,9 @@ import { LocalLogger } from "../../../utils/localLogger";
 export const HMMCmd = {
     START_RECORD:"START_RECORD",
     STOP_RECORD: "STOP_RECORD",
+    START_SHARE_TILEVIEW: "START_SHARE_TILEVIEW",
+    STOP_SHARE_TILEVIEW: "STOP_SHARE_TILEVIEW",
+    TERMINATE: "TERMINATE",
 } as const
 
 

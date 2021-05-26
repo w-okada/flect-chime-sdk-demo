@@ -373,4 +373,37 @@ export class ChimeClient {
     }
 
 
+
+
+
+    countAttendees = async() =>{
+        console.log("countAttendees")
+        const res = await api.getAttendeeList(this.meetingName!, this.userId!, this.idToken!, this.accessToken!, this.refreshToken!)
+        console.log("countAttendees",res)
+        // const p = new Promise((resolve, reject)=>{
+        //     if(!this.meetingSession){
+        //         resolve(0)
+        //         return
+        //     }
+            
+        //     let foundAttendees:string[] = []
+        //     this.meetingSession.audioVideo.realtimeSubscribeToAttendeeIdPresence((attendeeId: string, present: boolean) => {
+        //         console.log(`[AttendeeIdPresenceSubscriber_2nd] ${attendeeId} present = ${present}`);
+        //         if (present) {
+        //             if (attendeeId in foundAttendees === false) {
+        //                 foundAttendees.push(attendeeId)
+        //             }
+        //         }else{
+        //             foundAttendees = foundAttendees.filter(x=>{return x == attendeeId})
+        //         }
+        //     })
+        //     this.meetingSession.audioVideo.start()
+
+        //     setTimeout(()=>{
+        //         resolve(foundAttendees.length)
+        //     },1000*10)
+        // })
+        // const num = await p
+        // console.log("count!!",num)
+    }
 }

@@ -68,6 +68,7 @@ interface AppStateValue {
     isShareContent:boolean
     activeSpeakerId:string|null
 
+    countAttendees:()=>void
     /** For Device State */
     audioInputList: DeviceInfo[] | null
     videoInputList: DeviceInfo[] | null
@@ -149,7 +150,7 @@ export const AppStateProvider = ({ children }: Props) => {
     const { meetingName, meetingId, joinToken, userName, attendeeId, attendees, videoTileStates, 
             createMeeting, joinMeeting, enterMeeting, leaveMeeting, 
             startShareScreen, stopShareScreen, getUserNameByAttendeeIdFromList,
-            meetingSession, activeRecorder, allRecorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, isShareContent, activeSpeakerId,
+            meetingSession, activeRecorder, allRecorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, isShareContent, activeSpeakerId,countAttendees
            } = useMeetingState({userId, idToken, accessToken, refreshToken,})
     const { audioInputList, videoInputList, audioOutputList, reloadDevices } = useDeviceState()
     const { screenWidth, screenHeight} = useWindowSizeChangeListener()
@@ -203,6 +204,8 @@ export const AppStateProvider = ({ children }: Props) => {
         audioOutputDeviceSetting,
         isShareContent,
         activeSpeakerId,
+
+        countAttendees,
 
         /** For Device State */
         audioInputList,

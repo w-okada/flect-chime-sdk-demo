@@ -64,6 +64,7 @@ export class BackendStack extends cdk.Stack {
       'execute-api:ManageConnections',
 
       'ecs:RunTask',
+      'ecs:DescribeTasks',
       'iam:PassRole',
     )
     statement.addResources(userPool.userPoolArn)
@@ -154,12 +155,16 @@ export class BackendStack extends cdk.Stack {
       streamPrefix: "fargate",
     })
 
-    const taskDefinition = new ecs.FargateTaskDefinition(this, `${id}_fargate_task`);
+    const taskDefinition = new ecs.FargateTaskDefinition(this, `${id}_fargate_task`, {
+      family: this.node.tryGetContext('serviceName'),
+      cpu: 2048,
+      memoryLimitMiB: 4096,
+    });
     const container = taskDefinition.addContainer("DefaultContainer", {
       containerName: `${id}_manager_container`,
       image: ecs.ContainerImage.fromAsset("lib/manager"),
-      memoryLimitMiB: 512,
-      cpu: 256,
+      cpu: 2048,
+      memoryLimitMiB: 4096,
       logging: logging,
     });
     bucket.grantReadWrite(taskDefinition.taskRole)    
@@ -192,6 +197,7 @@ export class BackendStack extends cdk.Stack {
       f.addEnvironment("BUCKET_DOMAIN_NAME", bucket.bucketDomainName)
       f.addEnvironment("MANAGER_CONTAINER_NAME", `${id}_manager_container`)
       f.addEnvironment("BUCKET_ARN", bucket.bucketArn)
+      f.addEnvironment("BUCKET_NAME", bucket.bucketName)
 
       f.addLayers(nodeModulesLayer)
     }
@@ -264,6 +270,16 @@ export class BackendStack extends cdk.Stack {
     })
     addCommonSetting(lambdaFunctionPostAttendee)
 
+    //// (3-3) list Attendees
+    const lambdaFunctionGetAttendees: lambda.Function = new lambda.Function(this, "funcGetAttendees", {
+      functionName: `${id}_getAttendees`,
+      runtime: lambda.Runtime.NODEJS_12_X,
+      code: lambda.Code.asset(`${__dirname}/lambda`),
+      handler: "index.getAttendees",
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(10),
+    })
+    addCommonSetting(lambdaFunctionGetAttendees)
     
 
     //// (4-1) Post Attendee Operation
@@ -421,6 +437,14 @@ export class BackendStack extends cdk.Stack {
     //// (3-2) Post Attendee
     apiAttendees.addMethod("POST", new LambdaIntegration(lambdaFunctionPostAttendee), {
       operationName: `${id}_postAttendee`,
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: {
+        authorizerId: authorizer.ref
+      },
+    })
+    //// (3-3) List Attendees
+    apiAttendees.addMethod("GET", new LambdaIntegration(lambdaFunctionGetAttendees), {
+      operationName: `${id}_getAttendees`,
       authorizationType: AuthorizationType.COGNITO,
       authorizer: {
         authorizerId: authorizer.ref

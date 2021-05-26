@@ -3,7 +3,9 @@ var AWS = require('aws-sdk');
 var ddb = new AWS.DynamoDB();
 var meeting = require('./meeting');
 const { url } = require('inspector');
+const { exception } = require('console');
 var attendeesTableName = process.env.ATTENDEE_TABLE_NAME
+var meetingTableName   = process.env.MEETING_TABLE_NAME
 var clusterArn = process.env.CLUSTER_ARN
 var taskDefinitionArnManager = process.env.TASK_DIFINITION_ARN_MANAGER
 var vpcId = process.env.VPC_ID // not used
@@ -11,6 +13,7 @@ var subnetId = process.env.SUBNET_ID
 var bucketDomainName = process.env.BUCKET_DOMAIN_NAME
 var managerContainerName = process.env.MANAGER_CONTAINER_NAME
 var bucketArn = process.env.BUCKET_ARN
+var bucketName = process.env.BUCKET_NAME
 var ecs = new AWS.ECS();
 
 
@@ -85,8 +88,14 @@ const generateOnetimeCode = async (meetingName, userId, headers, body) =>{
 }
 
 
+
+/***
+ * 
+ * @email caller's email. if this email is not the meeting owner's one, invoke hmm failed.
+ */
 const startMeetingManager = async (email, meetingName, userId, headers, body) =>{
     console.log("startMeetingManager")
+    //// check the meeting exists
     let meetingInfo = await meeting.getMeetingInfo2(meetingName);
     if (meetingInfo === null) {
         return {
@@ -96,6 +105,7 @@ const startMeetingManager = async (email, meetingName, userId, headers, body) =>
     }
     meetingInfo.Metadata
 
+    //// check email is owner's one
     var meetingMetadata = meetingInfo.Metadata
     var ownerId = meetingMetadata['OwnerId']
     console.log("OWNERID", ownerId, "email", email)
@@ -105,6 +115,43 @@ const startMeetingManager = async (email, meetingName, userId, headers, body) =>
             message: 'Meeting owner id does not match email'
         }
     }
+
+    //// check already hmm is running
+    console.log("hmmTaskArn", meetingInfo.hmmTaskArn)
+    if(meetingInfo.hmmTaskArn.length <32){
+        console.log("invalid task arn. maybe dummy:", meetingInfo.hmmTaskArn)
+    }else{
+        try{
+            const p = new Promise((resolve, reject)=>{
+                ecs.describeTasks({
+                    tasks: [meetingInfo.hmmTaskArn],
+                    cluster: clusterArn,
+                },(err,res)=>{
+                    console.log("TASK STATUS:", res)
+                    console.log("TASK STATUS(err):", err)
+                    if(err){
+                        reject("describe task exception")
+                        return
+                    }
+                    if(res.tasks.length!=0 && res.tasks[0].desiredStatus == "RUNNING"){
+                        reject(`describe task exception: already exists, task num:${res.tasks.length} task desiredStatus:${res.tasks[0].desiredStatus}`)
+                        return
+                    }
+                    resolve()
+                })
+            })
+    
+            await p
+        }catch(e){
+            console.log(e)
+            return {
+                code: 'exist check exception',
+                message: e
+            }
+        }
+    }
+
+    
 
     var oneCodeGenResult = await generateOnetimeCode(meetingName, userId, headers, body)
     if(!oneCodeGenResult['code']){
@@ -138,28 +185,47 @@ const startMeetingManager = async (email, meetingName, userId, headers, body) =>
                     },{
                         "name":"BUCKET_ARN",
                         "value":bucketArn
+                    },{
+                        "name":"BUCKET_NAME",
+                        "value":bucketName
                     }
                 ]
             }]
         }
     }
 
-    console.log("Fargate PArams:",params)
+    console.log("Fargate Params:",params)
 
-    // const res = ecs.runTask(params, function(err, data) {
-    //     console.log("run task..... ")  
-    //     console.log(err, data)  
-    // });
+    const taskArn = await new Promise((resolve, reject)=>{
+        ecs.runTask(params, function(err, data) {
+            console.log("run task..... ")  
+            console.log("...", err, data)  
+            console.log("......", data.tasks[0].taskArn)
+            resolve(data.tasks[0].taskArn)
+        });
+    })
 
-    // console.log(res)
+    console.log("TASK RESULT:", taskArn)
+
+
+    await ddb.updateItem({
+        TableName: meetingTableName,
+        Key: {
+            MeetingName: {S:`${meetingName}`},
+        },
+        UpdateExpression:"set hmmTaskArn=:t",
+        ExpressionAttributeValues:{
+            ':t': {S:taskArn},
+        },
+        ReturnValues:"UPDATED_NEW",
+    }).promise();
 
     return {
         code:    'Start Meeting',
-        url: meetingURL
+        url: meetingURL,
+        taskArn: taskArn,
     }
 }
-
-
 
 const defaultResponse = (operation) => {
     console.log("no valid response" + operation)

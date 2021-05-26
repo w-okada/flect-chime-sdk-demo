@@ -150,6 +150,36 @@ exports.postAttendee = async (event, context, callback) => {
     callback(null, response)
 }
 
+// (3-3) List Attendees
+exports.getAttendees = async (event, context, callback) => {
+    console.log(event)
+    console.log(context)
+    console.log(callback)
+    console.log("headers:::", event.headers)
+
+    const accessToken = event.headers["x-flect-access-token"]
+    const meetingName = event.pathParameters.meetingName
+
+    const p = await provider.getUser(
+        { AccessToken: accessToken }, (err, data) => {
+            console.log("getUser")
+            console.log(err)
+            console.log(data)
+        })
+    console.log(meetingName, accessToken, p)
+
+    const response = utils.getResponseTemplate()
+
+    console.log("list attendees.....")
+    const attendees = await meeting.getAttendees(meetingName)
+    console.log("list attendees.....done",attendees)
+
+    response.body = JSON.stringify(attendees)
+    callback(null, response)
+}
+
+
+
 // (4-1) Post Attendee Operation
 exports.postAttendeeOperation = async (event, context, callback) => {
     console.log(event)

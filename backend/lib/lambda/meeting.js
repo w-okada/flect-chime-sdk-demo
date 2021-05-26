@@ -49,7 +49,8 @@ const getMeetingInfo = async (meetingName) => {
         MeetingName: meetingInfo.MeetingName.S,
         MeetingId: meetingInfo.MeetingId.S,
         MeetingInfo: JSON.parse(meetingInfo.Data.S),
-        Metadata: JSON.parse(meetingInfo.Metadata.S)
+        Metadata: JSON.parse(meetingInfo.Metadata.S),
+        hmmTaskArn: meetingInfo.hmmTaskArn ? meetingInfo.hmmTaskArn.S: "-",
     }
 }
 
@@ -153,6 +154,8 @@ exports.joinMeeting = async (meetingName, userName) => {
 }
 
 
+
+
 exports.closeMeeting = async(meetingName) =>{
     let meetingInfo = await getMeetingInfo(meetingName);
     await chime.deleteMeeting({
@@ -176,3 +179,24 @@ exports.getAttendeeIfno = async (meetingName, userId) => {
     console.log(result)
     return {AttendeeId:result.Item.AttendeeId.S, UserName:result.Item.UserName.S, result:'success'}
 }
+
+exports.getAttendees = async (meetingName) => {
+    const meetingInfo = await getMeetingInfo(meetingName);
+    console.log("meetinginfo:::::",meetingInfo)
+    const meetingId = meetingInfo.MeetingId
+    console.log("meetingid:::::",meetingId)
+
+    const params = {
+        MeetingId: meetingId
+    }
+
+    const attendees = await chime.listAttendees(params).promise()
+    console.log(attendees)
+    console.log(attendees.Attendees)
+
+
+    return {Attendees:attendees.Attendees, result:'success'}
+}
+
+
+
