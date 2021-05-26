@@ -3,10 +3,12 @@ import { DefaultDeviceController } from "amazon-chime-sdk-js";
 import React, { useEffect, useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
 import { Recorder } from "../../providers/helper/Recorder";
-import { HMMCmd } from "../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
-import { getDataString } from "../../utils";
+import { HMMCmd, HMMMessage } from "../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
+import { useScheduler } from "../../providers/hooks/useScheduler";
+import { getDateString } from "../../utils";
 import { LocalLogger } from "../../utils/localLogger";
 import { RecorderView } from "./components/views/RecorderView";
+import { useStatusMonitor } from "./hooks/useStatusMonitor";
 
 // const AWS = require('aws-sdk');
 // const bucketName = "f-backendstack-dev-bucket"
@@ -50,6 +52,7 @@ export const HeadlessMeetingManager = () => {
 
     const [ activeRecorderCanvas, setActiveRecorderCanvas] = useState<HTMLCanvasElement>()
     const [ allRecorderCanvas, setAllRecorderCanvas]       = useState<HTMLCanvasElement>()
+    const { meetingActive } = useStatusMonitor()
 
 
     const startRecordInternal = async (recorder:Recorder, srcCanvas:HTMLCanvasElement) => {
@@ -89,8 +92,8 @@ export const HeadlessMeetingManager = () => {
         startRecordInternal(allRecorder, allRecorderCanvas!)
         const event = new CustomEvent('recordStart');
         document.dispatchEvent(event)
-
     }
+
 
     const stopRecord = async () =>{
         activeRecorder?.stopRecording()
@@ -105,7 +108,7 @@ export const HeadlessMeetingManager = () => {
         // activeLink.href = activeUrl
         // allLink.href    = allUrl
 
-        const dateString = getDataString()
+        const dateString = getDateString()
         await activeRecorder?.toMp4(`${dateString}_${decodedMeetingName}_active.mp4`)
         await allRecorder?.toMp4(`${dateString}_${decodedMeetingName}_all.mp4`)
         setIsEncoding(false)
@@ -115,13 +118,36 @@ export const HeadlessMeetingManager = () => {
         document.dispatchEvent(event)
     }
 
+    useEffect(()=>{
+        if(meetingActive===false){
+            (async()=>{
+                if(isRecording){
+                    logger.log("stop recording start")
+                    await stopRecord()
+                    logger.log("stop recording end")
+                    await sleep(20)
+                    logger.log("stop recording sleep end")
 
+                }
+                logger.log("terminate event fire")
+
+                const event = new CustomEvent('terminate');
+                document.dispatchEvent(event)
+                logger.log("terminate event fired")
+
+            })()
+
+        }
+    },[meetingActive])
+
+    
     useEffect(()=>{
         if(hMMCommandData.length === 0){
             return
         }
         const latestCommand = hMMCommandData.slice(-1)[0]
-        switch(latestCommand.data){
+        const mess = latestCommand.data as HMMMessage
+        switch(mess.command){
             case HMMCmd.START_RECORD:
                 logger.log("START RECORD")
                 startRecord()

@@ -2,6 +2,7 @@ import { Avatar, Box, Button, CircularProgress, Container, CssBaseline, Grid, Li
 import { Lock } from '@material-ui/icons';
 import React, { useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
+import { useScheduler } from "../../providers/hooks/useScheduler";
 import { Copyright } from "../000_common/Copyright";
 
 const useStyles = makeStyles((theme) => ({
@@ -27,6 +28,7 @@ const useStyles = makeStyles((theme) => ({
 export const SignIn = () => {
     const classes = useStyles();
     const { userId: curUserId, password: curPassword, handleSignIn, setMessage, setStage } = useAppState()
+    console.log("singine...")
     const [userId, setUserId] = useState(curUserId || "")
     const [password, setPassword] = useState(curPassword || "")
     const [isLoading, setIsLoading] = useState(false)

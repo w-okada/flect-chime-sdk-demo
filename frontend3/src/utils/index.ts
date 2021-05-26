@@ -84,11 +84,19 @@ export function showDiff<T>(before:T, after:T){
 }
 
 
-export const getDataString = ():string => {
-    var dt = new Date();
+export const getDateString = (unixtime?:number):string => {
+    let dt
+    if(unixtime){
+        dt = new Date(unixtime)
+    }else{
+        dt = new Date()
+    }
     var y = dt.getFullYear();
     var m = ("00" + (dt.getMonth()+1)).slice(-2);
     var d = ("00" + dt.getDate()).slice(-2);
-    var result = y + "_" + m + "_" + d;
+    var h = ("00" + dt.getHours()).slice(-2);
+    var min = ("00" + dt.getMinutes()).slice(-2);
+    var sec = ("00" + dt.getSeconds()).slice(-2);
+    var result = y + "_" + m + "_" + d + "_" + h + "_" + min + "_" + sec;
     return result
 }

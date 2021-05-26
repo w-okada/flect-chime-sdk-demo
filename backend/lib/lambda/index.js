@@ -2,6 +2,7 @@
 var meeting = require('./meeting');
 var utils = require('./utils')
 var attendeeOperations = require('./attendeeOperations')
+var globalOperations = require('./globalOperations')
 var AWS = require('aws-sdk');
 var provider = new AWS.CognitoIdentityServiceProvider();
 
@@ -247,7 +248,7 @@ exports.postOperation = async (event, context, callback) => {
     const response = utils.getResponseTemplate()
 
     console.log("OPERATION.....", event.headers)
-    const operationResult = await attendeeOperations.dispatchOperation(operation, event.headers, body)
+    const operationResult = await globalOperations.dispatchOperation(operation, event.headers, body)
     console.log("OPERATION RESULT:", operationResult)
 
     response.body = JSON.stringify(operationResult)

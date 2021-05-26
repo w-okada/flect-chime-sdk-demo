@@ -12,8 +12,18 @@ export const HMMCmd = {
     START_SHARE_TILEVIEW: "START_SHARE_TILEVIEW",
     STOP_SHARE_TILEVIEW: "STOP_SHARE_TILEVIEW",
     TERMINATE: "TERMINATE",
+    NOTIFY_STATUS: "NOTIFY_STATUS",
 } as const
 
+export type HMM_STATUS = {
+    active: boolean
+    recording: boolean
+}
+
+export type HMMMessage = {
+    command: keyof typeof HMMCmd,
+    data?: any
+}
 
 type UseRealtimeSubscribeHMMProps = {
     meetingSession?:DefaultMeetingSession
@@ -32,17 +42,17 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
     
     const [hMMCommandData, setHMMComandData] = useState<RealtimeData[]>([])
 
-    const sendHMMCommand = (text: string) => {
+    const sendHMMCommand = (mess: HMMMessage) => {
         logger.log(`sendCommand: ${attendeeId}`)
-        const mess: RealtimeData = {
+        const reatimeData: RealtimeData = {
             uuid: v4(),
             action: 'sendmessage',
             app: RealtimeDataApp.HMM,
-            data: text,
+            data: mess,
             createdDate: new Date().getTime(),
             senderId: attendeeId
         }
-        meetingSession?.audioVideo!.realtimeSendDataMessage(RealtimeDataApp.HMM , JSON.stringify(mess))
+        meetingSession?.audioVideo!.realtimeSendDataMessage(RealtimeDataApp.HMM , JSON.stringify(reatimeData))
     }
 
     const receiveData = (mess: DataMessage) => {

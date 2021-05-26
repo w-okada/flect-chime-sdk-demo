@@ -113,7 +113,7 @@ export class BackendStack extends cdk.Stack {
 
     //// (2) Attendee Table
     const attendeeTable = new Table(this, "attendeeTable", {
-      tableName: `${id}_attendeeTable`,
+      tableName: `${id}_AttendeeTable`,
       partitionKey: {
         name: "AttendeeId",
         type: AttributeType.STRING,
@@ -125,7 +125,7 @@ export class BackendStack extends cdk.Stack {
 
     //// (3) Connection Table
     const connectionTable = new Table(this, "connectionTable", {
-      tableName: `${id}_connectionTable`,
+      tableName: `${id}_ConnectionTable`,
       partitionKey: {
         name: "MeetingId",
         type: AttributeType.STRING,

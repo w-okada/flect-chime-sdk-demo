@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import './App.css';
 import { MessageDialog } from './pages/000_common/MessageDialg';
 import { SignIn } from './pages/010_signin';
@@ -20,7 +20,7 @@ const Router = () => {
     const { stage } = useAppState()
     console.log(`[App] stage:${stage}`)
 
-    const page = (()=>{
+    const page = useMemo(()=>{
         switch(stage){
             case "SIGNIN":
                 return <SignIn />
@@ -51,7 +51,7 @@ const Router = () => {
                 return <div>no view</div>
 
         }
-    })()
+    },[stage])
     return (
         <>
         {page}
@@ -62,12 +62,12 @@ const Router = () => {
 
 const App = () => {
     return (
-        <div>
+        <>
             <AppStateProvider>
                 <Router />
                 <MessageDialog />
             </AppStateProvider>
-        </div>
+        </>
     );
 }
 

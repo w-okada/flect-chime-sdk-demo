@@ -19,7 +19,8 @@ import { DrawingMode, useWebSocketWhiteBoard } from "./hooks/WebSocketApp/useWeb
 import { DrawingData } from "./hooks/WebSocketApp/helper/WebSocketWhiteBoardClient";
 import { Recorder } from "./helper/Recorder";
 import { OnetimeCodeInfo, OnetimeCodeSigninResult } from "../api/api";
-import { useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
+import { HMMMessage, useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
+import { useScheduler } from "./hooks/useScheduler";
 
 
 type Props = {
@@ -79,7 +80,7 @@ interface AppStateValue {
     chatData: RealtimeData[],
     sendChatData: (text: string) => void,
     /** For HMM(Headless Meeting Manager) */
-    sendHMMCommand: (text: string) => void,
+    sendHMMCommand: (mess: HMMMessage) => void,
     hMMCommandData: RealtimeData[],
     /** For WhiteBoard */
     addDrawingData: ((data: DrawingData) => void) | undefined
@@ -110,6 +111,9 @@ interface AppStateValue {
     messageDetail: string[], 
     setMessage: (type: MessageType, title: string, detail: string[]) => void,
     resolveMessage: () => void,
+
+    // /** For Scheduler*/
+    // tenSecondsTaskTrigger:number,
 
 }
 
@@ -162,6 +166,8 @@ export const AppStateProvider = ({ children }: Props) => {
     const { sendHMMCommand, hMMCommandData } = useRealtimeSubscribeHMM({meetingSession, attendeeId})
     const logger = meetingSession?.logger
     const { addDrawingData, drawingData, lineWidth, setLineWidth, drawingStroke, setDrawingStroke, drawingMode, setDrawingMode } = useWebSocketWhiteBoard({meetingId, attendeeId, joinToken, logger})
+
+    // const { tenSecondsTaskTrigger } = useScheduler()
 
 
     const providerValue = {
@@ -246,6 +252,8 @@ export const AppStateProvider = ({ children }: Props) => {
         setMessage,
         resolveMessage,
 
+        // /** For Scheduler */
+        // tenSecondsTaskTrigger,
     };
 
     return (

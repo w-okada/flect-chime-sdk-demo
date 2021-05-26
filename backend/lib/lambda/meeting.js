@@ -1,20 +1,41 @@
+//// Import
 const { v4 } = require('uuid');
 var AWS = require('aws-sdk');
-var ddb = new AWS.DynamoDB();
-var meetingTableName = process.env.MEETING_TABLE_NAME
+
+//// Inject Environment
+var meetingTableName   = process.env.MEETING_TABLE_NAME
 var attendeesTableName = process.env.ATTENDEE_TABLE_NAME
+
+//// AWS Clients setup
+var ddb = new AWS.DynamoDB();
 const chime = new AWS.Chime({ region: 'us-east-1' });
 chime.endpoint = new AWS.Endpoint('https://service.chime.aws.amazon.com/console');
 
+
+/**
+ * Meeting Expire Date
+ */
 const getExpireDate = () => {
     return Math.floor(Date.now() / 1000) + 60 * 60 * 24
 }
 
+/**
+ * Wrapper for getMeetingInfo
+ * @param {*} meetingName 
+ */
 exports.getMeetingInfo2 = async (meetingName) =>{
     return getMeetingInfo(meetingName)
 }
 
+/**
+ * get meeting info
+ * (1) retrieve meeting info from DB
+ * (2) If there is no meeting in DB, return null
+ * (3) If there is no meeting in Amazon Chime, delete from DB and return null.
+ * @param {*} meetingName 
+ */
 const getMeetingInfo = async (meetingName) => {
+    //// (1) retrieve info 
     const result = await ddb.getItem({
         TableName: meetingTableName,
         Key: {
@@ -26,18 +47,17 @@ const getMeetingInfo = async (meetingName) => {
 
     console.log("dynamo", result)
 
-    // Meeting does not exist. return null
+    //// (2) If no meeting in DB, return null
     if (!result.Item) {
         return null;
     }
 
-    // Meeting exists. collect info and return them.
+    //// (3) If no meeting in Chime, delete meeting from DB and return null
     const meetingInfo = result.Item
     const meetingData = JSON.parse(meetingInfo.Data.S);
     try {
         // Check Exist? 
-        const mid = await chime.getMeeting(
-            {
+        const mid = await chime.getMeeting({
                 MeetingId: meetingData.Meeting.MeetingId
             }).promise();
     } catch (err) {
@@ -45,16 +65,20 @@ const getMeetingInfo = async (meetingName) => {
         return null;
     }
 
+    //// (4) return meeting info
     return {
         MeetingName: meetingInfo.MeetingName.S,
         MeetingId: meetingInfo.MeetingId.S,
         MeetingInfo: JSON.parse(meetingInfo.Data.S),
         Metadata: JSON.parse(meetingInfo.Metadata.S),
-        hmmTaskArn: meetingInfo.hmmTaskArn ? meetingInfo.hmmTaskArn.S: "-",
+        HmmTaskArn: meetingInfo.HmmTaskArn ? meetingInfo.HmmTaskArn.S: "-",
     }
 }
 
-
+/**
+ * Delete meeting from DB
+ * @param {*} meetingName 
+ */
 const deleteMeeting = async (meetingName) => {
     await ddb.deleteItem({
         TableName: meetingTableName,
@@ -66,30 +90,36 @@ const deleteMeeting = async (meetingName) => {
 }
 
 
-
+/**
+ * Create meeting
+ * (1) If the meeting already exists, return fail.
+ * (2) create meeting in Amazon Chime
+ * (3) register meeting info in DB
+ * @param {*} userId 
+ * @param {*} meetingName 
+ * @param {*} region 
+ */
 exports.createMeeting = async (userId, meetingName, region) => {
-    // check meeting name exist
+    //// (1) check meeting name exist
     const meetingInfo = await getMeetingInfo(meetingName)
     if (meetingInfo !== null) {
         return { created: false, meetingId: meetingInfo.MeetingId }
     }
 
+    //// (2) create meeting in Amazon Chime
     const request = {
         ClientRequestToken: v4(),
         MediaRegion: region,
-
-        // NotificationsConfiguration: getNotificationsConfig(),
     };
     console.info('Creating new meeting: ' + JSON.stringify(request));
     const newMeetingInfo = await chime.createMeeting(request).promise();
     console.info('Creating new meeting: ', newMeetingInfo);
+
+    //// (3) register meeting info in DB
     const date = new Date();
     const now = date.getTime()
     const metadata = {
         OwnerId: userId,
-        //   UsePassCode : usePassCode === "true",
-        //   PassCode    : passCode,
-        //   Secret      : secret === "true",
         Region: region,
         StartTime: now
     }
@@ -106,11 +136,24 @@ exports.createMeeting = async (userId, meetingName, region) => {
         TableName: meetingTableName,
         Item: item,
     }).promise();
+
+
     return { created: true, meetingId: newMeetingInfo.Meeting.MeetingId, meetingName: meetingName, ownerId: userId }
 }
 
 
+
+/**
+ * user join the meeting
+ * (1) If there is no meeting, return fail
+ * (2) If userName is invalid, return fail
+ * (3) create user in Amazon Chime
+ * (4) register user in DB
+ * @param {*} meetingName 
+ * @param {*} userName 
+ */
 exports.joinMeeting = async (meetingName, userName) => {
+    //// (1) check meeting exists
     let meetingInfo = await getMeetingInfo(meetingName);
     if (meetingInfo === null) {
         return {
@@ -118,6 +161,8 @@ exports.joinMeeting = async (meetingName, userName) => {
             message: 'No meeting is found. Please check meeting name.'
         }
     }
+
+    //// (2) check userName
     if (userName === "") {
         return {
             code: 'InvalidInput',
@@ -125,12 +170,15 @@ exports.joinMeeting = async (meetingName, userName) => {
         }
     }
 
+    //// (3) create user in Amazon Chime
     console.info('Adding new attendee');
     const attendeeInfo = (await chime.createAttendee({
         MeetingId: meetingInfo.MeetingId,
         ExternalUserId: v4(),
     }).promise());
 
+
+    //// (4) register user in DB
     await ddb.putItem({
         TableName: attendeesTableName,
         Item: {
@@ -153,18 +201,35 @@ exports.joinMeeting = async (meetingName, userName) => {
     }
 }
 
-
-
-
+/**
+ * close meeting
+ * (1) retrieve meetingId from DB by meetingName
+ * (2) delete meeting from Amazon Chime
+ * (3) delete meeting from DB
+ * @param {*} meetingName 
+ */
 exports.closeMeeting = async(meetingName) =>{
+    //// (1) retrieve meetingId from DB by meetingName
     let meetingInfo = await getMeetingInfo(meetingName);
+    //// (2) delete meeting from Amazon Chime
     await chime.deleteMeeting({
       MeetingId: meetingInfo.MeetingId,
     }).promise();
+    //// (3) delete meeting from DB
     await deleteMeeting(meetingName)
 }
 
+
+/**
+ * get attendee info
+ * (1) retrieve attendee info from DB. key is concatinate of meetingName(encoded) and userId
+ * (2) If there is no user in the meeting, return fail
+ * (3) return attendee info.
+ * @param {*} meetingName 
+ * @param {*} userId 
+ */
 exports.getAttendeeIfno = async (meetingName, userId) => {
+    //// (1) retrieve attendee info from DB. key is concatinate of meetingName(encoded) and userId
     const result = await ddb.getItem({
         TableName: attendeesTableName,
         Key: {
@@ -173,17 +238,29 @@ exports.getAttendeeIfno = async (meetingName, userId) => {
             }
         }
     }).promise();
+
+    //// (2) If there is no user in the meeting, return fail
     if (!result.Item) {
         return {AttendeeId:userId, UserName:"no entry", Query:`${meetingName}/${userId}`, result:'fail'};
     }
     console.log(result)
+
+    //// (3) return attendee info.
     return {AttendeeId:result.Item.AttendeeId.S, UserName:result.Item.UserName.S, result:'success'}
 }
 
+
+
+/**
+ * get list of attendee from Amazon Chime
+ * This api return history of attendee???
+ * Currently not used.
+ * @param {*} meetingName 
+ */
 exports.getAttendees = async (meetingName) => {
     const meetingInfo = await getMeetingInfo(meetingName);
-    console.log("meetinginfo:::::",meetingInfo)
     const meetingId = meetingInfo.MeetingId
+    console.log("meetinginfo:::::",meetingInfo)
     console.log("meetingid:::::",meetingId)
 
     const params = {
@@ -193,7 +270,6 @@ exports.getAttendees = async (meetingName) => {
     const attendees = await chime.listAttendees(params).promise()
     console.log(attendees)
     console.log(attendees.Attendees)
-
 
     return {Attendees:attendees.Attendees, result:'success'}
 }
