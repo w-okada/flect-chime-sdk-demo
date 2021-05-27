@@ -44,7 +44,7 @@ interface AppStateValue {
     onetimeCodeInfo: OnetimeCodeInfo | null,
     handleSinginWithOnetimeCodeRequest: (meetingName: string, attendeeId: string, uuid: string) => Promise<OnetimeCodeInfo>,
     handleSinginWithOnetimeCode: (meetingName: string, attendeeId: string, uuid: string, code: string) => Promise<OnetimeCodeSigninResult>
-    handleSinginWithOnetimeCodeRequest_dummy: (meetingName: string, attendeeId: string, uuid: string) => Promise<OnetimeCodeInfo>,
+    // handleSinginWithOnetimeCodeRequest_dummy: (meetingName: string, attendeeId: string, uuid: string) => Promise<OnetimeCodeInfo>,
 
     /** For MeetingState */
     meetingName?:string, 
@@ -143,7 +143,7 @@ export const AppStateProvider = ({ children }: Props) => {
         onetimeCodeInfo,
         handleSinginWithOnetimeCodeRequest,
         handleSinginWithOnetimeCode,
-        handleSinginWithOnetimeCodeRequest_dummy,
+        // handleSinginWithOnetimeCodeRequest_dummy,
      } = useCredentials({
         UserPoolId:      awsConfiguration.userPoolId, 
         ClientId:        awsConfiguration.clientId,
@@ -187,7 +187,7 @@ export const AppStateProvider = ({ children }: Props) => {
         onetimeCodeInfo,
         handleSinginWithOnetimeCodeRequest,
         handleSinginWithOnetimeCode,
-        handleSinginWithOnetimeCodeRequest_dummy,
+        // handleSinginWithOnetimeCodeRequest_dummy,
 
         /** For MeetingState */
         meetingName, 

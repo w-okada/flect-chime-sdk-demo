@@ -194,19 +194,19 @@ export const useCredentials = (props:UseCredentialsProps) => {
         return res
     }
 
-    // (a-1) Signin request
-    const handleSinginWithOnetimeCodeRequest_dummy = async (meetingName:string, attendeeId:string, uuid:string) =>{
-        // const res = await singinWithOnetimeCodeRequest(meetingName, attendeeId, uuid)
-        const res: OnetimeCodeInfo = {
-            uuid: "",
-            codes: [],
-            status:"",
-            meetingName:"",
-            attendeeId:"",
-        }
-        setOnetimeCodeInfo(res)
-        return res
-    }
+    // // (a-1) Signin request
+    // const handleSinginWithOnetimeCodeRequest_dummy = async (meetingName:string, attendeeId:string, uuid:string) =>{
+    //     // const res = await singinWithOnetimeCodeRequest(meetingName, attendeeId, uuid)
+    //     const res: OnetimeCodeInfo = {
+    //         uuid: "",
+    //         codes: [],
+    //         status:"",
+    //         meetingName:"",
+    //         attendeeId:"",
+    //     }
+    //     setOnetimeCodeInfo(res)
+    //     return res
+    // }
 
 
     return {
@@ -221,7 +221,7 @@ export const useCredentials = (props:UseCredentialsProps) => {
         onetimeCodeInfo,
         handleSinginWithOnetimeCodeRequest,
         handleSinginWithOnetimeCode,
-        handleSinginWithOnetimeCodeRequest_dummy,
+        // handleSinginWithOnetimeCodeRequest_dummy,
     }
 }
 

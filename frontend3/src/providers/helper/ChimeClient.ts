@@ -145,7 +145,7 @@ export class ChimeClient {
      * @param region 
      */
     createMeeting = async (meetingName: string, userName: string, region: string) => {
-        const res = await api.createMeeting(meetingName, userName, region, this.userId!, this.idToken!, this.accessToken!, this.refreshToken!)
+        const res = await api.createMeeting(meetingName, region, this.idToken!, this.accessToken!, this.refreshToken!)
         if (!res.created) {
             console.log("[createMeeting] meeting create failed", res)
             throw new Error(`Meeting Create Failed`)
@@ -166,7 +166,7 @@ export class ChimeClient {
             throw new Error("Username is invalid")
         }
 
-        const joinInfo = await api.joinMeeting(meetingName, userName, this.userId!, this.idToken!, this.accessToken!, this.refreshToken!)
+        const joinInfo = await api.joinMeeting(meetingName, userName, this.idToken!, this.accessToken!, this.refreshToken!)
         console.log("JoinInfo:", joinInfo)
         if (joinInfo['code']) {
             throw new Error("Failed to join")
@@ -378,7 +378,7 @@ export class ChimeClient {
 
     countAttendees = async() =>{
         console.log("countAttendees")
-        const res = await api.getAttendeeList(this.meetingName!, this.userId!, this.idToken!, this.accessToken!, this.refreshToken!)
+        const res = await api.getAttendeeList(this.meetingName!,  this.idToken!, this.accessToken!, this.refreshToken!)
         console.log("countAttendees",res)
         // const p = new Promise((resolve, reject)=>{
         //     if(!this.meetingSession){

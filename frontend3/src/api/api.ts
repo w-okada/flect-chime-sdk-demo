@@ -1,4 +1,7 @@
 import { BASE_URL } from '../Config'
+import { LocalLogger } from '../utils/localLogger'
+
+const logger = new LocalLogger("API")
 
 type CreateMeetingRequest = {
     meetingName: string
@@ -9,12 +12,17 @@ type JoinMeetingRequest = {
     attendeeName: string
 }
 type EndMeetingRequest = {
-    meetingName: string
-    userName: string
-    userId: string
 }
 
-export const createMeeting = async (meetingName: string, userName: string, region: string, userId: string, idToken: string, accessToken: string, refreshToken: string):
+/**
+ * 1. Create meeting
+ * @param meetingName 
+ * @param region 
+ * @param idToken 
+ * @param accessToken 
+ * @param refreshToken 
+ */
+export const createMeeting = async (meetingName: string, region: string, idToken: string, accessToken: string, refreshToken: string):
     Promise<{ created: boolean, meetingName: string, meetingId: string }> =>{
 
     const url = `${BASE_URL}meetings`
@@ -38,11 +46,19 @@ export const createMeeting = async (meetingName: string, userName: string, regio
     });
     const data = await response.json();
     const { created, meetingId } = data;
-    console.log(data)
+    logger.log("createMeeting", data)
     return { created, meetingId, meetingName };
 }
 
-export const joinMeeting = async (meetingName: string, userName: string, userId: string, idToken: string, accessToken: string, refreshToken: string):
+/**
+ * 2. Join Meeting
+ * @param meetingName 
+ * @param userName 
+ * @param idToken 
+ * @param accessToken 
+ * @param refreshToken 
+ */
+export const joinMeeting = async (meetingName: string, userName: string, idToken: string, accessToken: string, refreshToken: string):
     Promise<{ MeetingName: string, Meeting: any, Attendee: any, code?: string }> => { // 公式でもMeetingとAttendeeはanyで定義されている。 
 
     const url = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees`
@@ -74,36 +90,45 @@ export const joinMeeting = async (meetingName: string, userName: string, userId:
     return data;
 }
 
-export const endMeeting = async (meetingName: string, userName: string, userId: string, idToken: string, accessToken: string, refreshToken: string) => {
+/**
+ * 3. end meeting
+ * @param meetingName 
+ * @param userName 
+ * @param userId 
+ * @param idToken 
+ * @param accessToken 
+ * @param refreshToken 
+ */
+export const endMeeting = async (meetingName: string, idToken: string, accessToken: string, refreshToken: string) => {
     const encodedMeetingName = encodeURIComponent(meetingName)
 
     const url = `${BASE_URL}meetings/${encodedMeetingName}`
-    const request: EndMeetingRequest = { 
-        meetingName: encodeURIComponent(meetingName), 
-        userName: encodeURIComponent(userName), 
-        userId: userId 
-    }
-
+    const request:EndMeetingRequest ={}
     const requestBody = JSON.stringify(request)
 
-    const response = await fetch(url,
-        {
-            method: 'DELETE',
-            body: requestBody,
-            headers: {
-                "Authorization": idToken,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                "X-Flect-Access-Token": accessToken
-            }
+    const response = await fetch(url,{
+        method: 'DELETE',
+        body: requestBody,
+        headers: {
+            "Authorization": idToken,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            "X-Flect-Access-Token": accessToken
         }
-    );
-
+    });
     if (!response.ok) {
         throw new Error('Server error ending meeting');
     }
 }
 
+/**
+ * 4. get user info
+ * @param meetingName 
+ * @param attendeeId 
+ * @param idToken 
+ * @param accessToken 
+ * @param refreshToken 
+ */
 export const getUserNameByAttendeeId = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string) => {
     const attendeeUrl = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}`
     const res = await fetch(attendeeUrl, {
@@ -127,14 +152,14 @@ export const getUserNameByAttendeeId = async (meetingName: string, attendeeId: s
 
 
 /**
- * List attendees *** maybe return attendee history. not current attendee???***
+ * 5. List attendees *** maybe return attendee history. not current attendee???***
  * @param meetingName 
  * @param attendeeId 
  * @param idToken 
  * @param accessToken 
  * @param refreshToken 
  */
-export const getAttendeeList = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string) => {
+export const getAttendeeList = async (meetingName: string, idToken: string, accessToken: string, refreshToken: string) => {
     const attendeeUrl = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees`
     const res = await fetch(attendeeUrl, {
         method: 'GET',
@@ -156,6 +181,15 @@ export const getAttendeeList = async (meetingName: string, attendeeId: string, i
 }
 
 
+
+/**
+ * 6. generateOnetimeCode
+ * @param meetingName 
+ * @param attendeeId 
+ * @param idToken 
+ * @param accessToken 
+ * @param refreshToken 
+ */
 export const generateOnetimeCode = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string):
     Promise<{ uuid: string, code: string, ontimecodeExpireDate:number }> => { 
 
@@ -194,6 +228,13 @@ export type OnetimeCodeInfo = {
     attendeeId:string,
 }
 
+
+/**
+ * 7. singinWithOnetimeCodeRequest
+ * @param meetingName 
+ * @param attendeeId 
+ * @param uuid 
+ */
 export const singinWithOnetimeCodeRequest = async (meetingName:string, attendeeId:string, uuid:string):
     Promise<OnetimeCodeInfo> => { 
 
@@ -231,7 +272,13 @@ export type OnetimeCodeSigninResult = {
     accessToken?:string,
     attendeeName?: string,
 }
-
+/**
+ * 8, singinWithOnetimeCode
+ * @param meetingName 
+ * @param attendeeId 
+ * @param uuid 
+ * @param code 
+ */
 export const singinWithOnetimeCode = async (meetingName:string, attendeeId:string, uuid:string, code:string):
     Promise<OnetimeCodeSigninResult> => {
 
@@ -264,9 +311,14 @@ export const singinWithOnetimeCode = async (meetingName:string, attendeeId:strin
 }
 
 
-
-
-
+/**
+ * 9. startManager
+ * @param meetingName 
+ * @param attendeeId 
+ * @param idToken 
+ * @param accessToken 
+ * @param refreshToken 
+ */
 export const startManager = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string):
     Promise<{ code: string, url:string }> => {
 
