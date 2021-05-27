@@ -68,21 +68,21 @@ const onetimeCodeSigninRequest = async  (headers, body) =>{
 
     console.log("dynamo", result)
     // console.log("dynamo", result.Item.onetimeCodeId.S, result.Item.oneCodeExpireDate.N, result.Item.code.S, result.Item.onetimeCodeStatus.S)
-    console.log("dynamo", result.Item.onetimeCodeId.S, result.Item.code.S, result.Item.onetimeCodeExpireDate.N, result.Item.onetimeCodeStatus.S)
+    console.log("dynamo", result.Item.OnetimeCodeId.S, result.Item.Code.S, result.Item.OnetimeCodeExpireDate.N, result.Item.OnetimeCodeStatus.S)
 
     //// (2) generate dummy code
     const codes = []
     for(let i=0; i< 5; i++){
         codes.push(v4().substr(0,6))
     }
-    codes.push(result.Item.code.S)
+    codes.push(result.Item.Code.S)
     codes.shuffle()
     
     //// (3) return challenge
     return{
         uuid: uuid,
         codes: codes,
-        status:result.Item.onetimeCodeStatus.S,
+        status:result.Item.OnetimeCodeStatus.S,
         meetingName: meetingName,
         attendeeId: attendeeId,
     }
@@ -117,7 +117,7 @@ const onetimeCodeSignin = async  (headers, body) =>{
 
 
     console.log("dynamo", result)
-    console.log("dynamo", result.Item.onetimeCodeId.S, result.Item.code.S, result.Item.onetimeCodeExpireDate.N, result.Item.onetimeCodeStatus.S)
+    console.log("dynamo", result.Item.OnetimeCodeId.S, result.Item.Code.S, result.Item.OnetimeCodeExpireDate.N, result.Item.OnetimeCodeStatus.S)
 
 
     //// (2) invalidate onetimecode
@@ -126,7 +126,7 @@ const onetimeCodeSignin = async  (headers, body) =>{
         Key: {
             AttendeeId: {S: tablekey },
         },
-        UpdateExpression:"set onetimeCodeStatus=:s, idToken=:idToken, accessToken=:accessToken",
+        UpdateExpression:"set OnetimeCodeStatus=:s, IdToken=:idToken, AccessToken=:accessToken",
         ExpressionAttributeValues:{
             ':s': {S:'n/a'},
             ':idToken': {S:'-'},
@@ -136,17 +136,17 @@ const onetimeCodeSignin = async  (headers, body) =>{
     }).promise();
 
     //// (3) check onetime code is same as between param and db.
-    let signin = result.Item.code.S === body.code
+    let signin = result.Item.Code.S === body.code
     console.log("sign in result:", signin)
-    if(result.Item.onetimeCodeStatus.S !== "active"){
+    if(result.Item.OnetimeCodeStatus.S !== "active"){
         console.log("code is deactivated!")
         signin = false
     }
     if(signin){
         return{
             result: signin,
-            idToken: result.Item.idToken.S,
-            accessToken: result.Item.accessToken.S,
+            idToken: result.Item.IdToken.S,
+            accessToken: result.Item.AccessToken.S,
             userName: result.Item.UserName.S,
         }
     }else{

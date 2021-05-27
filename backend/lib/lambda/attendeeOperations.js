@@ -104,7 +104,7 @@ const generateOnetimeCode = async (meetingName, userId, headers, body) =>{
         Key: {
             AttendeeId: {S:`${meetingName}/${userId}`},
         },
-        UpdateExpression:"set onetimeCodeId=:i, code=:c, onetimeCodeStatus=:s, onetimeCodeExpireDate=:d, idToken=:idToken, accessToken=:accessToken",
+        UpdateExpression:"set OnetimeCodeId=:i, Code=:c, OnetimeCodeStatus=:s, OnetimeCodeExpireDate=:d, IdToken=:idToken, AccessToken=:accessToken",
         ExpressionAttributeValues:{
             ':i': {S:uuid},
             ':c': {S:code},
