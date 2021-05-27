@@ -81,20 +81,32 @@ export const WaitingRoom = () => {
     },[])// eslint-disable-line
     
     useEffect(() => {
+        console.log("[audioinputchange]",audioInputDeviceId, segmentationType, videoInputDeviceId, audioOutputDeviceId)
         if (videoInputDeviceId === "None") {
-            const p1 = videoInputDeviceSetting!.setVideoInput(null,true)
-            const p2 = videoInputDeviceSetting!.setVideoInputEnable(false,true)
-            Promise.all([p1, p2]).then(()=>{
-                videoInputDeviceSetting!.stopPreview()
-            }) 
+            videoInputDeviceSetting!.setVideoInput(null,true).then(()=>{
+                videoInputDeviceSetting!.setVideoInputEnable(false,true).then(()=>{
+                    videoInputDeviceSetting!.stopPreview()
+                })
+            })
+            // const p1 = videoInputDeviceSetting!.setVideoInput(null,true)
+            // const p2 = videoInputDeviceSetting!.setVideoInputEnable(false,true)
+            // Promise.all([p1, p2]).then(()=>{
+            //     videoInputDeviceSetting!.stopPreview()
+            // }) 
+
         } else if (videoInputDeviceId=== "File") {
             // fileInputRef.current!.click()
         } else {
-            const p1 = videoInputDeviceSetting!.setVideoInput(videoInputDeviceId,true)
-            const p2 = videoInputDeviceSetting!.setVideoInputEnable(true,true)
-            Promise.all([p1, p2]).then(()=>{
-                videoInputDeviceSetting!.startPreview()
+            videoInputDeviceSetting!.setVideoInput(videoInputDeviceId,true).then(()=>{
+                videoInputDeviceSetting!.setVideoInputEnable(true,true).then(()=>{
+                    videoInputDeviceSetting!.startPreview()
+                })
             })
+            // const p1 = videoInputDeviceSetting!.setVideoInput(videoInputDeviceId,true)
+            // const p2 = videoInputDeviceSetting!.setVideoInputEnable(true,true)
+            // Promise.all([p1, p2]).then(()=>{
+            //     videoInputDeviceSetting!.startPreview()
+            // })
         }
 
         if (segmentationType === "None") {

@@ -5,7 +5,10 @@ export class VideoInputDeviceSetting {
     private meetingSession: MeetingSession
     private virtualBackgroundProcessor: VirtualBackground | null = null
     private videoTransformDevice: DefaultVideoTransformDevice | null = null
+    private deviceMediaStream: MediaStream|null = null
+    private currentVideoDevice: string = ""
 
+    private stateChanging:boolean = false
     videoInput: MediaStream | string | null = null
     videoInputEnable: boolean = true
     virtualBackgroundEnable:boolean=false
@@ -24,6 +27,18 @@ export class VideoInputDeviceSetting {
     // VideoInput
     ///////////////
     private setVideoInputCommon = async (device: MediaStream | string | null, enable: boolean, vbgEnable: boolean, vfgEnable: boolean,) => {
+        console.log("setVideoInput", device, enable, vbgEnable, vfgEnable)
+        // if(this.deviceMediaStream){
+        //     this.deviceMediaStream.getVideoTracks().forEach(x=>{
+        //         x.stop()
+        //     })
+        // }
+        // this.deviceMediaStream = null
+
+        // if(this.videoTransformDevice){
+        //     this.videoTransformDevice.chooseNewInnerDevice(null)
+        // }
+        // await this.meetingSession.audioVideo.chooseVideoInputDevice(null)
         /// no use video input
         if (device === null || enable === false) {
             console.log("[DeviceSetting] VideoInput is null or disabled.")
@@ -33,8 +48,17 @@ export class VideoInputDeviceSetting {
 
         /// for standard video input
         if (vbgEnable === false && vfgEnable === false) {
-            console.log("[DeviceSetting] VideoInput doesn't use virtual background.")
-            await this.meetingSession.audioVideo.chooseVideoInputDevice(device)
+            console.log("[DeviceSetting] VideoInput doesn't use virtual background. 11")
+            // if(this.currentVideoDevice !== device){
+            //     await this.meetingSession.audioVideo.chooseVideoInputDevice(device)
+            //     if(typeof device === "string"){
+            //         this.currentVideoDevice = device
+            //     }
+            // }
+
+                await this.meetingSession.audioVideo.chooseVideoInputDevice(device)
+
+            console.log("[DeviceSetting] VideoInput doesn't use virtual background. 2")
             return
         }
 

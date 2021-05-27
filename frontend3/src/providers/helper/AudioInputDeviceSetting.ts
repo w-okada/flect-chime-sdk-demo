@@ -10,22 +10,32 @@ export class AudioInputDeviceSetting {
     private mixSoundeVolume:number = 0.3
     private mixGainNode:GainNode|null = null
     private outputNode:MediaStreamAudioDestinationNode|null = null
+    private deviceMediaStream:MediaStream|null =null
 
     audioInput: MediaStream | string | null = null
     audioInputEnable: boolean = true
     audioSuppressionEnable: boolean = true
-    voiceFocusSpec: VoiceFocusSpec | null = { variant: "auto" }
+    voiceFocusSpec: VoiceFocusSpec | null = { variant: "c10" }
 
     audioInputForRecord: MediaStream | string | null = null
-
 
     constructor(meetingSession: MeetingSession) {
         this.meetingSession = meetingSession
     }
+
     ///////////////
     // AudioInput
     ///////////////
     private setAudioInputCommon = async (device: MediaStream | string | null, enable: boolean, suppression: boolean, suppressionSpec?: VoiceFocusSpec) => {
+
+
+        if(this.deviceMediaStream){
+            this.deviceMediaStream.getAudioTracks().forEach(x=>{
+                x.stop()
+            })
+        }
+        this.deviceMediaStream = null
+
         /// no use audio input
         if (device === null || enable === false) {
             console.log("[DeviceSetting] AudioInput is null or disabled.")
@@ -55,7 +65,7 @@ export class AudioInputDeviceSetting {
             const proposedConstraints: MediaStreamConstraints|null = this.calculateAudioMediaStreamConstraints(device);  
             console.log(proposedConstraints)
             inputMediaStream = await navigator.mediaDevices.getUserMedia(proposedConstraints!);
-
+            this.deviceMediaStream = inputMediaStream
             // inputMediaStream = await navigator.mediaDevices.getUserMedia({audio:{deviceId:device}});
                         
         }
@@ -93,7 +103,7 @@ export class AudioInputDeviceSetting {
                 console.log("[DeviceSetting] reuse TransformDevice Device.")
                 this.voiceFocusTransformDevice = await this.voiceFocusTransformDevice!.chooseNewInnerDevice(inputMediaStream)
             }
-            console.log("[DeviceSetting] 1  ",this.voiceFocusTransformDevice)
+            console.log("[DeviceSetting]  ",this.voiceFocusTransformDevice)
 
         }else{
             /// suppression disable
@@ -107,10 +117,10 @@ export class AudioInputDeviceSetting {
         this.midNode?.disconnect()
 
         if(this.voiceFocusTransformDevice){
-            const dummy = audioContext.createMediaStreamSource(inputMediaStream);
-            const nodes = await this.voiceFocusTransformDevice.createAudioNode(audioContext) 
-            dummy.connect(nodes.start)
-            this.midNode = nodes.end
+            const nodeToVF = audioContext.createMediaStreamSource(inputMediaStream);
+            const nodeOfVF = await this.voiceFocusTransformDevice.createAudioNode(audioContext)
+            nodeToVF.connect(nodeOfVF.start)
+            this.midNode = nodeOfVF.end
         }else{
             this.midNode = audioContext.createMediaStreamSource(inputMediaStream);
         }
@@ -170,15 +180,15 @@ export class AudioInputDeviceSetting {
         return { audio: trackConstraints } 
     }
 
-    supportSampleRateConstraint(): boolean {
+    private supportSampleRateConstraint(): boolean {
         return !!navigator.mediaDevices.getSupportedConstraints().sampleRate;
       }
     
-    supportSampleSizeConstraint(): boolean {
+      private supportSampleSizeConstraint(): boolean {
         return !!navigator.mediaDevices.getSupportedConstraints().sampleSize;
     }
     
-    supportChannelCountConstraint(): boolean {
+    private supportChannelCountConstraint(): boolean {
         return !!navigator.mediaDevices.getSupportedConstraints().channelCount;
     }
 
