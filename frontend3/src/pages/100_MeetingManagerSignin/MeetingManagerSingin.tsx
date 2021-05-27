@@ -52,7 +52,7 @@ export const MeetingManagerSignin = () => {
         ////// Signin
         const res = await handleSinginWithOnetimeCode(onetimeCodeInfo!.meetingName, onetimeCodeInfo!.attendeeId, onetimeCodeInfo!.uuid, code)
         if(res.result){
-            setState({...state, userName: res.userName||null, internalStage:"Joining"})
+            setState({...state, userName: res.attendeeName||null, internalStage:"Joining"})
         }else{
             setMessage("Exception", "Signin error", [`can not sigin. please generate code and retry.`] )
             setIsLoading(false)            

@@ -140,7 +140,7 @@ export const HeadlessMeetingManager = () => {
         }
     },[meetingActive])
 
-    
+
     useEffect(()=>{
         if(hMMCommandData.length === 0){
             return
@@ -195,7 +195,7 @@ export const HeadlessMeetingManager = () => {
             }
             handleSinginWithOnetimeCode(meetingName, attendeeId, uuid, code).then((res)=>{
                 if(res.result){
-                    setState({...state, userName: res.userName||null, internalStage:"Joining"})
+                    setState({...state, userName: res.attendeeName||null, internalStage:"Joining"})
                 }else{
                     logger.log("Exception: Signin error, can not sigin. please generate code and retry.", res)
                 }

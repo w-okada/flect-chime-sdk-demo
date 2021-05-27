@@ -147,7 +147,7 @@ const onetimeCodeSignin = async  (headers, body) =>{
             result: signin,
             idToken: result.Item.IdToken.S,
             accessToken: result.Item.AccessToken.S,
-            userName: result.Item.UserName.S,
+            attendeeName: result.Item.AttendeeName.S,
         }
     }else{
         return{

@@ -44,16 +44,16 @@ Array.prototype.shuffle = function() {
  * @param {*} operation 
  * @param {*} email 
  * @param {*} meetingName 
- * @param {*} userId 
+ * @param {*} attendeeId
  * @param {*} header 
  * @param {*} body 
  */
-exports.dispatchAttendeeOperation = async (operation, email, meetingName, userId, header, body) => {
+exports.dispatchAttendeeOperation = async (operation, email, meetingName, attendeeId, header, body) => {
     switch(operation){
         case "generate-onetime-code":
-            return generateOnetimeCode(meetingName, userId, header, body)
+            return generateOnetimeCode(meetingName, attendeeId, header, body)
         case "start-manager":
-            return startMeetingManager(email, meetingName, userId, header, body)
+            return startMeetingManager(email, meetingName, attendeeId, header, body)
         default:
             return defaultResponse(operation)
     }
@@ -74,11 +74,11 @@ const getOntimeCodeExpireDate = () => {
  * (3) register the code
  * (4) return the code
  * @param {*} meetingName 
- * @param {*} userId 
+ * @param {*} attendeeId
  * @param {*} headers 
  * @param {*} body 
  */
-const generateOnetimeCode = async (meetingName, userId, headers, body) =>{
+const generateOnetimeCode = async (meetingName, attendeeId, headers, body) =>{
     const idToken     = headers["Authorization"]
     const accessToken = headers["x-flect-access-token"]
 
@@ -102,7 +102,7 @@ const generateOnetimeCode = async (meetingName, userId, headers, body) =>{
     await ddb.updateItem({
         TableName: attendeesTableName,
         Key: {
-            AttendeeId: {S:`${meetingName}/${userId}`},
+            AttendeeId: {S:`${meetingName}/${attendeeId}`},
         },
         UpdateExpression:"set OnetimeCodeId=:i, Code=:c, OnetimeCodeStatus=:s, OnetimeCodeExpireDate=:d, IdToken=:idToken, AccessToken=:accessToken",
         ExpressionAttributeValues:{
@@ -116,7 +116,7 @@ const generateOnetimeCode = async (meetingName, userId, headers, body) =>{
         ReturnValues:"UPDATED_NEW",
     }).promise();
     
-    console.log("GenerateOntetimeCode:", idToken, accessToken, uuid, code, meetingName, userId)
+    console.log("GenerateOntetimeCode:", idToken, accessToken, uuid, code, meetingName, attendeeId)
     //// (4) return the code
     return{
         uuid: uuid,
@@ -132,7 +132,7 @@ const generateOnetimeCode = async (meetingName, userId, headers, body) =>{
  * 
  * @email caller's email. if this email is not the meeting owner's one, invoke hmm failed.
  */
-const startMeetingManager = async (email, meetingName, userId, headers, body) =>{
+const startMeetingManager = async (email, meetingName, attendeeId, headers, body) =>{
     console.log("startMeetingManager")
     //// (1) If there is no meeting, return fail
     let meetingInfo = await meeting.getMeetingInfo2(meetingName);
@@ -192,7 +192,7 @@ const startMeetingManager = async (email, meetingName, userId, headers, body) =>
 
     
     //// (4) generate onetime code for the HMM
-    var oneCodeGenResult = await generateOnetimeCode(meetingName, userId, headers, body)
+    var oneCodeGenResult = await generateOnetimeCode(meetingName, attendeeId, headers, body)
     if(!oneCodeGenResult['code']){
         console.log("Generating OneTimeCode failed.",oneCodeGenResult)
         return oneCodeGenResult
@@ -202,7 +202,7 @@ const startMeetingManager = async (email, meetingName, userId, headers, body) =>
     var uuid = oneCodeGenResult['uuid']
 
     //// (5) invoke HMM fargate container
-    var meetingURL = `https://${bucketDomainName}/index.html?code=${code}&uuid=${uuid}&meetingName=${meetingName}&attendeeId=${userId}&mode=HEADLESS_MEETING_MANAGER`
+    var meetingURL = `https://${bucketDomainName}/index.html?code=${code}&uuid=${uuid}&meetingName=${meetingName}&attendeeId=${attendeeId}&mode=HEADLESS_MEETING_MANAGER`
     var params = {
         cluster: clusterArn ,
         count: 1,

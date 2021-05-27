@@ -421,7 +421,7 @@ export class BackendStack extends cdk.Stack {
 
     ///// (3) Attendee
     const apiAttendees = apiMeeting.addResource("attendees")
-    const apiAttendee = apiAttendees.addResource("{userId}")
+    const apiAttendee = apiAttendees.addResource("{attendeeId}")
     addCorsOptions(apiAttendees)
     addCorsOptions(apiAttendee)
 

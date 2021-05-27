@@ -2,14 +2,11 @@ import { BASE_URL } from '../Config'
 
 type CreateMeetingRequest = {
     meetingName: string
-    userName: string
     region: string
-    userId: string
 }
 type JoinMeetingRequest = {
     meetingName: string
-    userName: string
-    userId: string
+    attendeeName: string
 }
 type EndMeetingRequest = {
     meetingName: string
@@ -24,9 +21,7 @@ export const createMeeting = async (meetingName: string, userName: string, regio
 
     const request: CreateMeetingRequest = { 
         meetingName: encodeURIComponent(meetingName), 
-        userName: encodeURIComponent(userName), 
         region: region, 
-        userId: userId
     }
 
     const requestBody = JSON.stringify(request)
@@ -51,17 +46,14 @@ export const joinMeeting = async (meetingName: string, userName: string, userId:
     Promise<{ MeetingName: string, Meeting: any, Attendee: any, code?: string }> => { // 公式でもMeetingとAttendeeはanyで定義されている。 
 
     const url = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees`
+    const attendeeName = userName // TODO:
 
     const request:JoinMeetingRequest = { 
         meetingName: encodeURIComponent(meetingName), 
-        userName: encodeURIComponent(userName), 
-        userId: userId 
+        attendeeName: encodeURIComponent(attendeeName), 
     }
 
     const requestBody = JSON.stringify(request)
-
-    // console.log("[joinMeeting]", idToken, accessToken)
-
 
     const response = await fetch(url, {
             method: 'POST',
@@ -126,8 +118,9 @@ export const getUserNameByAttendeeId = async (meetingName: string, attendeeId: s
     }
 
     const data = await res.json();
+    console.log("getUserNameByAttendeeId", data)
     return {
-        name: decodeURIComponent(data.UserName),
+        name: decodeURIComponent(data.AttendeeName),
         result: data.result
     };
 }
@@ -236,7 +229,7 @@ export type OnetimeCodeSigninResult = {
     result:boolean,
     idToken?:string,
     accessToken?:string,
-    userName?: string,
+    attendeeName?: string,
 }
 
 export const singinWithOnetimeCode = async (meetingName:string, attendeeId:string, uuid:string, code:string):

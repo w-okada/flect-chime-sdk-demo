@@ -95,11 +95,11 @@ const deleteMeeting = async (meetingName) => {
  * (1) If the meeting already exists, return fail.
  * (2) create meeting in Amazon Chime
  * (3) register meeting info in DB
- * @param {*} userId 
+ * @param {*} email (email address!)
  * @param {*} meetingName 
  * @param {*} region 
  */
-exports.createMeeting = async (userId, meetingName, region) => {
+exports.createMeeting = async (email, meetingName, region) => {
     //// (1) check meeting name exist
     const meetingInfo = await getMeetingInfo(meetingName)
     if (meetingInfo !== null) {
@@ -119,7 +119,7 @@ exports.createMeeting = async (userId, meetingName, region) => {
     const date = new Date();
     const now = date.getTime()
     const metadata = {
-        OwnerId: userId,
+        OwnerId: email,
         Region: region,
         StartTime: now
     }
@@ -138,21 +138,21 @@ exports.createMeeting = async (userId, meetingName, region) => {
     }).promise();
 
 
-    return { created: true, meetingId: newMeetingInfo.Meeting.MeetingId, meetingName: meetingName, ownerId: userId }
+    return { created: true, meetingId: newMeetingInfo.Meeting.MeetingId, meetingName: meetingName, ownerId: email }
 }
 
 
 
 /**
- * user join the meeting
+ * attendee join the meeting
  * (1) If there is no meeting, return fail
- * (2) If userName is invalid, return fail
- * (3) create user in Amazon Chime
- * (4) register user in DB
+ * (2) If attendeeName is invalid, return fail
+ * (3) create attendee in Amazon Chime
+ * (4) register attendee in DB
  * @param {*} meetingName 
- * @param {*} userName 
+ * @param {*} attendeeName 
  */
-exports.joinMeeting = async (meetingName, userName) => {
+exports.joinMeeting = async (meetingName, attendeeName) => {
     //// (1) check meeting exists
     let meetingInfo = await getMeetingInfo(meetingName);
     if (meetingInfo === null) {
@@ -162,15 +162,15 @@ exports.joinMeeting = async (meetingName, userName) => {
         }
     }
 
-    //// (2) check userName
-    if (userName === "") {
+    //// (2) check attendeeName
+    if (attendeeName === "") {
         return {
             code: 'InvalidInput',
-            message: 'Username you input is invalid.'
+            message: 'AttendeeName you input is invalid.'
         }
     }
 
-    //// (3) create user in Amazon Chime
+    //// (3) create attendee in Amazon Chime
     console.info('Adding new attendee');
     const attendeeInfo = (await chime.createAttendee({
         MeetingId: meetingInfo.MeetingId,
@@ -178,14 +178,14 @@ exports.joinMeeting = async (meetingName, userName) => {
     }).promise());
 
 
-    //// (4) register user in DB
+    //// (4) register attendee in DB
     await ddb.putItem({
         TableName: attendeesTableName,
         Item: {
             'AttendeeId': {
                 S: `${meetingName}/${attendeeInfo.Attendee.AttendeeId}`
             },
-            'UserName': { S: userName },
+            'AttendeeName': { S: attendeeName },
             'TTL': {
                 N: '' + getExpireDate()
             }
@@ -222,31 +222,31 @@ exports.closeMeeting = async(meetingName) =>{
 
 /**
  * get attendee info
- * (1) retrieve attendee info from DB. key is concatinate of meetingName(encoded) and userId
- * (2) If there is no user in the meeting, return fail
+ * (1) retrieve attendee info from DB. key is concatinate of meetingName(encoded) and attendeeId
+ * (2) If there is no attendee in the meeting, return fail
  * (3) return attendee info.
  * @param {*} meetingName 
- * @param {*} userId 
+ * @param {*} attendeeId
  */
-exports.getAttendeeIfno = async (meetingName, userId) => {
-    //// (1) retrieve attendee info from DB. key is concatinate of meetingName(encoded) and userId
+exports.getAttendeeIfno = async (meetingName, attendeeId) => {
+    //// (1) retrieve attendee info from DB. key is concatinate of meetingName(encoded) and attendeeId
     const result = await ddb.getItem({
         TableName: attendeesTableName,
         Key: {
             'AttendeeId': {
-                S: `${meetingName}/${userId}`
+                S: `${meetingName}/${attendeeId}`
             }
         }
     }).promise();
 
-    //// (2) If there is no user in the meeting, return fail
+    //// (2) If there is no attendee in the meeting, return fail
     if (!result.Item) {
-        return {AttendeeId:userId, UserName:"no entry", Query:`${meetingName}/${userId}`, result:'fail'};
+        return {AttendeeId:attendeeId, AttendeeName:"no entry", Query:`${meetingName}/${attendeeId}`, result:'fail'};
     }
     console.log(result)
 
     //// (3) return attendee info.
-    return {AttendeeId:result.Item.AttendeeId.S, UserName:result.Item.UserName.S, result:'success'}
+    return {AttendeeId:result.Item.AttendeeId.S, AttendeeName:result.Item.AttendeeName.S, result:'success'}
 }
 
 

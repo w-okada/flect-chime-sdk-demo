@@ -46,7 +46,6 @@ export const useCredentials = (props:UseCredentialsProps) => {
             Pool: userPool
         })
 
-        console.log("handleSignIn:::", inputUserId, inputPassword)
 
         const p = new Promise<void>((resolve, reject)=>{
             cognitoUser.authenticateUser(authenticationDetails, {

@@ -9,27 +9,26 @@ var provider = new AWS.CognitoIdentityServiceProvider();
 var userPoolId = process.env.USER_POOL_ID
 
 
-// (1) Root Function
+// (1) Root Function (dummy)
 exports.handler = async (event, context, callback) => {
-    console.log(event)
-    console.log(context)
-    console.log(callback)
+    // console.log(event)
+    // console.log(context)
+    // console.log(callback)
+    // console.log(event.body)
 
-    console.log(event.body)
-
-    const response = utils.getResponseTemplate()
-    response.body = JSON.stringify({ x: 5, y: 6 })
-    callback(null, response);
+    // const response = utils.getResponseTemplate()
+    // response.body = JSON.stringify({ x: 5, y: 6 })
+    // callback(null, response);
 };
 
-// (2-1) Get Meetings
+// (2-1) Get Meetings (dummy)
 exports.getMeetings = async (event, context, callback) => {
-    console.log(event)
-    console.log(context)
-    console.log(callback)
-    const response = utils.getResponseTemplate()
-    response.body = JSON.stringify({ x: "getMeetings" })
-    callback(null, response)
+    // console.log(event)
+    // console.log(context)
+    // console.log(callback)
+    // const response = utils.getResponseTemplate()
+    // response.body = JSON.stringify({ x: "getMeetings" })
+    // callback(null, response)
 }
 
 // (2-2) Post Meeting
@@ -41,39 +40,23 @@ exports.postMeeting = async (event, context, callback) => {
     const body = JSON.parse(event.body)
     console.log("body:::", body)
 
-    const idToken = event.headers["Authorization"]
-    const accessToken = event.headers["x-flect-access-token"]
-    const meetingName = body.meetingName
-    const userName = body.userName
-    const region = body.region
-    const userId = body.userId
+    const idToken      = event.headers["Authorization"]
+    const accessToken  = event.headers["x-flect-access-token"]
+    const meetingName  = body.meetingName
+    const region       = body.region
 
-    const user = await provider.adminGetUser({
-        UserPoolId: userPoolId,
-        Username: userId,
-    }).promise()
-    console.log("user---->", user)
+    const email = await utils.getEmailFromAccessToken(accessToken)
+    console.log(`idToken:${idToken}, accessToken:${accessToken}`)
+    console.log(`meetingName:${meetingName}, region:${region}, email:${email}`)
 
-    console.log("accessToken:::", accessToken)
-
-    const p = await provider.getUser(
-        { AccessToken: accessToken }, (err, data) => {
-            console.log("getUser")
-            console.log(err)
-            console.log(data)
-        })
-
-
-    console.log(idToken, meetingName, userName, region, userId, accessToken)
-
-    const { created, meetingId, ownerId } = await meeting.createMeeting(userId, meetingName, region)
+    const { created, meetingId, ownerId } = await meeting.createMeeting(email, meetingName, region)
     const response = utils.getResponseTemplate()
-    console.log(meetingId)
+    console.log(`meetingId:${meetingId}`)
     response.body = JSON.stringify({ success: true, meetingName: meetingName, created: created, meetingId: meetingId, ownerId: ownerId })
     callback(null, response)
 }
 
-// (2-3) Delete Meeting
+// (2-3) Delete Meeting (not implemented)
 exports.deleteMeeting = async (event, context, callback) => {
     console.log(event)
     console.log(context)
@@ -86,7 +69,6 @@ exports.deleteMeeting = async (event, context, callback) => {
 
     response.body = JSON.stringify({ x: "deleteMeeting" })
     callback(null, response)
-
 }
 
 // (3-1) Get Attendee
@@ -100,21 +82,15 @@ exports.getAttendee = async (event, context, callback) => {
 
     const accessToken = event.headers["x-flect-access-token"]
     const meetingName = event.pathParameters.meetingName
-    const userId = event.pathParameters.userId
-    console.log("accessToken:::", accessToken)
+    const attendeeId  = event.pathParameters.attendeeId
 
-    const p = await provider.getUser(
-        { AccessToken: accessToken }, (err, data) => {
-            console.log("getUser")
-            console.log(err)
-            console.log(data)
-        })
-    console.log(meetingName, userId, accessToken, p)
+    const email = await utils.getEmailFromAccessToken(accessToken)        
+    console.log(`accessToken:${accessToken}`)
+    console.log(`meetingName:${meetingName}, attendeeId:${attendeeId}, email:${email}`)
 
     const response = utils.getResponseTemplate()
-    const attendeeInfo = await meeting.getAttendeeIfno(meetingName, userId)
+    const attendeeInfo = await meeting.getAttendeeIfno(meetingName, attendeeId)
     response.body = JSON.stringify(attendeeInfo)
-    console.log("RESPONSE::::", response)
     callback(null, response)
 }
 
@@ -127,24 +103,17 @@ exports.postAttendee = async (event, context, callback) => {
     const body = JSON.parse(event.body)
     console.log("body:::", body)
 
-    const accessToken = event.headers["x-flect-access-token"]
-    const meetingName = event.pathParameters.meetingName
-    const userName = body.userName
-    const userId = body.userId
+    const accessToken  = event.headers["x-flect-access-token"]
+    const meetingName  = event.pathParameters.meetingName
+    const attendeeName = body.attendeeName
 
 
-    const p = await provider.getUser(
-        { AccessToken: accessToken }, (err, data) => {
-            console.log("getUser")
-            console.log(err)
-            console.log(data)
-        })
-    console.log(meetingName, userName, userId, accessToken, p)
+    const email = await utils.getEmailFromAccessToken(accessToken)        
+    console.log(`meetingName:${meetingName}, attendeeName:${attendeeName}, email:${email}`)
+
 
     const response = utils.getResponseTemplate()
-
-    console.log("JOIN INFO.....")
-    const joinInfo = await meeting.joinMeeting(meetingName, userName)
+    const joinInfo = await meeting.joinMeeting(meetingName, attendeeName)
     console.log("JOIN INFO:", joinInfo)
 
     response.body = JSON.stringify(joinInfo)
@@ -161,17 +130,12 @@ exports.getAttendees = async (event, context, callback) => {
     const accessToken = event.headers["x-flect-access-token"]
     const meetingName = event.pathParameters.meetingName
 
-    const p = await provider.getUser(
-        { AccessToken: accessToken }, (err, data) => {
-            console.log("getUser")
-            console.log(err)
-            console.log(data)
-        })
-    console.log(meetingName, accessToken, p)
+    const email = await utils.getEmailFromAccessToken(accessToken)        
+    console.log(`accessToken:${accessToken}`)
+    console.log(`meetingName:${meetingName}, email:${email}`)
 
     const response = utils.getResponseTemplate()
 
-    console.log("list attendees.....")
     const attendees = await meeting.getAttendees(meetingName)
     console.log("list attendees.....done",attendees)
 
@@ -192,34 +156,15 @@ exports.postAttendeeOperation = async (event, context, callback) => {
 
     const accessToken = event.headers["x-flect-access-token"]
     const meetingName = event.pathParameters.meetingName
-    const userId = event.pathParameters.userId      // attendeeId
-    const operation = event.pathParameters.operation
+    const attendeeId  = event.pathParameters.attendeeId      // attendeeId
+    const operation   = event.pathParameters.operation
 
-
-    const p = new Promise((resolve, reject) => {
-        provider.getUser(
-            { AccessToken: accessToken }, (err, data) => {
-                console.log("getUser")
-                console.log(err)
-                console.log(data)
-                resolve(data)
-            })
-    })
-    const userData = await p
-    console.log(meetingName, userId, accessToken, operation)
-
-    let email    
-    for(let i = 0; i < userData['UserAttributes'].length; i++){
-        const att = userData['UserAttributes'][i]
-        if(att['Name'] == 'email'){
-            email = att['Value']
-        }
-    }
+    const email = await utils.getEmailFromAccessToken(accessToken)        
 
     const response = utils.getResponseTemplate()
 
     console.log("ATTENDEE OPERATION.....", event.headers)
-    const operationResult = await attendeeOperations.dispatchAttendeeOperation(operation, email, meetingName, userId, event.headers, body)
+    const operationResult = await attendeeOperations.dispatchAttendeeOperation(operation, email, meetingName, attendeeId, event.headers, body)
     console.log("ATTENDEE OPERATION RESULT:", operationResult)
 
     response.body = JSON.stringify(operationResult)
