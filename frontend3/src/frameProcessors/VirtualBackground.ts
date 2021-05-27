@@ -63,7 +63,7 @@ export class VirtualBackground implements VideoFrameProcessor {
     bodyPixConfig = (() => {
         const c = generateBodyPixDefaultConfig()
         c.model = ModelConfigMobileNetV1_05
-        c.processOnLocal = false
+        c.processOnLocal = true
         return c
     })()
     bodyPixParams = (() => {
@@ -85,7 +85,7 @@ export class VirtualBackground implements VideoFrameProcessor {
     googlemeetModelReady = false
     googlemeetConfig = (() => {
         const c = generateGoogleMeetSegmentationDefaultConfig()
-        c.processOnLocal = false
+        c.processOnLocal = true
         return c
     })()
     googlemeetParams = (() => {
@@ -94,8 +94,8 @@ export class VirtualBackground implements VideoFrameProcessor {
         p.processHeight = 128
         p.smoothingR = 1
         p.smoothingS = 1
-        p.jbfWidth = 512
-        p.jbfHeight = 512
+        p.jbfWidth = 256
+        p.jbfHeight = 256
         p.lightWrapping = true
         p.smoothingType = GoogleMeetSegmentationSmoothingType.JS
         return p
@@ -117,7 +117,7 @@ export class VirtualBackground implements VideoFrameProcessor {
     googlemeetTFLiteModelReady = false
     googlemeetTFLiteConfig = (() => {
         const c = generateGoogleMeetSegmentationTFLiteDefaultConfig()
-        c.processOnLocal = false
+        c.processOnLocal = true
         c.modelPath = `${process.env.PUBLIC_URL}/models/96x160/segm_lite_v681.tflite`
         // c.modelPath = `${process.env.PUBLIC_URL}/models/128x128/segm_lite_v509.tflite`
         // c.modelPath = ${process.env.PUBLIC_URL}/models/144x256/segm_full_v679.tflite`
@@ -125,12 +125,12 @@ export class VirtualBackground implements VideoFrameProcessor {
     })()
     googlemeetTFLiteParams = (() => {
         const p = generateDefaultGoogleMeetSegmentationTFLiteParams()
-        p.processWidth = 512
-        p.processHeight = 512
+        p.processWidth = 256
+        p.processHeight = 256
         p.kernelSize    = 0
         p.useSoftmax    = true
         p.usePadding    = false
-        p.interpolation = 3
+        p.interpolation = 1
         return p
     })()
     googlemeetTFLiteManager = (() => {
@@ -415,7 +415,7 @@ export class VirtualBackground implements VideoFrameProcessor {
         this.targetCanvas.width = conf.width
         this.targetCanvas.height = conf.height
         this.targetCanvas.getContext("2d")!.drawImage(background, 0, 0, conf.width, conf.height)
-        if (conf.type === "None") { // Depends on timing, bodypixResult is null
+        if (conf.type === "None") { // Depends on timing, result is null
             this.targetCanvas.getContext("2d")!.drawImage(foreground, 0, 0, this.targetCanvas.width, this.targetCanvas.height)
             return this.targetCanvas
         }
@@ -427,10 +427,11 @@ export class VirtualBackground implements VideoFrameProcessor {
 
         const res = new ImageData(this.googlemeetTFLiteParams.processWidth, this.googlemeetTFLiteParams.processHeight)
         for(let i = 0;i < this.googlemeetTFLiteParams.processWidth * this.googlemeetTFLiteParams.processHeight; i++){
-            res.data[i * 4 + 0] = prediction![i]
-            res.data[i * 4 + 1] = prediction![i]
-            res.data[i * 4 + 2] = prediction![i]
-            res.data[i * 4 + 3] = prediction![i]
+            // res.data[i * 4 + 0] = prediction![i] >128 ? 255 : prediction![i]
+            // res.data[i * 4 + 1] = prediction![i] >128 ? 255 : prediction![i]
+            // res.data[i * 4 + 2] = prediction![i] >128 ? 255 : prediction![i]
+            res.data[i * 4 + 3] = prediction![i] > 128 ? 255 : prediction![i]
+            res.data[i * 4 + 3] = prediction![i] < 64 ? 0 : prediction[i]
         }
         this.personMaskCanvas.width = this.googlemeetTFLiteParams.processWidth
         this.personMaskCanvas.height = this.googlemeetTFLiteParams.processHeight

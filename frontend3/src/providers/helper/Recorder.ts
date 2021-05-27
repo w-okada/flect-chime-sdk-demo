@@ -72,13 +72,6 @@ export class Recorder{
           });
         }
 
-
-        // var videoBlob = new Blob(this.chunks);
-        // const blobUrl = window.URL.createObjectURL(videoBlob);
-        // a.href=blobUrl
-        // a.download = 'recorded.webm';
-        // a.click()
-
         // @ts-ignore
         this.ffmpeg.FS('writeFile', name, await fetchFile(new Blob(this.chunks)));
         console.log("FFMPEG START!")
