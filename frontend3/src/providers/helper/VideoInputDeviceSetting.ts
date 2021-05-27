@@ -11,7 +11,7 @@ export class VideoInputDeviceSetting {
     private stateChanging:boolean = false
     videoInput: MediaStream | string | null = null
     videoInputEnable: boolean = true
-    virtualBackgroundEnable:boolean=false
+    virtualBackgroundEnable:boolean=true
     virtualForeGroundEnable:boolean=false
     virtualBackgroundSegmentationType:VirtualBackgroundSegmentationType="None"
 
@@ -28,18 +28,6 @@ export class VideoInputDeviceSetting {
     ///////////////
     private setVideoInputCommon = async (device: MediaStream | string | null, enable: boolean, vbgEnable: boolean, vfgEnable: boolean,) => {
         console.log("setVideoInput", device, enable, vbgEnable, vfgEnable)
-        // if(this.deviceMediaStream){
-        //     this.deviceMediaStream.getVideoTracks().forEach(x=>{
-        //         x.stop()
-        //     })
-        // }
-        // this.deviceMediaStream = null
-
-        // if(this.videoTransformDevice){
-        //     this.videoTransformDevice.chooseNewInnerDevice(null)
-        // }
-        // await this.meetingSession.audioVideo.chooseVideoInputDevice(null)
-        /// no use video input
         if (device === null || enable === false) {
             console.log("[DeviceSetting] VideoInput is null or disabled.")
             await this.meetingSession.audioVideo.chooseVideoInputDevice(null)
@@ -49,14 +37,7 @@ export class VideoInputDeviceSetting {
         /// for standard video input
         if (vbgEnable === false && vfgEnable === false) {
             console.log("[DeviceSetting] VideoInput doesn't use virtual background. 11")
-            // if(this.currentVideoDevice !== device){
-            //     await this.meetingSession.audioVideo.chooseVideoInputDevice(device)
-            //     if(typeof device === "string"){
-            //         this.currentVideoDevice = device
-            //     }
-            // }
-
-                await this.meetingSession.audioVideo.chooseVideoInputDevice(device)
+            await this.meetingSession.audioVideo.chooseVideoInputDevice(device)
 
             console.log("[DeviceSetting] VideoInput doesn't use virtual background. 2")
             return
@@ -103,35 +84,30 @@ export class VideoInputDeviceSetting {
     }
 
 
-    setVideoInput = async (val: MediaStream | string | null, preview?:boolean) => {
+    setVideoInput = async (val: MediaStream | string | null) => {
         this.videoInput = val
         await this.setVideoInputCommon(this.videoInput, this.videoInputEnable, this.virtualBackgroundEnable, this.virtualForeGroundEnable)
         await this.applyAttributes()
-        this.setVisiblity(preview)
     }
 
-    setVideoInputEnable = async (val: boolean, preview?:boolean) => {
+    setVideoInputEnable = async (val: boolean) => {
         this.videoInputEnable = val
         await this.setVideoInputCommon(this.videoInput, this.videoInputEnable, this.virtualBackgroundEnable, this.virtualForeGroundEnable)
         await this.applyAttributes()
-        this.setVisiblity(preview)
     }
-    setVirtualBackgrounEnable = async (val: boolean, preview?:boolean) => {
+    setVirtualBackgrounEnable = async (val: boolean) => {
         this.virtualBackgroundEnable = val
         await this.setVideoInputCommon(this.videoInput, this.videoInputEnable, this.virtualBackgroundEnable, this.virtualForeGroundEnable)
         await this.applyAttributes()
-        this.setVisiblity(preview)
     }
-    setVirtualForegrounEnable = async (val: boolean, preview?:boolean) => {
+    setVirtualForegrounEnable = async (val: boolean) => {
         this.virtualForeGroundEnable = val
         await this.setVideoInputCommon(this.videoInput, this.videoInputEnable, this.virtualBackgroundEnable, this.virtualForeGroundEnable)
         await this.applyAttributes()
-        this.setVisiblity(preview)
     }
-    setVirtualBackgroundSegmentationType = async (val: VirtualBackgroundSegmentationType, preview?:boolean) => {
+    setVirtualBackgroundSegmentationType = async (val: VirtualBackgroundSegmentationType) => {
         this.virtualBackgroundSegmentationType=val
         this.applyAttributes()
-        this.setVisiblity(preview)
     }
     setBackgroundImagePath = async (path: string) => {
         if(this.virtualBackgroundProcessor){
@@ -140,26 +116,8 @@ export class VideoInputDeviceSetting {
     }
 
     
-    
-    setPreviewVideoElement = (val:HTMLVideoElement, preview?:boolean) =>{
+    setPreviewVideoElement = (val:HTMLVideoElement) =>{
         this.previewVideoElement=val
-    }
-
-    private setVisiblity = (preview?:boolean) =>{
-        if(preview){
-            if(this.videoInput && this.videoInputEnable){
-                this.startPreview()
-            }else{
-                this.stopPreview()
-            }
-        }else{
-            if(this.videoInput && this.videoInputEnable){
-                this.startLocalVideoTile()
-            }else{
-                this.stopLocalVideoTile()
-            }
-        }
-
     }
 
 

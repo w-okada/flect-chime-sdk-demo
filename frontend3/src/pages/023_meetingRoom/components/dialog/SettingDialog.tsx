@@ -26,12 +26,14 @@ export const SettingDialog = (props:SettingDialogProps) =>{
         //// for input movie experiment [end]
 
         if (e.target.value === "None") {
-            videoInputDeviceSetting!.setVideoInput(null)
+            await videoInputDeviceSetting!.setVideoInput(null)
+            videoInputDeviceSetting!.stopLocalVideoTile()
             setGuiCounter(guiCounter+1)
         } else if (e.target.value === "File") {
             // fileInputRef.current!.click()
         } else {
-            videoInputDeviceSetting!.setVideoInput(e.target.value)
+            await videoInputDeviceSetting!.setVideoInput(e.target.value)
+            videoInputDeviceSetting!.startLocalVideoTile()
             setGuiCounter(guiCounter+1)
         }
     }
@@ -94,10 +96,13 @@ export const SettingDialog = (props:SettingDialogProps) =>{
                             stream.addTrack(t)
                         })
                         await videoInputDeviceSetting!.setVideoInput(mediaStream)
+                        videoInputDeviceSetting!.startLocalVideoTile()
                         await videoInputDeviceSetting!.setVirtualBackgrounEnable(true)
                         await videoInputDeviceSetting!.setVirtualBackgroundSegmentationType("None")
                     }else{
-                        videoInputDeviceSetting!.setVideoInput(null)
+                        await videoInputDeviceSetting!.setVideoInput(null)
+                        videoInputDeviceSetting!.stopLocalVideoTile()
+
                     }
                 }
                 videoElem.src=path            

@@ -57,7 +57,13 @@ export const MeetingRoom = () => {
         setGuiCounter(guiCounter+1)
     }
     const setVideoInputEnable = async() =>{
-        await videoInputDeviceSetting!.setVideoInputEnable(!videoInputDeviceSetting!.videoInputEnable)
+        const enable = !videoInputDeviceSetting!.videoInputEnable
+        await videoInputDeviceSetting!.setVideoInputEnable(enable)
+        if(enable){
+            videoInputDeviceSetting!.startLocalVideoTile()
+        }else{
+            videoInputDeviceSetting!.stopLocalVideoTile()
+        }
         setGuiCounter(guiCounter+1)
     }
     const setAudioOutputEnable = async() =>{

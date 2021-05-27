@@ -68,6 +68,7 @@ export const WaitingRoom = () => {
         setIsLoading(true)
         enterMeeting().then(()=>{
             setIsLoading(false)
+            videoInputDeviceSetting!.startLocalVideoTile()
             setStage("MEETING_ROOM")
         }).catch(e=>{
             setIsLoading(false)
@@ -80,56 +81,49 @@ export const WaitingRoom = () => {
         videoInputDeviceSetting!.setPreviewVideoElement(videoEl)
     },[])// eslint-disable-line
     
+
     useEffect(() => {
         console.log("[audioinputchange]",audioInputDeviceId, segmentationType, videoInputDeviceId, audioOutputDeviceId)
         if (videoInputDeviceId === "None") {
-            videoInputDeviceSetting!.setVideoInput(null,true).then(()=>{
-                videoInputDeviceSetting!.setVideoInputEnable(false,true).then(()=>{
-                    videoInputDeviceSetting!.stopPreview()
-                })
+            videoInputDeviceSetting!.setVideoInput(null).then(()=>{
+                videoInputDeviceSetting!.stopPreview()
             })
-            // const p1 = videoInputDeviceSetting!.setVideoInput(null,true)
-            // const p2 = videoInputDeviceSetting!.setVideoInputEnable(false,true)
-            // Promise.all([p1, p2]).then(()=>{
-            //     videoInputDeviceSetting!.stopPreview()
-            // }) 
-
         } else if (videoInputDeviceId=== "File") {
             // fileInputRef.current!.click()
         } else {
-            videoInputDeviceSetting!.setVideoInput(videoInputDeviceId,true).then(()=>{
-                videoInputDeviceSetting!.setVideoInputEnable(true,true).then(()=>{
-                    videoInputDeviceSetting!.startPreview()
-                })
+            videoInputDeviceSetting!.setVideoInput(videoInputDeviceId).then(()=>{
+                videoInputDeviceSetting!.startPreview()
             })
-            // const p1 = videoInputDeviceSetting!.setVideoInput(videoInputDeviceId,true)
-            // const p2 = videoInputDeviceSetting!.setVideoInputEnable(true,true)
-            // Promise.all([p1, p2]).then(()=>{
-            //     videoInputDeviceSetting!.startPreview()
-            // })
         }
+    },[videoInputDeviceId])
 
+    useEffect(()=>{
         if (segmentationType === "None") {
-            videoInputDeviceSetting!.setVirtualBackgrounEnable(false, true)
-            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType("None", true)
+            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType("None").then(()=>{
+            })
         } else {
-            videoInputDeviceSetting!.setVirtualBackgrounEnable(true, true)
-            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType(segmentationType, true)
+            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType(segmentationType).then(()=>{
+            })
         }
-    
+    },[segmentationType])
+
+
+    useEffect(()=>{
         if (audioInputDeviceId === "None") {
             audioInputDeviceSetting!.setAudioInput(null)
         } else {
             audioInputDeviceSetting!.setAudioInput(audioInputDeviceId)
         }
+    },[audioInputDeviceId])
 
+    useEffect(()=>{
         if (audioOutputDeviceId === "None") {
             audioOutputDeviceSetting!.setAudioOutput(null)
         } else {
             audioOutputDeviceSetting!.setAudioOutput(audioOutputDeviceId)
         }
+    },[audioOutputDeviceId]) // eslint-disable-line
 
-    },[audioInputDeviceId, segmentationType, videoInputDeviceId, audioOutputDeviceId])// eslint-disable-line
 
 
     const videoPreview = useMemo(()=>{
