@@ -160,13 +160,13 @@ export const MeetingRoom = () => {
                             <WhiteboardPanel/>
                         </CustomAccordion>
 
-                        <CustomAccordion title="RecordMeeting (exp.)">
+                        {/* <CustomAccordion title="RecordMeeting (exp.)">
                             <RecorderPanel />
-                        </CustomAccordion>
+                        </CustomAccordion> */}
                         
-                        <CustomAccordion title="BGM/SE">
+                        {/* <CustomAccordion title="BGM/SE">
                             <BGMPanel />
-                        </CustomAccordion>
+                        </CustomAccordion> */}
                         
                         <CustomAccordion title="About">
                             <CreditPanel />

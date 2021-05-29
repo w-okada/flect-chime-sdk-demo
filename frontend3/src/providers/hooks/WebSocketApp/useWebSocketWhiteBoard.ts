@@ -30,13 +30,15 @@ export const useWebSocketWhiteBoard = (props:UseWebSocketWhiteBoardProps) =>{
     
     const WSWBClient = useMemo(()=>{
         if(props.meetingId === "" || props.attendeeId === "" || props.joinToken === "" || !props.logger){
+            console.log("WSWBClient not create!!!")
             return null
         }else{
+            console.log("WSWBClient create")
             const messagingURLWithQuery = `${WebSocketEndpoint}/Prod?joinToken=${props.joinToken}&meetingId=${props.meetingId}&attendeeId=${props.attendeeId}`
             const WSWBClient = new WebSocketWhiteBoardClient(props.attendeeId, messagingURLWithQuery, props.logger, recreate)
             return WSWBClient
         }
-    },[props.meetingId, props.attendeeId, props.joinToken, props.logger])
+    },[props.meetingId, props.attendeeId, props.joinToken, props.logger, recreateCount])
 
     useEffect(()=>{
         const f = (wsMessages:WebSocketMessage[])=>{

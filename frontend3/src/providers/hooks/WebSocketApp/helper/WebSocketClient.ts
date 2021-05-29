@@ -1,4 +1,5 @@
-import { DefaultWebSocketAdapter, Logger, WebSocketAdapter } from "amazon-chime-sdk-js";
+import { DefaultWebSocketAdapter, Logger, WebSocketAdapter, WebSocketReadyState } from "amazon-chime-sdk-js";
+import { exception } from "console";
 
 
 export type WebSocketMessage = {
@@ -32,7 +33,7 @@ export class WebSocketClient{
         this.attendeeId = attendeeId
         this.messagingURLWithQuery = messagingURLWithQuery
         this.logger = logger
-        this.recreate=recreate
+        this.recreate = recreate
     }
     connect = () =>{
         this.websocketAdapter =  new DefaultWebSocketAdapter(this.logger)
@@ -127,8 +128,17 @@ export class WebSocketClient{
             data: data
         }
         const message = JSON.stringify(mess)
-        const res = this.websocketAdapter!.send(message)
-        console.log("send data(ws):", message.length, "sending result:", res)
+        try{
+            if(this.websocketAdapter?.readyState() === WebSocketReadyState.Open || this.websocketAdapter?.readyState() === WebSocketReadyState.Connecting){
+                const res = this.websocketAdapter!.send(message)
+                console.log("send data(ws):", message.length, "sending result:", res)
+            }else{
+                throw("adapter is not open")
+            }
+        }catch(excpetion){
+            console.log("send data(ws) Exception:", message.length, excpetion)
+            this.recreate()
+        }
     }
 
     loopbackMessage = (topic:string,data:any) =>{

@@ -32,8 +32,11 @@ export class WebSocketWhiteBoardClient{
     private wsClient:WebSocketClient
 
     constructor(attendeeId:string, messagingURLWithQuery:string, logger:Logger, recreate:()=>void){
+        console.log("WSWBClient constructor1")
         this.wsClient = new WebSocketClient(attendeeId, messagingURLWithQuery, logger, recreate)
+        console.log("WSWBClient constructor2")
         this.wsClient.connect()
+        console.log("WSWBClient constructor3")
         this.startMonitor()
     }
 
