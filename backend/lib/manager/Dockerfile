@@ -20,6 +20,10 @@ WORKDIR /recording
 RUN npm i puppeteer-core
 RUN npm i aws-sdk
 
+RUN npm i socket.io@4.1.1
+RUN npm i express@4.17.1
+
+
 ENTRYPOINT ["/recording/run.sh"]
 
 

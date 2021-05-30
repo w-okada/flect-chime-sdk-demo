@@ -8,7 +8,7 @@ export const useScheduler = () =>{
     useEffect(() => {
         const id = setInterval(() => {
             setTenSecondsTasksTringer(t => t + 1);
-        }, 1000 * 1)
+        }, 1000 * 20)
     },[])
 
     return {tenSecondsTaskTrigger}

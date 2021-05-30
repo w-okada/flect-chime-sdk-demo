@@ -1,5 +1,93 @@
-fs = require('fs');
+var fs = require('fs');
+var os = require('os');
 const AWS = require('aws-sdk');
+
+
+let hostname = '0.0.0.0';
+let port     = 3000;
+let protocol = 'http';
+const server = require(protocol).createServer({}, async (request, response) => {
+    console.log(`${request.method} ${request.url} BEGIN`);
+})
+
+// const server = require(protocol).createServer()
+
+
+server.listen(port, hostname, () => {
+    console.log(`${hostname}:${port}`)
+});
+
+// var io = require('socket.io')
+// console.log(io)
+// var io_server = new io.Server(server,{
+//     allowEIO3: true 
+// })
+// // const io  = require('socket.io')(server);
+
+// io_server.on('connection', client => {
+//     console.log(">>>>>>>>>>>>>>>", client)
+//     console.log("version",client.conn.protocol)
+//     // console.log("Connected!!!!!")
+//     //@ts-ignore
+//     client.on('connectCode', connectCode => {{
+//         console.log("[connectCode]", connectCode)
+//         //@ts-ignore
+//         client.connectCode = connectCode;
+//     }});
+
+//     //@ts-ignore
+//     client.on('lobby', data => {
+//         console.log("[lobby]", data)
+//         // Get the lobby
+//         //@ts-ignore
+//         const { connectCode } = client;
+//         const {LobbyCode: code, Region} = JSON.parse(data);
+//     })
+
+//     //@ts-ignore
+//     client.on('state', index => {
+//         console.log("[state]", index)
+//     });
+
+//     //@ts-ignore
+//     client.on('player', data => {
+//         console.log("[player]", data)
+//     });
+
+//     client.on('disconnect', () => {
+//         console.log("[dissconnect]")
+//         //@ts-ignore
+//         const { connectCode } = client;
+//     });
+// });
+
+
+
+
+function getLocalAddress() {
+    var ifacesObj = {}
+    ifacesObj.ipv4 = [];
+    ifacesObj.ipv6 = [];
+    var interfaces = os.networkInterfaces();
+
+    for (var dev in interfaces) {
+        interfaces[dev].forEach(function(details){
+            if (!details.internal){
+                switch(details.family){
+                    case "IPv4":
+                        ifacesObj.ipv4.push({name:dev, address:details.address});
+                    break;
+                    case "IPv6":
+                        ifacesObj.ipv6.push({name:dev, address:details.address})
+                    break;
+                }
+            }
+        });
+    }
+    return ifacesObj;
+};
+
+
 if(process.env.AWS_KEY){
     console.log("AWS_KEY:", process.env.AWS_KEY)
     AWS.config.loadFromPath(process.env.AWS_KEY);
@@ -74,6 +162,23 @@ puppeteer.launch({
                 })()
                 break
 
+            case "get_local_ip":
+
+                (async () =>{
+
+                    console.log("get local ip !")
+                    const ip = getLocalAddress()
+                    console.log(ip)
+                    const myLocalValue = "ip4::::::" + ip.ipv4[0].address
+                    await page.$eval('#pup', (el, value) => el.value = value, myLocalValue);
+                    page.click("#pup_click")
+                        
+
+                })()
+
+
+                break
+
             case "terminate":
                 console.log("TERMINATE----------------!")
                 s3 = new AWS.S3({ params: { Bucket: bucketName } });
@@ -98,6 +203,8 @@ puppeteer.launch({
                     });
                     })()
                 browser.close();
+                io.close();
+                server.close();
                 break
 
         }
@@ -114,6 +221,10 @@ puppeteer.launch({
             document.addEventListener('terminate', e => {
                 window.onCustomEvent({type:'terminate', detail: e.detail});
             });
+            document.addEventListener('get_local_ip', e => {
+                window.onCustomEvent({type:'get_local_ip', detail: e.detail});
+            });
+
         }, type);
     }
 

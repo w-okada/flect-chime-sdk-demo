@@ -14,6 +14,12 @@ var bucketDomainName         = process.env.BUCKET_DOMAIN_NAME
 var managerContainerName     = process.env.MANAGER_CONTAINER_NAME
 var bucketArn                = process.env.BUCKET_ARN
 var bucketName               = process.env.BUCKET_NAME
+// var among_service_arn        = process.env.AMONG_SERVICE_ARN
+var amongServiceName         = process.env.AMONG_SERVICE_NAME
+// var among_cluster_arn        = process.env.AMONG_CLUSTER_ARN
+
+
+
 
 //// AWS Clients setup
 var ddb = new AWS.DynamoDB();
@@ -32,6 +38,10 @@ exports.dispatchOperation = async (operation, header, body) => {
             return onetimeCodeSigninRequest(header, body)
         case "onetime-code-signin":
             return onetimeCodeSignin(header, body)
+        case "update-amongus-service":
+            return updateAmongUsService(header, body)
+        case "list-amongus-service":
+            return listAmongUsService(header, body)
         default:
             return defaultResponse(operation)
     }
@@ -156,6 +166,53 @@ const onetimeCodeSignin = async  (headers, body) =>{
     }
     
 }
+
+
+
+
+// /**
+//  * update amongus service
+//  * @param {*} headers 
+//  * @param {*} body 
+//  */
+// const updateAmongUsService = async  (headers, body) =>{
+//     console.log("[updateAmongUsService]:", body)
+//     const meetingName = body.meetingName // already encoded.
+//     const attendeeId  = body.attendeeId
+
+//     const result = ecs.updateService({
+//         cluster: clusterArn,
+//         service: amongServiceName,
+//         desiredCount: body.desiredCount
+//     }).promise()
+//     console.log("[updateAmongUsService]: ", result )
+
+//     return{
+//         result: true
+//     }
+// }
+
+// /**
+//  * list amongus service
+//  * @param {*} headers 
+//  * @param {*} body 
+//  */
+// const listAmongUsService = async  (headers, body) =>{
+//     console.log("[listAmongUsService]:", body)
+//     const meetingName = body.meetingName // already encoded.
+//     const attendeeId  = body.attendeeId
+
+//     const result = await ecs.describeServices({
+//         cluster: clusterArn,
+//         services: [amongServiceName],
+//     }).promise()
+//     console.log("[listAmongUsService]: ", result )
+
+//     return{
+//         result: true
+//     }
+// }
+
 
 /**
  * return default response

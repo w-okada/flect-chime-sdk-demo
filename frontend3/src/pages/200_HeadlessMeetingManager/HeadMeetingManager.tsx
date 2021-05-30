@@ -162,6 +162,11 @@ export const HeadlessMeetingManager = () => {
             case HMMCmd.STOP_SHARE_TILEVIEW:
                 logger.log("Not Implemented")
                 break
+            case HMMCmd.GET_LOCAL_IP:
+                const event = new CustomEvent('get_local_ip');
+                document.dispatchEvent(event)
+                logger.log("get_local_ip fired!!!!!!!")
+                break
             case HMMCmd.TERMINATE:
                 (async()=>{
                     if(isRecording){
@@ -245,6 +250,15 @@ export const HeadlessMeetingManager = () => {
 
             <div>
                 <audio id="for-speaker" style={{display:"none"}}/>
+            </div>
+
+
+            <div>
+                <input id="pup" />
+                <button id="pup_click" onClick={()=>{
+                    const input = document.getElementById("pup") as HTMLInputElement
+                    console.log("INPUT DATA!", input.value)
+                }} />
             </div>
         </>
     )

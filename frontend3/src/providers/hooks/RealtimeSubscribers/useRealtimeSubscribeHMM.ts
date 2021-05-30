@@ -13,11 +13,18 @@ export const HMMCmd = {
     STOP_SHARE_TILEVIEW: "STOP_SHARE_TILEVIEW",
     TERMINATE: "TERMINATE",
     NOTIFY_STATUS: "NOTIFY_STATUS",
+
+
+    GET_LOCAL_IP: "GET_LOCAL_IP",
+    NOTIFY_LOCAL_IP: "NOTIFY_LOCAL_IP",
+
+
 } as const
 
 export type HMM_STATUS = {
     active: boolean
     recording: boolean
+    local_ip?: string
 }
 
 export type HMMMessage = {

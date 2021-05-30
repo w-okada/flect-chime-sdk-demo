@@ -13,6 +13,7 @@ import { FRONTEND_LOCAL_DEV } from '../bin/config';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as ecs from "@aws-cdk/aws-ecs";
 import * as logs from "@aws-cdk/aws-logs";
+import * as elb from "@aws-cdk/aws-elasticloadbalancingv2";
 
 
 export class BackendStack extends cdk.Stack {
@@ -65,12 +66,18 @@ export class BackendStack extends cdk.Stack {
 
       'ecs:RunTask',
       'ecs:DescribeTasks',
+      'ecs:UpdateService',
+      'ecs:DescribeServices',
+
+      `ec2:DescribeNetworkInterfaces`,
+
       'iam:PassRole',
     )
     statement.addResources(userPool.userPoolArn)
     statement.addResources("arn:*:chime::*:meeting/*")
     statement.addResources("arn:aws:execute-api:*:*:**/@connections/*")
     statement.addResources("arn:aws:ecs:*")
+    statement.addResources("*")
     statement.addResources("arn:aws:iam::*:*")
 
 
@@ -141,7 +148,7 @@ export class BackendStack extends cdk.Stack {
 
     /////////////////////
     /// Fargate
-    /////////////////////      userPoolName: `${id}_UserPool`,
+    ///////////////////// 
     const vpc = new ec2.Vpc(this, `${id}_vpc`, { maxAzs: 2 });
     const cluster = new ecs.Cluster(this, `${id}_cluster`, { vpc });
     const logGroup = new logs.LogGroup(this, `${id}_logGroup`, {
@@ -160,6 +167,7 @@ export class BackendStack extends cdk.Stack {
       cpu: 2048,
       memoryLimitMiB: 4096,
     });
+
     const container = taskDefinition.addContainer("DefaultContainer", {
       containerName: `${id}_manager_container`,
       image: ecs.ContainerImage.fromAsset("lib/manager"),
@@ -167,7 +175,67 @@ export class BackendStack extends cdk.Stack {
       memoryLimitMiB: 4096,
       logging: logging,
     });
+
     bucket.grantReadWrite(taskDefinition.taskRole)    
+
+    const securityGroup = new ec2.SecurityGroup(this, "SecurityGroup", {
+      vpc: vpc,
+    });
+    securityGroup.addIngressRule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(3000))
+
+
+    // // const cluster_among = new ecs.Cluster(this, `${id}_cluster_among`, { vpc });
+    // const logGroup_among = new logs.LogGroup(this, `${id}_logGroup_among`, {
+    //   logGroupName: `/${id}-fargate_among`,
+    //   removalPolicy: cdk.RemovalPolicy.DESTROY,
+    // });        
+
+    // // create a task definition with CloudWatch Logs
+    // const logging_among = new ecs.AwsLogDriver({
+    //   logGroup: logGroup_among,
+    //   streamPrefix: "fargate",
+    // })
+
+    // const taskDefinition_among = new ecs.FargateTaskDefinition(this, `${id}_fargate_task_among`, {
+    //   family: this.node.tryGetContext('serviceName'),
+    //   cpu: 2048,
+    //   memoryLimitMiB: 4096,
+    // });
+
+    // const container_among = taskDefinition_among.addContainer("DefaultContainer_among", {
+    //   containerName: `${id}_manager_container_among`,
+    //   image: ecs.ContainerImage.fromAsset("lib/among"),
+    //   cpu: 2048,
+    //   memoryLimitMiB: 4096,
+    //   logging: logging_among,
+    // });
+
+    // bucket.grantReadWrite(taskDefinition_among.taskRole)    
+
+    // container_among.addPortMappings({
+    //   containerPort: 3000
+    // });
+
+    // const ecsService_among = new ecs.FargateService(this, "Service", {
+    //   // cluster:cluster_among,
+    //   cluster:cluster,
+    //   taskDefinition:taskDefinition_among,
+    //   assignPublicIp:true,
+    //   desiredCount:0
+    // });
+
+    // const lb_among = new elb.ApplicationLoadBalancer(this, "LB", {
+    //   // vpc: cluster_among.vpc,
+    //   vpc: cluster.vpc,
+    //   internetFacing: true
+    // });
+
+    // const listener_among = lb_among.addListener("Listener", { port: 80 });
+    // const targetGroup = listener_among.addTargets("ECS", {
+    //   protocol: elb.ApplicationProtocol.HTTP,
+    //   port: 3000,
+    //   targets: [ecsService_among]
+    // });
 
     ///////////////////////////////
     //// Lambda Layers
@@ -191,13 +259,21 @@ export class BackendStack extends cdk.Stack {
       f.addEnvironment("CONNECTION_TABLE_NAME", connectionTable.tableName)
       f.addEnvironment("USER_POOL_ID", userPool.userPoolId)
       f.addEnvironment("VPC_ID", vpc.vpcId)
-      f.addEnvironment("SUBNET_ID", vpc.privateSubnets[0].subnetId)
+      f.addEnvironment("SUBNET_ID", vpc.publicSubnets[0].subnetId)
       f.addEnvironment("CLUSTER_ARN", cluster.clusterArn)
       f.addEnvironment("TASK_DIFINITION_ARN_MANAGER", taskDefinition.taskDefinitionArn)
       f.addEnvironment("BUCKET_DOMAIN_NAME", bucket.bucketDomainName)
       f.addEnvironment("MANAGER_CONTAINER_NAME", `${id}_manager_container`)
       f.addEnvironment("BUCKET_ARN", bucket.bucketArn)
       f.addEnvironment("BUCKET_NAME", bucket.bucketName)
+      // f.addEnvironment("ELB_DNS_NAME", lb_among.loadBalancerDnsName)
+      f.addEnvironment("SECURITY_GROUP_NAME", securityGroup.securityGroupName)
+      f.addEnvironment("SECURITY_GROUP_ID", securityGroup.securityGroupId)
+
+      // f.addEnvironment("AMONG_SERVICE_ARN", ecsService_among.serviceArn)
+      // f.addEnvironment("AMONG_SERVICE_NAME", ecsService_among.serviceName)
+      // f.addEnvironment("AMONG_CLUSTER_ARN", cluster.clusterArn)
+  
 
       f.addLayers(nodeModulesLayer)
     }
@@ -679,5 +755,19 @@ export class BackendStack extends cdk.Stack {
       description: "WebSocketEndpoint",
       value: webSocketApi.attrApiEndpoint,
     })
+
+    // new cdk.CfnOutput(this, "AmongLoadBalancerDNS", {
+    //   value: lb_among.loadBalancerDnsName
+    // });
+    // new cdk.CfnOutput(this, "AmongServiceArn", {
+    //   value: ecsService_among.serviceArn
+    // });
+    // new cdk.CfnOutput(this, "AmongServiceName", {
+    //   value: ecsService_among.serviceName
+    // });
+
+
+    
+
   }
 }

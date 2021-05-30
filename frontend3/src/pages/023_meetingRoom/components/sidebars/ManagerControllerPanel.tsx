@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, Typography } from '@material-ui/core';
 import { useStyles } from './css';
 import { useAppState } from '../../../../providers/AppStateProvider';
-import { startManager } from '../../../../api/api';
+import { getManagerInfo, listAmongUsService, startManager, updateAmongUsService } from '../../../../api/api';
 import { HMMCmd, HMMMessage } from '../../../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM';
 import { getDateString } from '../../../../utils';
 
@@ -36,6 +36,26 @@ export const ManagerControllerPanel = () => {
             setURL(newUrl)
         }
     }
+
+    const handleActivateAmongUsServiceClicked = async () =>{
+        const res = await updateAmongUsService(1)
+        console.log("update AmongUs service",res)
+    }
+    const handleInactivateAmongUsServiceClicked = async () =>{
+        const res = await updateAmongUsService(0)
+        console.log("update AmongUs service",res)
+    }
+
+    const handleListAmongUsServiceClicked = async () =>{
+        const res = await listAmongUsService()
+        console.log("list AmongUs service",res)
+    }
+
+    const handleGetManagerInfoClicked = async () =>{
+        const res = await getManagerInfo(meetingName!, attendeeId!, idToken!, accessToken!, refreshToken!)
+        console.log(`get manager info ${res}`)
+    }
+
 
     useEffect(()=>{
         console.log("receive HMMCommandData 0" )
@@ -90,9 +110,28 @@ export const ManagerControllerPanel = () => {
                 <a onClick={()=>{sendHMMCommand( {command: HMMCmd.STOP_RECORD} )}}>STOP_RECORD</a>
 
 
+                
+
                 <div>
-                    <a onClick={()=>{sendHMMCommand( {command:HMMCmd.TERMINATE} )}}>TERMINATE</a>
+                    <a onClick={()=>{sendHMMCommand( {command:HMMCmd.TERMINATE} )}}>TERMINATE!</a>
                 </div>
+                <div>
+                    <a onClick={()=>{sendHMMCommand( {command: HMMCmd.GET_LOCAL_IP} )}}>GET_LOCAL_IP!</a>
+                </div>                
+
+                {/* <div>
+                    <a onClick={()=>{handleActivateAmongUsServiceClicked()}}>Activate AMONGUS SERVICE</a>
+                </div>                
+                <div>
+                    <a onClick={()=>{handleInactivateAmongUsServiceClicked()}}>Inactivate AMONGUS SERVICE</a>
+                </div>                
+                <div>
+                    <a onClick={()=>{handleListAmongUsServiceClicked()}}>List AMONGUS SERVICE</a>
+                </div>                 */}
+
+                
+                               
+                <a onClick={()=>{handleGetManagerInfoClicked()}}>get_manager_info</a>
                 <div>
                     {hmmstatus}
                 </div>

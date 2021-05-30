@@ -1,3 +1,4 @@
+
 import { BASE_URL } from '../Config'
 import { LocalLogger } from '../utils/localLogger'
 
@@ -272,6 +273,7 @@ export type OnetimeCodeSigninResult = {
     accessToken?:string,
     attendeeName?: string,
 }
+
 /**
  * 8, singinWithOnetimeCode
  * @param meetingName 
@@ -346,5 +348,112 @@ export const startManager = async (meetingName: string, attendeeId: string, idTo
     if (data === null) {
         throw new Error(`Server error: Join Meeting Failed`);
     }
+    return data;
+}
+
+
+
+
+
+
+
+
+/**
+ * x1. update among us service
+ * @param meetingName 
+ * @param attendeeId 
+ * @param uuid 
+ * @param code 
+ */
+export const getManagerInfo = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string):
+Promise<{ code: string, url:string }> => {
+
+    const url = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}/operations/get-manager-info`
+
+    const request = { 
+    }    
+    const requestBody = JSON.stringify(request)
+
+    const response = await fetch(url, {
+            method: 'POST',
+            body: requestBody,
+            headers: {
+                "Authorization": idToken,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                "X-Flect-Access-Token": accessToken
+            }
+        }
+    );
+
+    const data = await response.json();
+    console.log("[getManagerInfo]",data)
+    return data;
+}
+
+
+
+
+/**
+ * x1. update among us service
+ * @param meetingName 
+ * @param attendeeId 
+ * @param uuid 
+ * @param code 
+ */
+export const updateAmongUsService = async (desiredCount:number):
+    Promise<OnetimeCodeSigninResult> => {
+
+    const url = `${BASE_URL}operations/update-amongus-service`
+
+    const request = { 
+        desiredCount:desiredCount
+    }    
+    const requestBody = JSON.stringify(request)
+
+    const response = await fetch(url, {
+            method: 'POST',
+            body: requestBody,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+
+    const data = await response.json();
+    console.log("[updateAmongUsService]",data)
+    return data;
+}
+
+
+/**
+ * x1. update among us service
+ * @param meetingName 
+ * @param attendeeId 
+ * @param uuid 
+ * @param code 
+ */
+export const listAmongUsService = async ():
+    Promise<OnetimeCodeSigninResult> => {
+
+    const url = `${BASE_URL}operations/list-amongus-service`
+
+    const request = { 
+    }    
+    const requestBody = JSON.stringify(request)
+
+    const response = await fetch(url, {
+            method: 'POST',
+            body: requestBody,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+
+    const data = await response.json();
+    console.log("[updateAmongUsService]",data)
     return data;
 }
