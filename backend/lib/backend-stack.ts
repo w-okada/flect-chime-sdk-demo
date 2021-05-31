@@ -154,7 +154,7 @@ export class BackendStack extends cdk.Stack {
       subnetConfiguration:[
         {
           cidrMask: 24,
-          name: "public-1",
+          name: `${id}_pub`,
           subnetType: ec2.SubnetType.PUBLIC,
         },
       ]    
