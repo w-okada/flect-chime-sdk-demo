@@ -13,6 +13,7 @@ import { FRONTEND_LOCAL_DEV } from '../bin/config';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as ecs from "@aws-cdk/aws-ecs";
 import * as logs from "@aws-cdk/aws-logs";
+import * as elb from "@aws-cdk/aws-elasticloadbalancingv2";
 
 
 export class BackendStack extends cdk.Stack {
@@ -65,12 +66,18 @@ export class BackendStack extends cdk.Stack {
 
       'ecs:RunTask',
       'ecs:DescribeTasks',
+      'ecs:UpdateService',
+      'ecs:DescribeServices',
+
+      `ec2:DescribeNetworkInterfaces`,
+
       'iam:PassRole',
     )
     statement.addResources(userPool.userPoolArn)
     statement.addResources("arn:*:chime::*:meeting/*")
     statement.addResources("arn:aws:execute-api:*:*:**/@connections/*")
     statement.addResources("arn:aws:ecs:*")
+    statement.addResources("*")
     statement.addResources("arn:aws:iam::*:*")
 
 
@@ -141,7 +148,7 @@ export class BackendStack extends cdk.Stack {
 
     /////////////////////
     /// Fargate
-    /////////////////////      userPoolName: `${id}_UserPool`,
+    ///////////////////// 
     const vpc = new ec2.Vpc(this, `${id}_vpc`, { maxAzs: 2 });
     const cluster = new ecs.Cluster(this, `${id}_cluster`, { vpc });
     const logGroup = new logs.LogGroup(this, `${id}_logGroup`, {
@@ -160,6 +167,7 @@ export class BackendStack extends cdk.Stack {
       cpu: 2048,
       memoryLimitMiB: 4096,
     });
+
     const container = taskDefinition.addContainer("DefaultContainer", {
       containerName: `${id}_manager_container`,
       image: ecs.ContainerImage.fromAsset("lib/manager"),
@@ -167,7 +175,14 @@ export class BackendStack extends cdk.Stack {
       memoryLimitMiB: 4096,
       logging: logging,
     });
+
     bucket.grantReadWrite(taskDefinition.taskRole)    
+
+    const securityGroup = new ec2.SecurityGroup(this, "SecurityGroup", {
+      vpc: vpc,
+    });
+    securityGroup.addIngressRule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(3000))
+
 
     ///////////////////////////////
     //// Lambda Layers
@@ -191,13 +206,15 @@ export class BackendStack extends cdk.Stack {
       f.addEnvironment("CONNECTION_TABLE_NAME", connectionTable.tableName)
       f.addEnvironment("USER_POOL_ID", userPool.userPoolId)
       f.addEnvironment("VPC_ID", vpc.vpcId)
-      f.addEnvironment("SUBNET_ID", vpc.privateSubnets[0].subnetId)
+      f.addEnvironment("SUBNET_ID", vpc.publicSubnets[0].subnetId)
       f.addEnvironment("CLUSTER_ARN", cluster.clusterArn)
       f.addEnvironment("TASK_DIFINITION_ARN_MANAGER", taskDefinition.taskDefinitionArn)
       f.addEnvironment("BUCKET_DOMAIN_NAME", bucket.bucketDomainName)
       f.addEnvironment("MANAGER_CONTAINER_NAME", `${id}_manager_container`)
       f.addEnvironment("BUCKET_ARN", bucket.bucketArn)
       f.addEnvironment("BUCKET_NAME", bucket.bucketName)
+      f.addEnvironment("SECURITY_GROUP_NAME", securityGroup.securityGroupName)
+      f.addEnvironment("SECURITY_GROUP_ID", securityGroup.securityGroupId)
 
       f.addLayers(nodeModulesLayer)
     }
@@ -224,6 +241,7 @@ export class BackendStack extends cdk.Stack {
       timeout: Duration.seconds(10),
     })
     addCommonSetting(lambdaFunctionGetMeetings)
+    
 
     //// (2-2) Post Meeting
     const lambdaFunctionPostMeeting: lambda.Function = new lambda.Function(this, "funcPostMeeting", {
@@ -247,6 +265,19 @@ export class BackendStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(10),
     })
     addCommonSetting(lambdaFunctionDeleteMeeting)
+
+    //// (2-4) Get Meeting
+    const lambdaFunctionGetMeeting: lambda.Function = new lambda.Function(this, "funcGetMeeting", {
+      functionName: `${id}_getMeeting`,
+      runtime: lambda.Runtime.NODEJS_12_X,
+      code: lambda.Code.asset(`${__dirname}/lambda`),
+      handler: "index.getMeeting",
+      memorySize: 256,
+      timeout: Duration.seconds(10),
+    })
+    addCommonSetting(lambdaFunctionGetMeeting)
+
+
 
     //// (3-1) Get Attendee
     const lambdaFunctionGetAttendee: lambda.Function = new lambda.Function(this, "funcGetAttendee", {
@@ -418,7 +449,15 @@ export class BackendStack extends cdk.Stack {
       },
     })
 
-
+    //// (2-4) Get Meeting
+    apiMeeting.addMethod("GET", new LambdaIntegration(lambdaFunctionGetMeeting), {
+      operationName: `${id}_getMeeting`,
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: {
+        authorizerId: authorizer.ref
+      },
+    })
+       
     ///// (3) Attendee
     const apiAttendees = apiMeeting.addResource("attendees")
     const apiAttendee = apiAttendees.addResource("{attendeeId}")
@@ -679,5 +718,19 @@ export class BackendStack extends cdk.Stack {
       description: "WebSocketEndpoint",
       value: webSocketApi.attrApiEndpoint,
     })
+
+    // new cdk.CfnOutput(this, "AmongLoadBalancerDNS", {
+    //   value: lb_among.loadBalancerDnsName
+    // });
+    // new cdk.CfnOutput(this, "AmongServiceArn", {
+    //   value: ecsService_among.serviceArn
+    // });
+    // new cdk.CfnOutput(this, "AmongServiceName", {
+    //   value: ecsService_among.serviceName
+    // });
+
+
+    
+
   }
 }

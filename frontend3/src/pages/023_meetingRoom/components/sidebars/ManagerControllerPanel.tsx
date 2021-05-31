@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, Typography } from '@material-ui/core';
 import { useStyles } from './css';
 import { useAppState } from '../../../../providers/AppStateProvider';
-import { startManager } from '../../../../api/api';
+import { getManagerInfo, getMeetingInfo, listAmongUsService, startManager, updateAmongUsService } from '../../../../api/api';
 import { HMMCmd, HMMMessage } from '../../../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM';
 import { getDateString } from '../../../../utils';
 
@@ -14,27 +14,35 @@ type StatusData = {
 
 export const ManagerControllerPanel = () => {
     const classes = useStyles();
-    const { meetingName, attendeeId, idToken, accessToken, refreshToken, sendHMMCommand, hMMCommandData, } = useAppState()
+    const { meetingName, attendeeId, idToken, accessToken, refreshToken, sendHMMCommand, hMMCommandData, updateMeetingInfo, ownerId,
+         startHMM, updateHMMInfo, publicIp } = useAppState()
     const [ url, setURL] = useState<string>()
-    // const [onetimeCode, setOnetimeCode] = useState<string>()
-    const [ lastStatusUpdateTime, setLastStatusUpdateTime] = useState<number>()
-    const [ HMMStatus, setHMMStatus] = useState<boolean>()
     const [ statusData, setStatusData ] = useState<StatusData>()
 
     const handleStartManagerClicked = async () =>{
-        const res = await startManager(meetingName!, attendeeId!, idToken!, accessToken!, refreshToken!)
-        console.log("start manager",res)
-        const url = res['url']
-        const host = window.location.hostname
-        if(url.indexOf(host) != -1){
-            setURL(url)
-        }else{
-            const noProtocolUrl = url.substring("https://".length)
-            const paramString   = noProtocolUrl.substring(noProtocolUrl.indexOf("/"))
-            const newUrl = `https://192.168.0.4:3000${paramString}`
-            console.log("NEWURL", newUrl)
-            setURL(newUrl)
-        }
+        // const res = await startManager(meetingName!, attendeeId!, idToken!, accessToken!, refreshToken!)
+        // console.log("start manager",res)
+        // const url = res['url']
+        // const host = window.location.hostname
+        // if(url.indexOf(host) != -1){
+        //     setURL(url)
+        // }else{
+        //     const noProtocolUrl = url.substring("https://".length)
+        //     const paramString   = noProtocolUrl.substring(noProtocolUrl.indexOf("/"))
+        //     const newUrl = `https://192.168.0.4:3000${paramString}`
+        //     console.log("NEWURL", newUrl)
+        //     setURL(newUrl)
+        // }
+    }
+
+    const handleGetManagerInfoClicked = async () =>{
+        const res = await getManagerInfo(meetingName!, attendeeId!, idToken!, accessToken!, refreshToken!)
+        console.log(`get manager info ${res}`)
+    }
+
+    const handleGetMeetingInfoClicked = async () =>{
+        const res = await getMeetingInfo(meetingName!, idToken!, accessToken!, refreshToken!)
+        console.log(`get meeting info ${res}`)
     }
 
     useEffect(()=>{
@@ -78,7 +86,7 @@ export const ManagerControllerPanel = () => {
                     Manager
                 </Typography>
 
-                <Link onClick={(e: any) => { handleStartManagerClicked() }}>
+                <Link onClick={(e: any) => { startHMM() }}>
                     startManager
                 </Link>
 
@@ -90,12 +98,45 @@ export const ManagerControllerPanel = () => {
                 <a onClick={()=>{sendHMMCommand( {command: HMMCmd.STOP_RECORD} )}}>STOP_RECORD</a>
 
 
+                
+
                 <div>
-                    <a onClick={()=>{sendHMMCommand( {command:HMMCmd.TERMINATE} )}}>TERMINATE</a>
+                    <a onClick={()=>{sendHMMCommand( {command:HMMCmd.TERMINATE} )}}>TERMINATE!</a>
                 </div>
+                <div>
+                    <a onClick={()=>{sendHMMCommand( {command: HMMCmd.GET_LOCAL_IP} )}}>GET_LOCAL_IP!</a>
+                </div>                
+
+                {/* <div>
+                    <a onClick={()=>{handleActivateAmongUsServiceClicked()}}>Activate AMONGUS SERVICE</a>
+                </div>                
+                <div>
+                    <a onClick={()=>{handleInactivateAmongUsServiceClicked()}}>Inactivate AMONGUS SERVICE</a>
+                </div>                
+                <div>
+                    <a onClick={()=>{handleListAmongUsServiceClicked()}}>List AMONGUS SERVICE</a>
+                </div>                 */}
+
+                
                 <div>
                     {hmmstatus}
                 </div>
+                
+                <div>
+                    <br/>
+                    <a onClick={()=>{updateHMMInfo()}}>get_manager_info</a>
+                </div>
+
+
+                <div>
+                    <a onClick={()=>{updateMeetingInfo()}}>updateMeetingInfo</a>
+                    <br/>
+                    {ownerId}
+                    <br />
+                    {publicIp}
+                </div>
+
+
             </div>
 
     );

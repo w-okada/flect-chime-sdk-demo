@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 import { VideoTileState } from "amazon-chime-sdk-js";
 import { AttendeeState, ChimeClient } from "../helper/ChimeClient";
 import { Recorder } from "../helper/Recorder";
+import { getMeetingInfo } from "../../api/api";
 
 type UseMeetingStateProps = {
     userId?: string, 
@@ -22,6 +23,7 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
     const [isShareContent, setIsShareContent] = useState(false)
     const [activeSpeakerId, setActiveSpeakerId] = useState<string|null>(null)
     const [attendeeId, setAttendeeId] = useState<string>("")
+    const [ownerId, setOwnerId] = useState("")
 
     const chimeClient = useMemo(()=>{return new ChimeClient()},[])
 
@@ -95,13 +97,24 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
         return attendees[attendeeId] ? attendees[attendeeId].name : attendeeId
     }
 
+    const updateMeetingInfo = async () =>{
+        const meetingInfo = await getMeetingInfo(meetingName, props.idToken!, props.accessToken!, props.refreshToken!)
+        const ownerId = meetingInfo.Metadata.OwnerId
+        console.log(meetingInfo)
+        console.log("new ownerId", ownerId)
+        setOwnerId(ownerId)
+    }
+
+
     return { meetingName, meetingId, joinToken, attendeeId, userName, attendees, videoTileStates, 
             meetingSession, activeRecorder, allRecorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting,
             isShareContent, activeSpeakerId,
             createMeeting, joinMeeting, enterMeeting, leaveMeeting,
             startShareScreen, stopShareScreen,
             getUserNameByAttendeeIdFromList,
-            countAttendees
+            countAttendees,
+
+            updateMeetingInfo, ownerId
         }
 
 

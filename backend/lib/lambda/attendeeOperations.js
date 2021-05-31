@@ -14,12 +14,13 @@ var bucketDomainName         = process.env.BUCKET_DOMAIN_NAME
 var managerContainerName     = process.env.MANAGER_CONTAINER_NAME
 var bucketArn                = process.env.BUCKET_ARN
 var bucketName               = process.env.BUCKET_NAME
+var securityGroupId          = process.env.SECURITY_GROUP_ID
 
 //// AWS Clients setup
 var ddb = new AWS.DynamoDB();
 var meeting = require('./meeting');
 var ecs = new AWS.ECS();
-
+var ec2 = new AWS.EC2();
 
 
 /**
@@ -54,6 +55,8 @@ exports.dispatchAttendeeOperation = async (operation, email, meetingName, attend
             return generateOnetimeCode(meetingName, attendeeId, header, body)
         case "start-manager":
             return startMeetingManager(email, meetingName, attendeeId, header, body)
+        case "get-manager-info":
+            return getMeetingManagerInformation(email, meetingName, attendeeId, header, body)
         default:
             return defaultResponse(operation)
     }
@@ -179,7 +182,6 @@ const startMeetingManager = async (email, meetingName, attendeeId, headers, body
                     resolve()
                 })
             })
-    
             await p
         }catch(e){
             console.log(e)
@@ -211,7 +213,8 @@ const startMeetingManager = async (email, meetingName, attendeeId, headers, body
         networkConfiguration: { 
           awsvpcConfiguration: { 
               assignPublicIp: "ENABLED",
-              subnets: [ subnetId ]
+              subnets: [ subnetId ],
+              securityGroups: [ securityGroupId ]
           }
         },
         overrides:{
@@ -263,6 +266,118 @@ const startMeetingManager = async (email, meetingName, attendeeId, headers, body
         code:    'Start Meeting',
         url: meetingURL,
         taskArn: taskArn,
+    }
+}
+
+
+
+
+
+
+/***
+ * get Headless Meeting Manager information.
+ * 
+ * @email caller's email. if this email is not the meeting owner's one, invoke hmm failed.
+ */
+const getMeetingManagerInformation = async (email, meetingName, attendeeId, headers, body) =>{
+    console.log("startMeetingManager")
+    //// (1) If there is no meeting, return fail
+    let meetingInfo = await meeting.getMeetingInfo2(meetingName);
+    if (meetingInfo === null) {
+        return {
+            code: 'MeetingNotFound',
+            message: 'No meeting is found. Please check meeting name.'
+        }
+    }
+    meetingInfo.Metadata
+
+    //// (2) check if owner calls or not. 
+    var meetingMetadata = meetingInfo.Metadata
+    var ownerId = meetingMetadata['OwnerId']
+    console.log("OWNERID", ownerId, "email", email)
+    if(ownerId != email){
+        return {
+            code: 'permission denyed',
+            message: 'Meeting owner id does not match email'
+        }
+    }
+
+    //// (3) check already hmm is running
+    console.log("HmmTaskArn", meetingInfo.HmmTaskArn)
+    if(meetingInfo.HmmTaskArn.length <32){
+        return {
+            code: 'there is no hmm',
+            message: `there is no hmm taskArn:${meetingInfo.HmmTaskArn}`
+        }
+    }
+    let interfaceId = ""
+    try{
+        const p = new Promise((resolve, reject)=>{
+            ecs.describeTasks({
+                tasks: [meetingInfo.HmmTaskArn],
+                cluster: clusterArn,
+            },(err,res)=>{
+                console.log("TASK STATUS:", res)
+                console.log("TASK STATUS(err):", err)
+                if(err){
+                    reject("describe task exception")
+                    return
+                }
+                if(res.tasks.length!=0 && res.tasks[0].desiredStatus === "RUNNING"){
+                    const container = res.tasks[0].containers[0]
+                    const attachements = res.tasks[0].attachments
+                    const interface = res.tasks[0].containers[0].networkInterfaces[0]
+                    const interfaceId = res.tasks[0].containers[0].networkInterfaces[0].attachmentId
+                    console.log(`task information1:`, container)
+                    console.log(`task information2:`, interface)
+                    console.log(`task information3:`, interfaceId)
+                    console.log(`task information4:`, attachements)
+
+                    const enis = attachements.filter(x=>{
+                        return x.type == "ElasticNetworkInterface"
+                    })
+                    const eni = enis[0].details.filter(x=>{
+                        return x.name == "networkInterfaceId"
+                    })
+                    const eniId = eni[0].value
+                    console.log(`ENI_ID: ${eniId}`)
+                    resolve(eniId)
+                    return
+                }
+                reject(`can not find correct task ${meetingInfo.HmmTaskArn}`)
+            })
+        })
+        interfaceId = await p
+    }catch(e){
+        console.log(e)
+        return {
+            code: 'exist check exception',
+            message: e
+        }
+    }
+
+    console.log(`InterfaceID: ${interfaceId}`)
+
+    const p = new Promise((resolve, reject)=>{
+        ec2.describeNetworkInterfaces({
+            NetworkInterfaceIds: [interfaceId]
+        },(err,res)=>{
+            console.log("ENI Status[err]",err)
+            console.log("ENI Status[res]",res)
+            
+            const association = res.NetworkInterfaces[0].Association
+            console.log("ENI Association", association)
+
+            const publicIP = association.PublicIp
+            console.log("ENI public ip:", publicIP)
+            resolve(publicIP)
+        })
+    })
+    const publicIP = await p
+
+    return {
+        code:    'end',
+        publicIP: publicIP
     }
 }
 
