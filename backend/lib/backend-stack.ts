@@ -184,59 +184,6 @@ export class BackendStack extends cdk.Stack {
     securityGroup.addIngressRule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(3000))
 
 
-    // // const cluster_among = new ecs.Cluster(this, `${id}_cluster_among`, { vpc });
-    // const logGroup_among = new logs.LogGroup(this, `${id}_logGroup_among`, {
-    //   logGroupName: `/${id}-fargate_among`,
-    //   removalPolicy: cdk.RemovalPolicy.DESTROY,
-    // });        
-
-    // // create a task definition with CloudWatch Logs
-    // const logging_among = new ecs.AwsLogDriver({
-    //   logGroup: logGroup_among,
-    //   streamPrefix: "fargate",
-    // })
-
-    // const taskDefinition_among = new ecs.FargateTaskDefinition(this, `${id}_fargate_task_among`, {
-    //   family: this.node.tryGetContext('serviceName'),
-    //   cpu: 2048,
-    //   memoryLimitMiB: 4096,
-    // });
-
-    // const container_among = taskDefinition_among.addContainer("DefaultContainer_among", {
-    //   containerName: `${id}_manager_container_among`,
-    //   image: ecs.ContainerImage.fromAsset("lib/among"),
-    //   cpu: 2048,
-    //   memoryLimitMiB: 4096,
-    //   logging: logging_among,
-    // });
-
-    // bucket.grantReadWrite(taskDefinition_among.taskRole)    
-
-    // container_among.addPortMappings({
-    //   containerPort: 3000
-    // });
-
-    // const ecsService_among = new ecs.FargateService(this, "Service", {
-    //   // cluster:cluster_among,
-    //   cluster:cluster,
-    //   taskDefinition:taskDefinition_among,
-    //   assignPublicIp:true,
-    //   desiredCount:0
-    // });
-
-    // const lb_among = new elb.ApplicationLoadBalancer(this, "LB", {
-    //   // vpc: cluster_among.vpc,
-    //   vpc: cluster.vpc,
-    //   internetFacing: true
-    // });
-
-    // const listener_among = lb_among.addListener("Listener", { port: 80 });
-    // const targetGroup = listener_among.addTargets("ECS", {
-    //   protocol: elb.ApplicationProtocol.HTTP,
-    //   port: 3000,
-    //   targets: [ecsService_among]
-    // });
-
     ///////////////////////////////
     //// Lambda Layers
     ///////////////////////////////
@@ -266,14 +213,8 @@ export class BackendStack extends cdk.Stack {
       f.addEnvironment("MANAGER_CONTAINER_NAME", `${id}_manager_container`)
       f.addEnvironment("BUCKET_ARN", bucket.bucketArn)
       f.addEnvironment("BUCKET_NAME", bucket.bucketName)
-      // f.addEnvironment("ELB_DNS_NAME", lb_among.loadBalancerDnsName)
       f.addEnvironment("SECURITY_GROUP_NAME", securityGroup.securityGroupName)
       f.addEnvironment("SECURITY_GROUP_ID", securityGroup.securityGroupId)
-
-      // f.addEnvironment("AMONG_SERVICE_ARN", ecsService_among.serviceArn)
-      // f.addEnvironment("AMONG_SERVICE_NAME", ecsService_among.serviceName)
-      // f.addEnvironment("AMONG_CLUSTER_ARN", cluster.clusterArn)
-  
 
       f.addLayers(nodeModulesLayer)
     }
@@ -300,6 +241,7 @@ export class BackendStack extends cdk.Stack {
       timeout: Duration.seconds(10),
     })
     addCommonSetting(lambdaFunctionGetMeetings)
+    
 
     //// (2-2) Post Meeting
     const lambdaFunctionPostMeeting: lambda.Function = new lambda.Function(this, "funcPostMeeting", {
@@ -323,6 +265,19 @@ export class BackendStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(10),
     })
     addCommonSetting(lambdaFunctionDeleteMeeting)
+
+    //// (2-4) Get Meeting
+    const lambdaFunctionGetMeeting: lambda.Function = new lambda.Function(this, "funcGetMeeting", {
+      functionName: `${id}_getMeeting`,
+      runtime: lambda.Runtime.NODEJS_12_X,
+      code: lambda.Code.asset(`${__dirname}/lambda`),
+      handler: "index.getMeeting",
+      memorySize: 256,
+      timeout: Duration.seconds(10),
+    })
+    addCommonSetting(lambdaFunctionGetMeeting)
+
+
 
     //// (3-1) Get Attendee
     const lambdaFunctionGetAttendee: lambda.Function = new lambda.Function(this, "funcGetAttendee", {
@@ -494,7 +449,15 @@ export class BackendStack extends cdk.Stack {
       },
     })
 
-
+    //// (2-4) Get Meeting
+    apiMeeting.addMethod("GET", new LambdaIntegration(lambdaFunctionGetMeeting), {
+      operationName: `${id}_getMeeting`,
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: {
+        authorizerId: authorizer.ref
+      },
+    })
+       
     ///// (3) Attendee
     const apiAttendees = apiMeeting.addResource("attendees")
     const apiAttendee = apiAttendees.addResource("{attendeeId}")

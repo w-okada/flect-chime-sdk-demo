@@ -346,14 +346,41 @@ export const startManager = async (meetingName: string, attendeeId: string, idTo
 
     const data = await response.json();
     if (data === null) {
-        throw new Error(`Server error: Join Meeting Failed`);
+        throw new Error(`Server error: startManager failed`);
     }
     return data;
 }
 
 
+/**
+ * 10. getMeetingInfo
+ * @param meetingName 
+ * @param idToken 
+ * @param accessToken 
+ * @param refreshToken 
+ */
+export const getMeetingInfo = async(meetingName: string, idToken: string, accessToken: string, refreshToken: string) => {
 
+    const url = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}`
 
+    const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                "Authorization": idToken,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                "X-Flect-Access-Token": accessToken
+            }
+        }
+    );
+
+    const data = await response.json();
+    console.log("getMeetingInfo res:", data)
+    if (data === null) {
+        throw new Error(`Server error: get meeting info failed`);
+    }
+    return data;
+}
 
 
 
@@ -366,7 +393,7 @@ export const startManager = async (meetingName: string, attendeeId: string, idTo
  * @param code 
  */
 export const getManagerInfo = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string):
-Promise<{ code: string, url:string }> => {
+Promise<{ code: string, publicIp:string }> => {
 
     const url = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}/operations/get-manager-info`
 

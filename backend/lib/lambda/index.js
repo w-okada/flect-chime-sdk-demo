@@ -71,6 +71,28 @@ exports.deleteMeeting = async (event, context, callback) => {
     callback(null, response)
 }
 
+// (2-4) Get Meeting
+exports.getMeeting = async (event, context, callback) => {
+    console.log(event)
+    console.log(context)
+    console.log(callback)
+
+
+    const idToken      = event.headers["Authorization"]
+    const accessToken  = event.headers["x-flect-access-token"]
+    const meetingName = event.pathParameters.meetingName
+
+    const email = await utils.getEmailFromAccessToken(accessToken)
+    console.log(`idToken:${idToken}, accessToken:${accessToken}`)
+    console.log(`meetingName:${meetingName}, email:${email}`)
+
+    const response = utils.getResponseTemplate()
+    const meetingInfo = await meeting.getMeetingInfo2(meetingName)
+    response.body = JSON.stringify(meetingInfo)
+    callback(null, response)
+}
+
+
 // (3-1) Get Attendee
 exports.getAttendee = async (event, context, callback) => {
     console.log(event)

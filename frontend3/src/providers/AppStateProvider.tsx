@@ -1,6 +1,5 @@
 import React, { useContext, useState } from "react";
 import { ReactNode } from "react";
-import { awsConfiguration, DEFAULT_PASSWORD, DEFAULT_USERID } from "../Config";
 import { AttendeeState } from "./helper/ChimeClient";
 import { useCredentials } from "./hooks/useCredentials";
 import { useMeetingState } from "./hooks/useMeetingState";
@@ -21,6 +20,7 @@ import { Recorder } from "./helper/Recorder";
 import { OnetimeCodeInfo, OnetimeCodeSigninResult } from "../api/api";
 import { HMMMessage, useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
 import { useScheduler } from "./hooks/useScheduler";
+import { awsConfiguration, DEFAULT_PASSWORD, DEFAULT_USERID } from "../Config";
 
 
 type Props = {
@@ -70,6 +70,10 @@ interface AppStateValue {
     activeSpeakerId:string|null
 
     countAttendees:()=>void
+
+    updateMeetingInfo: ()=>void
+    ownerId:string
+
     /** For Device State */
     audioInputList: DeviceInfo[] | null
     videoInputList: DeviceInfo[] | null
@@ -82,6 +86,9 @@ interface AppStateValue {
     /** For HMM(Headless Meeting Manager) */
     sendHMMCommand: (mess: HMMMessage) => void,
     hMMCommandData: RealtimeData[],
+    startHMM:()=>void,
+    updateHMMInfo:()=>void,
+    publicIp:string,
     /** For WhiteBoard */
     addDrawingData: ((data: DrawingData) => void) | undefined
     drawingData: DrawingData[]
@@ -154,7 +161,8 @@ export const AppStateProvider = ({ children }: Props) => {
     const { meetingName, meetingId, joinToken, userName, attendeeId, attendees, videoTileStates, 
             createMeeting, joinMeeting, enterMeeting, leaveMeeting, 
             startShareScreen, stopShareScreen, getUserNameByAttendeeIdFromList,
-            meetingSession, activeRecorder, allRecorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, isShareContent, activeSpeakerId,countAttendees
+            meetingSession, activeRecorder, allRecorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, isShareContent, activeSpeakerId,countAttendees,
+            updateMeetingInfo, ownerId,
            } = useMeetingState({userId, idToken, accessToken, refreshToken,})
     const { audioInputList, videoInputList, audioOutputList, reloadDevices } = useDeviceState()
     const { screenWidth, screenHeight} = useWindowSizeChangeListener()
@@ -163,7 +171,8 @@ export const AppStateProvider = ({ children }: Props) => {
     })
     const { messageActive, messageType, messageTitle, messageDetail, setMessage, resolveMessage } = useMessageState()
     const { chatData, sendChatData} = useRealtimeSubscribeChat({meetingSession, attendeeId})
-    const { sendHMMCommand, hMMCommandData } = useRealtimeSubscribeHMM({meetingSession, attendeeId})
+    const { sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp
+          } = useRealtimeSubscribeHMM({meetingSession, attendeeId, meetingName, idToken, accessToken, refreshToken})
     const logger = meetingSession?.logger
     const { addDrawingData, drawingData, lineWidth, setLineWidth, drawingStroke, setDrawingStroke, drawingMode, setDrawingMode } = useWebSocketWhiteBoard({meetingId, attendeeId, joinToken, logger})
 
@@ -213,6 +222,8 @@ export const AppStateProvider = ({ children }: Props) => {
 
         countAttendees,
 
+        updateMeetingInfo,
+        ownerId,
         /** For Device State */
         audioInputList,
         videoInputList,
@@ -229,8 +240,9 @@ export const AppStateProvider = ({ children }: Props) => {
         /** For HMM(Headless Meeting Manager) */
         sendHMMCommand,
         hMMCommandData,
-
-
+        startHMM,
+        updateHMMInfo,
+        publicIp,
         /** For StageManager */
         stage,
         setStage,

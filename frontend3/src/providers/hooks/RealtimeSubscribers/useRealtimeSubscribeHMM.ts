@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { RealtimeData, RealtimeDataApp} from "./const";
 import { v4 } from 'uuid';
 import { LocalLogger } from "../../../utils/localLogger";
+import { getManagerInfo, startManager } from "../../../api/api";
 
 
 export const HMMCmd = {
@@ -35,6 +36,11 @@ export type HMMMessage = {
 type UseRealtimeSubscribeHMMProps = {
     meetingSession?:DefaultMeetingSession
     attendeeId:string
+
+    meetingName?: string
+    idToken?: string
+    accessToken?: string
+    refreshToken?: string
 }
 
 const logger = new LocalLogger("useRealtimeSubscribeHMM")
@@ -48,6 +54,20 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
     },[props.attendeeId])
     
     const [hMMCommandData, setHMMComandData] = useState<RealtimeData[]>([])
+    const [publicIp, setPublicIp] = useState<string>("")
+
+    const startHMM = async () =>{
+        const res = await startManager(props.meetingName!, attendeeId!, props.idToken!, props.accessToken!, props.refreshToken!)
+        setHMMComandData([])
+        console.log("startHMM", res)
+    }
+    const updateHMMInfo = async () =>{
+        const res = await getManagerInfo(props.meetingName!, attendeeId!, props.idToken!, props.accessToken!, props.refreshToken!)
+        const publicIp = res.publicIp
+        console.log(" getHMMInfo ", res, publicIp)
+        setPublicIp(publicIp)
+    }
+
 
     const sendHMMCommand = (mess: HMMMessage) => {
         logger.log(`sendCommand: ${attendeeId}`)
@@ -67,6 +87,9 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
         const data = JSON.parse(mess.text()) as RealtimeData
         data.senderId = senderId
         logger.log(data)
+        if(hMMCommandData.length === 0){
+            updateHMMInfo()
+        }
         setHMMComandData([...hMMCommandData, data])
 
     }
@@ -80,5 +103,5 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
             meetingSession?.audioVideo?.realtimeUnsubscribeFromReceiveDataMessage(RealtimeDataApp.HMM)
         }
     })
-    return {sendHMMCommand, hMMCommandData}
+    return {sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp}
 }
