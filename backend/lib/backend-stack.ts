@@ -149,7 +149,16 @@ export class BackendStack extends cdk.Stack {
     /////////////////////
     /// Fargate
     ///////////////////// 
-    const vpc = new ec2.Vpc(this, `${id}_vpc`, { maxAzs: 2 });
+    const vpc = new ec2.Vpc(this, `${id}_vpc`, { 
+      maxAzs: 2,
+      subnetConfiguration:[
+        {
+          cidrMask: 24,
+          name: "public-1",
+          subnetType: ec2.SubnetType.PUBLIC,
+        },
+      ]    
+    });
     const cluster = new ecs.Cluster(this, `${id}_cluster`, { vpc });
     const logGroup = new logs.LogGroup(this, `${id}_logGroup`, {
       logGroupName: `/${id}-fargate`,
