@@ -42,9 +42,8 @@ export const HeadlessMeetingManager = () => {
     // const decodedMeetingName =  decodeURIComponent(meetingName!)
 
 
-    const { handleSinginWithOnetimeCode, joinMeeting, enterMeeting, leaveMeeting, attendees, videoTileStates, setStage,
-            audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting,
-            sendHMMCommand, hMMCommandData, activeRecorder, allRecorder, audioOutputList} = useAppState()
+    const { handleSinginWithOnetimeCode, joinMeeting, enterMeeting, attendees, sendHMMStatus, terminateCounter,
+            audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, audioOutputList} = useAppState()
     const [ state, setState] = useState<State>({internalStage:"Signining", userName:null})
 
     const { meetingActive } = useStatusMonitor()
@@ -57,36 +56,36 @@ export const HeadlessMeetingManager = () => {
         setTileCanvas(canvas)
     }
 
+
+    const finalizeMeeting = async() =>{
+        logger.log("meeting is no active. stop recording...")
+        await stopRecord()
+        logger.log("meeting is no active. stop recording...done. sleep 20sec")
+        await sleep(20)
+        logger.log("meeting is no active. stop recording...done. sleep 20sec done.")
+        logger.log("terminate event fire")
+
+        const event = new CustomEvent('terminate');
+        document.dispatchEvent(event)
+        logger.log("terminate event fired")
+    }
     useEffect(()=>{
         if(meetingActive===false){
-            (async()=>{
-                logger.log("meeting is no active. stop recording...")
-                await stopRecord()
-                logger.log("meeting is no active. stop recording...done. sleep 20sec")
-                await sleep(20)
-                logger.log("meeting is no active. stop recording...done. sleep 20sec done.")
-                logger.log("terminate event fire")
-
-                const event = new CustomEvent('terminate');
-                document.dispatchEvent(event)
-                logger.log("terminate event fired")
-
-            })()
-
+            finalizeMeeting()
+            sendHMMStatus(false, isRecording, isSharingTileView)
         }
     },[meetingActive])
-
+    useEffect(()=>{
+        if(terminateCounter>0){
+            finalizeMeeting()
+            sendHMMStatus(false, isRecording, isSharingTileView)
+        }
+    },[terminateCounter])
 
 
     useEffect(()=>{
-        const status:HMMStatus = {
-            active: true,
-            recording: isRecording,
-            shareTileView: isSharingTileView,
-        }
-        sendHMMCommand({command:HMMCmd.NOTIFY_STATUS, data:status})
+        sendHMMStatus(true, isRecording, isSharingTileView)
     },[tenSecondsTaskTrigger])
-
 
 
 

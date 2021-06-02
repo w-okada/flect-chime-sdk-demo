@@ -104,8 +104,9 @@ interface AppStateValue {
     stopRecordingCounter:number, 
     startShareTileViewCounter:number, 
     stopShareTileViewCounter:number, 
+    terminateCounter:number,
     hMMStatus: HMMStatus,
-
+    stateLastUpdate: number,
 
     /** For WhiteBoard */
     addDrawingData: ((data: DrawingData) => void) | undefined
@@ -191,7 +192,7 @@ export const AppStateProvider = ({ children }: Props) => {
     const { chatData, sendChatData} = useRealtimeSubscribeChat({meetingSession, attendeeId})
     const { sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp, 
             sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus,
-            startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, hMMStatus,
+            startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, terminateCounter, hMMStatus, stateLastUpdate
             // recordingEnable, shareTileViewEnable, terminateTriggerd, hMMStatus
           } = useRealtimeSubscribeHMM({meetingSession, attendeeId, meetingName, idToken, accessToken, refreshToken})
 
@@ -281,8 +282,9 @@ export const AppStateProvider = ({ children }: Props) => {
         stopRecordingCounter, 
         startShareTileViewCounter, 
         stopShareTileViewCounter, 
+        terminateCounter,
         hMMStatus,
-
+        stateLastUpdate,
         /** For StageManager */
         stage,
         setStage,

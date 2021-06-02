@@ -1,9 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, Typography } from '@material-ui/core';
+import { Avatar, Button, Link, makeStyles, Tooltip, Typography } from '@material-ui/core';
 import { useStyles } from './css';
 import { useAppState } from '../../../../providers/AppStateProvider';
 import { HMMCmd, HMMMessage } from '../../../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM';
 import { getDateString } from '../../../../utils';
+import EmojiPeopleIcon from '@material-ui/icons/EmojiPeople';
+import { deepOrange, deepPurple } from '@material-ui/core/colors';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import ScreenShareIcon from '@material-ui/icons/ScreenShare';
+import CameraRollIcon from '@material-ui/icons/CameraRoll';
+import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
 
 type StatusData = {
     timestamp: number,
@@ -11,94 +17,131 @@ type StatusData = {
     recording: boolean,
 }
 
+
+  
 export const ManagerControllerPanel = () => {
     const classes = useStyles();
-    const {sendHMMCommand, hMMCommandData, updateMeetingInfo, ownerId, isOwner,
-        startHMM, updateHMMInfo, publicIp,
-        sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus
+    const {updateMeetingInfo, ownerId, isOwner, publicIp,
+          startHMM, sendTerminate, sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, hMMStatus, stateLastUpdate
         } = useAppState()
-    const [ statusData, setStatusData ] = useState<StatusData>()
 
-
-    useEffect(()=>{
-        console.log("receive HMMCommandData 0" )
-        if(hMMCommandData.length === 0){
-            return
-        }
-        const latestCommand = hMMCommandData.slice(-1)[0]
-        console.log("receive HMMCommandData 1 ",hMMCommandData )
-        const mess = latestCommand.data as HMMMessage
-        console.log("receive HMMCommandData 2 ", mess)
-        console.log("receive HMMCommandData 3 ", mess.command)
-        
-        if(mess.command === "NOTIFY_STATUS"){
-            const statusData:StatusData={
-                timestamp:new Date().getTime(),
-                active: true,
-                recording: true
-            }
-            setStatusData(statusData)
-        }
-    },[hMMCommandData])
-
-
-    const hmmstatus = useMemo(()=>{
-        if(!statusData){
-            return (<>no status data</>)
-        }
-        const dateString = getDateString(statusData.timestamp)
-        return(
+    const ownerStateComp = useMemo(()=>{
+        return (
+            isOwner?
             <>
-                lastupdate:{dateString}, recording:{statusData.recording ? "yes":"no"}
+                <Tooltip title={"Your are owner"}>
+                    <EmojiPeopleIcon className={classes.activeState}/>
+                </Tooltip>
+            </>
+            :
+            <>
+                <Tooltip title={"Your are not owner"}>
+                    <EmojiPeopleIcon className={classes.inactiveState}/>
+                </Tooltip>
             </>
         )
+    },[isOwner])
 
-    },[statusData])
+    const managerStateComp = useMemo(()=>{
+        return (
+            hMMStatus.active?
+            <>
+                <Tooltip title={"hmm active"}>
+                    <SportsEsportsIcon className={classes.activeState}/>
+                </Tooltip>
+            </>
+            :
+            <>
+                <Tooltip title={"hmm not active"}>
+                    <SportsEsportsIcon className={classes.inactiveState}/>
+                </Tooltip>
+            </>
+        )
+    },[hMMStatus.active])
 
+    const recordingStateComp = useMemo(()=>{
+        return (
+            hMMStatus.recording?
+            <>
+                <Tooltip title={"recording"}>
+                    <CameraRollIcon className={classes.activeState}/>
+                </Tooltip>
+            </>
+            :
+            <>
+                <Tooltip title={"not recording"}>
+                    <CameraRollIcon className={classes.inactiveState}/>
+                </Tooltip>
+            </>
+        )
+    },[hMMStatus.recording])
+
+    const shareTileViewStateComp = useMemo(()=>{
+        return (
+            hMMStatus.shareTileView?
+            <>
+                <Tooltip title={"share tile view"}>
+                    <ScreenShareIcon className={classes.activeState}/>
+                </Tooltip>
+            </>
+            :
+            <>
+                <Tooltip title={"not share share tile view"}>
+                    <ScreenShareIcon className={classes.inactiveState}/>
+                </Tooltip>
+            </>
+        )
+    },[hMMStatus.shareTileView])
+    
+    const stateLastUpdateTime = useMemo(()=>{
+        const datetime = new Date(stateLastUpdate);
+        const d = datetime.toLocaleDateString()
+        const t = datetime.toLocaleTimeString()
+        // return `${d} ${t}`
+        return `${t}`
+    },[stateLastUpdate])
     return (
             <div className={classes.root}>                
                 <Typography variant="body1" color="textSecondary">
                     Manager 
                 </Typography>
-                {isOwner? "You are Meeting Owner":"You are not Meeting Owner"} <br/>
+                {ownerStateComp}
+                {managerStateComp}
+                {recordingStateComp}
+                {shareTileViewStateComp}
 
-                
-                <Link onClick={(e: any) => { startHMM() }}>
-                    startManager
-                </Link>
+                <br/>
+                lastupdate:{stateLastUpdateTime}
 
-                <a onClick={()=>{sendStartRecord()}}>START_RECORD</a>
-                <br/>
-                <a onClick={()=>{sendStopRecord()}}>STOP_RECORD</a>
-                <br/>
 
-                <a onClick={()=>{sendStartShareTileView()}}>START_SHARE_TILE_VIEW</a>
-                <br/>
-                <a onClick={()=>{sendStopShareTileView()}}>STOP_SHARE_TILE_VIEW</a>
                 <br/>
 
-                
+                <Button size="small" className={classes.margin} onClick={()=>{startHMM()}} >
+                    run manager
+                </Button>
+                <Button size="small" className={classes.margin} onClick={()=>{ sendTerminate() }}>
+                    stop manager
+                </Button>
 
-                <div>
-                    <a onClick={()=>{ sendTerminate() }}>TERMINATE!</a>
-                </div>
-                
-                <div>
-                    {hmmstatus}
-                </div>
-                
-                <div>
-                    <br/>
-                    <a onClick={()=>{updateHMMInfo()}}>get_manager_info</a>
-                </div>
+                <Button size="small" className={classes.margin} onClick={()=>{sendStartRecord()}}>
+                    start recording
+                </Button>
+                <Button size="small" className={classes.margin} onClick={()=>{sendStopRecord()}}>
+                    stop recording
+                </Button>
 
-
+                <Button size="small" className={classes.margin} onClick={()=>{sendStartShareTileView()}}>
+                    start share tileview
+                </Button>
+                <Button size="small" className={classes.margin} onClick={()=>{sendStopShareTileView()}}>
+                    stop share tileview
+                </Button>
                 <div>
                     <a onClick={()=>{updateMeetingInfo()}}>updateMeetingInfo</a>
                     <br/>
-                    {ownerId}
+                    Owner:{ownerId}
                     <br />
-                    {publicIp}
+                    {publicIp? `publicIp ${publicIp}`:""}
                 </div>
 
 

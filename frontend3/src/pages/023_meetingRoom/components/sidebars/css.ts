@@ -1,4 +1,5 @@
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
+import { deepOrange, deepPurple, grey } from "@material-ui/core/colors";
 const lineSpacerHeihgt = 10
 
 export const useStyles = makeStyles((theme: Theme) =>
@@ -104,6 +105,17 @@ export const useStyles = makeStyles((theme: Theme) =>
             display:"flex"
         },
 
+        //// Color
+        activeState: {
+            color: theme.palette.getContrastText(deepOrange[500]),
+            backgroundColor: deepOrange[500],
+            margin:3
+          },
+        inactiveState: {
+            color: theme.palette.getContrastText(grey[500]),
+            backgroundColor: grey[500],
+            margin:3
+        },
 
     }),
 );

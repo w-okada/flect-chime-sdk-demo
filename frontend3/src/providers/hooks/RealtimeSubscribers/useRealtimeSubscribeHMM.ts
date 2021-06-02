@@ -63,10 +63,11 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
     const [ terminateCounter, setTerminateCounter] = useState(0)
 
     const [ hMMStatus, setHMMStatus] = useState<HMMStatus>({
-        active:true,
-        recording:true,
-        shareTileView:true,
+        active:false,
+        recording:false,
+        shareTileView:false,
     })
+    const [ stateLastUpdate, setStateLastUpdate] = useState(new Date().getTime())
 
     const startHMM = async () =>{
         const res = await startManager(props.meetingName!, attendeeId!, props.idToken!, props.accessToken!, props.refreshToken!)
@@ -157,6 +158,7 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
             case "NOTIFY_STATUS":
                 const status = mess.data as HMMStatus
                 setHMMStatus(status)
+                setStateLastUpdate(new Date().getTime())
                 break
         }
         setHMMComandData([...hMMCommandData, data])
@@ -174,7 +176,7 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
     return {
         sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp,
         sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus,
-        startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, hMMStatus
+        startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, terminateCounter, hMMStatus, stateLastUpdate
         // recordingEnable, shareTileViewEnable, terminateTriggerd
     }
 }
