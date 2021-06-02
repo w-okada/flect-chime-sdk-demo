@@ -430,8 +430,9 @@ export class VirtualBackground implements VideoFrameProcessor {
             // res.data[i * 4 + 0] = prediction![i] >128 ? 255 : prediction![i]
             // res.data[i * 4 + 1] = prediction![i] >128 ? 255 : prediction![i]
             // res.data[i * 4 + 2] = prediction![i] >128 ? 255 : prediction![i]
-            res.data[i * 4 + 3] = prediction![i] > 128 ? 255 : prediction![i]
-            res.data[i * 4 + 3] = prediction![i] < 64 ? 0 : prediction[i]
+            // res.data[i * 4 + 3] = prediction![i] > 128 ? 255 : prediction![i]
+            res.data[i * 4 + 3] = prediction![i] > 128 ? 255 : 0
+            // res.data[i * 4 + 3] = prediction![i] < 64 ? 0 : prediction[i]
         }
         this.personMaskCanvas.width = this.googlemeetTFLiteParams.processWidth
         this.personMaskCanvas.height = this.googlemeetTFLiteParams.processHeight

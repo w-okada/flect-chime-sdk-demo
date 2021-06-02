@@ -25,26 +25,17 @@ export const useStatusMonitor = () =>{
 
         console.log("meetingActive1:", meetingActive, pureAttendees)
         const attendeeList = pureAttendees.reduce((prev,cur)=>{return prev+"_____"+cur}, "")
-        console.log("meetingActive2:", attendeeList)
+        console.log(`meetingActive2:${attendeeList}`)
         
-        // const status:HMM_STATUS = {
-        //     active: true,
-        //     recording: true
-        // }
-        // sendHMMCommand({command:HMMCmd.NOTIFY_STATUS, data:status})
-
         if(meetingActive){
             setNoAttendeesCount(0)
         }else{
             setNoAttendeesCount(noAttendeesCount + 1)
-            console.log("meetingActive checker count:", noAttendeesCount)
+            console.log(`meetingActive checker count: ${noAttendeesCount}`)
             if(noAttendeesCount > 3){
                 setMeetingActive(false)
             }
         }
     },[tenSecondsTaskTrigger])
-
-
-
     return {meetingActive}
 }

@@ -3,12 +3,13 @@ import { DefaultDeviceController } from "amazon-chime-sdk-js";
 import React, { useEffect, useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
 import { Recorder } from "../../providers/helper/Recorder";
-import { HMMCmd, HMMMessage } from "../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
+import { HMMCmd, HMMMessage, HMMStatus } from "../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
 import { useScheduler } from "../../providers/hooks/useScheduler";
 import { getDateString } from "../../utils";
 import { LocalLogger } from "../../utils/localLogger";
 import { RecorderView } from "./components/views/RecorderView";
 import { useRecorder } from "./hooks/useRecorder";
+import { useShareTileView } from "./hooks/useShareTileView";
 import { useStatusMonitor } from "./hooks/useStatusMonitor";
 
 // const AWS = require('aws-sdk');
@@ -45,78 +46,16 @@ export const HeadlessMeetingManager = () => {
             audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting,
             sendHMMCommand, hMMCommandData, activeRecorder, allRecorder, audioOutputList} = useAppState()
     const [ state, setState] = useState<State>({internalStage:"Signining", userName:null})
-    // const [ isEncoding, setIsEncoding ] = useState(false)
-    // const [ isRecording, setIsRecording ] = useState(false)
 
-
-    // const [ activeRecorderCanvas, setActiveRecorderCanvas] = useState<HTMLCanvasElement>()
-    // const [ allRecorderCanvas, setAllRecorderCanvas]       = useState<HTMLCanvasElement>()
     const { meetingActive } = useStatusMonitor()
     const { isRecording, setActiveCanvas, setAllCanvas, stopRecord } = useRecorder({meetingName:meetingName||"unknown"})
+    const { isSharingTileView, setTileCanvas, stopSharingTileView} = useShareTileView({meetingName:meetingName||"unknown"})
+    const { tenSecondsTaskTrigger } = useScheduler()
 
-
-    // const startRecordInternal = async (recorder:Recorder, srcCanvas:HTMLCanvasElement) => {
-    //     const audioElem = document.getElementById("for-speaker") as HTMLAudioElement
-    //     const stream =  new MediaStream();
-
-    //     // @ts-ignore
-    //     const audioStream = audioElem.captureStream() as MediaStream
-    //     let localAudioStream = audioInputDeviceSetting?.audioInputForRecord
-    //     if(typeof localAudioStream === "string"){
-    //         localAudioStream = await navigator.mediaDevices.getUserMedia({audio:{deviceId:localAudioStream}})
-    //     }
-
-    //     const audioContext = DefaultDeviceController.getAudioContext();
-    //     const outputNode = audioContext.createMediaStreamDestination();
-    //     const sourceNode1 = audioContext.createMediaStreamSource(audioStream);
-    //     sourceNode1.connect(outputNode)
-    //     if(localAudioStream){
-    //         const sourceNode2 = audioContext.createMediaStreamSource(localAudioStream as MediaStream);
-    //         sourceNode2.connect(outputNode)
-    //     }
-    //     // @ts-ignore
-    //     const videoStream = srcCanvas.captureStream(framerate) as MediaStream
-
-    //     [outputNode.stream, videoStream].forEach(s=>{
-    //         s?.getTracks().forEach(t=>{
-    //             stream.addTrack(t)
-    //         })
-    //     });
-
-    //     recorder.startRecording(stream)
-    // }
-
-    // const startRecord = async () =>{
-    //     setIsRecording(true)
-    //     startRecordInternal(activeRecorder, activeRecorderCanvas!)
-    //     startRecordInternal(allRecorder, allRecorderCanvas!)
-    //     const event = new CustomEvent('recordStart');
-    //     document.dispatchEvent(event)
-    // }
-
-
-    // const stopRecord = async () =>{
-    //     activeRecorder?.stopRecording()
-    //     allRecorder?.stopRecording()
-    //     setIsEncoding(true)
-    //     // const activeUrl = await activeRecorder.getMp4URL()
-    //     // const allUrl    = await allRecorder.getMp4URL()
-    //     // const activeUrl = await activeRecorder.getDataURL()
-    //     // const allUrl    = await allRecorder.getDataURL()
-    //     // const activeLink = document.getElementById("activeVideoLink") as HTMLLinkElement
-    //     // const allLink    = document.getElementById("allVideoLink") as HTMLLinkElement
-    //     // activeLink.href = activeUrl
-    //     // allLink.href    = allUrl
-
-    //     const dateString = getDateString()
-    //     await activeRecorder?.toMp4(`${dateString}_${decodedMeetingName}_active.mp4`)
-    //     await allRecorder?.toMp4(`${dateString}_${decodedMeetingName}_all.mp4`)
-    //     setIsEncoding(false)
-    //     setIsRecording(false)
-
-    //     const event = new CustomEvent('recordFin');
-    //     document.dispatchEvent(event)
-    // }
+    const setTileCanvasExport = (canvas:HTMLCanvasElement) => {
+        setAllCanvas(canvas)
+        setTileCanvas(canvas)
+    }
 
     useEffect(()=>{
         if(meetingActive===false){
@@ -138,50 +77,19 @@ export const HeadlessMeetingManager = () => {
     },[meetingActive])
 
 
-    // useEffect(()=>{
-    //     if(hMMCommandData.length === 0){
-    //         return
-    //     }
-    //     const latestCommand = hMMCommandData.slice(-1)[0]
-    //     const mess = latestCommand.data as HMMMessage
-    //     switch(mess.command){
-    //         case HMMCmd.START_RECORD:
-    //             logger.log("START RECORD")
-    //             startRecord()
-    //             break
-    //         case HMMCmd.STOP_RECORD:
-    //             logger.log("STOP RECORD")
-    //             stopRecord()
-    //             break
-    //         case HMMCmd.START_SHARE_TILEVIEW:
-    //             logger.log("Not Implemented")
-    //             break
-    //         case HMMCmd.STOP_SHARE_TILEVIEW:
-    //             logger.log("Not Implemented")
-    //             break
-    //         case HMMCmd.TERMINATE:
-    //             (async()=>{
-    //                 if(isRecording){
-    //                     logger.log("stop recording start")
-    //                     await stopRecord()
-    //                     logger.log("stop recording end")
-    //                     await sleep(20)
-    //                     logger.log("stop recording sleep end")
 
-    //                 }
-    //                 logger.log("terminate event fire")
+    useEffect(()=>{
+        const status:HMMStatus = {
+            active: true,
+            recording: isRecording,
+            shareTileView: isSharingTileView,
+        }
+        sendHMMCommand({command:HMMCmd.NOTIFY_STATUS, data:status})
+    },[tenSecondsTaskTrigger])
 
-    //                 const event = new CustomEvent('terminate');
-    //                 document.dispatchEvent(event)
-    //                 logger.log("terminate event fired")
 
-    //             })()
-    //             break
-    //         default:
-    //             logger.log("NO MATCH COMMAND", latestCommand.data)
-    //             break
-    //     }
-    // },[hMMCommandData])
+
+
 
     useEffect(()=>{
         if(state.internalStage === "Signining"){
@@ -232,7 +140,7 @@ export const HeadlessMeetingManager = () => {
     
     return (
         <>
-            <RecorderView height={200} width={500} setActiveRecorderCanvas={setActiveCanvas} setAllRecorderCanvas={setAllCanvas}/>
+            <RecorderView height={200} width={500} setActiveRecorderCanvas={setActiveCanvas} setAllRecorderCanvas={setTileCanvasExport}/>
             <div>recording:{isRecording?"true":"false"}</div>
             <div>ATTTENDEES:{Object.keys(attendees).map(x=>{return `[${x}]`})}</div>
 

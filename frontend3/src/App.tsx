@@ -12,7 +12,7 @@ import { WaitingRoom } from './pages/022_waitingRoom/WaitingRoom';
 import { MeetingRoom } from './pages/023_meetingRoom/MeetingRoom';
 import { MeetingManagerSignin } from './pages/100_MeetingManagerSignin/MeetingManagerSingin';
 import { MeetingManager } from './pages/101_MeetingManager/MeetingManager';
-import { HeadlessMeetingManager } from './pages/200_HeadlessMeetingManager/HeadMeetingManager';
+import { HeadlessMeetingManager } from './pages/200_HeadlessMeetingManager/HeadlessMeetingManager';
 import { AppStateProvider, useAppState } from './providers/AppStateProvider';
 
 

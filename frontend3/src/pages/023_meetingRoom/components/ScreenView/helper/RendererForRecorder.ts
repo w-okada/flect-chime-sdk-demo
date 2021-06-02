@@ -79,6 +79,7 @@ export class RendererForRecorder {
 
         const ctx = this.dstCanvas!.getContext("2d")!
         ctx.clearRect(0,0,this.dstCanvas!.width,this.dstCanvas!.height)
+        ctx.fillRect(0,0,this.dstCanvas!.width,this.dstCanvas!.height)
         this.srcVideos.forEach((video,index)=>{
             let rate
             // if(video.videoWidth / video.videoHeight > this.dstCanvas!.width / this.dstCanvas!.height){

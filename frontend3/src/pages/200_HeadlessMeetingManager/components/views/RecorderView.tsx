@@ -18,7 +18,7 @@ type Props = {
 
 export const RecorderView = ({ width, height, setActiveRecorderCanvas, setAllRecorderCanvas }: Props) => {
 
-    const { videoTileStates, activeSpeakerId, meetingSession } = useAppState()
+    const { videoTileStates, activeSpeakerId, meetingSession, attendeeId } = useAppState()
 
     const activeRenderer = useMemo(()=>{return new RendererForRecorder(meetingSession!)},[]) // eslint-disable-line
     const allRenderer    = useMemo(()=>{return new RendererForRecorder(meetingSession!)},[]) // eslint-disable-line
@@ -31,7 +31,8 @@ export const RecorderView = ({ width, height, setActiveRecorderCanvas, setAllRec
     const activeTilesId = activeTiles.reduce<string>((sum,cur)=>{return `${sum}-${cur.boundAttendeeId}`},"")
     
     /// All Tiles
-    const allTiles = Object.values(videoTileStates)
+    const allTiles = Object.values(videoTileStates).filter(x=>{return x.localTile===false})
+    // const allTiles = Object.values(videoTileStates).filter(x=>{x.boundAttendeeId !== attendeeId})
     const allTilesId = allTiles.reduce<string>((sum,cur)=>{return `${sum}-${cur.boundAttendeeId}`},"")
 
 

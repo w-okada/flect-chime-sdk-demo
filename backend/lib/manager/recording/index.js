@@ -184,35 +184,29 @@ puppeteer.launch({
             case "terminate":
                 console.log("TERMINATE----------------!")
                 s3 = new AWS.S3({ params: { Bucket: bucketName } });
-                console.log("TERMINATE----------------!!")
 
-                // (async () => {
-                    console.log("wait 60sec foro download process")
-                    await sleep(1000 * 20)
-                    console.log("wait 60sec  download process done")
-                    var fs = require('fs');
-                    fs.readdirSync(downloadPath).forEach(file => {
-                        const filePath = `${downloadPath}/${file}`
-                        console.log("FILE:::", filePath)
+                console.log("wait 20sec for download process")
+                await sleep(1000 * 20)
+                console.log("wait 20sec for download process done")
+                var fs = require('fs');
+                fs.readdirSync(downloadPath).forEach(file => {
+                    const filePath = `${downloadPath}/${file}`
+                    console.log("FILE:::", filePath)
 
-                        var params = {
-                            Bucket: bucketName,
-                            Key: `recording/${file}`
-                        };
-                        params.Body = fs.readFileSync(filePath);
+                    var params = {
+                        Bucket: bucketName,
+                        Key: `recording/${file}`
+                    };
+                    params.Body = fs.readFileSync(filePath);
 
-                        s3.putObject(params, function (err, data) {
-                            if (err) console.log(err, err.stack);
-                            else console.log(data);
-                        });
-
+                    s3.putObject(params, function (err, data) {
+                        if (err) console.log(err, err.stack);
+                        else console.log(data);
                     });
-                // })()
-                browser.close();
-                // io.close();
-                server.close();
-        console.log("TERMINATE----------------!!!!")
 
+                });
+                browser.close();
+                server.close();
                 break
 
         }
