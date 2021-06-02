@@ -15,17 +15,12 @@ export const HMMCmd = {
     TERMINATE: "TERMINATE",
     NOTIFY_STATUS: "NOTIFY_STATUS",
 
-
-    GET_LOCAL_IP: "GET_LOCAL_IP",
-    NOTIFY_LOCAL_IP: "NOTIFY_LOCAL_IP",
-
-
 } as const
 
-export type HMM_STATUS = {
+export type HMMStatus = {
     active: boolean
     recording: boolean
-    local_ip?: string
+    shareTileView: boolean
 }
 
 export type HMMMessage = {
@@ -53,20 +48,60 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
         return props.attendeeId
     },[props.attendeeId])
     
-    const [hMMCommandData, setHMMComandData] = useState<RealtimeData[]>([])
-    const [publicIp, setPublicIp] = useState<string>("")
+    const [ hMMCommandData, setHMMComandData] = useState<RealtimeData[]>([])
+    const [ publicIp, setPublicIp] = useState<string>("")
+
+    // const [ recordingEnable, setRecordingEnable]         = useState(false)
+    const [ startRecordingCounter, setStartRecordingCounter] = useState(0)
+    const [ stopRecordingCounter, setStopRecordingCounter] = useState(0)
+
+    // const [ shareTileViewEnable, setShareTileViewEnable] = useState(false)
+    const [ startShareTileViewCounter, setStartShareTileViewCounter ] = useState(0)
+    const [ stopShareTileViewCounter, setSopShareTileViewCounter ] = useState(0)
+
+    // const [ terminateTriggerd, setTerminateTriggerd]     = useState(false)
+    const [ terminateCounter, setTerminateCounter] = useState(0)
+
+    const [ hMMStatus, setHMMStatus] = useState<HMMStatus>({
+        active:true,
+        recording:true,
+        shareTileView:true,
+    })
 
     const startHMM = async () =>{
         const res = await startManager(props.meetingName!, attendeeId!, props.idToken!, props.accessToken!, props.refreshToken!)
         setHMMComandData([])
-        console.log("startHMM", res)
     }
     const updateHMMInfo = async () =>{
         const res = await getManagerInfo(props.meetingName!, attendeeId!, props.idToken!, props.accessToken!, props.refreshToken!)
         const publicIp = res.publicIp
-        console.log(" getHMMInfo ", res, publicIp)
         setPublicIp(publicIp)
     }
+
+    const sendStartRecord = () => {
+        sendHMMCommand( {command: HMMCmd.START_RECORD} )
+    }
+    const sendStopRecord = () => {
+        sendHMMCommand( {command: HMMCmd.STOP_RECORD} )
+    }
+    const sendStartShareTileView = () => {
+        sendHMMCommand( {command: HMMCmd.START_SHARE_TILEVIEW} )
+    }
+    const sendStopShareTileView = () => {
+        sendHMMCommand( {command: HMMCmd.STOP_SHARE_TILEVIEW} )
+    }
+    const sendTerminate = () =>{
+        sendHMMCommand( {command: HMMCmd.TERMINATE} )
+    }
+    const sendHMMStatus = (active:boolean, recording:boolean, shareTileView:boolean) =>{
+        const status:HMMStatus = {
+            active,
+            recording,
+            shareTileView
+        }
+        sendHMMCommand({command:HMMCmd.NOTIFY_STATUS, data:status})
+    }
+
 
 
     const sendHMMCommand = (mess: HMMMessage) => {
@@ -82,16 +117,49 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
         meetingSession?.audioVideo!.realtimeSendDataMessage(RealtimeDataApp.HMM , JSON.stringify(reatimeData))
     }
 
-    const receiveData = (mess: DataMessage) => {
-        const senderId = mess.senderAttendeeId
-        const data = JSON.parse(mess.text()) as RealtimeData
+    const receiveData = (dataMessage: DataMessage) => {
+        const senderId = dataMessage.senderAttendeeId
+        const data = JSON.parse(dataMessage.text()) as RealtimeData
         data.senderId = senderId
         logger.log(data)
         if(hMMCommandData.length === 0){
             updateHMMInfo()
         }
-        setHMMComandData([...hMMCommandData, data])
 
+        const mess = data.data as HMMMessage
+        console.log("RECEIVE REALTIME DATA", mess)
+        switch(mess.command){
+            case "START_RECORD":
+                // setRecordingEnable(true)
+                console.log("RECEIVE REALTIME DATA1", mess)
+                setStartRecordingCounter(startRecordingCounter+1)
+                break
+            case "STOP_RECORD":
+                console.log("RECEIVE REALTIME DATA2", mess)
+                // setRecordingEnable(false)
+                setStopRecordingCounter(stopRecordingCounter+1)
+                break
+            case "START_SHARE_TILEVIEW":
+                console.log("RECEIVE REALTIME DATA3", mess)
+                // setShareTileViewEnable(true)
+                setStartShareTileViewCounter(startShareTileViewCounter+1)
+                break
+            case "STOP_SHARE_TILEVIEW":
+                console.log("RECEIVE REALTIME DATA4", mess)
+                // setShareTileViewEnable(false)
+                setSopShareTileViewCounter(stopShareTileViewCounter+1)
+                break
+            case "TERMINATE":
+                //setTerminateTriggerd(true)
+                console.log("RECEIVE REALTIME DATA4", mess)
+                setTerminateCounter(terminateCounter+1)
+                break
+            case "NOTIFY_STATUS":
+                const status = mess.data as HMMStatus
+                setHMMStatus(status)
+                break
+        }
+        setHMMComandData([...hMMCommandData, data])
     }
 
     useEffect(() => {
@@ -103,5 +171,10 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
             meetingSession?.audioVideo?.realtimeUnsubscribeFromReceiveDataMessage(RealtimeDataApp.HMM)
         }
     })
-    return {sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp}
+    return {
+        sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp,
+        sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus,
+        startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, hMMStatus
+        // recordingEnable, shareTileViewEnable, terminateTriggerd
+    }
 }

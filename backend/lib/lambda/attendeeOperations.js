@@ -373,11 +373,11 @@ const getMeetingManagerInformation = async (email, meetingName, attendeeId, head
             resolve(publicIP)
         })
     })
-    const publicIP = await p
+    const publicIp = await p
 
     return {
         code:    'end',
-        publicIP: publicIP
+        publicIp: publicIp
     }
 }
 

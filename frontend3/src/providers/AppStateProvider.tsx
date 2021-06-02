@@ -18,7 +18,7 @@ import { DrawingMode, useWebSocketWhiteBoard } from "./hooks/WebSocketApp/useWeb
 import { DrawingData } from "./hooks/WebSocketApp/helper/WebSocketWhiteBoardClient";
 import { Recorder } from "./helper/Recorder";
 import { OnetimeCodeInfo, OnetimeCodeSigninResult } from "../api/api";
-import { HMMMessage, useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
+import { HMMMessage, HMMStatus, useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
 import { useScheduler } from "./hooks/useScheduler";
 import { awsConfiguration, DEFAULT_PASSWORD, DEFAULT_USERID } from "../Config";
 
@@ -73,7 +73,7 @@ interface AppStateValue {
 
     updateMeetingInfo: ()=>void
     ownerId:string
-
+    isOwner:boolean
     /** For Device State */
     audioInputList: DeviceInfo[] | null
     videoInputList: DeviceInfo[] | null
@@ -89,6 +89,24 @@ interface AppStateValue {
     startHMM:()=>void,
     updateHMMInfo:()=>void,
     publicIp:string,
+
+    sendStartRecord:()=>void, 
+    sendStopRecord:()=>void, 
+    sendStartShareTileView:()=>void, 
+    sendStopShareTileView:()=>void, 
+    sendTerminate:()=>void, 
+    sendHMMStatus:(active: boolean, recording: boolean, shareTileView: boolean)=>void,
+
+    // recordingEnable: boolean, 
+    // shareTileViewEnable: boolean, 
+    // terminateTriggerd: boolean, 
+    startRecordingCounter:number, 
+    stopRecordingCounter:number, 
+    startShareTileViewCounter:number, 
+    stopShareTileViewCounter:number, 
+    hMMStatus: HMMStatus,
+
+
     /** For WhiteBoard */
     addDrawingData: ((data: DrawingData) => void) | undefined
     drawingData: DrawingData[]
@@ -162,7 +180,7 @@ export const AppStateProvider = ({ children }: Props) => {
             createMeeting, joinMeeting, enterMeeting, leaveMeeting, 
             startShareScreen, stopShareScreen, getUserNameByAttendeeIdFromList,
             meetingSession, activeRecorder, allRecorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, isShareContent, activeSpeakerId,countAttendees,
-            updateMeetingInfo, ownerId,
+            updateMeetingInfo, ownerId, isOwner
            } = useMeetingState({userId, idToken, accessToken, refreshToken,})
     const { audioInputList, videoInputList, audioOutputList, reloadDevices } = useDeviceState()
     const { screenWidth, screenHeight} = useWindowSizeChangeListener()
@@ -171,8 +189,12 @@ export const AppStateProvider = ({ children }: Props) => {
     })
     const { messageActive, messageType, messageTitle, messageDetail, setMessage, resolveMessage } = useMessageState()
     const { chatData, sendChatData} = useRealtimeSubscribeChat({meetingSession, attendeeId})
-    const { sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp
+    const { sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp, 
+            sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus,
+            startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, hMMStatus,
+            // recordingEnable, shareTileViewEnable, terminateTriggerd, hMMStatus
           } = useRealtimeSubscribeHMM({meetingSession, attendeeId, meetingName, idToken, accessToken, refreshToken})
+
     const logger = meetingSession?.logger
     const { addDrawingData, drawingData, lineWidth, setLineWidth, drawingStroke, setDrawingStroke, drawingMode, setDrawingMode } = useWebSocketWhiteBoard({meetingId, attendeeId, joinToken, logger})
 
@@ -224,6 +246,7 @@ export const AppStateProvider = ({ children }: Props) => {
 
         updateMeetingInfo,
         ownerId,
+        isOwner,
         /** For Device State */
         audioInputList,
         videoInputList,
@@ -243,6 +266,23 @@ export const AppStateProvider = ({ children }: Props) => {
         startHMM,
         updateHMMInfo,
         publicIp,
+
+        sendStartRecord, 
+        sendStopRecord, 
+        sendStartShareTileView, 
+        sendStopShareTileView, 
+        sendTerminate, 
+        sendHMMStatus,
+
+        // recordingEnable, 
+        // shareTileViewEnable, 
+        // terminateTriggerd, 
+        startRecordingCounter, 
+        stopRecordingCounter, 
+        startShareTileViewCounter, 
+        stopShareTileViewCounter, 
+        hMMStatus,
+
         /** For StageManager */
         stage,
         setStage,

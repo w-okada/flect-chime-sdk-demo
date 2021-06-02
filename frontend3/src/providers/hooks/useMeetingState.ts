@@ -24,6 +24,7 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
     const [activeSpeakerId, setActiveSpeakerId] = useState<string|null>(null)
     const [attendeeId, setAttendeeId] = useState<string>("")
     const [ownerId, setOwnerId] = useState("")
+    const [isOwner, setIsOwner] = useState(false)
 
     const chimeClient = useMemo(()=>{return new ChimeClient()},[])
 
@@ -58,6 +59,7 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
     
     const enterMeeting = async () => {
         await chimeClient.enterMeeting()
+        updateMeetingInfo()
         setStateCounter(stateCounter + 1 )
     }
     const leaveMeeting = async() =>{
@@ -103,7 +105,9 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
         console.log(meetingInfo)
         console.log("new ownerId", ownerId)
         setOwnerId(ownerId)
+        setIsOwner(props.userId === ownerId)
     }
+
 
 
     return { meetingName, meetingId, joinToken, attendeeId, userName, attendees, videoTileStates, 
@@ -114,7 +118,7 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
             getUserNameByAttendeeIdFromList,
             countAttendees,
 
-            updateMeetingInfo, ownerId
+            updateMeetingInfo, ownerId, isOwner
         }
 
 
