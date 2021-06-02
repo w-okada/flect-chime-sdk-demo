@@ -1,6 +1,10 @@
 var fs = require('fs');
 var os = require('os');
+var AsyncLock = require('async-lock');
 const AWS = require('aws-sdk');
+
+var lock = new AsyncLock({timeout: 1000 * 30 });
+let page
 
 
 let hostname = '0.0.0.0';
@@ -10,84 +14,178 @@ const server = require(protocol).createServer({}, async (request, response) => {
     console.log(`${request.method} ${request.url} BEGIN`);
 })
 
-// const server = require(protocol).createServer()
-
-
 server.listen(port, hostname, () => {
     console.log(`${hostname}:${port}`)
 });
 
 var io = require('socket.io')
-console.log(io)
 var io_server = new io.Server(server, {
     allowEIO3: true
 })
-// const io  = require('socket.io')(server);
+const now = () => new Date().toISOString().substr(14, 9);
 
 io_server.on('connection', client => {
-    console.log(">>>>>>>>>>>>>>>", client)
-    console.log("version", client.conn.protocol)
-    // console.log("Connected!!!!!")
+        
+    ///////////////////////////////////////////////////////
+    // handle socket io event start
+    ///////////////////////////////////////////////////////
     //@ts-ignore
-    client.on('connectCode', connectCode => {
-        {
-            console.log("[connectCode]", connectCode)
+    client.on('connectCode', async (connectCode) => {
+        lock.acquire('io_on',  async () => {
+            console.log(now(), '  Lock Function Start');
+    
+            console.log("AMONG: [connectCode]", connectCode)
             //@ts-ignore
             client.connectCode = connectCode;
-        }
+            await page.$eval('#io_event', (el, value) => el.value = "connectCode");
+            await page.$eval('#io_data', (el, value) => el.value = value, "");
+            await page.click("#io_click")
+
+            console.log(now(), '  Lock Function End');
+            return 'Successful';
+        }, (error, result) => {
+            console.log(now(), '  Lock Result Start');
+            if(error) {
+              console.log(now(), '    Failure : ', error);
+            }
+            else {
+              console.log(now(), '    Success : ', result);
+            }
+            console.log(now(), '  Lock Result End');
+        })
+
     });
 
     //@ts-ignore
-    client.on('lobby', data => {
-        console.log("[lobby]", data)
-        // Get the lobby
-        //@ts-ignore
-        const { connectCode } = client;
-        const { LobbyCode: code, Region } = JSON.parse(data);
+    client.on('lobby', async(data) => {
+        lock.acquire('io_on',  async () => {
+            console.log(now(), '  Lock Function Start');
+
+            console.log("AMONG: [lobby]", data)
+            await page.$eval('#io_event', (el, value) => el.value = "lobby");
+            await page.$eval('#io_data', (el, value) => el.value = value, data);
+            await page.click("#io_click")
+
+            console.log(now(), '  Lock Function End');
+            return 'Successful';
+        },(error, result) => {
+            console.log(now(), '  Lock Result Start');
+            if(error) {
+              console.log(now(), '    Failure : ', error);
+            }
+            else {
+              console.log(now(), '    Success : ', result);
+            }
+            console.log(now(), '  Lock Result End');
+        })
+            
     })
 
     //@ts-ignore
-    client.on('state', index => {
-        console.log("[state]", index)
+    client.on('state', async(index) => {
+        lock.acquire('io_on',  async () => {
+            console.log(now(), '  Lock Function Start');
+
+            console.log("AMONG: [state]", index)
+            await page.$eval('#io_event', (el, value) => el.value = "state");
+            await page.$eval('#io_data', (el, value) => el.value = value, index);
+            await page.click("#io_click")
+
+            console.log(now(), '  Lock Function End');
+            return 'Successful';
+        },(error, result) => {
+            console.log(now(), '  Lock Result Start');
+            if(error) {
+              console.log(now(), '    Failure : ', error);
+            }
+            else {
+              console.log(now(), '    Success : ', result);
+            }
+            console.log(now(), '  Lock Result End');
+        })
     });
 
     //@ts-ignore
-    client.on('player', data => {
-        console.log("[player]", data)
+    client.on('player', async(data) => {
+        lock.acquire('io_on',  async () => {
+            console.log(now(), '  Lock Function Start');
+
+            console.log("AMONG: [player]", data)
+            await page.$eval('#io_event', (el, value) => el.value = "player");
+            await page.$eval('#io_data', (el, value) => el.value = value, data);
+            await page.click("#io_click")
+
+            console.log(now(), '  Lock Function End');
+            return 'Successful';
+        },(error, result) => {
+            console.log(now(), '  Lock Result Start');
+            if(error) {
+              console.log(now(), '    Failure : ', error);
+            }
+            else {
+              console.log(now(), '    Success : ', result);
+            }
+            console.log(now(), '  Lock Result End');
+        })
     });
 
-    client.on('disconnect', () => {
-        console.log("[dissconnect]")
-        //@ts-ignore
-        const { connectCode } = client;
+    //@ts-ignore
+    client.on('disconnect', async() => {
+        lock.acquire('io_on',  async () => {
+            console.log(now(), '  Lock Function Start');
+
+            console.log("AMONG: [dissconnect]")
+            await page.$eval('#io_event', (el, value) => el.value = "disconnect");
+            await page.$eval('#io_data', (el, value) => el.value = value, "");
+            await page.click("#io_click")
+
+            console.log(now(), '  Lock Function End');
+            return 'Successful';
+        },(error, result) => {
+            console.log(now(), '  Lock Result Start');
+            if(error) {
+              console.log(now(), '    Failure : ', error);
+            }
+            else {
+              console.log(now(), '    Success : ', result);
+            }
+            console.log(now(), '  Lock Result End');
+        })
+
     });
+
+    ///////////////////////////////////////////////////////
+    // handle socket io event end
+    ///////////////////////////////////////////////////////
+
+
 });
 
 
 
 
-function getLocalAddress() {
-    var ifacesObj = {}
-    ifacesObj.ipv4 = [];
-    ifacesObj.ipv6 = [];
-    var interfaces = os.networkInterfaces();
+// function getLocalAddress() {
+//     var ifacesObj = {}
+//     ifacesObj.ipv4 = [];
+//     ifacesObj.ipv6 = [];
+//     var interfaces = os.networkInterfaces();
 
-    for (var dev in interfaces) {
-        interfaces[dev].forEach(function (details) {
-            if (!details.internal) {
-                switch (details.family) {
-                    case "IPv4":
-                        ifacesObj.ipv4.push({ name: dev, address: details.address });
-                        break;
-                    case "IPv6":
-                        ifacesObj.ipv6.push({ name: dev, address: details.address })
-                        break;
-                }
-            }
-        });
-    }
-    return ifacesObj;
-};
+//     for (var dev in interfaces) {
+//         interfaces[dev].forEach(function (details) {
+//             if (!details.internal) {
+//                 switch (details.family) {
+//                     case "IPv4":
+//                         ifacesObj.ipv4.push({ name: dev, address: details.address });
+//                         break;
+//                     case "IPv6":
+//                         ifacesObj.ipv6.push({ name: dev, address: details.address })
+//                         break;
+//                 }
+//             }
+//         });
+//     }
+//     return ifacesObj;
+// };
 
 
 if (process.env.AWS_KEY) {
@@ -135,7 +233,7 @@ puppeteer.launch({
         '--use-fake-device-for-media-stream',
     ]
 }).then(async (browser) => {
-    const page = await browser.newPage();
+    page = await browser.newPage();
     page.on(`console`, msg => {
         for (let i = 0; i < msg._args.length; ++i) {
             console.log(`${i}: ${msg._args[i]}`);
@@ -237,7 +335,4 @@ puppeteer.launch({
         behavior: 'allow',
         downloadPath: downloadPath
     });
-
-
-
 })

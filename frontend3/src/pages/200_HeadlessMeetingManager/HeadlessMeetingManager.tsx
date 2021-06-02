@@ -43,7 +43,8 @@ export const HeadlessMeetingManager = () => {
 
 
     const { handleSinginWithOnetimeCode, joinMeeting, enterMeeting, attendees, sendHMMStatus, terminateCounter,
-            audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, audioOutputList} = useAppState()
+            audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, audioOutputList,
+            sendAmongUsStatus} = useAppState()
     const [ state, setState] = useState<State>({internalStage:"Signining", userName:null})
 
     const { meetingActive } = useStatusMonitor()
@@ -152,10 +153,13 @@ export const HeadlessMeetingManager = () => {
 
 
             <div>
-                <input id="pup" />
-                <button id="pup_click" onClick={()=>{
-                    const input = document.getElementById("pup") as HTMLInputElement
-                    console.log("INPUT DATA!", input.value)
+                <input id="io_event"/>
+                <input id="io_data"/>
+                <button id="io_click" onClick={()=>{
+                    const ev = document.getElementById("io_event") as HTMLInputElement
+                    const data = document.getElementById("io_data") as HTMLInputElement
+                    sendAmongUsStatus(ev.value, data.value)
+                    // console.log(`IO_SOCKET: ${ev.value}, ${data.value}`)
                 }} />
             </div>
         </>

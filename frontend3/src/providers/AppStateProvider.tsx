@@ -18,7 +18,7 @@ import { DrawingMode, useWebSocketWhiteBoard } from "./hooks/WebSocketApp/useWeb
 import { DrawingData } from "./hooks/WebSocketApp/helper/WebSocketWhiteBoardClient";
 import { Recorder } from "./helper/Recorder";
 import { OnetimeCodeInfo, OnetimeCodeSigninResult } from "../api/api";
-import { HMMMessage, HMMStatus, useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
+import { AmongUsStatus, HMMMessage, HMMStatus, useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
 import { useScheduler } from "./hooks/useScheduler";
 import { awsConfiguration, DEFAULT_PASSWORD, DEFAULT_USERID } from "../Config";
 
@@ -108,6 +108,9 @@ interface AppStateValue {
     hMMStatus: HMMStatus,
     stateLastUpdate: number,
 
+    sendAmongUsStatus:(event: string, data: string) => void, 
+    amongUsStates:AmongUsStatus[],
+
     /** For WhiteBoard */
     addDrawingData: ((data: DrawingData) => void) | undefined
     drawingData: DrawingData[]
@@ -192,8 +195,8 @@ export const AppStateProvider = ({ children }: Props) => {
     const { chatData, sendChatData} = useRealtimeSubscribeChat({meetingSession, attendeeId})
     const { sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp, 
             sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus,
-            startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, terminateCounter, hMMStatus, stateLastUpdate
-            // recordingEnable, shareTileViewEnable, terminateTriggerd, hMMStatus
+            startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, terminateCounter, hMMStatus, stateLastUpdate,
+            sendAmongUsStatus, amongUsStates
           } = useRealtimeSubscribeHMM({meetingSession, attendeeId, meetingName, idToken, accessToken, refreshToken})
 
     const logger = meetingSession?.logger
@@ -274,6 +277,9 @@ export const AppStateProvider = ({ children }: Props) => {
         sendStopShareTileView, 
         sendTerminate, 
         sendHMMStatus,
+
+        sendAmongUsStatus, 
+        amongUsStates,
 
         // recordingEnable, 
         // shareTileViewEnable, 

@@ -15,12 +15,18 @@ export const HMMCmd = {
     TERMINATE: "TERMINATE",
     NOTIFY_STATUS: "NOTIFY_STATUS",
 
+    NOTIFY_AMONGUS_STATUS: "NOTIFY_AMONGUS_STATUS",
 } as const
 
 export type HMMStatus = {
     active: boolean
     recording: boolean
     shareTileView: boolean
+}
+
+export type AmongUsStatus = {
+    event: string,
+    data: string
 }
 
 export type HMMMessage = {
@@ -61,6 +67,8 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
 
     // const [ terminateTriggerd, setTerminateTriggerd]     = useState(false)
     const [ terminateCounter, setTerminateCounter] = useState(0)
+    const [ amongUsStates, setAmongUsStates] = useState<AmongUsStatus[]>([])
+
 
     const [ hMMStatus, setHMMStatus] = useState<HMMStatus>({
         active:false,
@@ -103,6 +111,14 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
         sendHMMCommand({command:HMMCmd.NOTIFY_STATUS, data:status})
     }
 
+    const sendAmongUsStatus = (event:string, data:string) =>{
+        const status:AmongUsStatus = {
+            event,
+            data
+        }
+        console.log(`AMONGUS SEND STATUS: ${event}, ${data}`)
+        sendHMMCommand({command:HMMCmd.NOTIFY_AMONGUS_STATUS, data:status})
+    }
 
 
     const sendHMMCommand = (mess: HMMMessage) => {
@@ -160,6 +176,11 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
                 setHMMStatus(status)
                 setStateLastUpdate(new Date().getTime())
                 break
+            case "NOTIFY_AMONGUS_STATUS":
+                const amongUsStatus = mess.data as AmongUsStatus
+                console.log(`AMONGUS recieve STATUS: ${amongUsStatus.event}, ${amongUsStatus.data}`)
+                setAmongUsStates([...amongUsStates, amongUsStatus])
+                break
         }
         setHMMComandData([...hMMCommandData, data])
     }
@@ -176,7 +197,7 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
     return {
         sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp,
         sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus,
-        startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, terminateCounter, hMMStatus, stateLastUpdate
-        // recordingEnable, shareTileViewEnable, terminateTriggerd
+        startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, terminateCounter, hMMStatus, stateLastUpdate,
+        sendAmongUsStatus, amongUsStates
     }
 }

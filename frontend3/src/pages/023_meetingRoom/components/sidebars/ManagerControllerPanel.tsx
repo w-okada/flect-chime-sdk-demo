@@ -22,7 +22,8 @@ type StatusData = {
 export const ManagerControllerPanel = () => {
     const classes = useStyles();
     const {updateMeetingInfo, ownerId, isOwner, publicIp,
-          startHMM, sendTerminate, sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, hMMStatus, stateLastUpdate
+          startHMM, sendTerminate, sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, hMMStatus, stateLastUpdate,
+          amongUsStates
         } = useAppState()
 
     const ownerStateComp = useMemo(()=>{
@@ -100,6 +101,12 @@ export const ManagerControllerPanel = () => {
         // return `${d} ${t}`
         return `${t}`
     },[stateLastUpdate])
+
+    useEffect(()=>{
+        console.log(`AMONG: ${amongUsStates.slice(-1)[0]}`)
+        // console.log("AMONG:", amongUsStates.slice(-1)[0])
+    },[amongUsStates])
+
     return (
             <div className={classes.root}>                
                 <Typography variant="body1" color="textSecondary">
