@@ -17,7 +17,7 @@ const server = require(protocol).createServer({}, async (request, response) => {
 server.listen(port, hostname, () => {
     console.log(`${hostname}:${port}`)
 });
-
+server.keepAliveTimeout = 1000*10
 var io = require('socket.io')
 var io_server = new io.Server(server, {
     allowEIO3: true
@@ -25,132 +25,72 @@ var io_server = new io.Server(server, {
 const now = () => new Date().toISOString().substr(14, 9);
 
 io_server.on('connection', client => {
-        
+    // console.log("Socket IO transport type:", io.transports[client.id].name);
+    console.log(client)
     ///////////////////////////////////////////////////////
     // handle socket io event start
     ///////////////////////////////////////////////////////
     //@ts-ignore
     client.on('connectCode', async (connectCode) => {
-        lock.acquire('io_on',  async () => {
-            console.log(now(), '  Lock Function Start');
-    
             console.log("AMONG: [connectCode]", connectCode)
             //@ts-ignore
             client.connectCode = connectCode;
-            await page.$eval('#io_event', (el, value) => el.value = "connectCode");
-            await page.$eval('#io_data', (el, value) => el.value = value, "");
-            await page.click("#io_click")
-
-            console.log(now(), '  Lock Function End');
-            return 'Successful';
-        }, (error, result) => {
-            console.log(now(), '  Lock Result Start');
-            if(error) {
-              console.log(now(), '    Failure : ', error);
-            }
-            else {
-              console.log(now(), '    Success : ', result);
-            }
-            console.log(now(), '  Lock Result End');
-        })
+            // await page.$eval('#io_event', (el, value) => el.value = "connectCode");
+            // await page.$eval('#io_data', (el, value) => el.value = value, "");
+            // await page.click("#io_click")
 
     });
 
     //@ts-ignore
     client.on('lobby', async(data) => {
-        lock.acquire('io_on',  async () => {
-            console.log(now(), '  Lock Function Start');
 
             console.log("AMONG: [lobby]", data)
-            await page.$eval('#io_event', (el, value) => el.value = "lobby");
-            await page.$eval('#io_data', (el, value) => el.value = value, data);
-            await page.click("#io_click")
-
-            console.log(now(), '  Lock Function End');
-            return 'Successful';
-        },(error, result) => {
-            console.log(now(), '  Lock Result Start');
-            if(error) {
-              console.log(now(), '    Failure : ', error);
-            }
-            else {
-              console.log(now(), '    Success : ', result);
-            }
-            console.log(now(), '  Lock Result End');
-        })
+            // await page.$eval('#io_event', (el, value) => el.value = "lobby");
+            // await page.$eval('#io_data', (el, value) => el.value = value, data);
+            // await page.click("#io_click")
             
     })
 
     //@ts-ignore
     client.on('state', async(index) => {
-        lock.acquire('io_on',  async () => {
-            console.log(now(), '  Lock Function Start');
 
             console.log("AMONG: [state]", index)
-            await page.$eval('#io_event', (el, value) => el.value = "state");
-            await page.$eval('#io_data', (el, value) => el.value = value, index);
-            await page.click("#io_click")
+            // await page.$eval('#io_event', (el, value) => el.value = "state");
+            // await page.$eval('#io_data', (el, value) => el.value = value, index);
+            // await page.click("#io_click")
 
-            console.log(now(), '  Lock Function End');
-            return 'Successful';
-        },(error, result) => {
-            console.log(now(), '  Lock Result Start');
-            if(error) {
-              console.log(now(), '    Failure : ', error);
-            }
-            else {
-              console.log(now(), '    Success : ', result);
-            }
-            console.log(now(), '  Lock Result End');
-        })
     });
 
     //@ts-ignore
     client.on('player', async(data) => {
-        lock.acquire('io_on',  async () => {
-            console.log(now(), '  Lock Function Start');
 
             console.log("AMONG: [player]", data)
-            await page.$eval('#io_event', (el, value) => el.value = "player");
-            await page.$eval('#io_data', (el, value) => el.value = value, data);
-            await page.click("#io_click")
+            // await page.$eval('#io_event', (el, value) => el.value = "player");
+            // await page.$eval('#io_data', (el, value) => el.value = value, data);
+            // await page.click("#io_click")
 
-            console.log(now(), '  Lock Function End');
-            return 'Successful';
-        },(error, result) => {
-            console.log(now(), '  Lock Result Start');
-            if(error) {
-              console.log(now(), '    Failure : ', error);
-            }
-            else {
-              console.log(now(), '    Success : ', result);
-            }
-            console.log(now(), '  Lock Result End');
-        })
     });
+
+
+    //@ts-ignore
+    client.on('botID', async(data) => {
+
+        console.log("AMONG: [botID]!!!!!!!!!!!", data)
+        // await page.$eval('#io_event', (el, value) => el.value = "player");
+        // await page.$eval('#io_data', (el, value) => el.value = value, data);
+        // await page.click("#io_click")
+
+    });
+
 
     //@ts-ignore
     client.on('disconnect', async() => {
-        lock.acquire('io_on',  async () => {
-            console.log(now(), '  Lock Function Start');
 
             console.log("AMONG: [dissconnect]")
-            await page.$eval('#io_event', (el, value) => el.value = "disconnect");
-            await page.$eval('#io_data', (el, value) => el.value = value, "");
-            await page.click("#io_click")
+            // await page.$eval('#io_event', (el, value) => el.value = "disconnect");
+            // await page.$eval('#io_data', (el, value) => el.value = value, "");
+            // await page.click("#io_click")
 
-            console.log(now(), '  Lock Function End');
-            return 'Successful';
-        },(error, result) => {
-            console.log(now(), '  Lock Result Start');
-            if(error) {
-              console.log(now(), '    Failure : ', error);
-            }
-            else {
-              console.log(now(), '    Success : ', result);
-            }
-            console.log(now(), '  Lock Result End');
-        })
 
     });
 
@@ -160,6 +100,177 @@ io_server.on('connection', client => {
 
 
 });
+
+
+
+
+// io_server.on('connection', client => {
+        
+//     ///////////////////////////////////////////////////////
+//     // handle socket io event start
+//     ///////////////////////////////////////////////////////
+//     //@ts-ignore
+//     client.on('connectCode', async (connectCode) => {
+//         lock.acquire('io_on',  async () => {
+//             console.log(now(), '  Lock Function Start');
+    
+//             console.log("AMONG: [connectCode]", connectCode)
+//             //@ts-ignore
+//             client.connectCode = connectCode;
+//             await page.$eval('#io_event', (el, value) => el.value = "connectCode");
+//             await page.$eval('#io_data', (el, value) => el.value = value, "");
+//             await page.click("#io_click")
+
+//             console.log(now(), '  Lock Function End');
+//             return 'Successful';
+//         }, (error, result) => {
+//             console.log(now(), '  Lock Result Start');
+//             if(error) {
+//               console.log(now(), '    Failure : ', error);
+//             }
+//             else {
+//               console.log(now(), '    Success : ', result);
+//             }
+//             console.log(now(), '  Lock Result End');
+//         })
+
+//     });
+
+//     //@ts-ignore
+//     client.on('lobby', async(data) => {
+//         lock.acquire('io_on',  async () => {
+//             console.log(now(), '  Lock Function Start');
+
+//             console.log("AMONG: [lobby]", data)
+//             await page.$eval('#io_event', (el, value) => el.value = "lobby");
+//             await page.$eval('#io_data', (el, value) => el.value = value, data);
+//             await page.click("#io_click")
+
+//             console.log(now(), '  Lock Function End');
+//             return 'Successful';
+//         },(error, result) => {
+//             console.log(now(), '  Lock Result Start');
+//             if(error) {
+//               console.log(now(), '    Failure : ', error);
+//             }
+//             else {
+//               console.log(now(), '    Success : ', result);
+//             }
+//             console.log(now(), '  Lock Result End');
+//         })
+            
+//     })
+
+//     //@ts-ignore
+//     client.on('state', async(index) => {
+//         lock.acquire('io_on',  async () => {
+//             console.log(now(), '  Lock Function Start');
+
+//             console.log("AMONG: [state]", index)
+//             await page.$eval('#io_event', (el, value) => el.value = "state");
+//             await page.$eval('#io_data', (el, value) => el.value = value, index);
+//             await page.click("#io_click")
+
+//             console.log(now(), '  Lock Function End');
+//             return 'Successful';
+//         },(error, result) => {
+//             console.log(now(), '  Lock Result Start');
+//             if(error) {
+//               console.log(now(), '    Failure : ', error);
+//             }
+//             else {
+//               console.log(now(), '    Success : ', result);
+//             }
+//             console.log(now(), '  Lock Result End');
+//         })
+//     });
+
+//     //@ts-ignore
+//     client.on('player', async(data) => {
+//         lock.acquire('io_on',  async () => {
+//             console.log(now(), '  Lock Function Start');
+
+//             console.log("AMONG: [player]", data)
+//             await page.$eval('#io_event', (el, value) => el.value = "player");
+//             await page.$eval('#io_data', (el, value) => el.value = value, data);
+//             await page.click("#io_click")
+
+//             console.log(now(), '  Lock Function End');
+//             return 'Successful';
+//         },(error, result) => {
+//             console.log(now(), '  Lock Result Start');
+//             if(error) {
+//               console.log(now(), '    Failure : ', error);
+//             }
+//             else {
+//               console.log(now(), '    Success : ', result);
+//             }
+//             console.log(now(), '  Lock Result End');
+//         })
+//     });
+
+//     //@ts-ignore
+//     client.on('disconnect', async() => {
+//         lock.acquire('io_on',  async () => {
+//             console.log(now(), '  Lock Function Start');
+
+//             console.log("AMONG: [dissconnect]")
+//             await page.$eval('#io_event', (el, value) => el.value = "disconnect");
+//             await page.$eval('#io_data', (el, value) => el.value = value, "");
+//             await page.click("#io_click")
+
+//             console.log(now(), '  Lock Function End');
+//             return 'Successful';
+//         },(error, result) => {
+//             console.log(now(), '  Lock Result Start');
+//             if(error) {
+//               console.log(now(), '    Failure : ', error);
+//             }
+//             else {
+//               console.log(now(), '    Success : ', result);
+//             }
+//             console.log(now(), '  Lock Result End');
+//         })
+
+//     });
+
+//     ///////////////////////////////////////////////////////
+//     // handle socket io event end
+//     ///////////////////////////////////////////////////////
+
+
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

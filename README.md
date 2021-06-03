@@ -30,9 +30,36 @@ This is a video conference system with amazon chime sdk. This software uses AWS 
 
 # Installation
 ## Prerequisite
+
+### (1) setup AWS Credential
 It is assumed that AWS Credential is configured. If you have not yet done so, please refer to this page to configure it.
 
 https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html
+
+
+### (2) install node
+see [nodejs's offical page](https://nodejs.org/en/)
+
+If you use debian as a root, below may help.
+
+```
+$ ### install nodejs
+$ apt install -y curl
+$ curl -sL https://deb.nodesource.com/setup_lts.x | bash -
+$ apt install -y nodejs
+
+$ ### install n and upgrade node, npm.
+$ npm install -g n
+$ n latest
+$ npm update -g npm
+```
+### (3) install aws-sdk
+see [aws's offical page](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html)
+
+If you use debian as a root, below may help.
+```
+$ npm install -g aws-cdk
+```
 
 ## Build backend
 ### (1) define stack name
@@ -113,3 +140,8 @@ $ sudo npm update -g aws-cdk
 ```
 aws logs tail --follow  API-Gateway-Execution-Logs_gvrxxxx89/prod
 ```
+
+
+## memo
+docker run -p 3000:3000 -v `pwd`:/work --env MEETING_URL="xxx"  --env BUCKET_ARN="xxx" hmm
+

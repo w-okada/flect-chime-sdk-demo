@@ -96,6 +96,8 @@ export const HeadlessMeetingManager = () => {
             logger.log("Singining....")
             if(!meetingName || !attendeeId || !uuid || !code){
                 logger.log(`"Exception: Signin error. Information is insufficent meetingName${meetingName}, attendeeId=${attendeeId}, uuid=${uuid}, code=${code}`)
+                finalizeMeeting()
+                sendHMMStatus(false, isRecording, isSharingTileView)
                 return
             }
             handleSinginWithOnetimeCode(meetingName, attendeeId, uuid, code).then((res)=>{
@@ -103,6 +105,8 @@ export const HeadlessMeetingManager = () => {
                     setState({...state, userName: res.attendeeName||null, internalStage:"Joining"})
                 }else{
                     logger.log("Exception: Signin error, can not sigin. please generate code and retry.", res)
+                    finalizeMeeting()
+                    sendHMMStatus(false, isRecording, isSharingTileView)
                 }
             })
         }else if(state.internalStage === "Joining"){
@@ -111,6 +115,8 @@ export const HeadlessMeetingManager = () => {
                 setState({...state, internalStage:"Entering"})
             }).catch(e=>{
                 logger.log("joining failed",e)
+                finalizeMeeting()
+                sendHMMStatus(false, isRecording, isSharingTileView)
             })
         }else if(state.internalStage === "Entering"){
             logger.log("entering...")
@@ -128,6 +134,8 @@ export const HeadlessMeetingManager = () => {
                 })
             }).catch(e=>{
                 logger.log("enter meeting failed",e)
+                finalizeMeeting()
+                sendHMMStatus(false, isRecording, isSharingTileView)
             })
         }else if(state.internalStage === "Ready"){
             logger.log("ready....")

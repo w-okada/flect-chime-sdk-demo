@@ -79,6 +79,7 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
 
     const startHMM = async () =>{
         const res = await startManager(props.meetingName!, attendeeId!, props.idToken!, props.accessToken!, props.refreshToken!)
+        console.log("startHMM RES:",res)
         setHMMComandData([])
     }
     const updateHMMInfo = async () =>{
