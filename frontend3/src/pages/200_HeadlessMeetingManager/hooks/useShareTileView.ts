@@ -9,7 +9,7 @@ type UseRecorderProps = {
     meetingName : string
 }
 
-const framerate = 15
+const framerate = 8
 export const useShareTileView = (props:UseRecorderProps) =>{
     const decodedMeetingName =  decodeURIComponent(props.meetingName!)
 

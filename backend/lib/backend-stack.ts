@@ -41,7 +41,10 @@ export class BackendStack extends cdk.Stack {
 
     const userPoolClient = new UserPoolClient(this, id + "_UserPool_Client", {
       userPoolClientName: `${id}_UserPoolClient`,
-      userPool: userPool
+      userPool: userPool,
+      accessTokenValidity:  Duration.minutes(1440),
+      idTokenValidity: Duration.minutes(1440),
+      refreshTokenValidity: Duration.days(30),
     })
 
     //// (2) Policy Statement

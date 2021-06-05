@@ -9,7 +9,9 @@ import { NewPassword } from './pages/014_newPassword';
 import { Entrance } from './pages/020_entrance';
 import { CreateMeetingRoom } from './pages/021_createMeetingRoom';
 import { WaitingRoom } from './pages/022_waitingRoom/WaitingRoom';
+import { WaitingRoomAmongUs } from './pages/022_waitingRoom/WaitingRoomAmongUs';
 import { MeetingRoom } from './pages/023_meetingRoom/MeetingRoom';
+import { MeetingRoomAmongUs } from './pages/024_meetingRoomAmongUs/MeetingRoomAmongUs';
 import { MeetingManagerSignin } from './pages/100_MeetingManagerSignin/MeetingManagerSingin';
 import { MeetingManager } from './pages/101_MeetingManager/MeetingManager';
 import { HeadlessMeetingManager } from './pages/200_HeadlessMeetingManager/HeadlessMeetingManager';
@@ -17,7 +19,7 @@ import { AppStateProvider, useAppState } from './providers/AppStateProvider';
 
 
 const Router = () => {
-    const { stage } = useAppState()
+    const { stage, mode } = useAppState()
     console.log(`[App] stage:${stage}`)
 
     const page = useMemo(()=>{
@@ -37,9 +39,17 @@ const Router = () => {
             case "CREATE_MEETING_ROOM":
                 return <CreateMeetingRoom />
             case "WAITING_ROOM":
-                return <WaitingRoom />
+                if(mode === "amongus"){
+                    return <WaitingRoomAmongUs />
+                }else{
+                    return <WaitingRoom />
+                }
             case "MEETING_ROOM":
-                return <MeetingRoom />
+                if(mode === "amongus"){
+                    return <MeetingRoomAmongUs />
+                }else {
+                    return <MeetingRoom />
+                }
             case "MEETING_MANAGER_SIGNIN":
                 return <MeetingManagerSignin />
             case "MEETING_MANAGER":

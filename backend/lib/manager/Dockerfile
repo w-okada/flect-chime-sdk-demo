@@ -1,4 +1,4 @@
-FROM node:16-buster
+ FROM node:16-buster
 
 ENV DEBIAN_FRONTEND noninteractive
 

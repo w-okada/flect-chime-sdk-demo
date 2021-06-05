@@ -10,6 +10,7 @@ import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import ScreenShareIcon from '@material-ui/icons/ScreenShare';
 import CameraRollIcon from '@material-ui/icons/CameraRoll';
 import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
+import { ICONS_ALIVE, ICONS_DEAD, REGIONS, STATES } from '../../../../providers/hooks/RealtimeSubscribers/useAmongUs';
 
 type StatusData = {
     timestamp: number,
@@ -23,8 +24,9 @@ export const ManagerControllerPanel = () => {
     const classes = useStyles();
     const {updateMeetingInfo, ownerId, isOwner, publicIp,
           startHMM, sendTerminate, sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, hMMStatus, stateLastUpdate,
-          amongUsStates
+          currentGameState
         } = useAppState()
+
 
     const ownerStateComp = useMemo(()=>{
         return (
@@ -103,9 +105,41 @@ export const ManagerControllerPanel = () => {
     },[stateLastUpdate])
 
     useEffect(()=>{
-        console.log(`AMONG: ${amongUsStates.slice(-1)[0]}`)
+        console.log(currentGameState)
         // console.log("AMONG:", amongUsStates.slice(-1)[0])
-    },[amongUsStates])
+    },[currentGameState])
+   
+    const among = useMemo(()=>{
+        return(
+            <div>
+                <div>
+                    {STATES[currentGameState.state]}
+                </div>
+                <div>
+                    REGION: {REGIONS[currentGameState.gameRegion]}, CODE:{currentGameState.lobbyCode}, MAP: {currentGameState.map}
+                </div>
+                <div>
+                    {
+                        currentGameState.players.map(x=>{
+                            return(
+                                <div>
+                                    {
+                                        x.isDead || x.disconnected ? 
+                                        <div><img style={{width:"20%"}} src={ICONS_DEAD[x.color]}></img>{x.name}</div> 
+                                        :
+                                        <div><img style={{width:"20%"}} src={ICONS_ALIVE[x.color]}></img>{x.name}</div> 
+                                    }
+                                </div>
+                            )
+                        })
+                    }
+                </div>
+            </div>
+
+        )
+    },[currentGameState])
+
+
 
     return (
             <div className={classes.root}>                
@@ -119,7 +153,8 @@ export const ManagerControllerPanel = () => {
 
                 <br/>
                 lastupdate:{stateLastUpdateTime}
-
+                <br/>
+                {among}
 
                 <br/>
 

@@ -6,12 +6,10 @@ import { useScheduler } from "../../../providers/hooks/useScheduler"
 import { getDateString } from "../../../utils"
 
 type UseRecorderProps = {
-    meetingName : string
-    // activeCanvas: HTMLCanvasElement
-    // allCanvas   : HTMLCanvasElement
+    meetingName      : string
 }
 
-const framerate = 15
+const framerate = 8
 export const useRecorder = (props:UseRecorderProps) =>{
     const decodedMeetingName =  decodeURIComponent(props.meetingName!)
 

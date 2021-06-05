@@ -204,7 +204,7 @@ const startMeetingManager = async (email, meetingName, attendeeId, headers, body
     var uuid = oneCodeGenResult['uuid']
 
     //// (5) invoke HMM fargate container
-    var meetingURL = `https://${bucketDomainName}/index.html?code=${code}&uuid=${uuid}&meetingName=${meetingName}&attendeeId=${attendeeId}&mode=HEADLESS_MEETING_MANAGER`
+    var meetingURL = `https://${bucketDomainName}/index.html?code=${code}&uuid=${uuid}&meetingName=${meetingName}&attendeeId=${attendeeId}&stage=HEADLESS_MEETING_MANAGER`
     var params = {
         cluster: clusterArn ,
         count: 1,

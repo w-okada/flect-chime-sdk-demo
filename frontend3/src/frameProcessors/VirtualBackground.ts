@@ -459,6 +459,7 @@ export class VirtualBackground implements VideoFrameProcessor {
     }
 
     convert_none = (foreground: HTMLCanvasElement) => {
+        // TODO: Width and Height
         this.targetCanvas.getContext("2d")!.drawImage(foreground, 0, 0, this.targetCanvas.width, this.targetCanvas.height)
     }
 

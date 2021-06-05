@@ -345,6 +345,7 @@ export const startManager = async (meetingName: string, attendeeId: string, idTo
     );
 
     const data = await response.json();
+    console.log("START MANAGER:", data)
     if (data === null) {
         throw new Error(`Server error: startManager failed`);
     }

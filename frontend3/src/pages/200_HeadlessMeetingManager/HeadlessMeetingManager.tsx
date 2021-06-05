@@ -23,8 +23,6 @@ type State = {
 }
 const logger = new LocalLogger("HeadlessMeetingManager")
 
-const framerate = 15
-
 function sleep(ms:number) {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -44,7 +42,7 @@ export const HeadlessMeetingManager = () => {
 
     const { handleSinginWithOnetimeCode, joinMeeting, enterMeeting, attendees, sendHMMStatus, terminateCounter,
             audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, audioOutputList,
-            sendAmongUsStatus} = useAppState()
+            updateGameState} = useAppState()
     const [ state, setState] = useState<State>({internalStage:"Signining", userName:null})
 
     const { meetingActive } = useStatusMonitor()
@@ -122,6 +120,8 @@ export const HeadlessMeetingManager = () => {
             logger.log("entering...")
             const p1 = audioInputDeviceSetting!.setAudioInput("dummy")
             const p2 = videoInputDeviceSetting!.setVideoInput(null)
+            videoInputDeviceSetting!.setVirtualForegrounEnable(false)
+            videoInputDeviceSetting!.setVirtualBackgrounEnable(false)    
             const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
             logger.log("Active Speaker::::::audio", audioOutput?audioOutput:"null")
             const p3 = audioOutputDeviceSetting!.setAudioOutput(audioOutput)
@@ -166,8 +166,7 @@ export const HeadlessMeetingManager = () => {
                 <button id="io_click" onClick={()=>{
                     const ev = document.getElementById("io_event") as HTMLInputElement
                     const data = document.getElementById("io_data") as HTMLInputElement
-                    sendAmongUsStatus(ev.value, data.value)
-                    // console.log(`IO_SOCKET: ${ev.value}, ${data.value}`)
+                    updateGameState(ev.value, data.value)
                 }} />
             </div>
         </>

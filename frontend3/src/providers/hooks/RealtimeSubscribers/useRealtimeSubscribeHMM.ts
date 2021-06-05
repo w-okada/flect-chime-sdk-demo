@@ -5,17 +5,22 @@ import { RealtimeData, RealtimeDataApp} from "./const";
 import { v4 } from 'uuid';
 import { LocalLogger } from "../../../utils/localLogger";
 import { getManagerInfo, startManager } from "../../../api/api";
+import { GameState, useAmongUs } from "./useAmongUs";
+
 
 
 export const HMMCmd = {
-    START_RECORD:"START_RECORD",
-    STOP_RECORD: "STOP_RECORD",
-    START_SHARE_TILEVIEW: "START_SHARE_TILEVIEW",
-    STOP_SHARE_TILEVIEW: "STOP_SHARE_TILEVIEW",
-    TERMINATE: "TERMINATE",
-    NOTIFY_STATUS: "NOTIFY_STATUS",
+    START_RECORD           : "START_RECORD",
+    STOP_RECORD            : "STOP_RECORD",
+    // START_RECORD_TILEVIEW  : "START_RECORD_TILEVIEW",
+    // STOP_RECORD_TILEVIEW   : "STOP_RECORD_TILEVIEW",
+    START_SHARE_TILEVIEW   : "START_SHARE_TILEVIEW",
+    STOP_SHARE_TILEVIEW    : "STOP_SHARE_TILEVIEW",
+    TERMINATE              : "TERMINATE",
+    NOTIFY_STATUS          : "NOTIFY_STATUS",
 
     NOTIFY_AMONGUS_STATUS: "NOTIFY_AMONGUS_STATUS",
+    REGISTER_AMONGUS_USER_NAME:"REGISTER_AMONGUS_USER_NAME",
 } as const
 
 export type HMMStatus = {
@@ -44,6 +49,7 @@ type UseRealtimeSubscribeHMMProps = {
     refreshToken?: string
 }
 
+
 const logger = new LocalLogger("useRealtimeSubscribeHMM")
 
 export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{    
@@ -57,18 +63,20 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
     const [ hMMCommandData, setHMMComandData] = useState<RealtimeData[]>([])
     const [ publicIp, setPublicIp] = useState<string>("")
 
-    // const [ recordingEnable, setRecordingEnable]         = useState(false)
     const [ startRecordingCounter, setStartRecordingCounter] = useState(0)
     const [ stopRecordingCounter, setStopRecordingCounter] = useState(0)
 
-    // const [ shareTileViewEnable, setShareTileViewEnable] = useState(false)
     const [ startShareTileViewCounter, setStartShareTileViewCounter ] = useState(0)
     const [ stopShareTileViewCounter, setSopShareTileViewCounter ] = useState(0)
 
-    // const [ terminateTriggerd, setTerminateTriggerd]     = useState(false)
     const [ terminateCounter, setTerminateCounter] = useState(0)
-    const [ amongUsStates, setAmongUsStates] = useState<AmongUsStatus[]>([])
-
+    const { gameState, updateGameState, registerUserName } = useAmongUs({
+        meetingName:props.meetingName, 
+        attendeeId:props.attendeeId, 
+        idToken:props.idToken, 
+        accessToken:props.accessToken, 
+        refreshToken:props.refreshToken}) // for hmm
+    const [ currentGameState, setCurrentGameState ] = useState<GameState>(gameState) // for each client
 
     const [ hMMStatus, setHMMStatus] = useState<HMMStatus>({
         active:false,
@@ -112,14 +120,14 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
         sendHMMCommand({command:HMMCmd.NOTIFY_STATUS, data:status})
     }
 
-    const sendAmongUsStatus = (event:string, data:string) =>{
-        const status:AmongUsStatus = {
-            event,
-            data
-        }
-        console.log(`AMONGUS SEND STATUS: ${event}, ${data}`)
-        sendHMMCommand({command:HMMCmd.NOTIFY_AMONGUS_STATUS, data:status})
-    }
+    // const sendAmongUsStatus = (event:string, data:string) =>{
+    //     const status:AmongUsStatus = {
+    //         event,
+    //         data
+    //     }
+    //     console.log(`AMONGUS SEND STATUS: ${event}, ${data}`)
+    //     sendHMMCommand({command:HMMCmd.NOTIFY_AMONGUS_STATUS, data:status})
+    // }
 
 
     const sendHMMCommand = (mess: HMMMessage) => {
@@ -133,6 +141,14 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
             senderId: attendeeId
         }
         meetingSession?.audioVideo!.realtimeSendDataMessage(RealtimeDataApp.HMM , JSON.stringify(reatimeData))
+    }
+
+    useEffect (()=>{
+        sendHMMCommand({command:HMMCmd.NOTIFY_AMONGUS_STATUS, data:gameState})
+    },[gameState])
+
+    const sendRegisterAmongUsUserName = (userName:string, attendeeId:string) =>{
+        sendHMMCommand({command:HMMCmd.REGISTER_AMONGUS_USER_NAME, data:[userName, attendeeId]})
     }
 
     const receiveData = (dataMessage: DataMessage) => {
@@ -177,11 +193,17 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
                 setHMMStatus(status)
                 setStateLastUpdate(new Date().getTime())
                 break
-            case "NOTIFY_AMONGUS_STATUS":
-                const amongUsStatus = mess.data as AmongUsStatus
-                console.log(`AMONGUS recieve STATUS: ${amongUsStatus.event}, ${amongUsStatus.data}`)
-                setAmongUsStates([...amongUsStates, amongUsStatus])
+            case "NOTIFY_AMONGUS_STATUS": // handle by client
+                const gameState = mess.data as GameState
+                setCurrentGameState(gameState)
                 break
+
+            case "REGISTER_AMONGUS_USER_NAME": // handle by hmm
+                const [userName, attendeeId] = mess.data as string[]
+                /// As registerUserName in client, gameState remain initial state, so ignored this update process.
+                registerUserName(userName, attendeeId)
+                break
+
         }
         setHMMComandData([...hMMCommandData, data])
     }
@@ -197,8 +219,8 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
     })
     return {
         sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp,
-        sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus,
+        sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus, sendRegisterAmongUsUserName,
         startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, terminateCounter, hMMStatus, stateLastUpdate,
-        sendAmongUsStatus, amongUsStates
+        updateGameState, currentGameState
     }
 }

@@ -21,13 +21,18 @@ import { OnetimeCodeInfo, OnetimeCodeSigninResult } from "../api/api";
 import { AmongUsStatus, HMMMessage, HMMStatus, useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
 import { useScheduler } from "./hooks/useScheduler";
 import { awsConfiguration, DEFAULT_PASSWORD, DEFAULT_USERID } from "../Config";
+import { GameState } from "./hooks/RealtimeSubscribers/useAmongUs";
 
 
 type Props = {
     children: ReactNode;
 };
 
+type APP_MODE = "chime" | "amongus"
+
+
 interface AppStateValue {
+    mode: APP_MODE,
     /** For Credential */
     userId?: string,
     password?: string,
@@ -96,7 +101,8 @@ interface AppStateValue {
     sendStopShareTileView:()=>void, 
     sendTerminate:()=>void, 
     sendHMMStatus:(active: boolean, recording: boolean, shareTileView: boolean)=>void,
-
+    
+    sendRegisterAmongUsUserName: (userName: string, attendeeId: string) => void
     // recordingEnable: boolean, 
     // shareTileViewEnable: boolean, 
     // terminateTriggerd: boolean, 
@@ -108,9 +114,8 @@ interface AppStateValue {
     hMMStatus: HMMStatus,
     stateLastUpdate: number,
 
-    sendAmongUsStatus:(event: string, data: string) => void, 
-    amongUsStates:AmongUsStatus[],
-
+    updateGameState: (ev: string, data: string) => void
+    currentGameState: GameState
     /** For WhiteBoard */
     addDrawingData: ((data: DrawingData) => void) | undefined
     drawingData: DrawingData[]
@@ -189,23 +194,26 @@ export const AppStateProvider = ({ children }: Props) => {
     const { audioInputList, videoInputList, audioOutputList, reloadDevices } = useDeviceState()
     const { screenWidth, screenHeight} = useWindowSizeChangeListener()
     const { stage, setStage } = useStageManager({
-        initialStage:query.get("mode") as STAGE|null,
+        initialStage:query.get("stage") as STAGE|null,
     })
     const { messageActive, messageType, messageTitle, messageDetail, setMessage, resolveMessage } = useMessageState()
     const { chatData, sendChatData} = useRealtimeSubscribeChat({meetingSession, attendeeId})
     const { sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp, 
-            sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus,
+            sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus, sendRegisterAmongUsUserName,
             startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, terminateCounter, hMMStatus, stateLastUpdate,
-            sendAmongUsStatus, amongUsStates
+            updateGameState, currentGameState,
           } = useRealtimeSubscribeHMM({meetingSession, attendeeId, meetingName, idToken, accessToken, refreshToken})
 
     const logger = meetingSession?.logger
     const { addDrawingData, drawingData, lineWidth, setLineWidth, drawingStroke, setDrawingStroke, drawingMode, setDrawingMode } = useWebSocketWhiteBoard({meetingId, attendeeId, joinToken, logger})
+    
+    const [ mode, setMode ] = useState(query.get("mode") as APP_MODE| "chime" )
 
     // const { tenSecondsTaskTrigger } = useScheduler()
 
 
     const providerValue = {
+        mode,
         /** For Credential */
         userId,
         password, 
@@ -278,9 +286,9 @@ export const AppStateProvider = ({ children }: Props) => {
         sendTerminate, 
         sendHMMStatus,
 
-        sendAmongUsStatus, 
-        amongUsStates,
-
+        sendRegisterAmongUsUserName,
+        updateGameState,
+        currentGameState,
         // recordingEnable, 
         // shareTileViewEnable, 
         // terminateTriggerd, 

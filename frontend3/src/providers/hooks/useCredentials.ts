@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { CognitoUser, AuthenticationDetails, CognitoUserPool, CognitoUserAttribute } from 'amazon-cognito-identity-js';
 import { OnetimeCodeInfo, singinWithOnetimeCode, singinWithOnetimeCodeRequest } from "../../api/api";
+import { useScheduler } from "./useScheduler";
 
 
 type UseCredentialsProps = {
@@ -33,7 +34,7 @@ export const useCredentials = (props:UseCredentialsProps) => {
     })
 
     const [onetimeCodeInfo, setOnetimeCodeInfo] = useState<OnetimeCodeInfo|null>(null)
-
+    const { thirtyMinutesSecondsTaskTrigger } = useScheduler()
 
     // (1) Sign in
     const handleSignIn = async (inputUserId: string, inputPassword: string)=> {
@@ -162,6 +163,15 @@ export const useCredentials = (props:UseCredentialsProps) => {
         })
         return p
     }
+
+
+    // (7) refresh token // not implemented. (hard to handle multiuser of one user id)
+    useEffect(()=>{
+        if(thirtyMinutesSecondsTaskTrigger===0){
+            return
+        }
+
+    },[thirtyMinutesSecondsTaskTrigger])
 
 
     // (x) Sign out

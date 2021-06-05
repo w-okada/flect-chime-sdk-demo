@@ -17,7 +17,7 @@ export const OnetimeCodePanel = () => {
 
     const handleGenerateOnetimeCode = async () =>{
         const res = await generateOnetimeCode(meetingName!, attendeeId!, idToken!, accessToken!, refreshToken!)
-        const url = `${window.location.href}?mode=MEETING_MANAGER_SIGNIN&uuid=${res.uuid}&meetingName=${meetingName}&attendeeId=${attendeeId}`
+        const url = `${window.location.href}?stage=MEETING_MANAGER_SIGNIN&uuid=${res.uuid}&meetingName=${meetingName}&attendeeId=${attendeeId}`
         console.log("generatecode",res, url)
 
         setURL(url)

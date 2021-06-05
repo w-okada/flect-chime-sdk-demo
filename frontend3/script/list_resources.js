@@ -18,10 +18,10 @@ const entries = fs.readdirSync(resourceRoute, { withFileTypes: true })
                 .map(r => { return "'" + path.join('resources', categoryName, r.name) + "'" })
                 .join(',')
         )
-    })
+    }
+)
 
-
-const code = entries.reduce((pre, cur) => { pre + "\n" + cur })
+const code = entries.reduce((pre, cur) => { return pre + "\n" + cur })
 
 try {
     fs.writeFileSync(outputifle, code);

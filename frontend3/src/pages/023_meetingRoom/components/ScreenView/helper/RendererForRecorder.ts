@@ -104,6 +104,8 @@ export class RendererForRecorder {
         if (this.alive) {
             // console.log("[Recoerder View] request next frame")
             requestAnimationFrame(() => { this.renderVideos() })
+            // setTimeout(() => { this.renderVideos() }, 100)
+
         } else {
             console.log("[Recoerder View] stop request next frame")
         }
