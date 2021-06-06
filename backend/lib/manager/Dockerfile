@@ -12,7 +12,7 @@ RUN apt-get install -y google-chrome-stable
 
 COPY /recording /recording
 WORKDIR /recording
-RUN npm install &&  chmod +x /recording/run.sh && chmod +x /recording/index.js
+RUN npm install &&  chmod +x /recording/run.sh && chmod +x /recording/dist/index.js
 
 
 

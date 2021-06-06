@@ -93,10 +93,10 @@ export const RecorderView = ({ width, height, setActiveRecorderCanvas, setAllRec
         <div style={{ width: width, height: height, position:"relative" }}>
 
             <div style={{ width: "100%", position:"relative"}}>
-                {/* <canvas width="1920" height="1080" id="ActiveRecorderCanvas" style={{ width: "40%", border: "medium solid #ffaaaa"}} />
-                <canvas width="1920" height="1080" id="AllRecorderCanvas"    style={{ width: "40%", border: "medium solid #ffaaaa"}} /> */}
-                <canvas width="800" height="600" id="ActiveRecorderCanvas" style={{ width: "40%", border: "medium solid #ffaaaa"}} />
-                <canvas width="800" height="600" id="AllRecorderCanvas"    style={{ width: "40%", border: "medium solid #ffaaaa"}} />
+                <canvas width="1920" height="1080" id="ActiveRecorderCanvas" style={{ width: "40%", border: "medium solid #ffaaaa"}} />
+                <canvas width="1920" height="1080" id="AllRecorderCanvas"    style={{ width: "40%", border: "medium solid #ffaaaa"}} />
+                {/* <canvas width="800" height="600" id="ActiveRecorderCanvas" style={{ width: "40%", border: "medium solid #ffaaaa"}} />
+                <canvas width="800" height="600" id="AllRecorderCanvas"    style={{ width: "40%", border: "medium solid #ffaaaa"}} /> */}
             </div>
 
             <div style={{ width: "100%", display:"flex", flexWrap:"wrap" }}>

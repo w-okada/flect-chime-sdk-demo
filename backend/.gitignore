@@ -21,5 +21,3 @@ cfn_outputs.json
 
 # backend test
 lib/manager/recording/node_modules
-lib/manager/recording/package.json
-lib/manager/recording/package-lock.json

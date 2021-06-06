@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import clsx from 'clsx';
 import { CssBaseline, AppBar, Drawer, Toolbar, Tooltip, Button, Typography, IconButton, Grid, Divider, FormControl, InputLabel, Select, MenuItem } from '@material-ui/core'
 import { createMuiTheme, ThemeProvider} from '@material-ui/core/styles';
@@ -83,6 +83,8 @@ const ChimeStateType = {
 
 export const MeetingRoomAmongUs = () => {
     const classes = useStyles();
+    const animationRef = useRef(0);
+
     const {meetingSession, attendeeId, videoTileStates, attendees, videoInputDeviceSetting, audioInputDeviceSetting, audioOutputDeviceSetting, updateMeetingInfo, ownerId, isOwner, publicIp,
         startHMM, sendTerminate, sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, hMMStatus, stateLastUpdate,
         currentGameState, sendRegisterAmongUsUserName
@@ -100,6 +102,18 @@ export const MeetingRoomAmongUs = () => {
 
     const targetTilesId = Object.keys(videoTileStates).reduce<string>((sum,cur)=>{return `${sum}-${cur}`},"")
 
+    const animate = () => {
+        const videoEl  = document.getElementById("capture") as HTMLVideoElement
+        const canvasEl  = document.getElementById("captureCanvas") as HTMLCanvasElement
+        const ctx = canvasEl.getContext("2d")!
+        ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height)
+
+        animationRef.current = requestAnimationFrame(animate)
+    };
+    useEffect(() => {
+        animationRef.current = requestAnimationFrame(animate);
+        return () => cancelAnimationFrame(animationRef.current);
+    }, [])
 
     useEffect(()=>{
         // if(!currentGameState.hmmAttendeeId){
@@ -114,6 +128,7 @@ export const MeetingRoomAmongUs = () => {
             }
             const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
             x.bindVideoElement(userViewComp)
+
             console.log("video stream:", userViewComp.videoWidth, userViewComp.videoHeight)
             userViewComp.play()
         })
@@ -131,40 +146,52 @@ export const MeetingRoomAmongUs = () => {
     //// Chime State change
     useEffect(()=>{
         const player = currentGameState.players.find(x=>{return x.attendeeId === attendeeId})
+        console.log("Find current player:::", player)
+        console.log("Find current player:::", currentGameState)
+        console.log("Find current player::GAME STATE:", currentGameState.state)
         if(!player){
             // in arena
+            console.log("Find current player::: 1")
             setChimeState(ChimeStateType.Arena)
             return
         }
-        if(currentGameState.state === 0){
+        if(currentGameState.state == 0){
             // in lobby(0)
+            console.log("Find current player::: 2")
             setChimeState(ChimeStateType.Lobby)
             return
         }
-        if(currentGameState.state === 1){
+        if(currentGameState.state == 1){
+            console.log("Find current player::: 3-1")
             // in task
             if(player.isDead || player.disconnected){
+                console.log("Find current player::: 3")
                 // dead man
                 setChimeState(ChimeStateType.Dead)
                 return
             }else{
                 // task
+                console.log("Find current player::: 4")
                 setChimeState(ChimeStateType.Task)
                 return
             }
         }
-        if(currentGameState.state === 2){
+        if(currentGameState.state == 2){
             //in discussing
             if(player.isDead || player.disconnected){
                 // dead man
+                console.log("Find current player::: 5")
                 setChimeState(ChimeStateType.Dead)
                 return
             }else{
                 // discuss
+                console.log("Find current player::: 6")
                 setChimeState(ChimeStateType.Discuss)
                 return
             }
         }
+        console.log("Find current player::: 7")
+
     },[currentGameState])
 
     //// UserName re-register
@@ -191,39 +218,52 @@ export const MeetingRoomAmongUs = () => {
     },[currentGameState])
 
 
-    //// Capture
+    //// Capture add listener
     useEffect(()=>{
+        const canvasEl  = document.getElementById("captureCanvas") as HTMLCanvasElement
         const videoEl  = document.getElementById("capture") as HTMLVideoElement
-        videoEl.addEventListener("click", (event)=>{
 
-            meetingSession?.audioVideo.chooseVideoInputQuality(640,480,3,2000)
-            let displayMediaOptions = {
-                video: {
-                  cursor: "never",
-                  frameRate: 15,
-                },
-                audio: false
-            };
-            
-            // @ts-ignore
-            navigator.mediaDevices.getDisplayMedia(displayMediaOptions).then(stream=>{
-                if(captureStream){
-                    captureStream.getTracks().forEach(x=>{
-                        x.stop()
-                    })
-                }
-                setCaptureStream(stream)
-                videoEl.srcObject = stream
-                videoEl.play().then(()=>{
-                    // @ts-ignore
-                    const stream2 = videoEl.captureStream()
-                    videoInputDeviceSetting?.setVideoInput(stream2).then(()=>{
-                        videoInputDeviceSetting.startLocalVideoTile()
+        const listenEvent = (ev: MouseEvent) => {
+            if(captureStream){
+                captureStream.getTracks().forEach(x=>{
+                    x.stop()
+                })
+                videoEl.srcObject = null
+                videoInputDeviceSetting?.setVideoInput(null).then(()=>{
+                    videoInputDeviceSetting.stopLocalVideoTile()
+                })                
+                setCaptureStream(undefined)
+
+            }else{
+                meetingSession?.audioVideo.chooseVideoInputQuality(640,480,3,2000)
+                let displayMediaOptions = {
+                    video: {
+                      cursor: "never",
+                      frameRate: 15,
+                    },
+                    audio: false
+                };
+
+                // @ts-ignore
+                navigator.mediaDevices.getDisplayMedia(displayMediaOptions).then(stream=>{
+                    videoEl.srcObject = stream
+                    setCaptureStream(stream)
+                    videoEl.play().then(()=>{
+                        // @ts-ignore
+                        const stream2 = canvasEl.captureStream() as MediaStream
+                        // console.log( "VIDEO STREAM SIZE1:", stream2.getVideoTracks()[0].getSettings().width, stream2.getVideoTracks()[0].getSettings().height )
+                        videoInputDeviceSetting?.setVideoInput(stream2).then(()=>{
+                            videoInputDeviceSetting.startLocalVideoTile()
+                        })
                     })
                 })
-            })
-        })
-    },[])
+            }
+        }
+
+        videoEl.addEventListener("click", listenEvent)
+
+       return ()=>{videoEl.removeEventListener("click", listenEvent)}
+    },[captureStream])
 
 
     //////////////////////////
@@ -603,7 +643,8 @@ export const MeetingRoomAmongUs = () => {
                                 click to share your screen
                             </div>
                             <div style={{width:"30%", height:"100%", alignItems:"center" }}>
-                                <video id="capture" style={{width:"50%", height:"100%", borderStyle:"dashed",borderColor: blueGrey[200]}} />
+                            <video width="640" height="480" id="capture" style={{width:"50%", height:"100%", borderStyle:"dashed",borderColor: blueGrey[200]}} />
+                            <canvas width="640" height="480" id="captureCanvas"  />
                             </div>
                             <div style={{width:"30%", height:"100%", alignItems:"center" }}>
                             </div>

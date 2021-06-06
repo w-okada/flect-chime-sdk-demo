@@ -9,7 +9,8 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "build_all": "npm run build; cdk deploy --outputs-file cfn_outputs.json",
+    "docker":"cd lib/manager/recording && npm run build && cd -",
+    "build_all": "npm run docker && npm run build && cdk deploy --outputs-file cfn_outputs.json",
     "build_all2": "npm run build; /home/wataru/ssd1/git_work/flect-chime-sdk-demo-devel/backend/node_modules/.bin/cdk deploy --outputs-file cfn_outputs.json",
     "build_all3": "npm run build; /usr/bin/cdk deploy --outputs-file cfn_outputs.json"
   },
