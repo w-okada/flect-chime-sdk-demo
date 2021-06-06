@@ -234,4 +234,13 @@ export class AudioInputDeviceSetting {
         this.mixSoundeVolume = volume
     }
     getBackgroundMusicVolume = () => {return this.mixSoundeVolume}
+
+
+    mute = () =>{
+        this.meetingSession.audioVideo.realtimeMuteLocalAudio();
+    }
+    unmute = () =>{
+        this.meetingSession.audioVideo.realtimeUnmuteLocalAudio();
+    }
+    
 }

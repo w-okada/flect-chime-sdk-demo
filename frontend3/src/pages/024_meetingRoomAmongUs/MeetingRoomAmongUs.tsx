@@ -26,7 +26,54 @@ type ChimeState = {
     fieldMicrophone:boolean
     fieldSpeaker:boolean
 }
+///// Multi channel (N/A)
+// const ChimeState_Arena:ChimeState = {
+//     arenaMicrophone:true,
+//     arenaSpeaker:true,
+//     arenaShareScreen:false,
+//     arenaViewScreen:true,
+//     fieldMicrophone:false,
+//     fieldSpeaker:false,
+// }
 
+// const ChimeState_Lobby:ChimeState = {
+//     arenaMicrophone:true,
+//     arenaSpeaker:true,
+//     arenaShareScreen:true,
+//     arenaViewScreen:true,
+//     fieldMicrophone:false,
+//     fieldSpeaker:false,
+// }
+
+// const ChimeState_Task:ChimeState = {
+//     arenaMicrophone:false,
+//     arenaSpeaker:false,
+//     arenaShareScreen:true,
+//     arenaViewScreen:false,
+//     fieldMicrophone:false,
+//     fieldSpeaker:false,
+// }
+
+// const ChimeState_Discuss:ChimeState = {
+//     arenaMicrophone:true,
+//     arenaSpeaker:false,
+//     arenaShareScreen:true,
+//     arenaViewScreen:false,
+//     fieldMicrophone:true,
+//     fieldSpeaker:true,
+// }
+
+// const ChimeState_Dead:ChimeState = {
+//     arenaMicrophone:true,
+//     arenaSpeaker:true,
+//     arenaShareScreen:true,
+//     arenaViewScreen:true,
+//     fieldMicrophone:false,
+//     fieldSpeaker:false,
+// }
+
+
+//// Single Channel
 const ChimeState_Arena:ChimeState = {
     arenaMicrophone:true,
     arenaSpeaker:true,
@@ -56,14 +103,15 @@ const ChimeState_Task:ChimeState = {
 
 const ChimeState_Discuss:ChimeState = {
     arenaMicrophone:true,
-    arenaSpeaker:false,
+    arenaSpeaker:true,
     arenaShareScreen:true,
     arenaViewScreen:false,
     fieldMicrophone:true,
     fieldSpeaker:true,
 }
 
-const ChimeState_Dead:ChimeState = {
+
+const ChimeState_Task_Dead:ChimeState = {
     arenaMicrophone:true,
     arenaSpeaker:true,
     arenaShareScreen:true,
@@ -72,12 +120,35 @@ const ChimeState_Dead:ChimeState = {
     fieldSpeaker:false,
 }
 
+const ChimeState_Discuss_Dead:ChimeState = {
+    arenaMicrophone:false,
+    arenaSpeaker:true,
+    arenaShareScreen:true,
+    arenaViewScreen:true,
+    fieldMicrophone:false,
+    fieldSpeaker:false,
+}
+
+const ChimeState_Discuss_Arena:ChimeState = {
+    arenaMicrophone:false,
+    arenaSpeaker:true,
+    arenaShareScreen:false,
+    arenaViewScreen:true,
+    fieldMicrophone:false,
+    fieldSpeaker:false,
+}
+
+
+
+
 const ChimeStateType = {
-    "Arena"   : ChimeState_Arena,
-    "Lobby"   : ChimeState_Lobby,
-    "Task"    : ChimeState_Task,
-    "Discuss" : ChimeState_Discuss,
-    "Dead"    : ChimeState_Dead
+    "Arena"          : ChimeState_Arena,
+    "Lobby"          : ChimeState_Lobby,
+    "Task"           : ChimeState_Task,
+    "Discuss"        : ChimeState_Discuss,
+    "Task_Dead"      : ChimeState_Task_Dead,
+    "Discuss_Dead"   : ChimeState_Discuss_Dead,
+    "Discuss_Arena"  : ChimeState_Discuss_Arena,
 }
 
 
@@ -99,8 +170,18 @@ export const MeetingRoomAmongUs = () => {
         _setUserName(newUserName)
     }
 
-
     const targetTilesId = Object.keys(videoTileStates).reduce<string>((sum,cur)=>{return `${sum}-${cur}`},"")
+
+    // initialize auido/video output
+    useEffect(()=>{
+        const audioEl = document.getElementById("arena_speaker") as HTMLAudioElement
+        audioOutputDeviceSetting!.setOutputAudioElement(audioEl)
+
+        const canvasEl  = document.getElementById("captureCanvas") as HTMLCanvasElement
+        // @ts-ignore
+        const stream = canvasEl.captureStream() as MediaStream
+        videoInputDeviceSetting?.setVideoInput(stream)
+    },[])
 
     const animate = () => {
         const videoEl  = document.getElementById("capture") as HTMLVideoElement
@@ -115,25 +196,34 @@ export const MeetingRoomAmongUs = () => {
         return () => cancelAnimationFrame(animationRef.current);
     }, [])
 
+
+
     useEffect(()=>{
         // if(!currentGameState.hmmAttendeeId){
         //     return
         // }
-        meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
-            if(x.state().boundAttendeeId === currentGameState.hmmAttendeeId){
-                const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
-                x.bindVideoElement(tileviewComp)
-                tileviewComp.play()
-                console.log("video stream:", tileviewComp.videoWidth, tileviewComp.videoHeight)
-            }
-            const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
-            x.bindVideoElement(userViewComp)
-
-            console.log("video stream:", userViewComp.videoWidth, userViewComp.videoHeight)
-            userViewComp.play()
-        })
+        if(chimeState.arenaViewScreen){
+            meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
+                if(x.state().boundAttendeeId === currentGameState.hmmAttendeeId){
+                    x.unpause()
+                    const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
+                    x.bindVideoElement(tileviewComp)
+                    tileviewComp.play()
+                    console.log("video stream:", tileviewComp.videoWidth, tileviewComp.videoHeight)
+                }
     
-    },[targetTilesId, currentGameState.hmmAttendeeId])
+                // const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
+                // x.bindVideoElement(userViewComp)
+    
+                // console.log("video stream:", userViewComp.videoWidth, userViewComp.videoHeight)
+                // userViewComp.play()
+            })
+        }else{
+            meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
+                x.pause()
+            })
+        }
+    },[targetTilesId, currentGameState.hmmAttendeeId, chimeState.arenaViewScreen])
 
     //// UserName Change
     useEffect(()=>{
@@ -149,25 +239,37 @@ export const MeetingRoomAmongUs = () => {
         console.log("Find current player:::", player)
         console.log("Find current player:::", currentGameState)
         console.log("Find current player::GAME STATE:", currentGameState.state)
+
+        /////// For Arena
         if(!player){
             // in arena
             console.log("Find current player::: 1")
-            setChimeState(ChimeStateType.Arena)
-            return
+            if(currentGameState.state == 2){
+                setChimeState(ChimeStateType.Discuss_Arena)
+                return
+            }else{
+                setChimeState(ChimeStateType.Arena)
+                return
+            }
         }
+
+        /////// For Field
+        /// Lobby
         if(currentGameState.state == 0){
             // in lobby(0)
             console.log("Find current player::: 2")
             setChimeState(ChimeStateType.Lobby)
             return
         }
+
+        //// Task
         if(currentGameState.state == 1){
             console.log("Find current player::: 3-1")
             // in task
             if(player.isDead || player.disconnected){
                 console.log("Find current player::: 3")
                 // dead man
-                setChimeState(ChimeStateType.Dead)
+                setChimeState(ChimeStateType.Task_Dead)
                 return
             }else{
                 // task
@@ -176,12 +278,13 @@ export const MeetingRoomAmongUs = () => {
                 return
             }
         }
+        //// Discuss
         if(currentGameState.state == 2){
             //in discussing
             if(player.isDead || player.disconnected){
                 // dead man
                 console.log("Find current player::: 5")
-                setChimeState(ChimeStateType.Dead)
+                setChimeState(ChimeStateType.Discuss_Dead)
                 return
             }else{
                 // discuss
@@ -194,6 +297,39 @@ export const MeetingRoomAmongUs = () => {
 
     },[currentGameState])
 
+    //// AV Controle
+    useEffect(()=>{
+
+        if(chimeState.arenaMicrophone){
+            audioInputDeviceSetting!.unmute()
+        }else{
+            audioInputDeviceSetting!.mute()
+        }
+    },[chimeState.arenaMicrophone])
+    useEffect(()=>{
+        if(chimeState.arenaSpeaker){
+            audioOutputDeviceSetting?.setAudioOutputEnable(true)
+        }else{
+            audioOutputDeviceSetting?.setAudioOutputEnable(false)
+        }
+    },[chimeState.arenaSpeaker])
+    useEffect(()=>{
+        if(chimeState.arenaShareScreen){
+            console.log("ENABLE VIDEO: TRUE")
+
+            const canvasEl  = document.getElementById("captureCanvas") as HTMLCanvasElement
+            // @ts-ignore
+            const stream = canvasEl.captureStream() as MediaStream
+            videoInputDeviceSetting!.setVideoInput(stream).then(()=>{
+                videoInputDeviceSetting!.startLocalVideoTile()
+            })
+        }else{
+            console.log("ENABLE VIDEO: FALSE")
+            videoInputDeviceSetting!.stopLocalVideoTile()
+        }
+    },[chimeState.arenaShareScreen])
+
+    
     //// UserName re-register
     useEffect(()=>{
         const player = currentGameState.players.find(x=>{return x.name === userName})
@@ -220,7 +356,6 @@ export const MeetingRoomAmongUs = () => {
 
     //// Capture add listener
     useEffect(()=>{
-        const canvasEl  = document.getElementById("captureCanvas") as HTMLCanvasElement
         const videoEl  = document.getElementById("capture") as HTMLVideoElement
 
         const listenEvent = (ev: MouseEvent) => {
@@ -229,9 +364,6 @@ export const MeetingRoomAmongUs = () => {
                     x.stop()
                 })
                 videoEl.srcObject = null
-                videoInputDeviceSetting?.setVideoInput(null).then(()=>{
-                    videoInputDeviceSetting.stopLocalVideoTile()
-                })                
                 setCaptureStream(undefined)
 
             }else{
@@ -249,12 +381,6 @@ export const MeetingRoomAmongUs = () => {
                     videoEl.srcObject = stream
                     setCaptureStream(stream)
                     videoEl.play().then(()=>{
-                        // @ts-ignore
-                        const stream2 = canvasEl.captureStream() as MediaStream
-                        // console.log( "VIDEO STREAM SIZE1:", stream2.getVideoTracks()[0].getSettings().width, stream2.getVideoTracks()[0].getSettings().height )
-                        videoInputDeviceSetting?.setVideoInput(stream2).then(()=>{
-                            videoInputDeviceSetting.startLocalVideoTile()
-                        })
                     })
                 })
             }
@@ -644,7 +770,7 @@ export const MeetingRoomAmongUs = () => {
                             </div>
                             <div style={{width:"30%", height:"100%", alignItems:"center" }}>
                             <video width="640" height="480" id="capture" style={{width:"50%", height:"100%", borderStyle:"dashed",borderColor: blueGrey[200]}} />
-                            <canvas width="640" height="480" id="captureCanvas"  />
+                            <canvas width="640" height="480" id="captureCanvas" hidden />
                             </div>
                             <div style={{width:"30%", height:"100%", alignItems:"center" }}>
                             </div>
@@ -653,8 +779,12 @@ export const MeetingRoomAmongUs = () => {
                             <video id="tileView"  style={{width:"100%", height:"100%", borderStyle:"solid",borderColor: red[900]}} />
                         </div>
 
+                        <div>
+                            <audio id="arena_speaker" hidden />
+                        </div>
 
 
+{/* 
                         <div style={{display:"flex", flexDirection:"row"}}>
                             <video id="userView0"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
                             <video id="userView1"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
@@ -678,7 +808,7 @@ export const MeetingRoomAmongUs = () => {
                             <video id="userView13"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
                             <video id="userView14"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
                             <video id="userView15"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                        </div>
+                        </div> */}
 
                     </div>
                 </div>

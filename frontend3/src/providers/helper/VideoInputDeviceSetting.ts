@@ -28,6 +28,7 @@ export class VideoInputDeviceSetting {
     ///////////////
     private setVideoInputCommon = async (device: MediaStream | string | null, enable: boolean, vbgEnable: boolean, vfgEnable: boolean,) => {
         console.log("setVideoInput", device, enable, vbgEnable, vfgEnable)
+        
         if (device === null || enable === false) {
             console.log("[DeviceSetting] VideoInput is null or disabled.")
             await this.meetingSession.audioVideo.chooseVideoInputDevice(null)

@@ -32,7 +32,7 @@ export const useStatusMonitor = () =>{
         }else{
             setNoAttendeesCount(noAttendeesCount + 1)
             console.log(`meetingActive checker count: ${noAttendeesCount}`)
-            if(noAttendeesCount > 1){
+            if(noAttendeesCount > 5){
                 setMeetingActive(false)
             }
         }
