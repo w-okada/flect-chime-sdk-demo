@@ -26,7 +26,11 @@ export class AudioOutputDeviceSetting{
 
         /// for standard audio output
         console.log("[DeviceSetting] Change AudioOutput.")
-        await this.meetingSession.audioVideo.chooseAudioOutputDevice(device)
+        try{
+            await this.meetingSession.audioVideo.chooseAudioOutputDevice(device)
+        }catch(excpetion){
+            console.log(`[DeviceSetting] Change AudioOutput is failed:${excpetion}`)
+        }
     }
 
 

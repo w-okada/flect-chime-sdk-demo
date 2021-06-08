@@ -37,26 +37,26 @@ export const useStyles = makeStyles((theme: Theme) =>
             // minWidth: 120,
         },
         icon: {
-            fill: "blue",
+            fill: blueGrey[300],
         },
         label: {
-            color: "blue",
+            color: blueGrey[300],
             "&.Mui-focused": {
-              color: "blue",
+              color: blueGrey[300],
             },
         },
         select: {
             '&:before': {
-                borderColor: "blue",
-                color:"blue",
+                borderColor: blueGrey[300],
+                color:blueGrey[300],
             },
             '&:after': {
-                borderColor: "blue",
-                color:"blue",
+                borderColor: blueGrey[300],
+                color: blueGrey[300],
             }
         },
         input_amongus: {
-            color: 'blue',
+            color: blueGrey[300],
         },
         
 
@@ -68,12 +68,12 @@ export const useStyles = makeStyles((theme: Theme) =>
         },
         activeState_hmm: {
             color: "white",
-            backgroundColor: "orange",
+            backgroundColor: "burlywood",
             margin:3
         },
         activeState_arena: {
-            color: "white",
-            backgroundColor: "blue",
+            color: blueGrey[100],
+            backgroundColor: blueGrey[500],
             margin:3
         },
         activeState_field: {

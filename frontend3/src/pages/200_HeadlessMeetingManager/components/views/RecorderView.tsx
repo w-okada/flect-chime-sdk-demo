@@ -41,7 +41,7 @@ export const RecorderView = ({ width, height, setActiveRecorderCanvas, setAllRec
     useEffect(() => {
         const activeDstCanvas = document.getElementById("ActiveRecorderCanvas") as HTMLCanvasElement
         activeRenderer.init(activeDstCanvas)
-//        activeRenderer.start()  ////TODO: FOR AMONGUS TEMPORARY
+        activeRenderer.start() 
         setActiveRecorderCanvas(activeDstCanvas)
         return () => {
             console.log("destroy renderer", activeRenderer)

@@ -63,21 +63,21 @@ const Router = () => {
         }
     },[stage])
     return (
-        <>
+        <div >
         {page}
-        </>
+        </div>
     )
 }
 
 
 const App = () => {
     return (
-        <>
+        <div >
             <AppStateProvider>
                 <Router />
                 <MessageDialog />
             </AppStateProvider>
-        </>
+        </div>
     );
 }
 

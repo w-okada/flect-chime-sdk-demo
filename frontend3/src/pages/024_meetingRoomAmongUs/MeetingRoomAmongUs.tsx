@@ -17,6 +17,11 @@ import ViewComfyIcon from '@material-ui/icons/ViewComfy';
 import SettingsIcon from '@material-ui/icons/Settings';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { VideoInputDeviceSetting } from "../../providers/helper/VideoInputDeviceSetting";
+import { LeaveMeetingDialog } from "./components/dialog/LeaveMeetingDialog";
+import { SettingDialog } from "./components/dialog/SettingDialog";
+import { AudienceList } from "./components/AudienceList";
+import { CreditPanel } from "./components/CreditPanel";
+import { ChatArea } from "./components/ChatArea";
 
 type ChimeState = {
     arenaMicrophone:boolean
@@ -156,10 +161,14 @@ export const MeetingRoomAmongUs = () => {
     const classes = useStyles();
     const animationRef = useRef(0);
 
-    const {meetingSession, attendeeId, videoTileStates, attendees, videoInputDeviceSetting, audioInputDeviceSetting, audioOutputDeviceSetting, updateMeetingInfo, ownerId, isOwner, publicIp,
+    const {meetingSession, attendeeId, videoTileStates, attendees, videoInputDeviceSetting, audioInputDeviceSetting, audioOutputDeviceSetting,
+        updateMeetingInfo, ownerId, isOwner, publicIp,
+        screenHeight, screenWidth,
         startHMM, sendTerminate, sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, hMMStatus, stateLastUpdate,
         currentGameState, sendRegisterAmongUsUserName
     } = useAppState()
+    const [settingDialogOpen, setSettingDialogOpen] = useState(false);
+    const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 
     const [chimeState, setChimeState] = useState<ChimeState>(ChimeStateType.Arena)
 
@@ -181,7 +190,30 @@ export const MeetingRoomAmongUs = () => {
         // @ts-ignore
         const stream = canvasEl.captureStream() as MediaStream
         videoInputDeviceSetting?.setVideoInput(stream)
+
+        // @ts-ignore
+        document.body.style = 'background: black;';
+
+
+        // /// tmp
+        // meetingSession?.deviceController.listAudioOutputDevices().then(res=>{
+        //     const devs = res.map(x=>{return x.deviceId})
+        //     const d = document.getElementById("info1") as HTMLDivElement
+        //     d.innerText = devs.reduce((prev,cur)=>{ return `${prev}_${cur}`}, "")
+        // })
     },[])
+
+    /// fit screen
+    useEffect(()=>{
+        const header = document.getElementById("header") as HTMLDivElement
+        const main = document.getElementById("main") as HTMLDivElement
+        const cs = getComputedStyle(main)
+        const headerWidth = cs.getPropertyValue("width")
+        const headerHeight = cs.getPropertyValue("height")
+        // console.log(`---------------- ${headerWidth}, ${headerHeight}`)
+        // main.style.height = `${screenHeight - parseInt(headerWidth)}`
+
+    },[screenWidth, screenHeight])
 
     const animate = () => {
         const videoEl  = document.getElementById("capture") as HTMLVideoElement
@@ -329,7 +361,7 @@ export const MeetingRoomAmongUs = () => {
         }
     },[chimeState.arenaShareScreen])
 
-    
+
     //// UserName re-register
     useEffect(()=>{
         const player = currentGameState.players.find(x=>{return x.name === userName})
@@ -619,7 +651,7 @@ export const MeetingRoomAmongUs = () => {
             <>
                 <Tooltip title={"config"}>
                     <IconButton classes={{root:classes.menuButton}}>                    
-                        <SettingsIcon className={classes.activeState_hmm} fontSize="large"/>
+                        <SettingsIcon className={classes.activeState_hmm} fontSize="large" onClick={()=>setSettingDialogOpen(true)}/>
                     </IconButton>                    
                 </Tooltip>
             </>
@@ -631,7 +663,7 @@ export const MeetingRoomAmongUs = () => {
             <>
                 <Tooltip title={"leave"}>
                     <IconButton classes={{root:classes.menuButton}}>                    
-                        <ExitToAppIcon className={classes.activeState_hmm} fontSize="large"/>
+                        <ExitToAppIcon className={classes.activeState_hmm} fontSize="large" onClick={()=>setLeaveDialogOpen(true)}/>
                     </IconButton>                    
                 </Tooltip>
             </>
@@ -701,7 +733,7 @@ export const MeetingRoomAmongUs = () => {
     return (
             <div className={classes.root}>
 
-                <div style={{display:"flex", flexDirection:"row"}} >
+                <div id="header" style={{display:"flex", flexDirection:"row"}} >
 
                     <div style={{display:"flex", flexDirection:"column"}}>
                         <div style={{display:"flex"}}>
@@ -711,7 +743,7 @@ export const MeetingRoomAmongUs = () => {
                             {shareTileViewStateComp}
                         </div>
                         <div>
-                            {publicIp?`${publicIp}:3000`:""}
+                            {publicIp?`http://${publicIp}:3000`:""}
                         </div>
                         <div>
                             lastupdate:{stateLastUpdateTime}
@@ -729,10 +761,10 @@ export const MeetingRoomAmongUs = () => {
                                 {arenaViewScreenComp}
                             </div>
                             <span style={{margin:"3px" }}> </span>
-                            <div style={{display:"flex"}}>
+                            {/* <div style={{display:"flex"}}>
                                 {fieldMicrophoneComp}
                                 {fieldSpeakerComp}
-                            </div>
+                            </div> */}
                         </div>
                         <div>
                             {gameStateComp}
@@ -757,26 +789,26 @@ export const MeetingRoomAmongUs = () => {
 
                 <Divider variant="middle" classes={{root:classes.dividerColor }}/>
 
-                <div style={{height:"70%", display:"flex", flexDirection:"row"}}>
+                <div id="main" style={{height:"100%", display:"flex", flexDirection:"row"}}>
                     <div style={{width:"20%", display:"flex", flexDirection:"column"}}>
                         {userChooser}
                         {userList}
                     </div>
 
-                    <div style={{width:"70%", height:"100%", display:"flex", flexDirection:"column"}}>
+                    <div style={{width:"65%", height:"100%", display:"flex", flexDirection:"column"}}>
                         <div style={{height:"20%", display:"flex", flexDirection:"row"}}>
                             <div style={{width:"25%", height:"100%", textAlign:"right" }}>
                                 click to share your screen
                             </div>
                             <div style={{width:"30%", height:"100%", alignItems:"center" }}>
-                            <video width="640" height="480" id="capture" style={{width:"50%", height:"100%", borderStyle:"dashed",borderColor: blueGrey[200]}} />
+                            <video width="640" height="480" id="capture" style={{width:"50%", height:"100%", borderStyle:"dashed",borderColor: blueGrey[400]}} />
                             <canvas width="640" height="480" id="captureCanvas" hidden />
                             </div>
                             <div style={{width:"30%", height:"100%", alignItems:"center" }}>
                             </div>
                         </div>
                         <div style={{height:"80%", display:"flex", flexDirection:"row"}}>
-                            <video id="tileView"  style={{width:"100%", height:"100%", borderStyle:"solid",borderColor: red[900]}} />
+                            <video id="tileView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} />
                         </div>
 
                         <div>
@@ -811,182 +843,27 @@ export const MeetingRoomAmongUs = () => {
                         </div> */}
 
                     </div>
+
+                    <div style={{width:"10%", height:"100%", display:"flex", flexDirection:"column"}}>
+                        <div id="audiences" style={{height:"40%"}}>
+                            <AudienceList />
+
+                        </div>
+                        <div id="chat"  style={{height:"40%"}}>
+                            <ChatArea />
+                        </div>
+                        <div>
+                            <CreditPanel />
+                        </div>
+
+                    </div>
+
                 </div>
-
-
+                <LeaveMeetingDialog open={leaveDialogOpen} onClose={()=>setLeaveDialogOpen(false)} />
+                <SettingDialog      open={settingDialogOpen} onClose={()=>setSettingDialogOpen(false)} />
+                <div id="info1"/>
             </div>
 
     );
-
-
-
-
-
-
-
-
-
-
-
-    // const classes = useStyles()
-    // const [drawerOpen, setDrawerOpen] = useState(false)
-
-    // const { screenHeight, screenWidth, meetingName,
-    //         audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, isShareContent,
-    //         startShareScreen, stopShareScreen,} = useAppState()
-
-    // const [guiCounter, setGuiCounter] = useState(0)
-
-    // const [settingDialogOpen, setSettingDialogOpen] = useState(false);
-    // const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
-    // const [screenType, setScreenType] = useState<ScreenType>("FeatureView");
-
-    // const setAudioInputEnable = async() =>{
-    //     await audioInputDeviceSetting!.setAudioInputEnable(!audioInputDeviceSetting!.audioInputEnable)
-    //     setGuiCounter(guiCounter+1)
-    // }
-    // const setVideoInputEnable = async() =>{
-    //     const enable = !videoInputDeviceSetting!.videoInputEnable
-    //     await videoInputDeviceSetting!.setVideoInputEnable(enable)
-    //     if(enable){
-    //         videoInputDeviceSetting!.startLocalVideoTile()
-    //     }else{
-    //         videoInputDeviceSetting!.stopLocalVideoTile()
-    //     }
-    //     setGuiCounter(guiCounter+1)
-    // }
-    // const setAudioOutputEnable = async() =>{
-    //     await audioOutputDeviceSetting!.setAudioOutputEnable(!audioOutputDeviceSetting!.audioOutputEnable)
-    //     setGuiCounter(guiCounter+1)
-    // }
-
-    // const enableShareScreen = (val:boolean) =>{
-    //     if(val){
-    //         startShareScreen()
-    //     }else{
-    //         stopShareScreen()
-    //     }
-    // }
-
-    // const mainView = useMemo(()=>{
-    //     switch(screenType){
-    //         case "FullView":
-    //             return <FullScreenView height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth} pictureInPicture={"None"} focusTarget={"SharedContent"}/>
-    //         case "FeatureView":
-    //             return <FeatureView height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth} pictureInPicture={"None"} focusTarget={"SharedContent"}/>
-    //         case "GridView":
-    //             return <GridView  height={screenHeight-toolbarHeight-bufferHeight} width={drawerOpen?screenWidth-drawerWidth:screenWidth} excludeSharedContent={false}/>
-    //         default:
-    //             return (<>Not found screen type:{screenType}</>)
-    //     }
-    // },[screenType, screenHeight, screenWidth]) // eslint-disable-line
-
-
-
-    // useEffect(()=>{
-    //     const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
-    //     audioElement.autoplay=false
-    //     audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
-    // },[]) // eslint-disable-line
-
-
-    // return (
-    //     <ThemeProvider theme={theme}>
-    //         <CssBaseline />
-    //         <div className={classes.root}>
-
-
-    //             <AppBar position="absolute" className={clsx(classes.appBar)}>
-    //                 <Toolbar className={classes.toolbar}>
-    //                     <div className={classes.toolbarInnnerBox}>
-    //                         <DrawerOpener open={drawerOpen} setOpen={setDrawerOpen} />
-    //                     </div>
-    //                     <div className={classes.toolbarInnnerBox}>
-    //                         <Title title={meetingName||""} />
-    //                     </div>
-    //                     <div className={classes.toolbarInnnerBox}>
-    //                         <div className={classes.toolbarInnnerBox}>
-    //                             <DeviceEnabler type="Mic" enable={audioInputDeviceSetting!.audioInputEnable} setEnable={setAudioInputEnable}/>
-    //                             <DeviceEnabler type="Camera" enable={videoInputDeviceSetting!.videoInputEnable} setEnable={setVideoInputEnable}/>
-    //                             <DeviceEnabler type="Speaker" enable={audioOutputDeviceSetting!.audioOutputEnable} setEnable={setAudioOutputEnable}/>
-    //                             <DialogOpener type="Setting" onClick={()=>setSettingDialogOpen(true)}/>
-    //                             <span className={clsx(classes.menuSpacer)}>  </span>
-    //                             <FeatureEnabler type="ShareScreen" enable={isShareContent} setEnable={(val:boolean)=>{enableShareScreen(val)}}/>
-    //                             <span className={clsx(classes.menuSpacer)}>  </span>
-    //                             <span className={clsx(classes.menuSpacer)}>  </span>
-    //                             <SwitchButtons type="ScreenView" selected={screenType} onClick={(val)=>{setScreenType(val as ScreenType)}}/>
-    //                             <span className={clsx(classes.menuSpacer)}>  </span>
-    //                             <span className={clsx(classes.menuSpacer)}>  </span>
-    //                             <DialogOpener type="LeaveMeeting" onClick={()=>setLeaveDialogOpen(true)}/>
-
-    //                         </div>
-    //                         <div className={classes.toolbarInnnerBox}>
-    //                         </div>
-    //                     </div>
-    //                 </Toolbar>
-    //             </AppBar>
-    //             <SettingDialog      open={settingDialogOpen} onClose={()=>setSettingDialogOpen(false)} />
-    //             <LeaveMeetingDialog open={leaveDialogOpen} onClose={()=>setLeaveDialogOpen(false)} />
-
-
-    //             <div style={{marginTop:toolbarHeight, position:"absolute", display:"flex"}}>
-    //                 <Drawer
-    //                     variant="permanent"
-    //                     classes={{
-    //                         paper: clsx(classes.drawerPaper, !drawerOpen && classes.drawerPaperClose),
-    //                     }}
-    //                     open={drawerOpen}
-    //                 >
-    //                     <CustomAccordion title="Member">
-    //                         <AttendeesTable/>
-    //                     </CustomAccordion>
-
-    //                     <CustomAccordion title="Chat">
-    //                         <ChatArea/>
-    //                     </CustomAccordion>
-
-    //                     <CustomAccordion title="Whiteboard">
-    //                         <WhiteboardPanel/>
-    //                     </CustomAccordion>
-
-    //                     {/* <CustomAccordion title="RecordMeeting (exp.)">
-    //                         <RecorderPanel />
-    //                     </CustomAccordion> */}
-                        
-    //                     {/* <CustomAccordion title="BGM/SE">
-    //                         <BGMPanel />
-    //                     </CustomAccordion> */}
-                        
-    //                     <CustomAccordion title="About">
-    //                         <CreditPanel />
-    //                     </CustomAccordion>
-
-    //                     <CustomAccordion title="OnetimeCode">
-    //                         <OnetimeCodePanel />
-    //                     </CustomAccordion>
-
-    //                     <CustomAccordion title="StartManagerPanel">
-    //                         <ManagerControllerPanel />
-    //                     </CustomAccordion>
-                                                
-
-    //                 </Drawer>
-
-    //                 <main style={{height:`${screenHeight - toolbarHeight - bufferHeight}px`}}>
-    //                     {mainView}
-    //                 </main>
-    //             </div>
-    //         </div>
-
-    //         {/* ************************************** */}
-    //         {/* *****   Hidden Elements          ***** */}
-    //         {/* ************************************** */}
-    //         <div>
-    //             <audio id="for-speaker" style={{display:"none"}}/>
-
-    //         </div>
-
-    //     </ThemeProvider>
-    // )
 
 }

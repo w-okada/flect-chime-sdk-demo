@@ -1,8 +1,11 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { VideoTileState } from "amazon-chime-sdk-js";
 import { AttendeeState, ChimeClient } from "../helper/ChimeClient";
 import { Recorder } from "../helper/Recorder";
 import { getMeetingInfo } from "../../api/api";
+import { useScheduler } from "./useScheduler";
+import * as api from '../../api/api'
+import { idText } from "typescript";
 
 type UseMeetingStateProps = {
     userId?: string, 
@@ -27,6 +30,7 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
     const [isOwner, setIsOwner] = useState(false)
 
     const chimeClient = useMemo(()=>{return new ChimeClient()},[])
+    const {tenSecondsTaskTrigger} = useScheduler()
 
     // For Recorder
     const activeRecorder    = useMemo(()=>{return new Recorder()},[])
@@ -108,7 +112,29 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
         setIsOwner(props.userId === ownerId)
     }
 
-
+    ///////////////////////////
+    /// for recovery
+    ///////////////////////////
+    //// Retrieve attendee name
+    useEffect(()=>{
+        (async() => {
+            let updated = false
+            for(let x of Object.values(attendees)){
+                if(x.name === x.attendeeId){
+                    try{
+                        const res = await api.getUserNameByAttendeeId(meetingName, x.attendeeId, props.idToken!, props.accessToken!, props.refreshToken!)
+                        x.name = res.name
+                        updated = true
+                    }catch(exception){
+                        console.log(`username update failed ${x.attendeeId}`)
+                    }
+                }
+            }
+            if(updated){
+                setAttendees({...attendees})
+            }
+        })()
+    },[tenSecondsTaskTrigger])
 
     return { meetingName, meetingId, joinToken, attendeeId, userName, attendees, videoTileStates, 
             meetingSession, activeRecorder, allRecorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting,
