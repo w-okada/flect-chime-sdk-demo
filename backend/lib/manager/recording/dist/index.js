@@ -73,7 +73,8 @@ var puppeteer_1 = __importDefault(require("puppeteer"));
 var http_1 = __importDefault(require("http"));
 var io = __importStar(require("socket.io"));
 var async_lock_1 = __importDefault(require("async-lock"));
-var os = __importStar(require("os"));
+var fs = __importStar(require("fs"));
+var aws = __importStar(require("aws-sdk"));
 // var lock = new AsyncLock({timeout: 1000 * 30 });
 var lock = new async_lock_1.default();
 var finalize = false;
@@ -94,6 +95,11 @@ var io_server = new io.Server(server, {
     allowEIO3: true
 });
 var now = function () { return new Date().toISOString().substr(14, 9); };
+var sleep = function (ms) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+    });
+};
 var initialState = {
     hmmAttendeeId: "",
     state: 3,
@@ -145,6 +151,13 @@ io_server.on('connection', function (client) {
                 gameState.lobbyCode = lobbyData.LobbyCode;
                 gameState.gameRegion = lobbyData.Region;
                 gameState.map = lobbyData.Map;
+                // request data ID 
+                // enum GameDataType{
+                //     GameState = 1,
+                //     Players = 2,
+                //     LobbyCode = 4
+                // }
+                client.emit("requestdata", 2);
                 console.log(now(), '  Lock Function End');
                 return [2 /*return*/, 'Successful'];
             });
@@ -171,6 +184,15 @@ io_server.on('connection', function (client) {
                 if (index == 0 || index == 3) { // Lobby(0),Menu(3)
                     gameState.players = [];
                 }
+                if (index == 2) { // discussion update player status
+                    // request data ID 
+                    // enum GameDataType{
+                    //     GameState = 1,
+                    //     Players = 2,
+                    //     LobbyCode = 4
+                    // }
+                    client.emit("requestdata", 2);
+                }
                 gameState.state = index;
                 console.log(now(), '  Lock Function End');
                 return [2 /*return*/, 'Successful'];
@@ -193,6 +215,12 @@ io_server.on('connection', function (client) {
             return __generator(this, function (_a) {
                 console.log(now(), '  Lock Function Start');
                 console.log("AMONG: [player]", data);
+                // await page.$eval('#io_event', (el, value) => el.value = "player");
+                // await page.$eval('#io_data', (el, value) => el.value = value, data);
+                // await page.click("#io_click")
+                if (gameState.state == 1) { // tasks, skip update player status
+                    return [2 /*return*/];
+                }
                 playerData = JSON.parse(data);
                 newPlayers = gameState.players.filter(function (x) { return x.name !== playerData.Name; }) // not target players
                 ;
@@ -250,9 +278,9 @@ io_server.on('connection', function (client) {
     ///////////////////////////////////////////////////////
 });
 var uploadGameState = function () {
-    console.log("upload game state1-1[cpu]", os.cpus());
-    console.log("upload game state1-2[total mem]", os.totalmem());
-    console.log("upload game state1-3[free mem]", os.freemem());
+    // console.log("upload game state1-1[cpu]", os.cpus())
+    // console.log("upload game state1-2[total mem]", os.totalmem())
+    // console.log("upload game state1-3[free mem]", os.freemem())
     if (page) {
         console.log("upload game state2");
         lock.acquire('io_on', function () { return __awaiter(void 0, void 0, void 0, function () {
@@ -323,6 +351,8 @@ puppeteer_1.default.launch({
             document.addEventListener('terminate', function (e) {
                 // @ts-ignore
                 window.onCustomEvent({ type: 'terminate', detail: e.detail });
+                // @ts-ignore
+                window.onCustomEvent({ type: 'uploadVideo', detail: e.detail });
             });
         });
     }
@@ -337,19 +367,93 @@ puppeteer_1.default.launch({
                     }
                 });
                 return [4 /*yield*/, page.exposeFunction('onCustomEvent', function (e) { return __awaiter(void 0, void 0, void 0, function () {
-                        return __generator(this, function (_a) {
-                            console.log("ZZZZZZZZZZZZZZZZZZZZZ " + e.type + " fired", e.detail || '');
-                            switch (e.type) {
-                                case "terminate":
-                                    console.log("TERMINATE----------------!1111");
-                                    browser.close();
-                                    io_server.disconnectSockets();
-                                    server.close();
-                                    finalize = true;
-                                    // process.exit(0);
-                                    break;
+                        var s3, promises, _a;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0:
+                                    console.log("ZZZZZZZZZZZZZZZZZZZZZ " + e.type + " fired", e.detail || '');
+                                    s3 = new aws.S3({ params: { Bucket: bucketName } });
+                                    promises = [];
+                                    _a = e.type;
+                                    switch (_a) {
+                                        case "terminate": return [3 /*break*/, 1];
+                                        case "uploadVideo": return [3 /*break*/, 3];
+                                    }
+                                    return [3 /*break*/, 5];
+                                case 1:
+                                    console.log("TERMINATE----------------!");
+                                    console.log("wait 20sec for download process");
+                                    return [4 /*yield*/, sleep(1000 * 20)];
+                                case 2:
+                                    _b.sent();
+                                    console.log("wait 20sec for download process done");
+                                    // const s3 = new aws.S3({ params: { Bucket: bucketName } });
+                                    // let promises:Promise<any>[] = []
+                                    fs.readdirSync(downloadPath).forEach(function (file) {
+                                        var filePath = downloadPath + "/" + file;
+                                        console.log("FILE:::", filePath);
+                                        var params = {
+                                            Bucket: bucketName,
+                                            Key: "recording/" + file
+                                        };
+                                        params.Body = fs.readFileSync(filePath);
+                                        var p = s3.putObject(params, function (err, data) {
+                                            if (err)
+                                                console.log(err, err.stack);
+                                            else
+                                                console.log(data);
+                                        }).promise();
+                                        promises.push(p);
+                                    });
+                                    Promise.all(promises).then(function () {
+                                        try {
+                                            browser.close();
+                                        }
+                                        catch (exception) {
+                                            console.log("browser closing exception ..., " + exception);
+                                        }
+                                        try {
+                                            io_server.disconnectSockets();
+                                        }
+                                        catch (exception) {
+                                            console.log("io_server disconnecting exception ..., " + exception);
+                                        }
+                                        try {
+                                            server.close();
+                                        }
+                                        catch (exception) {
+                                            console.log("server closing exception ..., " + exception);
+                                        }
+                                        finalize = true;
+                                    });
+                                    return [3 /*break*/, 5];
+                                case 3:
+                                    console.log("uploadVideo----------------!");
+                                    console.log("wait 20sec for download process");
+                                    return [4 /*yield*/, sleep(1000 * 20)];
+                                case 4:
+                                    _b.sent();
+                                    console.log("wait 20sec for download process done");
+                                    fs.readdirSync(downloadPath).forEach(function (file) {
+                                        var filePath = downloadPath + "/" + file;
+                                        console.log("FILE:::", filePath);
+                                        var params = {
+                                            Bucket: bucketName,
+                                            Key: "recording/" + file
+                                        };
+                                        params.Body = fs.readFileSync(filePath);
+                                        var p = s3.putObject(params, function (err, data) {
+                                            if (err)
+                                                console.log(err, err.stack);
+                                            else
+                                                console.log(data);
+                                        }).promise();
+                                        promises.push(p);
+                                    });
+                                    console.log("uploadVideo----------------! done!");
+                                    return [3 /*break*/, 5];
+                                case 5: return [2 /*return*/];
                             }
-                            return [2 /*return*/];
                         });
                     }); })];
             case 2:

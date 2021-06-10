@@ -44,7 +44,13 @@ export const ICONS_DEAD = COLORS.map(x=>{
     return `resources/amongus/${x}_dead.png`
 })
 
-
+// public enum PlayMap {
+//     Skeld = 0,
+//     Mira = 1,
+//     Polus = 2,
+//     dlekS = 3,
+//     Airship = 4,
+// }
 
 
 type PlayerState = {

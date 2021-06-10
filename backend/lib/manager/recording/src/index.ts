@@ -3,6 +3,10 @@ import http from 'http'
 import * as io from "socket.io";
 import AsyncLock from "async-lock"
 import * as os from 'os'
+import * as fs from 'fs'
+
+import * as aws from 'aws-sdk'
+
 
 // var lock = new AsyncLock({timeout: 1000 * 30 });
 var lock = new AsyncLock();
@@ -24,7 +28,11 @@ var io_server = new io.Server(server, {
 })
 
 const now = () => new Date().toISOString().substr(14, 9);
-
+const sleep = (ms:number) => {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 type PlayerState = {
     name:string
@@ -97,6 +105,7 @@ io_server.on('connection', client => {
             console.log(now(), '  Lock Function Start');
 
             console.log("AMONG: [lobby]", data)
+
             // await page.$eval('#io_event', (el, value) => el.value = "lobby");
             // await page.$eval('#io_data', (el, value) => el.value = value, data);
             // await page.click("#io_click")
@@ -105,6 +114,16 @@ io_server.on('connection', client => {
             gameState.lobbyCode = lobbyData.LobbyCode
             gameState.gameRegion = lobbyData.Region
             gameState.map = lobbyData.Map
+
+
+            // request data ID 
+            // enum GameDataType{
+            //     GameState = 1,
+            //     Players = 2,
+            //     LobbyCode = 4
+            // }
+            client.emit("requestdata", 2)
+
 
             console.log(now(), '  Lock Function End');
             return 'Successful';
@@ -136,6 +155,18 @@ io_server.on('connection', client => {
                 gameState.players = []
 
             }
+
+            if(index == 2){// discussion update player status
+                // request data ID 
+                // enum GameDataType{
+                //     GameState = 1,
+                //     Players = 2,
+                //     LobbyCode = 4
+                // }
+                client.emit("requestdata", 2)
+            } 
+
+
             gameState.state = index
 
             console.log(now(), '  Lock Function End');
@@ -161,6 +192,9 @@ io_server.on('connection', client => {
             // await page.$eval('#io_event', (el, value) => el.value = "player");
             // await page.$eval('#io_data', (el, value) => el.value = value, data);
             // await page.click("#io_click")
+            if(gameState.state == 1){ // tasks, skip update player status
+                return
+            }
 
             const playerData = JSON.parse(data)
             const newPlayers = gameState.players.filter(x=>{return x.name !== playerData.Name}) // not target players
@@ -221,12 +255,13 @@ io_server.on('connection', client => {
     ///////////////////////////////////////////////////////
     // handle socket io event end
     ///////////////////////////////////////////////////////
+
 });
 
 const uploadGameState = () =>{
-    console.log("upload game state1-1[cpu]", os.cpus())
-    console.log("upload game state1-2[total mem]", os.totalmem())
-    console.log("upload game state1-3[free mem]", os.freemem())
+    // console.log("upload game state1-1[cpu]", os.cpus())
+    // console.log("upload game state1-2[total mem]", os.totalmem())
+    // console.log("upload game state1-3[free mem]", os.freemem())
     if(page){
         console.log("upload game state2")
         lock.acquire('io_on',  async () => {
@@ -301,17 +336,87 @@ puppeteer.launch({
 
     await page.exposeFunction('onCustomEvent', async(e:any) => {
         console.log(`ZZZZZZZZZZZZZZZZZZZZZ ${e.type} fired`, e.detail || '');
+        const s3 = new aws.S3({ params: { Bucket: bucketName } });
+        let promises:Promise<any>[] = []
+
         switch (e.type) {
             case "terminate":
-                console.log("TERMINATE----------------!1111")                
-                browser.close();
+                console.log("TERMINATE----------------!")                
+                console.log("wait 20sec for download process")
+                await sleep(1000 * 20)
+                console.log("wait 20sec for download process done")
 
-                io_server.disconnectSockets();
-                server.close();
+                // const s3 = new aws.S3({ params: { Bucket: bucketName } });
 
-                finalize = true
-                // process.exit(0);
+                // let promises:Promise<any>[] = []
+
+                fs.readdirSync(downloadPath).forEach(file => {
+                    const filePath = `${downloadPath}/${file}`
+                    console.log("FILE:::", filePath)
+
+                    let params:aws.S3.PutObjectRequest = {
+                        Bucket: bucketName,
+                        Key: `recording/${file}`
+                    };
+                    params.Body = fs.readFileSync(filePath);
+
+                    const p = s3.putObject(params, function (err, data) {
+                        if (err) console.log(err, err.stack);
+                        else console.log(data);
+                    }).promise();
+
+                    promises.push(p)
+
+                });
+
+                Promise.all(promises).then(()=>{
+                    try{
+                        browser.close();
+                    }catch(exception){
+                        console.log(`browser closing exception ..., ${exception}`)
+                    }
+                    try{
+                        io_server.disconnectSockets();
+                    }catch(exception){
+                        console.log(`io_server disconnecting exception ..., ${exception}`)
+                    }
+                    try{
+                        server.close();
+                    }catch(exception){
+                        console.log(`server closing exception ..., ${exception}`)
+                    }
+                    finalize = true
+                })
+
                 break
+            case "uploadVideo":
+                console.log("uploadVideo----------------!")                
+                console.log("wait 20sec for download process")
+                await sleep(1000 * 20)
+                console.log("wait 20sec for download process done")
+
+
+                fs.readdirSync(downloadPath).forEach(file => {
+                    const filePath = `${downloadPath}/${file}`
+                    console.log("FILE:::", filePath)
+
+                    let params:aws.S3.PutObjectRequest = {
+                        Bucket: bucketName,
+                        Key: `recording/${file}`
+                    };
+                    params.Body = fs.readFileSync(filePath);
+
+                    const p = s3.putObject(params, function (err, data) {
+                        if (err) console.log(err, err.stack);
+                        else console.log(data);
+                    }).promise();
+
+                    promises.push(p)
+
+                });
+                console.log("uploadVideo----------------! done!")                
+                break
+
         }
     });
 
@@ -320,6 +425,8 @@ puppeteer.launch({
             document.addEventListener('terminate', e => {
                 // @ts-ignore
                 window.onCustomEvent({ type: 'terminate', detail: e.detail });
+                // @ts-ignore
+                window.onCustomEvent({ type: 'uploadVideo', detail: e.detail });
             });
         });
     }

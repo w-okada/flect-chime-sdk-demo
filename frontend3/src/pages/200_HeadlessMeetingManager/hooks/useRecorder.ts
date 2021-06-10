@@ -80,6 +80,11 @@ export const useRecorder = (props:UseRecorderProps) =>{
         await activeRecorder?.toMp4(`${dateString}_${decodedMeetingName}_active.mp4`)
         await allRecorder?.toMp4(`${dateString}_${decodedMeetingName}_all.mp4`)
         setIsRecording(false)
+
+        const event = new CustomEvent('uploadVideo');
+        document.dispatchEvent(event)
+        console.log("[useRecorder] stopRecording event fired")
+
         
     }
 

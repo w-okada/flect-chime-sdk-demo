@@ -61,6 +61,16 @@ If you use debian as a root, below may help.
 $ npm install -g aws-cdk
 ```
 
+### (4) install docker (optional)
+If you want to use HMM (Headless Meeting Manager), you should install docker.
+HMM run on AWS Fargate which needs docker image. In building process, this docker image is created. 
+
+see [docker offical page](https://docs.docker.com/engine/install/)
+
+
+You can disable HMM, in backend config mentioned later.
+
+
 ## Build backend
 ### (1) define stack name
 Define the stack name for backend.
@@ -69,6 +79,7 @@ $ emacs backend/bin/config.ts
 
 export const BACKEND_STACK_NAME = 'BackendStack' # <-- You should change. (*1)
 export const FRONTEND_LOCAL_DEV = false          # <-- Set false for deployment.
+export const USE_DOCKER = true                   # <-- If you want to disable HMM, changet to false.
 ```
 (*1) This demo uses S3 bucket whose name is defined with this value. So, this value should be global unique.
 

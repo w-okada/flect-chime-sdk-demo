@@ -114,6 +114,11 @@ export const ChatArea = () => {
                             InputProps={{
                                 className: classes.input_amongus,
                             }}
+                            onKeyPress={e => {
+                                if (e.key === 'Enter') {
+                                    sendMessage()
+                                }
+                            }}
                         />
                     </div>
                     <div>

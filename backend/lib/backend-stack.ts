@@ -9,7 +9,7 @@ import { CfnOutput, Duration, ConcreteDependable } from '@aws-cdk/core';
 import * as s3 from '@aws-cdk/aws-s3'
 import { ManagedPolicy, Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 import { Role, ServicePrincipal } from "@aws-cdk/aws-iam";
-import { FRONTEND_LOCAL_DEV } from '../bin/config';
+import { FRONTEND_LOCAL_DEV, USE_DOCKER } from '../bin/config';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as ecs from "@aws-cdk/aws-ecs";
 import * as logs from "@aws-cdk/aws-logs";
@@ -180,13 +180,15 @@ export class BackendStack extends cdk.Stack {
       memoryLimitMiB: 4096,
     });
 
-    const container = taskDefinition.addContainer("DefaultContainer", {
-      containerName: `${id}_manager_container`,
-      image: ecs.ContainerImage.fromAsset("lib/manager"),
-      cpu: 2048,
-      memoryLimitMiB: 4096,
-      logging: logging,
-    });
+    if(USE_DOCKER){
+      const container = taskDefinition.addContainer("DefaultContainer", {
+        containerName: `${id}_manager_container`,
+        image: ecs.ContainerImage.fromAsset("lib/manager"),
+        cpu: 2048,
+        memoryLimitMiB: 4096,
+        logging: logging,
+      });
+    }
 
     bucket.grantReadWrite(taskDefinition.taskRole)    
 
