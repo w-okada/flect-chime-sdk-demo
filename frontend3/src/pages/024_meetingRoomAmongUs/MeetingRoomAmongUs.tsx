@@ -831,7 +831,7 @@ export const MeetingRoomAmongUs = () => {
                         </div>
                         <div style={{height:"80%", display:"flex", flexDirection:"row"}}>
                             <video id="tileView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <img id="mapView"  />
+                            <img id="mapView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}}/>
                         </div>
 
                         <div>

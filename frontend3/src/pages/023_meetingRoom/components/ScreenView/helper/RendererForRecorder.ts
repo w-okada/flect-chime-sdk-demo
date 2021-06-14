@@ -1,3 +1,4 @@
+import { blueGrey } from "@material-ui/core/colors"
 import { MeetingSession } from "amazon-chime-sdk-js"
 
 export class RendererForRecorder {
@@ -11,6 +12,7 @@ export class RendererForRecorder {
     private maxWidth = 0
     private maxHeight = 0
     private videoPositions:number[][] = []
+    private titles:string[] = []
 
     constructor(meetingSession: MeetingSession) {
         this.meetingSession = meetingSession
@@ -52,6 +54,10 @@ export class RendererForRecorder {
         //     return [Math.ceil(global_offset_x), Math.ceil(global_offset_y), Math.ceil(w), Math.ceil(h)]
         // })
     }
+    setTitles(titles:string[]){
+        this.titles=titles
+    }
+
     destroy() {
         console.log("destroy renderer!!")
         this.alive = false
@@ -78,6 +84,7 @@ export class RendererForRecorder {
         }
 
         const ctx = this.dstCanvas!.getContext("2d")!
+        ctx.fillStyle="#000000"
         ctx.clearRect(0,0,this.dstCanvas!.width,this.dstCanvas!.height)
         ctx.fillRect(0,0,this.dstCanvas!.width,this.dstCanvas!.height)
         this.srcVideos.forEach((video,index)=>{
@@ -99,6 +106,32 @@ export class RendererForRecorder {
 
             // console.log(">>>>>>>>>>>>>>>",video, position)
             ctx.drawImage(video, position[0], position[1], position[2], position[3])
+
+            if(this.titles[index]){
+                let title = this.titles[index]
+                ctx.textAlign='left'
+                ctx.textBaseline='top'
+
+                const fontsize = Math.ceil(Math.floor(h/ 10))
+                ctx.font = `${fontsize}px Arial`
+                if(title.length > 10){
+                    title = title.substring(0,10)
+                }
+                const textWidth = ctx.measureText(title).width
+                ctx.fillStyle="#ffffff99"
+                const textAreaposition = [position[0]+5, position[1] + position[3] - fontsize - 5, textWidth, fontsize]
+                
+                ctx.fillRect(textAreaposition[0], textAreaposition[1], textAreaposition[2], textAreaposition[3])
+
+                ctx.fillStyle=blueGrey[900]
+                ctx.fillText(title, position[0]+5, position[1] + position[3] - fontsize - 5)
+            }else{
+                let title = "NO TITLE"
+                ctx.fillStyle=blueGrey[900]
+                const fontsize = Math.ceil(Math.floor(h/ 10))
+                ctx.font = `${fontsize}px Arial`
+                ctx.fillText(title, position[0]+5, position[1] + position[3] - fontsize - 5)
+            }
         })
 
         if (this.alive) {

@@ -3,6 +3,7 @@ import { Divider, Typography } from '@material-ui/core'
 import { useAppState } from "../../../../providers/AppStateProvider";
 import { VideoTileState } from "amazon-chime-sdk-js";
 import { RendererForRecorder } from "../../../023_meetingRoom/components/ScreenView/helper/RendererForRecorder";
+import { getUserNameByAttendeeId } from "../../../../api/api";
 // import { VideoTileState } from "amazon-chime-sdk-js";
 // import { useAppState } from "../../../../providers/AppStateProvider";
 // import { RendererForRecorder } from "./helper/RendererForRecorder";
@@ -18,7 +19,7 @@ type Props = {
 
 export const RecorderView = ({ width, height, setActiveRecorderCanvas, setAllRecorderCanvas }: Props) => {
 
-    const { videoTileStates, activeSpeakerId, meetingSession, attendeeId } = useAppState()
+    const { videoTileStates, activeSpeakerId, meetingSession, attendeeId, getUserNameByAttendeeIdFromList } = useAppState()
 
     const activeRenderer = useMemo(()=>{return new RendererForRecorder(meetingSession!)},[]) // eslint-disable-line
     const allRenderer    = useMemo(()=>{return new RendererForRecorder(meetingSession!)},[]) // eslint-disable-line
@@ -68,25 +69,35 @@ export const RecorderView = ({ width, height, setActiveRecorderCanvas, setAllRec
     useEffect(()=>{
         console.log("Active CHANGE!", activeTilesId)
         const videoElems = [...Array(activeTiles.length)].map((v,i)=>{return document.getElementById(`activeVideo${i}`) as HTMLVideoElement})
+        const titles:string[] = []
         // console.log(videoElems)
         activeTiles.forEach((tile,index)=>{
             if(tile.tileId){
                 meetingSession?.audioVideo.bindVideoElement(tile.tileId, videoElems[index])
+                const name = getUserNameByAttendeeIdFromList(tile.boundAttendeeId!)
+                titles.push(name)
             }
         })
         activeRenderer.setSrcVideoElements(videoElems)
+        activeRenderer.setTitles(titles)
+
+
     },[activeTilesId]) // eslint-disable-line
 
     //// (2-2) for All Renderer
     useEffect(()=>{
         const videoElems = [...Array(allTiles.length)].map((v,i)=>{return document.getElementById(`video${i}`) as HTMLVideoElement})
         // console.log(videoElems)
+        const titles:string[] = []
         allTiles.forEach((tile,index)=>{
             if(tile.tileId){
                 meetingSession?.audioVideo.bindVideoElement(tile.tileId, videoElems[index])
+                const name = getUserNameByAttendeeIdFromList(tile.boundAttendeeId!)
+                titles.push(name)
             }
         })
         allRenderer.setSrcVideoElements(videoElems)
+        allRenderer.setTitles(titles)
     },[allTilesId]) // eslint-disable-line
 
     return (
