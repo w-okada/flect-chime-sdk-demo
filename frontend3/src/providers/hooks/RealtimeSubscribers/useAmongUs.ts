@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getUserNameByAttendeeId } from "../../../api/api"
+import { getPresignedURL, getUserNameByAttendeeId } from "../../../api/api"
 import { useAppState } from "../../../providers/AppStateProvider"
 
 export const STATES = [
@@ -14,13 +14,13 @@ export const REGIONS = [
     'Europe'
 ]
 export const ACTIONS = [
-    'JOIN',
-    'LEAVE',
-    'KILL',
-    'COLOR_CHANGE',
-    'FORCE_UPDATE',
-    'DISCONNECT',
-    'EXILE'
+    'JOIN',             // 0
+    'LEAVE',            // 1
+    'KILL',             // 2
+    'COLOR_CHANGE',     // 3
+    'FORCE_UPDATE',     // 4
+    'DISCONNECT',       // 5
+    'EXILE'             // 6
 ]
 export const COLORS = [
     'red',
@@ -56,6 +56,7 @@ export const ICONS_DEAD = COLORS.map(x=>{
 type PlayerState = {
     name:string
     isDead:boolean
+    isDeadDiscovered:boolean
     disconnected:boolean
     color:number
     action:number
@@ -70,6 +71,7 @@ export type GameState = {
     map:number
     connectCode:string
     players:PlayerState[]
+
 }
 
 const initialState:GameState = {
@@ -80,8 +82,7 @@ const initialState:GameState = {
     map:0,
     connectCode:"",
     players: [],
-} 
-
+}
 
 type UseAmongUsProps = {
     attendeeId:string
@@ -98,6 +99,7 @@ export const useAmongUs = (props:UseAmongUsProps) =>{
     const updateGameState = (ev:string, data:string) => {
         const newGameState = JSON.parse(data) as GameState
         newGameState.hmmAttendeeId = props.attendeeId
+        // Copy user name
         gameState.players.forEach(x =>{
             if(x.attendeeId){
                 const newPlayer = newGameState.players.find(y=>{return x.name === y.name})
@@ -109,63 +111,24 @@ export const useAmongUs = (props:UseAmongUsProps) =>{
         })
 
 
-        setGameState(newGameState)
-        // switch(ev){
-        //     case "connectCode":
-        //         setGameState({...initialState, hmmAttendeeId:props.attendeeId})
-        //         break
-        //     case "state":
-        //         const state = parseInt(data)
-        //         if(state === 0 || state === 3){
-        //             // gameState.players = [...Array(16)].map((x,index)=>{
-        //             //     const player:PlayerState = {
-        //             //         name:"",
-        //             //         isDead:true,
-        //             //         disconnected:true,
-        //             //         color:index,
-        //             //         action:0
-        //             //     }
-        //             //     return player
-        //             // })
-        //             gameState.players = []
+        // // update isDead discvoered
+        // if(newGameState.state == 2){ // When state is Discussion, isDead state can be discovered
+        //     newGameState.players.forEach(x=>{
+        //         if(x.isDead){
+        //             x.isDeadDiscovered = true
         //         }
-        //         setGameState({...gameState, state:state})
-        //         break
-        //     case "lobby":
-        //         const lobbyData = JSON.parse(data)
-        //         setGameState({...gameState, 
-        //             lobbyCode:lobbyData.LobbyCode, 
-        //             gameRegion:parseInt(lobbyData.Region),
-        //             map:parseInt(lobbyData.Map)
-        //         })
-
-        //         break
-        //     case "player":
-        //         const playerData = JSON.parse(data)
-        //         const newPlayers = gameState.players.filter(x=>{return x.name !== playerData.Name})
-        //         const newPlayer:PlayerState = {
-        //             name: playerData.Name,
-        //             isDead: playerData.IsDead,
-        //             disconnected: playerData.Disconnected,
-        //             action: parseInt(playerData.Action),
-        //             color: parseInt(playerData.Color)
-        //         }
-        //         if(parseInt(playerData.Action) !== 1){ // leave
-        //             newPlayers.push(newPlayer)
-        //         }
-        //         // const colorId = parseInt(playerData.Color)
-        //         // gameState.players[colorId].color = colorId
-        //         // gameState.players[colorId].name = playerData.Name
-        //         // gameState.players[colorId].isDead = playerData.IsDead
-        //         // gameState.players[colorId].disconnected = playerData.Disconnected 
-        //         // gameState.players[colorId].action = playerData.Action
-        //         setGameState({...gameState, players:newPlayers})
-
-        //         break
-        //     case "disconnect":
-        //         setGameState({...initialState, hmmAttendeeId:props.attendeeId})
-        //         break
+        //     })
         // }
+        // // update purged
+        // if(newGameState.state == 1 && gameState.state == 2){ // When state is changed from Discussion to Tasks, purged state can be discovered
+        //     newGameState.players.forEach(x=>{
+        //         if(x.isDead){
+        //             x.isDeadDiscovered = true
+        //         }
+        //     })
+        // }
+
+        setGameState(newGameState)
     }
 
     const registerUserName = async (userName:string, attendeeId:string) =>{

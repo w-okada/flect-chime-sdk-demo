@@ -95,11 +95,24 @@ var io_server = new io.Server(server, {
     allowEIO3: true
 });
 var now = function () { return new Date().toISOString().substr(14, 9); };
-var sleep = function (ms) {
-    return new Promise(function (resolve) {
-        setTimeout(resolve, ms);
+var sleep = function (ms) { return __awaiter(void 0, void 0, void 0, function () {
+    var p;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                p = new Promise(function (resolve, reject) {
+                    setTimeout(function () {
+                        console.log("SLEEP RESOLVED!");
+                        resolve();
+                    }, ms);
+                });
+                return [4 /*yield*/, p];
+            case 1:
+                _a.sent();
+                return [2 /*return*/];
+        }
     });
-};
+}); };
 var initialState = {
     hmmAttendeeId: "",
     state: 3,
@@ -118,26 +131,19 @@ io_server.on('connection', function (client) {
     client.on('connectCode', function (connectCode) {
         lock.acquire('io_on', function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                console.log(now(), '  Lock Function Start');
                 console.log("AMONG: [connectCode]", connectCode);
                 //@ts-ignore
                 client.connectCode = connectCode;
-                // await page.$eval('#io_event', (el, value) => el.value = "connectCode");
-                // await page.$eval('#io_data', (el, value) => el.value = value, "");
-                // await page.click("#io_click")
                 gameState = __assign(__assign({}, initialState), { players: [] });
-                console.log(now(), '  Lock Function End');
                 return [2 /*return*/, 'Successful'];
             });
         }); }, function (error, result) {
-            console.log(now(), '  Lock Result Start');
             if (error) {
-                console.log(now(), '    Failure : ', error);
+                console.log(now(), 'Connect Failure : ', error);
             }
             else {
-                console.log(now(), '    Success : ', result);
+                console.log(now(), 'Connect Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
         });
     });
     //@ts-ignore
@@ -145,7 +151,6 @@ io_server.on('connection', function (client) {
         lock.acquire('io_on', function () { return __awaiter(void 0, void 0, void 0, function () {
             var lobbyData;
             return __generator(this, function (_a) {
-                console.log(now(), '  Lock Function Start');
                 console.log("AMONG: [lobby]", data);
                 lobbyData = JSON.parse(data);
                 gameState.lobbyCode = lobbyData.LobbyCode;
@@ -158,171 +163,160 @@ io_server.on('connection', function (client) {
                 //     LobbyCode = 4
                 // }
                 client.emit("requestdata", 2);
-                console.log(now(), '  Lock Function End');
                 return [2 /*return*/, 'Successful'];
             });
         }); }, function (error, result) {
-            console.log(now(), '  Lock Result Start');
             if (error) {
-                console.log(now(), '    Failure : ', error);
+                console.log(now(), 'Lobby Failure : ', error);
             }
             else {
-                console.log(now(), '    Success : ', result);
+                console.log(now(), 'Lobby Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
         });
     });
     //@ts-ignore
     client.on('state', function (index) {
         lock.acquire('io_on', function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                console.log(now(), '  Lock Function Start');
                 console.log("AMONG: [state]", index);
-                // await page.$eval('#io_event', (el, value) => el.value = "state");
-                // await page.$eval('#io_data', (el, value) => el.value = value, index);
-                // await page.click("#io_click")
                 if (index == 0 || index == 3) { // Lobby(0),Menu(3)
                     gameState.players = [];
                 }
-                if (index == 2) { // discussion update player status
-                    // request data ID 
-                    // enum GameDataType{
-                    //     GameState = 1,
-                    //     Players = 2,
-                    //     LobbyCode = 4
-                    // }
-                    client.emit("requestdata", 2);
+                // if(index == 2){// discussion update player status
+                if (index == 2) { // discussion update discovered status
+                    // client.emit("requestdata", 2)
+                    gameState.players.forEach(function (x) {
+                        if (x.isDead) {
+                            x.isDeadDiscovered = true;
+                        }
+                    });
                 }
                 gameState.state = index;
-                console.log(now(), '  Lock Function End');
                 return [2 /*return*/, 'Successful'];
             });
         }); }, function (error, result) {
-            console.log(now(), '  Lock Result Start');
             if (error) {
-                console.log(now(), '    Failure : ', error);
+                console.log(now(), 'State Failure : ', error);
             }
             else {
-                console.log(now(), '    Success : ', result);
+                console.log(now(), 'State Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
         });
     });
     //@ts-ignore
     client.on('player', function (data) {
         lock.acquire('io_on', function () { return __awaiter(void 0, void 0, void 0, function () {
-            var playerData, newPlayers, newPlayer;
+            var playerData, otherPlayers, targetPlayers, newPlayer;
             return __generator(this, function (_a) {
-                console.log(now(), '  Lock Function Start');
                 console.log("AMONG: [player]", data);
-                // await page.$eval('#io_event', (el, value) => el.value = "player");
-                // await page.$eval('#io_data', (el, value) => el.value = value, data);
-                // await page.click("#io_click")
-                if (gameState.state == 1) { // tasks, skip update player status
-                    return [2 /*return*/];
-                }
                 playerData = JSON.parse(data);
-                newPlayers = gameState.players.filter(function (x) { return x.name !== playerData.Name; }) // not target players
+                otherPlayers = gameState.players.filter(function (x) { return x.name !== playerData.Name; }) // list up not target players
                 ;
-                newPlayer = {
-                    name: playerData.Name,
-                    isDead: playerData.IsDead,
-                    disconnected: playerData.Disconnected,
-                    action: parseInt(playerData.Action),
-                    color: parseInt(playerData.Color)
-                };
-                if (parseInt(playerData.Action) !== 1) { // leave
-                    newPlayers.push(newPlayer);
+                targetPlayers = gameState.players.filter(function (x) { return x.name === playerData.Name; }) // target players
+                ;
+                if (targetPlayers.length == 0) { // target players not found.
+                    newPlayer = {
+                        name: playerData.Name,
+                        isDead: playerData.IsDead,
+                        isDeadDiscovered: false,
+                        disconnected: playerData.Disconnected,
+                        action: parseInt(playerData.Action),
+                        color: parseInt(playerData.Color)
+                    };
+                    targetPlayers.push(newPlayer);
                 }
-                gameState.players = newPlayers;
-                console.log(now(), '  Lock Function End');
+                else {
+                    targetPlayers[0].name = playerData.Name;
+                    targetPlayers[0].isDead = playerData.IsDead;
+                    // keep isDeadDiscovered state
+                    targetPlayers[0].disconnected = playerData.Disconnected;
+                    targetPlayers[0].action = parseInt(playerData.Action);
+                    targetPlayers[0].color = parseInt(playerData.Color);
+                    if (targetPlayers[0].action == 6) { // When user is purged, the user status is discovered immidiately
+                        targetPlayers[0].isDeadDiscovered = true;
+                    }
+                }
+                if (parseInt(playerData.Action) !== 1) { // when action is leave, not add the new player(= delete the user)
+                    otherPlayers.push.apply(// when action is leave, not add the new player(= delete the user)
+                    otherPlayers, targetPlayers);
+                }
+                gameState.players = otherPlayers;
                 return [2 /*return*/, 'Successful'];
             });
         }); }, function (error, result) {
-            console.log(now(), '  Lock Result Start');
             if (error) {
-                console.log(now(), '    Failure : ', error);
+                console.log(now(), 'Player Failure : ', error);
             }
             else {
-                console.log(now(), '    Success : ', result);
+                console.log(now(), 'Player Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
         });
     });
     //@ts-ignore
     client.on('disconnect', function () {
         lock.acquire('io_on', function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                console.log(now(), '  Lock Function Start');
-                console.log("AMONG: [dissconnect]");
-                // await page.$eval('#io_event', (el, value) => el.value = "disconnect");
-                // await page.$eval('#io_data', (el, value) => el.value = value, "");
-                // await page.click("#io_click")
+                console.log("AMONG: [disconnect]");
                 gameState.players = [];
-                console.log(now(), '  Lock Function End');
                 return [2 /*return*/, 'Successful'];
             });
         }); }, function (error, result) {
-            console.log(now(), '  Lock Result Start');
             if (error) {
-                console.log(now(), '    Failure : ', error);
+                console.log(now(), 'Disconnect Failure : ', error);
             }
             else {
-                console.log(now(), '    Success : ', result);
+                console.log(now(), 'Disconnect Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
         });
     });
     ///////////////////////////////////////////////////////
     // handle socket io event end
     ///////////////////////////////////////////////////////
 });
-var uploadGameState = function () {
+var uploadGameState = function (_finalize) {
     // console.log("upload game state1-1[cpu]", os.cpus())
     // console.log("upload game state1-2[total mem]", os.totalmem())
     // console.log("upload game state1-3[free mem]", os.freemem())
     if (page) {
-        console.log("upload game state2");
+        console.log("upload game state " + _finalize + ", " + finalize);
         lock.acquire('io_on', function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        console.log(now(), '  Lock Function Start');
-                        //        await page.$eval('#io_event', (el, value) => el.value = "lobby");
-                        // @ts-ignore
-                        return [4 /*yield*/, page.$eval('#io_data', function (el, value) { return el.value = value; }, JSON.stringify(gameState))];
+                    case 0: 
+                    // @ts-ignore
+                    return [4 /*yield*/, page.$eval('#io_data', function (el, value) { return el.value = value; }, JSON.stringify(gameState))];
                     case 1:
-                        //        await page.$eval('#io_event', (el, value) => el.value = "lobby");
                         // @ts-ignore
                         _a.sent();
                         return [4 /*yield*/, page.click("#io_click")];
                     case 2:
                         _a.sent();
-                        console.log(now(), '  Lock Function End');
                         return [2 /*return*/, 'Successful'];
                 }
             });
         }); }, function (error, result) {
-            console.log(now(), '  Lock Result Start');
             if (error) {
-                console.log(now(), '    Failure : ', error);
+                console.log(now(), 'Upload game state Failure : ', error);
             }
             else {
-                console.log(now(), '    Success : ', result);
+                console.log(now(), 'Upload game state Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
-            if (finalize) {
+            if (_finalize) {
             }
             else {
-                setTimeout(uploadGameState, 1000 * 2);
+                setTimeout(function () {
+                    uploadGameState(finalize);
+                }, 1000 * 2);
             }
         });
     }
     else {
-        setTimeout(uploadGameState, 1000 * 2);
+        setTimeout(function () {
+            uploadGameState(finalize);
+        }, 1000 * 2);
     }
 };
-uploadGameState();
+uploadGameState(finalize);
 var args = process.argv.slice(2);
 var meetingURL = args[0];
 var bucketName = args[1];
@@ -377,9 +371,9 @@ puppeteer_1.default.launch({
                                     _a = e.type;
                                     switch (_a) {
                                         case "terminate": return [3 /*break*/, 1];
-                                        case "uploadVideo": return [3 /*break*/, 3];
+                                        case "uploadVideo": return [3 /*break*/, 4];
                                     }
-                                    return [3 /*break*/, 5];
+                                    return [3 /*break*/, 6];
                                 case 1:
                                     console.log("TERMINATE----------------!");
                                     console.log("wait 20sec for download process");
@@ -389,49 +383,60 @@ puppeteer_1.default.launch({
                                     console.log("wait 20sec for download process done");
                                     // const s3 = new aws.S3({ params: { Bucket: bucketName } });
                                     // let promises:Promise<any>[] = []
-                                    fs.readdirSync(downloadPath).forEach(function (file) {
-                                        var filePath = downloadPath + "/" + file;
-                                        console.log("FILE:::", filePath);
-                                        var params = {
-                                            Bucket: bucketName,
-                                            Key: "recording/" + file
-                                        };
-                                        params.Body = fs.readFileSync(filePath);
-                                        var p = s3.putObject(params, function (err, data) {
-                                            if (err)
-                                                console.log(err, err.stack);
-                                            else
-                                                console.log(data);
-                                        }).promise();
-                                        promises.push(p);
-                                    });
-                                    Promise.all(promises).then(function () {
-                                        try {
-                                            browser.close();
-                                        }
-                                        catch (exception) {
-                                            console.log("browser closing exception ..., " + exception);
-                                        }
-                                        try {
-                                            io_server.disconnectSockets();
-                                        }
-                                        catch (exception) {
-                                            console.log("io_server disconnecting exception ..., " + exception);
-                                        }
-                                        try {
-                                            server.close();
-                                        }
-                                        catch (exception) {
-                                            console.log("server closing exception ..., " + exception);
-                                        }
-                                        finalize = true;
-                                    });
-                                    return [3 /*break*/, 5];
+                                    console.log("Terminating,,, finalize0 flag:" + finalize);
+                                    console.log("Terminating,,, finalize1 flag:" + finalize);
+                                    return [4 /*yield*/, Promise.all(promises)];
                                 case 3:
+                                    _b.sent();
+                                    console.log("Terminating,,, finalize2 flag:" + finalize);
+                                    try {
+                                        browser.close();
+                                    }
+                                    catch (exception) {
+                                        console.log("browser closing exception ..., " + exception);
+                                    }
+                                    try {
+                                        io_server.disconnectSockets();
+                                    }
+                                    catch (exception) {
+                                        console.log("io_server disconnecting exception ..., " + exception);
+                                    }
+                                    try {
+                                        server.close();
+                                    }
+                                    catch (exception) {
+                                        console.log("server closing exception ..., " + exception);
+                                    }
+                                    finalize = true;
+                                    console.log("Terminating,,, finalize3 flag:" + finalize);
+                                    try {
+                                        fs.readdirSync(downloadPath).forEach(function (file) {
+                                            var filePath = downloadPath + "/" + file;
+                                            console.log("FILE:::", filePath);
+                                            var params = {
+                                                Bucket: bucketName,
+                                                Key: "recording/" + file
+                                            };
+                                            params.Body = fs.readFileSync(filePath);
+                                            var p = s3.putObject(params, function (err, data) {
+                                                if (err)
+                                                    console.log(err, err.stack);
+                                                else
+                                                    console.log(data);
+                                            }).promise();
+                                            promises.push(p);
+                                        });
+                                    }
+                                    catch (exception) {
+                                        console.log("file upload to s3 exception ..., " + exception);
+                                    }
+                                    console.log("Terminating,,, finalize4 flag:" + finalize);
+                                    return [3 /*break*/, 6];
+                                case 4:
                                     console.log("uploadVideo----------------!");
                                     console.log("wait 20sec for download process");
                                     return [4 /*yield*/, sleep(1000 * 20)];
-                                case 4:
+                                case 5:
                                     _b.sent();
                                     console.log("wait 20sec for download process done");
                                     fs.readdirSync(downloadPath).forEach(function (file) {
@@ -451,8 +456,8 @@ puppeteer_1.default.launch({
                                         promises.push(p);
                                     });
                                     console.log("uploadVideo----------------! done!");
-                                    return [3 /*break*/, 5];
-                                case 5: return [2 /*return*/];
+                                    return [3 /*break*/, 6];
+                                case 6: return [2 /*return*/];
                             }
                         });
                     }); })];

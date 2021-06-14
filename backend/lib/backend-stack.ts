@@ -190,7 +190,7 @@ export class BackendStack extends cdk.Stack {
       });
     }
 
-    bucket.grantReadWrite(taskDefinition.taskRole)    
+    bucket.grantReadWrite(taskDefinition.taskRole)
 
     const securityGroup = new ec2.SecurityGroup(this, "SecurityGroup", {
       vpc: vpc,

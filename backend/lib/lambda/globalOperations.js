@@ -25,6 +25,8 @@ var amongServiceName         = process.env.AMONG_SERVICE_NAME
 var ddb = new AWS.DynamoDB();
 var meeting = require('./meeting');
 var ecs = new AWS.ECS();
+var s3 = new AWS.S3();
+
 
 /**
  * Dispatcher
@@ -38,10 +40,8 @@ exports.dispatchOperation = async (operation, header, body) => {
             return onetimeCodeSigninRequest(header, body)
         case "onetime-code-signin":
             return onetimeCodeSignin(header, body)
-        case "update-amongus-service":
-            return updateAmongUsService(header, body)
-        case "list-amongus-service":
-            return listAmongUsService(header, body)
+        case "generate-s3-presigned-url":
+            return generateS3PresignedURL(header, body)
         default:
             return defaultResponse(operation)
     }
@@ -167,52 +167,35 @@ const onetimeCodeSignin = async  (headers, body) =>{
     
 }
 
+const generateS3PresignedURL = (header, body) =>{
+    console.log("[onetimeCodeSigninRequest]:", body)
+    const key     = body.key // already encoded.
+    // const contentType = body.contentType
+
+    // const url = s3.getSignedUrl('putObject', {
+    //     Bucket      : bucketName,
+    //     ContentType : contentType,
+    //     Key         : key
+    // })
 
 
+    const post_data = s3.createPresignedPost({
+        Bucket      : bucketName,
+        Fields      : { Key: key},
+        Expires     : 3600,
 
-// /**
-//  * update amongus service
-//  * @param {*} headers 
-//  * @param {*} body 
-//  */
-// const updateAmongUsService = async  (headers, body) =>{
-//     console.log("[updateAmongUsService]:", body)
-//     const meetingName = body.meetingName // already encoded.
-//     const attendeeId  = body.attendeeId
+    })
 
-//     const result = ecs.updateService({
-//         cluster: clusterArn,
-//         service: amongServiceName,
-//         desiredCount: body.desiredCount
-//     }).promise()
-//     console.log("[updateAmongUsService]: ", result )
+    console.log("PRE-SIGNED_URL::: ", post_data)
+    console.log("PRE-SIGNED_URL::: ", post_data.url)
+    console.log("PRE-SIGNED_URL::: ", post_data.fields)
 
-//     return{
-//         result: true
-//     }
-// }
-
-// /**
-//  * list amongus service
-//  * @param {*} headers 
-//  * @param {*} body 
-//  */
-// const listAmongUsService = async  (headers, body) =>{
-//     console.log("[listAmongUsService]:", body)
-//     const meetingName = body.meetingName // already encoded.
-//     const attendeeId  = body.attendeeId
-
-//     const result = await ecs.describeServices({
-//         cluster: clusterArn,
-//         services: [amongServiceName],
-//     }).promise()
-//     console.log("[listAmongUsService]: ", result )
-
-//     return{
-//         result: true
-//     }
-// }
-
+    return{
+        result  : "success",
+        url     : post_data.url,
+        fields  : post_data.fields
+    }
+}
 
 /**
  * return default response

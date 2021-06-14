@@ -1,9 +1,5 @@
-import { DefaultDeviceController } from "amazon-chime-sdk-js"
 import { useEffect, useMemo, useState } from "react"
 import { useAppState } from "../../../providers/AppStateProvider"
-import { Recorder } from "../../../providers/helper/Recorder"
-import { useScheduler } from "../../../providers/hooks/useScheduler"
-import { getDateString } from "../../../utils"
 
 type UseRecorderProps = {
     meetingName : string

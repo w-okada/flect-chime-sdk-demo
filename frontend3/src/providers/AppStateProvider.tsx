@@ -17,11 +17,12 @@ import { RealtimeData } from "./hooks/RealtimeSubscribers/const";
 import { DrawingMode, useWebSocketWhiteBoard } from "./hooks/WebSocketApp/useWebSocketWhiteBoard";
 import { DrawingData } from "./hooks/WebSocketApp/helper/WebSocketWhiteBoardClient";
 import { Recorder } from "./helper/Recorder";
-import { OnetimeCodeInfo, OnetimeCodeSigninResult } from "../api/api";
+import { getPresignedURL, OnetimeCodeInfo, OnetimeCodeSigninResult } from "../api/api";
 import { AmongUsStatus, HMMMessage, HMMStatus, useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
 import { useScheduler } from "./hooks/useScheduler";
 import { awsConfiguration, DEFAULT_PASSWORD, DEFAULT_USERID } from "../Config";
 import { GameState } from "./hooks/RealtimeSubscribers/useAmongUs";
+import { useS3FileUploader } from "./hooks/useS3FileUploader";
 
 
 type Props = {
@@ -148,6 +149,7 @@ interface AppStateValue {
 
     // /** For Scheduler*/
     // tenSecondsTaskTrigger:number,
+    // uploadFileToS3: (key: string, data: Uint8Array) => Promise<void>
 
 }
 
@@ -210,6 +212,7 @@ export const AppStateProvider = ({ children }: Props) => {
     const [ mode, setMode ] = useState(query.get("mode") as APP_MODE| "chime" )
 
     // const { tenSecondsTaskTrigger } = useScheduler()
+    // const { uploadFileToS3 } = useS3FileUploader({idToken, accessToken, refreshToken})
 
 
     const providerValue = {
@@ -322,6 +325,8 @@ export const AppStateProvider = ({ children }: Props) => {
 
         // /** For Scheduler */
         // tenSecondsTaskTrigger,
+        // uploadFileToS3,
+
     };
 
     return (

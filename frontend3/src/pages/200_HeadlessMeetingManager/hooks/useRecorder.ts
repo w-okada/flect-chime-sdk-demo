@@ -2,8 +2,9 @@ import { DefaultDeviceController } from "amazon-chime-sdk-js"
 import { useEffect, useMemo, useState } from "react"
 import { useAppState } from "../../../providers/AppStateProvider"
 import { Recorder } from "../../../providers/helper/Recorder"
-import { useScheduler } from "../../../providers/hooks/useScheduler"
 import { getDateString } from "../../../utils"
+
+
 
 type UseRecorderProps = {
     meetingName      : string
@@ -73,12 +74,17 @@ export const useRecorder = (props:UseRecorderProps) =>{
             console.log("STOP RECORDER::: failed! recording is not started")
             return 
         }
+
         
         activeRecorder?.stopRecording()
         allRecorder?.stopRecording()
         const dateString = getDateString()
-        await activeRecorder?.toMp4(`${dateString}_${decodedMeetingName}_active.mp4`)
-        await allRecorder?.toMp4(`${dateString}_${decodedMeetingName}_all.mp4`)
+
+        const data_active = await activeRecorder?.toMp4(`${dateString}_${decodedMeetingName}_active.mp4`)
+        // uploadFileToS3("test2222_2.mp4", data_active)
+
+        const data_all = await allRecorder?.toMp4(`${dateString}_${decodedMeetingName}_all.mp4`)
+        // uploadFileToS3("test2222_1.mp4", data_all)
         setIsRecording(false)
 
         const event = new CustomEvent('uploadVideo');

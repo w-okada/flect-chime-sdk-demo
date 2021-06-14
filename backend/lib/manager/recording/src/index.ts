@@ -28,15 +28,20 @@ var io_server = new io.Server(server, {
 })
 
 const now = () => new Date().toISOString().substr(14, 9);
-const sleep = (ms:number) => {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
+const sleep = async (ms:number) => {
+    const p =  new Promise<void>((resolve,reject) => {
+        setTimeout(()=>{
+            console.log("SLEEP RESOLVED!")
+            resolve()
+        }, ms);
     });
+    await p
 }
 
 type PlayerState = {
     name:string
     isDead:boolean
+    isDeadDiscovered:boolean
     disconnected:boolean
     color:number
     action:number
@@ -74,27 +79,19 @@ io_server.on('connection', client => {
     //@ts-ignore
     client.on('connectCode', (connectCode) => {
         lock.acquire('io_on',  async () => {
-            console.log(now(), '  Lock Function Start');
-    
             console.log("AMONG: [connectCode]", connectCode)
             //@ts-ignore
             client.connectCode = connectCode;
-            // await page.$eval('#io_event', (el, value) => el.value = "connectCode");
-            // await page.$eval('#io_data', (el, value) => el.value = value, "");
-            // await page.click("#io_click")
             gameState = {...initialState, players:[]}
 
-            console.log(now(), '  Lock Function End');
             return 'Successful';
         }, (error, result) => {
-            console.log(now(), '  Lock Result Start');
             if(error) {
-              console.log(now(), '    Failure : ', error);
+              console.log(now(), 'Connect Failure : ', error);
             }
             else {
-              console.log(now(), '    Success : ', result);
+              console.log(now(), 'Connect Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
         })
 
     });
@@ -102,13 +99,7 @@ io_server.on('connection', client => {
     //@ts-ignore
     client.on('lobby', (data) => {
         lock.acquire('io_on',  async () => {
-            console.log(now(), '  Lock Function Start');
-
             console.log("AMONG: [lobby]", data)
-
-            // await page.$eval('#io_event', (el, value) => el.value = "lobby");
-            // await page.$eval('#io_data', (el, value) => el.value = value, data);
-            // await page.click("#io_click")
 
             const lobbyData = JSON.parse(data)
             gameState.lobbyCode = lobbyData.LobbyCode
@@ -123,19 +114,14 @@ io_server.on('connection', client => {
             //     LobbyCode = 4
             // }
             client.emit("requestdata", 2)
-
-
-            console.log(now(), '  Lock Function End');
             return 'Successful';
         },(error, result) => {
-            console.log(now(), '  Lock Result Start');
             if(error) {
-              console.log(now(), '    Failure : ', error);
+              console.log(now(), 'Lobby Failure : ', error);
             }
             else {
-              console.log(now(), '    Success : ', result);
+              console.log(now(), 'Lobby Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
         })
             
     })
@@ -143,111 +129,100 @@ io_server.on('connection', client => {
     //@ts-ignore
     client.on('state', (index) => {
         lock.acquire('io_on',  async () => {
-            console.log(now(), '  Lock Function Start');
-
             console.log("AMONG: [state]", index)
-            // await page.$eval('#io_event', (el, value) => el.value = "state");
-            // await page.$eval('#io_data', (el, value) => el.value = value, index);
-            // await page.click("#io_click")
-
 
             if(index == 0 || index == 3){ // Lobby(0),Menu(3)
                 gameState.players = []
-
             }
 
-            if(index == 2){// discussion update player status
-                // request data ID 
-                // enum GameDataType{
-                //     GameState = 1,
-                //     Players = 2,
-                //     LobbyCode = 4
-                // }
-                client.emit("requestdata", 2)
+            // if(index == 2){// discussion update player status
+            if(index == 2){// discussion update discovered status
+                // client.emit("requestdata", 2)
+                gameState.players.forEach(x=>{
+                    if(x.isDead){
+                        x.isDeadDiscovered = true
+                    }
+                })
             } 
-
 
             gameState.state = index
 
-            console.log(now(), '  Lock Function End');
             return 'Successful';
         },(error, result) => {
-            console.log(now(), '  Lock Result Start');
             if(error) {
-              console.log(now(), '    Failure : ', error);
+              console.log(now(), 'State Failure : ', error);
             }
             else {
-              console.log(now(), '    Success : ', result);
+              console.log(now(), 'State Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
         })
     });
 
     //@ts-ignore
     client.on('player', (data) => {
         lock.acquire('io_on', async() => {
-            console.log(now(), '  Lock Function Start');
-
             console.log("AMONG: [player]", data)
-            // await page.$eval('#io_event', (el, value) => el.value = "player");
-            // await page.$eval('#io_data', (el, value) => el.value = value, data);
-            // await page.click("#io_click")
-            if(gameState.state == 1){ // tasks, skip update player status
-                return
-            }
+
+            //// change to realtime update
+            // if(gameState.state == 1){ // tasks, skip update player status
+            //     return
+            // }
 
             const playerData = JSON.parse(data)
-            const newPlayers = gameState.players.filter(x=>{return x.name !== playerData.Name}) // not target players
-            const newPlayer:PlayerState = {
-                name: playerData.Name,
-                isDead: playerData.IsDead,
-                disconnected: playerData.Disconnected,
-                action: parseInt(playerData.Action),
-                color: parseInt(playerData.Color)
+            const otherPlayers = gameState.players.filter(x=>{return x.name !== playerData.Name}) // list up not target players
+            let targetPlayers = gameState.players.filter(x=>{return x.name === playerData.Name})  // target players
+            if(targetPlayers.length == 0){ // target players not found.
+                const newPlayer = {
+                    name: playerData.Name,
+                    isDead: playerData.IsDead,
+                    isDeadDiscovered:false,
+                    disconnected: playerData.Disconnected,
+                    action: parseInt(playerData.Action),
+                    color: parseInt(playerData.Color)
+                }
+                targetPlayers.push(newPlayer)
+            }else{
+                targetPlayers[0].name = playerData.Name
+                targetPlayers[0].isDead = playerData.IsDead
+                // keep isDeadDiscovered state
+                targetPlayers[0].disconnected = playerData.Disconnected
+                targetPlayers[0].action = parseInt(playerData.Action)
+                targetPlayers[0].color = parseInt(playerData.Color)
+                if(targetPlayers[0].action == 6){ // When user is purged, the user status is discovered immidiately
+                    targetPlayers[0].isDeadDiscovered = true
+                }
             }
-            if(parseInt(playerData.Action) !== 1){ // leave
-                newPlayers.push(newPlayer)
-            }
-            gameState.players = newPlayers
+        
 
-            console.log(now(), '  Lock Function End');
+            if(parseInt(playerData.Action) !== 1){ // when action is leave, not add the new player(= delete the user)
+                otherPlayers.push(...targetPlayers)
+            }
+            gameState.players = otherPlayers
+
             return 'Successful';
         },(error, result) => {
-            console.log(now(), '  Lock Result Start');
             if(error) {
-              console.log(now(), '    Failure : ', error);
+              console.log(now(), 'Player Failure : ', error);
             }
             else {
-              console.log(now(), '    Success : ', result);
+              console.log(now(), 'Player Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
         })
     });
 
     //@ts-ignore
     client.on('disconnect', () => {
         lock.acquire('io_on',  async() => {
-            console.log(now(), '  Lock Function Start');
-
-            console.log("AMONG: [dissconnect]")
-            // await page.$eval('#io_event', (el, value) => el.value = "disconnect");
-            // await page.$eval('#io_data', (el, value) => el.value = value, "");
-            // await page.click("#io_click")
-
+            console.log("AMONG: [disconnect]")
             gameState.players = []
-
-
-            console.log(now(), '  Lock Function End');
             return 'Successful';
         },(error, result) => {
-            console.log(now(), '  Lock Result Start');
             if(error) {
-              console.log(now(), '    Failure : ', error);
+              console.log(now(), 'Disconnect Failure : ', error);
             }
             else {
-              console.log(now(), '    Success : ', result);
+              console.log(now(), 'Disconnect Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
         })
 
     });
@@ -258,41 +233,40 @@ io_server.on('connection', client => {
 
 });
 
-const uploadGameState = () =>{
+const uploadGameState = (_finalize:boolean) =>{
     // console.log("upload game state1-1[cpu]", os.cpus())
     // console.log("upload game state1-2[total mem]", os.totalmem())
     // console.log("upload game state1-3[free mem]", os.freemem())
     if(page){
-        console.log("upload game state2")
+        console.log(`upload game state ${_finalize}, ${finalize}`)
         lock.acquire('io_on',  async () => {
-            console.log(now(), '  Lock Function Start');
-    //        await page.$eval('#io_event', (el, value) => el.value = "lobby");
             // @ts-ignore
             await page.$eval('#io_data', (el, value) => el.value = value, JSON.stringify(gameState));
             await page.click("#io_click")
     
-            console.log(now(), '  Lock Function End');
             return 'Successful';
         },(error, result) => {
-            console.log(now(), '  Lock Result Start');
             if(error) {
-              console.log(now(), '    Failure : ', error);
+              console.log(now(), 'Upload game state Failure : ', error);
             }
             else {
-              console.log(now(), '    Success : ', result);
+              console.log(now(), 'Upload game state Success : ', result);
             }
-            console.log(now(), '  Lock Result End');
-            if(finalize){
+            if(_finalize){
 
             }else{
-                setTimeout(uploadGameState, 1000 * 2)
+                setTimeout(()=>{
+                    uploadGameState(finalize)
+                }, 1000 * 2)
             }
         })
     }else{
-        setTimeout(uploadGameState, 1000 * 2)
+        setTimeout(()=>{
+            uploadGameState(finalize)
+        }, 1000 * 2)
     }
 }
-uploadGameState()
+uploadGameState(finalize)
 
 
 
@@ -346,54 +320,58 @@ puppeteer.launch({
                 await sleep(1000 * 20)
                 console.log("wait 20sec for download process done")
 
-                // const s3 = new aws.S3({ params: { Bucket: bucketName } });
+                try{
+                    browser.close();
+                }catch(exception){
+                    console.log(`browser closing exception ..., ${exception}`)
+                }
+                try{
+                    io_server.disconnectSockets();
+                }catch(exception){
+                    console.log(`io_server disconnecting exception ..., ${exception}`)
+                }
+                try{
+                    server.close();
+                }catch(exception){
+                    console.log(`server closing exception ..., ${exception}`)
+                }
+                finalize = true
+                console.log(`Terminating,,, finalize3 flag:${finalize}`)
 
-                // let promises:Promise<any>[] = []
 
-                fs.readdirSync(downloadPath).forEach(file => {
-                    const filePath = `${downloadPath}/${file}`
-                    console.log("FILE:::", filePath)
+                try{
+                    fs.readdirSync(downloadPath).forEach(file => {
+                        const filePath = `${downloadPath}/${file}`
+                        console.log("FILE:::", filePath)
+    
+                        let params:aws.S3.PutObjectRequest = {
+                            Bucket: bucketName,
+                            Key: `recording/${file}`
+                        };
+                        params.Body = fs.readFileSync(filePath);
+    
+                        const p = s3.putObject(params, function (err, data) {
+                            if (err) console.log(err, err.stack);
+                            else console.log(data);
+                        }).promise();
+    
+                        promises.push(p)
+    
+                    });
+                }catch(exception){
+                    console.log(`file upload to s3 exception ..., ${exception}`)
+                }
+                await Promise.all(promises)
+                
+                console.log(`Terminating,,, done`)
 
-                    let params:aws.S3.PutObjectRequest = {
-                        Bucket: bucketName,
-                        Key: `recording/${file}`
-                    };
-                    params.Body = fs.readFileSync(filePath);
-
-                    const p = s3.putObject(params, function (err, data) {
-                        if (err) console.log(err, err.stack);
-                        else console.log(data);
-                    }).promise();
-
-                    promises.push(p)
-
-                });
-
-                Promise.all(promises).then(()=>{
-                    try{
-                        browser.close();
-                    }catch(exception){
-                        console.log(`browser closing exception ..., ${exception}`)
-                    }
-                    try{
-                        io_server.disconnectSockets();
-                    }catch(exception){
-                        console.log(`io_server disconnecting exception ..., ${exception}`)
-                    }
-                    try{
-                        server.close();
-                    }catch(exception){
-                        console.log(`server closing exception ..., ${exception}`)
-                    }
-                    finalize = true
-                })
-
+                
                 break
             case "uploadVideo":
                 console.log("uploadVideo----------------!")                
-                console.log("wait 20sec for download process")
+                console.log("wait 20sec for upload process")
                 await sleep(1000 * 20)
-                console.log("wait 20sec for download process done")
+                console.log("wait 20sec for upload process done")
 
 
                 fs.readdirSync(downloadPath).forEach(file => {
@@ -441,3 +419,6 @@ puppeteer.launch({
     });
 
 })
+
+
+

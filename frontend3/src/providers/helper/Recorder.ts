@@ -61,7 +61,7 @@ export class Recorder{
     // }
 
 
-    toMp4 = async (outfileName?:string) => {    
+    toMp4 = async (outfileName?:string): Promise<Uint8Array> => {    
         console.log("[Recorder] recorder mp4!!!!!!!!!!!!!!!!!")
         const name = 'record.webm'
         let outName = 'out.mp4'
@@ -83,10 +83,13 @@ export class Recorder{
         console.log("FFMPEG START!")
         await this.ffmpeg!.run('-i', name,  '-c', 'copy', outName);
         const data = this.ffmpeg!.FS('readFile', outName)
+        
     
         a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
         a.click()
         console.log("FFMPEG DONE!")
+
+        return data
 
         // var params = {
         //     Body: URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })), 

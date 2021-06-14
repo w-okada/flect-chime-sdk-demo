@@ -12,9 +12,8 @@ import { useRecorder } from "./hooks/useRecorder";
 import { useShareTileView } from "./hooks/useShareTileView";
 import { useStatusMonitor } from "./hooks/useStatusMonitor";
 
-// const AWS = require('aws-sdk');
-// const bucketName = "f-backendstack-dev-bucket"
-// const s3 = new AWS.S3({ params: { Bucket: bucketName } });
+
+
 
 type InternalStage = "Signining" | "Joining" | "Entering" | "Ready"
 type State = {

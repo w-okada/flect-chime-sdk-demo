@@ -387,7 +387,7 @@ export const getMeetingInfo = async(meetingName: string, idToken: string, access
 
 
 /**
- * x1. update among us service
+ * x1. getManagerInfo
  * @param meetingName 
  * @param attendeeId 
  * @param uuid 
@@ -421,21 +421,20 @@ Promise<{ code: string, publicIp:string }> => {
 
 
 
-
 /**
- * x1. update among us service
+ * x1. get presigned url
  * @param meetingName 
  * @param attendeeId 
  * @param uuid 
  * @param code 
  */
-export const updateAmongUsService = async (desiredCount:number):
-    Promise<OnetimeCodeSigninResult> => {
+export const getPresignedURL = async (key:string, idToken: string, accessToken: string, refreshToken: string):
+Promise<{ result:string, url: string, fields:{[key:string]:string} }> => {
 
-    const url = `${BASE_URL}operations/update-amongus-service`
+    const url = `${BASE_URL}operations/generate-s3-presigned-url`
 
     const request = { 
-        desiredCount:desiredCount
+        key: key
     }    
     const requestBody = JSON.stringify(request)
 
@@ -443,45 +442,80 @@ export const updateAmongUsService = async (desiredCount:number):
             method: 'POST',
             body: requestBody,
             headers: {
+                "Authorization": idToken,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
+                "X-Flect-Access-Token": accessToken
             }
         }
     );
 
     const data = await response.json();
-    console.log("[updateAmongUsService]",data)
+    console.log("[getPresignedURL]",data)
     return data;
 }
 
 
-/**
- * x1. update among us service
- * @param meetingName 
- * @param attendeeId 
- * @param uuid 
- * @param code 
- */
-export const listAmongUsService = async ():
-    Promise<OnetimeCodeSigninResult> => {
+// /**
+//  * x1. update among us service
+//  * @param meetingName 
+//  * @param attendeeId 
+//  * @param uuid 
+//  * @param code 
+//  */
+// export const updateAmongUsService = async (desiredCount:number):
+//     Promise<OnetimeCodeSigninResult> => {
 
-    const url = `${BASE_URL}operations/list-amongus-service`
+//     const url = `${BASE_URL}operations/update-amongus-service`
 
-    const request = { 
-    }    
-    const requestBody = JSON.stringify(request)
+//     const request = { 
+//         desiredCount:desiredCount
+//     }    
+//     const requestBody = JSON.stringify(request)
 
-    const response = await fetch(url, {
-            method: 'POST',
-            body: requestBody,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            }
-        }
-    );
+//     const response = await fetch(url, {
+//             method: 'POST',
+//             body: requestBody,
+//             headers: {
+//                 'Accept': 'application/json',
+//                 'Content-Type': 'application/json',
+//             }
+//         }
+//     );
 
-    const data = await response.json();
-    console.log("[updateAmongUsService]",data)
-    return data;
-}
+//     const data = await response.json();
+//     console.log("[updateAmongUsService]",data)
+//     return data;
+// }
+
+
+// /**
+//  * x1. update among us service
+//  * @param meetingName 
+//  * @param attendeeId 
+//  * @param uuid 
+//  * @param code 
+//  */
+// export const listAmongUsService = async ():
+//     Promise<OnetimeCodeSigninResult> => {
+
+//     const url = `${BASE_URL}operations/list-amongus-service`
+
+//     const request = { 
+//     }    
+//     const requestBody = JSON.stringify(request)
+
+//     const response = await fetch(url, {
+//             method: 'POST',
+//             body: requestBody,
+//             headers: {
+//                 'Accept': 'application/json',
+//                 'Content-Type': 'application/json',
+//             }
+//         }
+//     );
+
+//     const data = await response.json();
+//     console.log("[updateAmongUsService]",data)
+//     return data;
+// }

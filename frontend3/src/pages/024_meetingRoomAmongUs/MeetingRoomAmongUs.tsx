@@ -156,6 +156,14 @@ const ChimeStateType = {
     "Discuss_Arena"  : ChimeState_Discuss_Arena,
 }
 
+const mapFileNames = [
+    'map00_Skeld.png',
+    'map01_Mira.png',
+    'map02_Polus.png',
+    'map03_dlekS.png',
+    'map04_Airship.png',
+]
+
 
 export const MeetingRoomAmongUs = () => {
     const classes = useStyles();
@@ -235,10 +243,16 @@ export const MeetingRoomAmongUs = () => {
         //     return
         // }
         if(chimeState.arenaViewScreen){
+            // hide map
+            const mapViewComp = document.getElementById("mapView") as HTMLImageElement
+            mapViewComp.style.display = "none"
+
+
+            const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
+            tileviewComp .style.display = "block"
             meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                 if(x.state().boundAttendeeId === currentGameState.hmmAttendeeId){
                     x.unpause()
-                    const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
                     x.bindVideoElement(tileviewComp)
                     tileviewComp.play()
                     console.log("video stream:", tileviewComp.videoWidth, tileviewComp.videoHeight)
@@ -251,9 +265,17 @@ export const MeetingRoomAmongUs = () => {
                 // userViewComp.play()
             })
         }else{
+            // show map
+            const mapViewComp = document.getElementById("mapView") as HTMLImageElement
+            mapViewComp.style.display = "block"
+            mapViewComp.src=`/resources/amongus/map/${mapFileNames[currentGameState.map]}`
+
+            const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
+            tileviewComp .style.display = "none"
             meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                 x.pause()
             })
+
         }
     },[targetTilesId, currentGameState.hmmAttendeeId, chimeState.arenaViewScreen])
 
@@ -715,7 +737,7 @@ export const MeetingRoomAmongUs = () => {
                         return(
                             <div>
                                 {
-                                    x.isDead || x.disconnected ? 
+                                    (x.isDead && x.isDeadDiscovered) || x.disconnected ? 
                                     <div><img style={{width:"20%"}} src={ICONS_DEAD[x.color]}></img>{x.name}/{x.chimeName}</div> 
                                     :
                                     <div><img style={{width:"20%"}} src={ICONS_ALIVE[x.color]}></img>{x.name}/{x.chimeName}</div> 
@@ -809,6 +831,7 @@ export const MeetingRoomAmongUs = () => {
                         </div>
                         <div style={{height:"80%", display:"flex", flexDirection:"row"}}>
                             <video id="tileView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <img id="mapView"  />
                         </div>
 
                         <div>
