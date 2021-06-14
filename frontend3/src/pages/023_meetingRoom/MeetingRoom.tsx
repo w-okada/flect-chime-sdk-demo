@@ -16,13 +16,10 @@ import { CustomAccordion } from "./components/sidebars/CustomAccordion";
 import { AttendeesTable } from "./components/sidebars/AttendeesTable";
 import { ChatArea } from "./components/sidebars/ChatArea";
 import { WhiteboardPanel } from "./components/sidebars/WhiteboardPanel";
-import { RecorderPanel } from "./components/sidebars/RecorderPanel";
-import { BGMPanel } from "./components/sidebars/BGMPanel";
 import { CreditPanel } from "./components/sidebars/CreditPanel";
 import { FullScreenView } from "./components/ScreenView/FullScreenView";
 import { FeatureView } from "./components/ScreenView/FeatureView";
 import { GridView } from "./components/ScreenView/GridView";
-import { RecorderView } from "./components/ScreenView/RecorderView";
 import { OnetimeCodePanel } from "./components/sidebars/OnetimeCodePanel";
 import { ManagerControllerPanel } from "./components/sidebars/ManagerControllerPanel";
 
@@ -149,7 +146,7 @@ export const MeetingRoom = () => {
                         open={drawerOpen}
                     >
                         <CustomAccordion title="Member">
-                            <AttendeesTable/>
+                            <AttendeesTable />
                         </CustomAccordion>
 
                         <CustomAccordion title="Chat">

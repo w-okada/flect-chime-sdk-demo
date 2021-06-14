@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useAppState } from "../../../providers/AppStateProvider"
 
 type UseRecorderProps = {
@@ -7,8 +7,6 @@ type UseRecorderProps = {
 
 const framerate = 8
 export const useShareTileView = (props:UseRecorderProps) =>{
-    const decodedMeetingName =  decodeURIComponent(props.meetingName!)
-
     const { startShareTileViewCounter, stopShareTileViewCounter, videoInputDeviceSetting } = useAppState()
     const [ tileCanvas, setTileCanvas ] = useState<HTMLCanvasElement>()
     const [ isSharingTileView, setIsSharingTileView] = useState(false)
@@ -47,13 +45,13 @@ export const useShareTileView = (props:UseRecorderProps) =>{
     useEffect(()=>{
         console.log("START SHARING:::", startShareTileViewCounter, stopShareTileViewCounter)
         startSharingTileView()
-    },[startShareTileViewCounter])
+    },[startShareTileViewCounter]) // eslint-disable-line
 
     
     useEffect(()=>{
         console.log("STOP SHARING:::", startShareTileViewCounter, stopShareTileViewCounter)
         stopSharingTileView()
-    },[stopShareTileViewCounter])
+    },[stopShareTileViewCounter]) // eslint-disable-line
 
 
     return {isSharingTileView, setTileCanvas, stopSharingTileView}

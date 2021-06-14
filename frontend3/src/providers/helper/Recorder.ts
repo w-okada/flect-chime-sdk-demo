@@ -1,8 +1,8 @@
 import {FFmpeg, createFFmpeg, fetchFile} from "@ffmpeg/ffmpeg"
 
-import * as AWS from "aws-sdk";
-const bucketName = "f-backendstack-dev-bucket"
-const s3 = new AWS.S3({ params: { Bucket: bucketName } });
+// import * as AWS from "aws-sdk";
+// const bucketName = "f-backendstack-dev-bucket"
+// const s3 = new AWS.S3({ params: { Bucket: bucketName } });
 
 
 export class Recorder{

@@ -1,5 +1,5 @@
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
-import { deepOrange, deepPurple, grey } from "@material-ui/core/colors";
+import { deepOrange, grey } from "@material-ui/core/colors";
 const lineSpacerHeihgt = 10
 
 export const useStyles = makeStyles((theme: Theme) =>

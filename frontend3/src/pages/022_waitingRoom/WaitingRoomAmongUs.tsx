@@ -1,43 +1,9 @@
-import { Avatar, Box, Button, CircularProgress, Container, CssBaseline, FormControl, Grid, InputLabel, Link, makeStyles, MenuItem, Select, Typography, withStyles } from "@material-ui/core";
-import React, { useEffect, useMemo, useState } from "react";
+import { Avatar, Box, Button, CircularProgress, Container, CssBaseline, FormControl, Grid, InputLabel, Link, makeStyles, MenuItem, Select, Typography } from "@material-ui/core";
+import React, { useEffect, useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
 import { MeetingRoom } from '@material-ui/icons'
 import { Copyright } from "../000_common/Copyright";
 import { DeviceInfo } from "../../utils";
-import { VirtualBackgroundSegmentationType } from "../../frameProcessors/VirtualBackground";
-
-// const useStyles = makeStyles((theme) => ({
-//     paper: {
-//         marginTop: theme.spacing(8),
-//         display: 'flex',
-//         flexDirection: 'column',
-//         alignItems: 'center',
-//     },
-//     avatar: {
-//         margin: theme.spacing(1),
-//         backgroundColor: theme.palette.primary.main,
-//     },
-//     form: {
-//         width: '100%',
-//         marginTop: theme.spacing(1),
-//     },
-//     submit: {
-//         margin: theme.spacing(3, 0, 2),
-//     },
-
-//     formControl: {
-//         margin: theme.spacing(1),
-//         width: '100%'
-//         // minWidth: 120,
-//     },
-
-//     cameraPreview: {
-//         width: '50%'
-//     },
-// }));
-
-
-
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -102,7 +68,7 @@ const useStyles = makeStyles((theme) => ({
 
 export const WaitingRoomAmongUs = () => {
     const classes = useStyles()
-    const { mode, userId, userName, meetingName, audioInputList, videoInputList, audioOutputList, 
+    const { mode, userId, userName, meetingName, audioInputList, audioOutputList, 
             audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, 
             setStage, handleSignOut, reloadDevices, enterMeeting} = useAppState()
     const [isLoading, setIsLoading] = useState(false)
@@ -117,12 +83,9 @@ export const WaitingRoomAmongUs = () => {
     }
 
     const defaultAudioInputDevice  = defaultDeiceId(audioInputList)
-    const defaultVideoInputDevice  = defaultDeiceId(videoInputList)
     const defaultAudioOutputDevice = defaultDeiceId(audioOutputList)
     const [audioInputDeviceId,  setAudioInputDeviceId]  = useState(defaultAudioInputDevice)
-    const [videoInputDeviceId,  setVideoInputDeviceId]  = useState(defaultVideoInputDevice)
     const [audioOutputDeviceId, setAudioOutputDeviceId] = useState(defaultAudioOutputDevice)
-    const [segmentationType, setSegmentationType] = useState<VirtualBackgroundSegmentationType>("GoogleMeetTFLite")
 
     const onReloadDeviceClicked = () =>{
         reloadDevices()
@@ -157,7 +120,7 @@ export const WaitingRoomAmongUs = () => {
         } else {
             audioInputDeviceSetting!.setAudioInput(audioInputDeviceId)
         }
-    },[audioInputDeviceId])
+    },[audioInputDeviceId])// eslint-disable-line
 
     useEffect(()=>{
         if (audioOutputDeviceId === "None") {
@@ -168,17 +131,17 @@ export const WaitingRoomAmongUs = () => {
     },[audioOutputDeviceId]) // eslint-disable-line
 
     return (
-        <Container maxWidth="xs" className={mode == "amongus" ? classes.root_amongus : classes.root}>
+        <Container maxWidth="xs" className={mode === "amongus" ? classes.root_amongus : classes.root}>
             <CssBaseline />
             <div className={classes.paper}>
                 <Avatar className={classes.avatar}>
                     <MeetingRoom />
                 </Avatar>
 
-                <Typography variant="h4" color={mode == "amongus" ? "secondary":"primary"} >
+                <Typography variant="h4" color={mode === "amongus" ? "secondary":"primary"} >
                     Waiting Meeting
                 </Typography>
-                <Typography color={mode == "amongus" ? "secondary":"primary"} >
+                <Typography color={mode === "amongus" ? "secondary":"primary"} >
                     You will join room <br />
                 (user:{userName}, room:{meetingName}) <br />
                 Setup your devices.

@@ -7,13 +7,13 @@ export const useScheduler = () =>{
     const [ thirtyMinutesSecondsTaskTrigger, setThirtyMinutesSecondsTaskTrigger] = useState(0)
 
     useEffect(() => {
-        const id = setInterval(() => {
+        setInterval(() => {
             setTenSecondsTasksTringer(t => t + 1);
         }, 1000 * 10)
     },[])
 
     useEffect(() => {
-        const id = setInterval(() => {
+        setInterval(() => {
             setThirtyMinutesSecondsTaskTrigger(t => t + 1);
         }, 1000 * 60 + 30)
     },[])

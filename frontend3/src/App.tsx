@@ -61,7 +61,7 @@ const Router = () => {
                 return <div>no view</div>
 
         }
-    },[stage])
+    },[stage, mode])
     return (
         <div >
         {page}

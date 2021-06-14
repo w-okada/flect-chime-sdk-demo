@@ -87,7 +87,7 @@ export const RecorderPanel = () => {
             </Tooltip> 
 
         )
-    },[isRecording, isEncoding, recorderCanvas])
+    },[isRecording, isEncoding, recorderCanvas])  // eslint-disable-line
 
     const stopButton = useMemo(()=>{
 
@@ -120,7 +120,7 @@ export const RecorderPanel = () => {
         }else if(isRecording === true && isEncoding === true){
             return  <CircularProgress />
         }
-    },[isRecording, isEncoding, recorderCanvas])
+    },[isRecording, isEncoding, recorderCanvas])  // eslint-disable-line
 
     return (
         <div className={classes.root}>

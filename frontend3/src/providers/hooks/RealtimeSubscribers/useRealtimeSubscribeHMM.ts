@@ -145,7 +145,7 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
 
     useEffect (()=>{
         sendHMMCommand({command:HMMCmd.NOTIFY_AMONGUS_STATUS, data:gameState})
-    },[gameState])
+    },[gameState]) // eslint-disable-line
 
     const sendRegisterAmongUsUserName = (userName:string, attendeeId:string) =>{
         sendHMMCommand({command:HMMCmd.REGISTER_AMONGUS_USER_NAME, data:[userName, attendeeId]})

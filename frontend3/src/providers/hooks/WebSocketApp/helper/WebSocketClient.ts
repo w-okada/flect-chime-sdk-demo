@@ -1,6 +1,4 @@
 import { DefaultWebSocketAdapter, Logger, WebSocketAdapter, WebSocketReadyState } from "amazon-chime-sdk-js";
-import { exception } from "console";
-
 
 export type WebSocketMessage = {
     action: string

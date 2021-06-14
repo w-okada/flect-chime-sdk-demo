@@ -1,11 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import clsx from 'clsx';
-import { CssBaseline, AppBar, Drawer, Toolbar, Tooltip, Button, Typography, IconButton, Grid, Divider, FormControl, InputLabel, Select, MenuItem } from '@material-ui/core'
-import { createMuiTheme, ThemeProvider} from '@material-ui/core/styles';
+import { Tooltip, IconButton, Divider, FormControl, InputLabel, Select, MenuItem } from '@material-ui/core'
 import { useAppState } from "../../providers/AppStateProvider";
 import EmojiPeopleIcon from '@material-ui/icons/EmojiPeople';
-import { blue, blueGrey, deepOrange, deepPurple, red } from '@material-ui/core/colors';
-import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import { blueGrey } from '@material-ui/core/colors';
 import CameraRollIcon from '@material-ui/icons/CameraRoll';
 import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
 import { useStyles } from "./css";
@@ -16,7 +13,6 @@ import ScreenShareIcon from '@material-ui/icons/ScreenShare';
 import ViewComfyIcon from '@material-ui/icons/ViewComfy';
 import SettingsIcon from '@material-ui/icons/Settings';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import { VideoInputDeviceSetting } from "../../providers/helper/VideoInputDeviceSetting";
 import { LeaveMeetingDialog } from "./components/dialog/LeaveMeetingDialog";
 import { SettingDialog } from "./components/dialog/SettingDialog";
 import { AudienceList } from "./components/AudienceList";
@@ -169,9 +165,8 @@ export const MeetingRoomAmongUs = () => {
     const classes = useStyles();
     const animationRef = useRef(0);
 
-    const {meetingSession, attendeeId, videoTileStates, attendees, videoInputDeviceSetting, audioInputDeviceSetting, audioOutputDeviceSetting,
-        updateMeetingInfo, ownerId, isOwner, publicIp,
-        screenHeight, screenWidth,
+    const {meetingSession, attendeeId, videoTileStates, videoInputDeviceSetting, audioInputDeviceSetting, audioOutputDeviceSetting,
+        isOwner, publicIp,
         startHMM, sendTerminate, sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, hMMStatus, stateLastUpdate,
         currentGameState, sendRegisterAmongUsUserName
     } = useAppState()
@@ -209,19 +204,19 @@ export const MeetingRoomAmongUs = () => {
         //     const d = document.getElementById("info1") as HTMLDivElement
         //     d.innerText = devs.reduce((prev,cur)=>{ return `${prev}_${cur}`}, "")
         // })
-    },[])
+    },[]) // eslint-disable-line
 
-    /// fit screen
-    useEffect(()=>{
-        const header = document.getElementById("header") as HTMLDivElement
-        const main = document.getElementById("main") as HTMLDivElement
-        const cs = getComputedStyle(main)
-        const headerWidth = cs.getPropertyValue("width")
-        const headerHeight = cs.getPropertyValue("height")
-        // console.log(`---------------- ${headerWidth}, ${headerHeight}`)
-        // main.style.height = `${screenHeight - parseInt(headerWidth)}`
+    // /// fit screen
+    // useEffect(()=>{
+    //     const header = document.getElementById("header") as HTMLDivElement
+    //     const main = document.getElementById("main") as HTMLDivElement
+    //     const cs = getComputedStyle(main)
+    //     const headerWidth = cs.getPropertyValue("width")
+    //     const headerHeight = cs.getPropertyValue("height")
+    //     // console.log(`---------------- ${headerWidth}, ${headerHeight}`)
+    //     // main.style.height = `${screenHeight - parseInt(headerWidth)}`
 
-    },[screenWidth, screenHeight])
+    // },[screenWidth, screenHeight])
 
     const animate = () => {
         const videoEl  = document.getElementById("capture") as HTMLVideoElement
@@ -234,7 +229,7 @@ export const MeetingRoomAmongUs = () => {
     useEffect(() => {
         animationRef.current = requestAnimationFrame(animate);
         return () => cancelAnimationFrame(animationRef.current);
-    }, [])
+    }, []) // eslint-disable-line
 
 
 
@@ -249,7 +244,7 @@ export const MeetingRoomAmongUs = () => {
 
 
             const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
-            tileviewComp .style.display = "block"
+            tileviewComp.style.display = "block"
             meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                 if(x.state().boundAttendeeId === currentGameState.hmmAttendeeId){
                     x.unpause()
@@ -271,13 +266,13 @@ export const MeetingRoomAmongUs = () => {
             mapViewComp.src=`/resources/amongus/map/${mapFileNames[currentGameState.map]}`
 
             const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
-            tileviewComp .style.display = "none"
+            tileviewComp.style.display = "none"
             meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                 x.pause()
             })
 
         }
-    },[targetTilesId, currentGameState.hmmAttendeeId, chimeState.arenaViewScreen])
+    },[targetTilesId, currentGameState.hmmAttendeeId, chimeState.arenaViewScreen]) // eslint-disable-line
 
     //// UserName Change
     useEffect(()=>{
@@ -285,7 +280,7 @@ export const MeetingRoomAmongUs = () => {
             return
         }
         sendRegisterAmongUsUserName(userName, attendeeId!)
-    },[userName])
+    },[userName]) // eslint-disable-line
 
     //// Chime State change
     useEffect(()=>{
@@ -349,7 +344,7 @@ export const MeetingRoomAmongUs = () => {
         }
         console.log("Find current player::: 7")
 
-    },[currentGameState])
+    },[currentGameState]) // eslint-disable-line
 
     //// AV Controle
     useEffect(()=>{
@@ -359,14 +354,14 @@ export const MeetingRoomAmongUs = () => {
         }else{
             audioInputDeviceSetting!.mute()
         }
-    },[chimeState.arenaMicrophone])
+    },[chimeState.arenaMicrophone]) // eslint-disable-line
     useEffect(()=>{
         if(chimeState.arenaSpeaker){
             audioOutputDeviceSetting?.setAudioOutputEnable(true)
         }else{
             audioOutputDeviceSetting?.setAudioOutputEnable(false)
         }
-    },[chimeState.arenaSpeaker])
+    },[chimeState.arenaSpeaker]) // eslint-disable-line
     useEffect(()=>{
         if(chimeState.arenaShareScreen){
             console.log("ENABLE VIDEO: TRUE")
@@ -381,7 +376,7 @@ export const MeetingRoomAmongUs = () => {
             console.log("ENABLE VIDEO: FALSE")
             videoInputDeviceSetting!.stopLocalVideoTile()
         }
-    },[chimeState.arenaShareScreen])
+    },[chimeState.arenaShareScreen]) // eslint-disable-line
 
 
     //// UserName re-register
@@ -405,7 +400,7 @@ export const MeetingRoomAmongUs = () => {
             // not registerd yet and userName is choosen. register 
             sendRegisterAmongUsUserName(userName, attendeeId!)
         }
-    },[currentGameState])
+    },[currentGameState]) // eslint-disable-line
 
 
     //// Capture add listener
@@ -443,7 +438,7 @@ export const MeetingRoomAmongUs = () => {
         videoEl.addEventListener("click", listenEvent)
 
        return ()=>{videoEl.removeEventListener("click", listenEvent)}
-    },[captureStream])
+    },[captureStream]) // eslint-disable-line
 
 
     //////////////////////////
@@ -465,7 +460,7 @@ export const MeetingRoomAmongUs = () => {
                 </Tooltip>
             </>
         )
-    },[isOwner])
+    },[isOwner]) // eslint-disable-line
     /// (1-2) hmm active
     const managerStateComp = useMemo(()=>{
         return (
@@ -486,7 +481,7 @@ export const MeetingRoomAmongUs = () => {
                 </Tooltip>
             </>
         )
-    },[hMMStatus.active])
+    },[hMMStatus.active]) // eslint-disable-line
     /// (1-3) hmm recording
     const recordingStateComp = useMemo(()=>{
         return (
@@ -507,7 +502,7 @@ export const MeetingRoomAmongUs = () => {
                 </Tooltip>
             </>
         )
-    },[hMMStatus.recording])
+    },[hMMStatus.recording]) // eslint-disable-line
     /// (1-4) share multi tile
     const shareTileViewStateComp = useMemo(()=>{
         return (
@@ -528,12 +523,12 @@ export const MeetingRoomAmongUs = () => {
                 </Tooltip>
             </>
         )
-    },[hMMStatus.shareTileView])
+    },[hMMStatus.shareTileView])  // eslint-disable-line
 
     //// (1-x) lastupdate
     const stateLastUpdateTime = useMemo(()=>{
         const datetime = new Date(stateLastUpdate);
-        const d = datetime.toLocaleDateString()
+        // const d = datetime.toLocaleDateString()
         const t = datetime.toLocaleTimeString()
         // return `${d} ${t}`
         return `${t}`
@@ -559,7 +554,7 @@ export const MeetingRoomAmongUs = () => {
                 </Tooltip>
             </>
         )
-    },[chimeState.arenaMicrophone])
+    },[chimeState.arenaMicrophone]) // eslint-disable-line
 
     /// (2-2) arena speaker state
     const arenaSpeakerComp = useMemo(()=>{
@@ -577,7 +572,7 @@ export const MeetingRoomAmongUs = () => {
                 </Tooltip>
             </>
         )
-    },[chimeState.arenaSpeaker])
+    },[chimeState.arenaSpeaker])  // eslint-disable-line
     /// (2-3) arena share screen state
     const arenaShareScreenComp = useMemo(()=>{
         return (
@@ -594,7 +589,7 @@ export const MeetingRoomAmongUs = () => {
                 </Tooltip>
             </>
         )
-    },[chimeState.arenaShareScreen])     
+    },[chimeState.arenaShareScreen])  // eslint-disable-line
     /// (2-4) arena view screen  state
     const arenaViewScreenComp = useMemo(()=>{
         return (
@@ -611,42 +606,42 @@ export const MeetingRoomAmongUs = () => {
                 </Tooltip>
             </>
         )
-    },[chimeState.arenaViewScreen])
-    /// (2-5) field mic state
-    const fieldMicrophoneComp = useMemo(()=>{
-        return (
-            chimeState.fieldMicrophone?
-            <>
-                <Tooltip title={"Mic On"}>
-                    <MicIcon className={classes.activeState_field}  fontSize="large"/>
-                </Tooltip>
-            </>
-            :
-            <>
-                <Tooltip title={"Mic Off"}>
-                    <MicIcon className={classes.inactiveState} fontSize="large"/>
-                </Tooltip>
-            </>
-        )
-    },[chimeState.fieldMicrophone])
+    },[chimeState.arenaViewScreen])  // eslint-disable-line
+    // /// (2-5) field mic state
+    // const fieldMicrophoneComp = useMemo(()=>{
+    //     return (
+    //         chimeState.fieldMicrophone?
+    //         <>
+    //             <Tooltip title={"Mic On"}>
+    //                 <MicIcon className={classes.activeState_field}  fontSize="large"/>
+    //             </Tooltip>
+    //         </>
+    //         :
+    //         <>
+    //             <Tooltip title={"Mic Off"}>
+    //                 <MicIcon className={classes.inactiveState} fontSize="large"/>
+    //             </Tooltip>
+    //         </>
+    //     )
+    // },[chimeState.fieldMicrophone])
 
-    /// (2-6) field speaker state
-    const fieldSpeakerComp = useMemo(()=>{
-        return (
-            chimeState.fieldSpeaker?
-            <>
-                <Tooltip title={"Snd On"}>
-                    <VolumeUpIcon className={classes.activeState_field} fontSize="large"/>
-                </Tooltip>
-            </>
-            :
-            <>
-                <Tooltip title={"Snd Off"}>
-                    <VolumeUpIcon className={classes.inactiveState} fontSize="large"/>
-                </Tooltip>
-            </>
-        )
-    },[chimeState.fieldSpeaker])
+    // /// (2-6) field speaker state
+    // const fieldSpeakerComp = useMemo(()=>{
+    //     return (
+    //         chimeState.fieldSpeaker?
+    //         <>
+    //             <Tooltip title={"Snd On"}>
+    //                 <VolumeUpIcon className={classes.activeState_field} fontSize="large"/>
+    //             </Tooltip>
+    //         </>
+    //         :
+    //         <>
+    //             <Tooltip title={"Snd Off"}>
+    //                 <VolumeUpIcon className={classes.inactiveState} fontSize="large"/>
+    //             </Tooltip>
+    //         </>
+    //     )
+    // },[chimeState.fieldSpeaker])  // eslint-disable-line
 
     //// (2-x) game state
     const gameStateComp = useMemo(()=>{
@@ -678,7 +673,7 @@ export const MeetingRoomAmongUs = () => {
                 </Tooltip>
             </>
         )
-    },[])
+    },[]) // eslint-disable-line
     /// (3-2) Leave
     const leaveComp = useMemo(()=>{
         return (
@@ -690,7 +685,7 @@ export const MeetingRoomAmongUs = () => {
                 </Tooltip>
             </>
         )
-    },[])
+    },[])  // eslint-disable-line
 
     //////////////////////////////
     /// (4) user chooser
@@ -724,7 +719,7 @@ export const MeetingRoomAmongUs = () => {
             </FormControl>
     
         )
-    },[currentGameState.players])
+    },[currentGameState.players])  // eslint-disable-line
 
     /////////////////////////////
     /// (5) User List
@@ -738,9 +733,9 @@ export const MeetingRoomAmongUs = () => {
                             <div>
                                 {
                                     (x.isDead && x.isDeadDiscovered) || x.disconnected ? 
-                                    <div><img style={{width:"20%"}} src={ICONS_DEAD[x.color]}></img>{x.name}/{x.chimeName}</div> 
+                                    <div><img style={{width:"20%"}} src={ICONS_DEAD[x.color]} alt="dead" ></img>{x.name}/{x.chimeName}</div> 
                                     :
-                                    <div><img style={{width:"20%"}} src={ICONS_ALIVE[x.color]}></img>{x.name}/{x.chimeName}</div> 
+                                    <div><img style={{width:"20%"}} src={ICONS_ALIVE[x.color]} alt="alive" ></img>{x.name}/{x.chimeName}</div> 
                                 }
                             </div>
                         )}
@@ -831,7 +826,7 @@ export const MeetingRoomAmongUs = () => {
                         </div>
                         <div style={{height:"80%", display:"flex", flexDirection:"row"}}>
                             <video id="tileView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <img id="mapView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}}/>
+                            <img id="mapView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} alt="map" />
                         </div>
 
                         <div>

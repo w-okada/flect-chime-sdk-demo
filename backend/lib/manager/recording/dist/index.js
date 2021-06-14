@@ -381,14 +381,6 @@ puppeteer_1.default.launch({
                                 case 2:
                                     _b.sent();
                                     console.log("wait 20sec for download process done");
-                                    // const s3 = new aws.S3({ params: { Bucket: bucketName } });
-                                    // let promises:Promise<any>[] = []
-                                    console.log("Terminating,,, finalize0 flag:" + finalize);
-                                    console.log("Terminating,,, finalize1 flag:" + finalize);
-                                    return [4 /*yield*/, Promise.all(promises)];
-                                case 3:
-                                    _b.sent();
-                                    console.log("Terminating,,, finalize2 flag:" + finalize);
                                     try {
                                         browser.close();
                                     }
@@ -430,15 +422,18 @@ puppeteer_1.default.launch({
                                     catch (exception) {
                                         console.log("file upload to s3 exception ..., " + exception);
                                     }
-                                    console.log("Terminating,,, finalize4 flag:" + finalize);
+                                    return [4 /*yield*/, Promise.all(promises)];
+                                case 3:
+                                    _b.sent();
+                                    console.log("Terminating,,, done");
                                     return [3 /*break*/, 6];
                                 case 4:
                                     console.log("uploadVideo----------------!");
-                                    console.log("wait 20sec for download process");
+                                    console.log("wait 20sec for upload process");
                                     return [4 /*yield*/, sleep(1000 * 20)];
                                 case 5:
                                     _b.sent();
-                                    console.log("wait 20sec for download process done");
+                                    console.log("wait 20sec for upload process done");
                                     fs.readdirSync(downloadPath).forEach(function (file) {
                                         var filePath = downloadPath + "/" + file;
                                         console.log("FILE:::", filePath);

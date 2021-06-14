@@ -5,31 +5,6 @@ import { AVAILABLE_AWS_REGIONS, DEFAULT_REGION } from '../../constants';
 import { useAppState } from '../../providers/AppStateProvider';
 import { Copyright } from '../000_common/Copyright';
 
-// const useStyles = makeStyles((theme) => ({
-//     paper: {
-//         marginTop: theme.spacing(8),
-//         display: 'flex',
-//         flexDirection: 'column',
-//         alignItems: 'center',
-//     },
-//     avatar: {
-//         margin: theme.spacing(1),
-//         backgroundColor: theme.palette.secondary.main,
-//     },
-//     form: {
-//         width: '100%',
-//         marginTop: theme.spacing(1),
-//     },
-//     submit: {
-//         margin: theme.spacing(3, 0, 2),
-//     },
-//     formControl: {
-//         margin: theme.spacing(1),
-//         minWidth: 120,
-//     },
-// }));
-
-
 const useStyles = makeStyles((theme) => ({
     root: {
         background: 'white',
@@ -127,14 +102,14 @@ export const CreateMeetingRoom = () => {
     }
 
     return (
-        <Container maxWidth="xs" className={mode == "amongus" ? classes.root_amongus : classes.root}>
+        <Container maxWidth="xs" className={mode === "amongus" ? classes.root_amongus : classes.root}>
             <CssBaseline />
             <div className={classes.paper} style={{overflow:'auto'}}>
                 <Avatar className={classes.avatar}>
                     <MeetingRoom />
                 </Avatar>
 
-                <Typography variant="h4" color={mode == "amongus" ? "secondary":"primary"} >
+                <Typography variant="h4" color={mode === "amongus" ? "secondary":"primary"} >
                     Create Meeting
                 </Typography>
                 <form className={classes.form}>
@@ -151,7 +126,7 @@ export const CreateMeetingRoom = () => {
                         value={meetingName}
                         onChange={(e) => setMeetingName(e.target.value)}
                         InputProps={{
-                            className: mode == "amongus" ? classes.input_amongus : classes.input,
+                            className: mode === "amongus" ? classes.input_amongus : classes.input,
                         }}
                     />
 

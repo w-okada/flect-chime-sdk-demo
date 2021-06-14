@@ -5,7 +5,6 @@ import { Recorder } from "../helper/Recorder";
 import { getMeetingInfo } from "../../api/api";
 import { useScheduler } from "./useScheduler";
 import * as api from '../../api/api'
-import { idText } from "typescript";
 
 type UseMeetingStateProps = {
     userId?: string, 
@@ -134,7 +133,7 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
                 setAttendees({...attendees})
             }
         })()
-    },[tenSecondsTaskTrigger])
+    },[tenSecondsTaskTrigger]) // eslint-disable-line
 
     return { meetingName, meetingId, joinToken, attendeeId, userName, attendees, videoTileStates, 
             meetingSession, activeRecorder, allRecorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting,

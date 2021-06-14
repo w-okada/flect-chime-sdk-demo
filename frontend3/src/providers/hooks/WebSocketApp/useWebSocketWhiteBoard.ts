@@ -38,7 +38,7 @@ export const useWebSocketWhiteBoard = (props:UseWebSocketWhiteBoardProps) =>{
             const WSWBClient = new WebSocketWhiteBoardClient(props.attendeeId, messagingURLWithQuery, props.logger, recreate)
             return WSWBClient
         }
-    },[props.meetingId, props.attendeeId, props.joinToken, props.logger, recreateCount])
+    },[props.meetingId, props.attendeeId, props.joinToken, props.logger, recreateCount])  // eslint-disable-line
 
     useEffect(()=>{
         const f = (wsMessages:WebSocketMessage[])=>{

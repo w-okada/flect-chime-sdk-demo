@@ -4,27 +4,6 @@ import { Copyright } from "../000_common/Copyright";
 import { MeetingRoom } from '@material-ui/icons';
 import { useAppState } from "../../providers/AppStateProvider";
 
-// const useStyles = makeStyles((theme) => ({
-//     paper: {
-//         marginTop: theme.spacing(8),
-//         display: 'flex',
-//         flexDirection: 'column',
-//         alignItems: 'center',
-//     },
-//     avatar: {
-//         margin: theme.spacing(1),
-//         backgroundColor: theme.palette.primary.main,
-//     },
-//     form: {
-//         width: '100%',
-//         marginTop: theme.spacing(1),
-//     },
-//     submit: {
-//         margin: theme.spacing(3, 0, 2),
-//     },
-// }));
-
-
 const useStyles = makeStyles((theme) => ({
     root: {
         background: 'white',
@@ -120,14 +99,14 @@ export const Entrance  = () => {
     }
 
     return (
-        <Container maxWidth="xs" className={mode == "amongus" ? classes.root_amongus : classes.root}>
+        <Container maxWidth="xs" className={mode === "amongus" ? classes.root_amongus : classes.root}>
             <CssBaseline />
             <div className={classes.paper}>
                 <Avatar className={classes.avatar}>
                     <MeetingRoom />
                 </Avatar>
 
-                <Typography variant="h4" color={mode == "amongus" ? "secondary":"primary"} >
+                <Typography variant="h4" color={mode === "amongus" ? "secondary":"primary"} >
                     Join Meeting
                 </Typography>
                 <form className={classes.form} noValidate>
@@ -144,7 +123,7 @@ export const Entrance  = () => {
                         value={meetingName}
                         onChange={(e) => setMeetingName(e.target.value)}
                         InputProps={{
-                            className: mode == "amongus" ? classes.input_amongus : classes.input,
+                            className: mode === "amongus" ? classes.input_amongus : classes.input,
                         }}
                     />
 
@@ -158,7 +137,7 @@ export const Entrance  = () => {
                         label="UserName"
                         onChange={(e) => setUserName(e.target.value)}
                         InputProps={{
-                            className: mode == "amongus" ? classes.input_amongus : classes.input,
+                            className: mode === "amongus" ? classes.input_amongus : classes.input,
                         }}
                     />
 

@@ -1,11 +1,6 @@
-import { Button, CircularProgress, Container, createStyles, CssBaseline, makeStyles } from "@material-ui/core";
-import { DefaultDeviceController } from "amazon-chime-sdk-js";
 import React, { useEffect, useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
-import { Recorder } from "../../providers/helper/Recorder";
-import { HMMCmd, HMMMessage, HMMStatus } from "../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
 import { useScheduler } from "../../providers/hooks/useScheduler";
-import { getDateString } from "../../utils";
 import { LocalLogger } from "../../utils/localLogger";
 import { RecorderView } from "./components/views/RecorderView";
 import { useRecorder } from "./hooks/useRecorder";
@@ -46,7 +41,7 @@ export const HeadlessMeetingManager = () => {
 
     const { meetingActive } = useStatusMonitor()
     const { isRecording, setActiveCanvas, setAllCanvas, stopRecord } = useRecorder({meetingName:meetingName||"unknown"})
-    const { isSharingTileView, setTileCanvas, stopSharingTileView} = useShareTileView({meetingName:meetingName||"unknown"})
+    const { isSharingTileView, setTileCanvas } = useShareTileView({meetingName:meetingName||"unknown"})
     const { tenSecondsTaskTrigger } = useScheduler()
 
     const setTileCanvasExport = (canvas:HTMLCanvasElement) => {
@@ -72,18 +67,18 @@ export const HeadlessMeetingManager = () => {
             finalizeMeeting()
             sendHMMStatus(false, isRecording, isSharingTileView)
         }
-    },[meetingActive])
+    },[meetingActive]) // eslint-disable-line
     useEffect(()=>{
         if(terminateCounter>0){
             finalizeMeeting()
             sendHMMStatus(false, isRecording, isSharingTileView)
         }
-    },[terminateCounter])
+    },[terminateCounter]) // eslint-disable-line
 
 
     useEffect(()=>{
         sendHMMStatus(true, isRecording, isSharingTileView)
-    },[tenSecondsTaskTrigger])
+    },[tenSecondsTaskTrigger]) // eslint-disable-line
 
 
 
@@ -143,7 +138,7 @@ export const HeadlessMeetingManager = () => {
             audioElement.volume = 0
             audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
         }
-    },[state.internalStage])
+    },[state.internalStage]) // eslint-disable-line
     
     return (
         <>

@@ -17,13 +17,10 @@ import { RealtimeData } from "./hooks/RealtimeSubscribers/const";
 import { DrawingMode, useWebSocketWhiteBoard } from "./hooks/WebSocketApp/useWebSocketWhiteBoard";
 import { DrawingData } from "./hooks/WebSocketApp/helper/WebSocketWhiteBoardClient";
 import { Recorder } from "./helper/Recorder";
-import { getPresignedURL, OnetimeCodeInfo, OnetimeCodeSigninResult } from "../api/api";
-import { AmongUsStatus, HMMMessage, HMMStatus, useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
-import { useScheduler } from "./hooks/useScheduler";
+import { OnetimeCodeInfo, OnetimeCodeSigninResult } from "../api/api";
+import { HMMMessage, HMMStatus, useRealtimeSubscribeHMM } from "./hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
 import { awsConfiguration, DEFAULT_PASSWORD, DEFAULT_USERID } from "../Config";
 import { GameState } from "./hooks/RealtimeSubscribers/useAmongUs";
-import { useS3FileUploader } from "./hooks/useS3FileUploader";
-
 
 type Props = {
     children: ReactNode;
@@ -209,7 +206,7 @@ export const AppStateProvider = ({ children }: Props) => {
     const logger = meetingSession?.logger
     const { addDrawingData, drawingData, lineWidth, setLineWidth, drawingStroke, setDrawingStroke, drawingMode, setDrawingMode } = useWebSocketWhiteBoard({meetingId, attendeeId, joinToken, logger})
     
-    const [ mode, setMode ] = useState(query.get("mode") as APP_MODE| "chime" )
+    const [ mode, setMode ] = useState(query.get("mode") as APP_MODE| "chime" )  // eslint-disable-line
 
     // const { tenSecondsTaskTrigger } = useScheduler()
     // const { uploadFileToS3 } = useS3FileUploader({idToken, accessToken, refreshToken})

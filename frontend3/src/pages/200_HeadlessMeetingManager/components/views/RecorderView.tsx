@@ -1,12 +1,7 @@
-import React, { useEffect, useMemo } from "react"
-import { Divider, Typography } from '@material-ui/core'
+import { useEffect, useMemo } from "react"
 import { useAppState } from "../../../../providers/AppStateProvider";
 import { VideoTileState } from "amazon-chime-sdk-js";
 import { RendererForRecorder } from "../../../023_meetingRoom/components/ScreenView/helper/RendererForRecorder";
-import { getUserNameByAttendeeId } from "../../../../api/api";
-// import { VideoTileState } from "amazon-chime-sdk-js";
-// import { useAppState } from "../../../../providers/AppStateProvider";
-// import { RendererForRecorder } from "./helper/RendererForRecorder";
 
 export type FocustTarget = "SharedContent" | "Speaker"
 
@@ -19,7 +14,7 @@ type Props = {
 
 export const RecorderView = ({ width, height, setActiveRecorderCanvas, setAllRecorderCanvas }: Props) => {
 
-    const { videoTileStates, activeSpeakerId, meetingSession, attendeeId, getUserNameByAttendeeIdFromList } = useAppState()
+    const { videoTileStates, activeSpeakerId, meetingSession, getUserNameByAttendeeIdFromList } = useAppState()
 
     const activeRenderer = useMemo(()=>{return new RendererForRecorder(meetingSession!)},[]) // eslint-disable-line
     const allRenderer    = useMemo(()=>{return new RendererForRecorder(meetingSession!)},[]) // eslint-disable-line

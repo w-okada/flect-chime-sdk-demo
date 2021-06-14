@@ -1,8 +1,7 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, InputLabel, MenuItem, Select, Typography } from "@material-ui/core"
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, Typography } from "@material-ui/core"
 import React, { useState } from "react"
 import { useAppState } from "../../../../providers/AppStateProvider"
 import { useStyles } from "../../css"
-import { DefaultDeviceController } from "amazon-chime-sdk-js";
 
 type SettingDialogProps={
     open:boolean,
@@ -11,140 +10,10 @@ type SettingDialogProps={
 
 export const SettingDialog = (props:SettingDialogProps) =>{
     const classes = useStyles()
-    const {audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, audioInputList, videoInputList, audioOutputList,
+    const {audioInputDeviceSetting, audioOutputDeviceSetting, audioInputList, audioOutputList,
             } = useAppState()
 
     const [guiCounter, setGuiCounter] = useState(0)
-
-    const onInputVideoChange = async (e: any) => {
-        //// for input movie experiment [start]
-        const videoElem = document.getElementById("for-input-movie")! as HTMLVideoElement
-        videoElem.pause()
-        videoElem.srcObject=null
-        videoElem.src=""
-
-        //// for input movie experiment [end]
-
-        if (e.target.value === "None") {
-            await videoInputDeviceSetting!.setVideoInput(null)
-            videoInputDeviceSetting!.stopLocalVideoTile()
-            setGuiCounter(guiCounter+1)
-        } else if (e.target.value === "File") {
-            // fileInputRef.current!.click()
-        } else {
-            await videoInputDeviceSetting!.setVideoInput(e.target.value)
-            videoInputDeviceSetting!.startLocalVideoTile()
-            setGuiCounter(guiCounter+1)
-        }
-    }
-    // const setInputMovieFile = (path:string, fileType:string) =>{
-    const setInputMovieFile = (noise:boolean) =>{
-        const input = document.createElement("input")
-        input.type = "file"
-        input.onchange = (e: any) => {
-            const path = URL.createObjectURL(e.target.files[0]);
-            const fileType = e.target.files[0].type
-            console.log(path, fileType)
-            if(fileType.startsWith("video")){
-                const videoElem = document.getElementById("for-input-movie")! as HTMLVideoElement
-                videoElem.pause()
-                videoElem.srcObject=null
-    
-
-                videoElem.onloadeddata = async (e) =>{
-                    // @ts-ignore
-                    const mediaStream = videoElem.captureStream() as MediaStream
-    
-    
-                    /////// Generate AudioInput Source
-                    const stream =  new MediaStream();
-                    if(mediaStream.getAudioTracks().length>0){
-                        mediaStream.getAudioTracks().forEach(t=>{
-                            console.log("AUDIO TRACK",t)
-                            stream.addTrack(t)
-                        })
-                        console.log("AUDIO ",stream)
-                        // audioInputDeviceSetting!.setAudioInput(mediaStream)
-                    }else{
-                        console.log("NO AUDIO TRACK")
-                        // audioInputDeviceSetting!.setAudioInput(null)
-                    }
-    
-    
-                    const audioContext = DefaultDeviceController.getAudioContext();
-                    const sourceNode = audioContext.createMediaStreamSource(stream);
-                    const outputNode = audioContext.createMediaStreamDestination();
-                    sourceNode.connect(outputNode)
-    
-                    if(noise){
-                        const outputNodeForMix = audioContext.createMediaStreamDestination();
-                        const gainNode = audioContext.createGain();
-                        gainNode.gain.value = 0.1;
-                        gainNode.connect(outputNodeForMix);
-                        const oscillatorNode = audioContext.createOscillator();
-                        oscillatorNode.frequency.value = 440;
-                        oscillatorNode.connect(gainNode);
-                        oscillatorNode.start();
-                        audioInputDeviceSetting!.setBackgroundMusic(outputNodeForMix.stream)
-                    }
-                    audioInputDeviceSetting!.setAudioInput(outputNode.stream) 
-
-                    /////// Generate VideoInput Source
-                    if(mediaStream.getVideoTracks().length>0){
-                        const stream =  new MediaStream();
-                        mediaStream.getVideoTracks().forEach(t=>{
-                            stream.addTrack(t)
-                        })
-                        await videoInputDeviceSetting!.setVideoInput(mediaStream)
-                        videoInputDeviceSetting!.startLocalVideoTile()
-                        await videoInputDeviceSetting!.setVirtualBackgrounEnable(true)
-                        await videoInputDeviceSetting!.setVirtualBackgroundSegmentationType("None")
-                    }else{
-                        await videoInputDeviceSetting!.setVideoInput(null)
-                        videoInputDeviceSetting!.stopLocalVideoTile()
-
-                    }
-                }
-                videoElem.src=path            
-                videoElem.currentTime=0
-                videoElem.autoplay=true
-                videoElem.play()
-
-            }else{
-                console.log("not supported filetype", fileType)
-            }            
-        }
-        input.click()
-    }    
-
-    const onVirtualBGChange = async (e: any) => {
-        if (e.target.value === "None") {
-            videoInputDeviceSetting!.setVirtualBackgrounEnable(false)
-            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType("None")
-            setGuiCounter(guiCounter+1)
-        } else {
-            videoInputDeviceSetting!.setVirtualBackgrounEnable(true)
-            videoInputDeviceSetting!.setVirtualBackgroundSegmentationType(e.target.value)
-            setGuiCounter(guiCounter+1)
-        }
-    }
-
-    const setBackgroundImage = () =>{
-        const input = document.createElement("input")
-        input.type = "file"
-        input.onchange = (e: any) => {
-            const path = URL.createObjectURL(e.target.files[0]);
-            const fileType = e.target.files[0].type
-            console.log(path, fileType)
-
-            if(fileType.startsWith("image")){
-                videoInputDeviceSetting!.setBackgroundImagePath(path)
-            }else{
-                console.log("not supported filetype", fileType)
-            }            
-        }
-        input.click()
-    }    
 
     const onInputAudioChange = async (e: any) => {
         //// for input movie experiment [start]

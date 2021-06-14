@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react"
-import { getPresignedURL, getUserNameByAttendeeId } from "../../../api/api"
-import { useAppState } from "../../../providers/AppStateProvider"
+import { useState } from "react"
+import { getUserNameByAttendeeId } from "../../../api/api"
 
 export const STATES = [
     'LOBBY', // 0

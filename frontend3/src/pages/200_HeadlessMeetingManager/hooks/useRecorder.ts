@@ -80,11 +80,8 @@ export const useRecorder = (props:UseRecorderProps) =>{
         allRecorder?.stopRecording()
         const dateString = getDateString()
 
-        const data_active = await activeRecorder?.toMp4(`${dateString}_${decodedMeetingName}_active.mp4`)
-        // uploadFileToS3("test2222_2.mp4", data_active)
-
-        const data_all = await allRecorder?.toMp4(`${dateString}_${decodedMeetingName}_all.mp4`)
-        // uploadFileToS3("test2222_1.mp4", data_all)
+        await activeRecorder?.toMp4(`${dateString}_${decodedMeetingName}_active.mp4`)
+        await allRecorder?.toMp4(`${dateString}_${decodedMeetingName}_all.mp4`)
         setIsRecording(false)
 
         const event = new CustomEvent('uploadVideo');
@@ -98,11 +95,11 @@ export const useRecorder = (props:UseRecorderProps) =>{
     useEffect(()=>{
         console.log("START RECORDER:::", startRecordingCounter, stopRecordingCounter)
         startRecord()
-    },[startRecordingCounter])
+    },[startRecordingCounter]) // eslint-disable-line
     useEffect(()=>{
         console.log("STOP RECORDER:::", startRecordingCounter, stopRecordingCounter)
         stopRecord()
-    },[stopRecordingCounter])
+    },[stopRecordingCounter]) // eslint-disable-line
 
 
     return {isRecording, setActiveCanvas, setAllCanvas, stopRecord}

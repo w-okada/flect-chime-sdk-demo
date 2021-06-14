@@ -1,8 +1,7 @@
 import { Avatar, Box, Button, CircularProgress, Container, CssBaseline, Divider, Grid, Link, makeStyles, TextField, Typography, withStyles } from "@material-ui/core";
 import { Lock } from '@material-ui/icons';
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
-import { useScheduler } from "../../providers/hooks/useScheduler";
 import { Copyright } from "../000_common/Copyright";
 
 const useStyles = makeStyles((theme) => ({
@@ -102,14 +101,14 @@ export const SignIn = () => {
 
 
     return (
-        <Container maxWidth="xs" className={mode == "amongus" ? classes.root_amongus : classes.root}>
+        <Container maxWidth="xs" className={mode === "amongus" ? classes.root_amongus : classes.root}>
             <CssBaseline />
             <div className={classes.paper}>
                 <Avatar className={classes.avatar}>
                     <Lock />
                 </Avatar>
 
-                <Typography variant="h4" color={mode == "amongus" ? "secondary":"primary"} >
+                <Typography variant="h4" color={mode === "amongus" ? "secondary":"primary"} >
                     Sign in
                 </Typography>
                 <form className={classes.form} noValidate>
@@ -126,7 +125,7 @@ export const SignIn = () => {
                         value={userId}
                         onChange={(e) => setUserId(e.target.value)}
                         InputProps={{
-                            className: mode == "amongus" ? classes.input_amongus : classes.input,
+                            className: mode === "amongus" ? classes.input_amongus : classes.input,
                         }}
                     />
 
@@ -143,7 +142,7 @@ export const SignIn = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         InputProps={{
-                            className: mode == "amongus" ? classes.input_amongus : classes.input,
+                            className: mode === "amongus" ? classes.input_amongus : classes.input,
                             type: "password",
                             autoComplete: 'new-password'
                         }}
@@ -188,10 +187,10 @@ export const SignIn = () => {
                     <Divider variant="middle" />
                     <Grid container direction="row" alignItems="center">
                         <div style={{ width: "33%", margin: "5px" }} >
-                            <a href="index.html"><img src='/resources/chime/title.png' style={{ width: "100%" }} /></a>
+                            <a href="index.html"><img src='/resources/chime/title.png' style={{ width: "100%" }} alt="chime" /></a>
                         </div>
                         <div style={{ width: "33%", margin: "5px" }} >
-                            <a href="index.html?mode=amongus"><img src='/resources/amongus/title.png' style={{ width: "100%", background: "black" }} /></a>
+                            <a href="index.html?mode=amongus"><img src='/resources/amongus/title.png' style={{ width: "100%", background: "black" }}  alt="amongus" /></a>
                         </div>
                     </Grid>
 

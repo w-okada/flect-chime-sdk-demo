@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Button, makeStyles, TextField, Typography, withStyles } from '@material-ui/core';
+import { Button, makeStyles, TextField, withStyles } from '@material-ui/core';
 import { useAppState } from '../../../providers/AppStateProvider';
-import classes from '*.module.sass';
 import { blueGrey } from '@material-ui/core/colors';
 
 
@@ -71,7 +70,7 @@ export const ChatArea = () => {
     const messageList = useMemo(()=>{
         const messages = chatData.slice(-8).map(x=>{
             const name = getUserNameByAttendeeIdFromList(x.senderId)
-            const date = new Date(x.createdDate).toLocaleTimeString()
+            // const date = new Date(x.createdDate).toLocaleTimeString()
             const mess = (x.data as string).split("\n").map(l =>{return <>{l}</>})
             return(
                 <div style={{display:"flex", flexDirection:"column"}}>
@@ -89,7 +88,7 @@ export const ChatArea = () => {
                 {messages}
             </>
         )
-    },[chatData])
+    },[chatData]) // eslint-disable-line
 
     return (
         <> 

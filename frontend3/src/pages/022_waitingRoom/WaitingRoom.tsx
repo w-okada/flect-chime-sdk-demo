@@ -83,7 +83,6 @@ export const WaitingRoom = () => {
     
 
     useEffect(() => {
-        console.log("[audioinputchange]",audioInputDeviceId, segmentationType, videoInputDeviceId, audioOutputDeviceId)
         if (videoInputDeviceId === "None") {
             videoInputDeviceSetting!.setVideoInput(null).then(()=>{
                 videoInputDeviceSetting!.stopPreview()
@@ -95,7 +94,7 @@ export const WaitingRoom = () => {
                 videoInputDeviceSetting!.startPreview()
             })
         }
-    },[videoInputDeviceId])
+    },[videoInputDeviceId])  // eslint-disable-line
 
     useEffect(()=>{
         if (segmentationType === "None") {
@@ -105,7 +104,7 @@ export const WaitingRoom = () => {
             videoInputDeviceSetting!.setVirtualBackgroundSegmentationType(segmentationType).then(()=>{
             })
         }
-    },[segmentationType])
+    },[segmentationType])  // eslint-disable-line
 
 
     useEffect(()=>{
@@ -114,7 +113,7 @@ export const WaitingRoom = () => {
         } else {
             audioInputDeviceSetting!.setAudioInput(audioInputDeviceId)
         }
-    },[audioInputDeviceId])
+    },[audioInputDeviceId])  // eslint-disable-line
 
     useEffect(()=>{
         if (audioOutputDeviceId === "None") {

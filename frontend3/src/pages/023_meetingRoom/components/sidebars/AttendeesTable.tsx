@@ -9,6 +9,7 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import { AttendeeState } from '../../../../providers/helper/ChimeClient';
 import { useAppState } from '../../../../providers/AppStateProvider';
 import { useStyles } from './css';
+import { Tooltip } from '@material-ui/core';
 
 
 
@@ -106,7 +107,7 @@ const EnhancedTableHead = (props: EnhancedTableProps) => {
 
 
 
-export const AttendeesTable = () => {
+export const AttendeesTable_old = () => {
 
     const classes = useStyles();
     const {attendees} = useAppState()
@@ -165,3 +166,37 @@ export const AttendeesTable = () => {
         </div>
     );
 }
+
+
+
+export const AttendeesTable = () => {
+    const {attendees} = useAppState()
+    const audienceList = useMemo(()=>{
+        const l = Object.values(attendees).map((x)=>{
+            return(
+                <>
+                    <Tooltip title={`${x.attendeeId}`}>
+                        <div>
+                            {x.name}
+                        </div>
+                    </Tooltip>
+                </>
+            )
+        })
+
+        return(
+            <div style={{display:"flex", flexDirection:"column"}}>
+                {l}
+            </div>
+        )
+    },[attendees])
+
+    return(
+        <> 
+            <div style={{marginLeft:"15pt"}}>
+                {audienceList}
+            </div>
+        </>
+    )
+}
+

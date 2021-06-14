@@ -1,28 +1,16 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Avatar, Button, Link, makeStyles, Tooltip, Typography } from '@material-ui/core';
+import React, { useEffect, useMemo,} from 'react';
+import { Button, Tooltip, Typography } from '@material-ui/core';
 import { useStyles } from './css';
 import { useAppState } from '../../../../providers/AppStateProvider';
-import { HMMCmd, HMMMessage } from '../../../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM';
-import { getDateString } from '../../../../utils';
 import EmojiPeopleIcon from '@material-ui/icons/EmojiPeople';
-import { deepOrange, deepPurple } from '@material-ui/core/colors';
-import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import ScreenShareIcon from '@material-ui/icons/ScreenShare';
 import CameraRollIcon from '@material-ui/icons/CameraRoll';
 import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
-import { ICONS_ALIVE, ICONS_DEAD, REGIONS, STATES } from '../../../../providers/hooks/RealtimeSubscribers/useAmongUs';
-
-type StatusData = {
-    timestamp: number,
-    active: boolean,
-    recording: boolean,
-}
-
 
   
 export const ManagerControllerPanel = () => {
     const classes = useStyles();
-    const {updateMeetingInfo, ownerId, isOwner, publicIp,
+    const {ownerId, isOwner, publicIp,
           startHMM, sendTerminate, sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, hMMStatus, stateLastUpdate,
           currentGameState
         } = useAppState()
@@ -43,7 +31,7 @@ export const ManagerControllerPanel = () => {
                 </Tooltip>
             </>
         )
-    },[isOwner])
+    },[isOwner])  // eslint-disable-line
 
     const managerStateComp = useMemo(()=>{
         return (
@@ -60,7 +48,7 @@ export const ManagerControllerPanel = () => {
                 </Tooltip>
             </>
         )
-    },[hMMStatus.active])
+    },[hMMStatus.active])  // eslint-disable-line
 
     const recordingStateComp = useMemo(()=>{
         return (
@@ -77,7 +65,7 @@ export const ManagerControllerPanel = () => {
                 </Tooltip>
             </>
         )
-    },[hMMStatus.recording])
+    },[hMMStatus.recording])  // eslint-disable-line
 
     const shareTileViewStateComp = useMemo(()=>{
         return (
@@ -94,11 +82,11 @@ export const ManagerControllerPanel = () => {
                 </Tooltip>
             </>
         )
-    },[hMMStatus.shareTileView])
+    },[hMMStatus.shareTileView])  // eslint-disable-line
     
     const stateLastUpdateTime = useMemo(()=>{
         const datetime = new Date(stateLastUpdate);
-        const d = datetime.toLocaleDateString()
+        // const d = datetime.toLocaleDateString()
         const t = datetime.toLocaleTimeString()
         // return `${d} ${t}`
         return `${t}`
@@ -109,37 +97,6 @@ export const ManagerControllerPanel = () => {
         // console.log("AMONG:", amongUsStates.slice(-1)[0])
     },[currentGameState])
    
-    const among = useMemo(()=>{
-        return(
-            <div>
-                <div>
-                    {STATES[currentGameState.state]}
-                </div>
-                <div>
-                    REGION: {REGIONS[currentGameState.gameRegion]}, CODE:{currentGameState.lobbyCode}, MAP: {currentGameState.map}
-                </div>
-                <div>
-                    {
-                        currentGameState.players.map(x=>{
-                            return(
-                                <div>
-                                    {
-                                        x.isDead || x.disconnected ? 
-                                        <div><img style={{width:"20%"}} src={ICONS_DEAD[x.color]}></img>{x.name}</div> 
-                                        :
-                                        <div><img style={{width:"20%"}} src={ICONS_ALIVE[x.color]}></img>{x.name}</div> 
-                                    }
-                                </div>
-                            )
-                        })
-                    }
-                </div>
-            </div>
-
-        )
-    },[currentGameState])
-
-
 
     return (
             <div className={classes.root}>                
@@ -154,7 +111,6 @@ export const ManagerControllerPanel = () => {
                 <br/>
                 lastupdate:{stateLastUpdateTime}
                 <br/>
-                {among}
 
                 <br/>
 
@@ -179,7 +135,6 @@ export const ManagerControllerPanel = () => {
                     stop share tileview
                 </Button>
                 <div>
-                    <a onClick={()=>{updateMeetingInfo()}}>updateMeetingInfo</a>
                     <br/>
                     Owner:{ownerId}
                     <br />

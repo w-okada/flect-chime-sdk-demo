@@ -36,6 +36,6 @@ export const useStatusMonitor = () =>{
                 setMeetingActive(false)
             }
         }
-    },[tenSecondsTaskTrigger])
+    },[tenSecondsTaskTrigger]) // eslint-disable-line
     return {meetingActive}
 }
