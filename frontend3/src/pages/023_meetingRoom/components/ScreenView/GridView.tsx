@@ -40,17 +40,38 @@ type Props = {
     width:number
     height:number
 };
+
+type VideoState = "ENABLED" | "PAUSED" | "NOT_SHARE"
+
+
 export const GridView = ({ excludeSharedContent, width, height}: Props) =>  {
     const classes = useStyles()
-    const { videoTileStates, activeSpeakerId, getUserNameByAttendeeIdFromList } = useAppState()
+    const { attendees, videoTileStates, activeSpeakerId, getUserNameByAttendeeIdFromList } = useAppState()
 
-    let targetTiles = Object.values(videoTileStates)
+    let targetTiles = Object.values(videoTileStates).filter(tile =>{
+        return attendees[tile.boundAttendeeId!].isVideoPaused === false
+    })
     if(excludeSharedContent){
         targetTiles = targetTiles.filter(tile =>{return tile.isContent !== true})
     }
 
     // rendering flag
     const targetIds = targetTiles.reduce<string>((ids,cur)=>{return `${ids}_${cur.boundAttendeeId}`},"")
+    const targetNames = Object.values(attendees).reduce<string>((names,cur)=>{return `${names}_${cur.name}`},"")
+    const targetVideoStates:VideoState[] = Object.values(attendees).map(x=>{
+        if(!videoTileStates[x.attendeeId]){
+            return "NOT_SHARE"
+        }
+        if(x.isVideoPaused){
+            return "PAUSED"
+        }else{
+            return "ENABLED"
+        }
+    })
+    const targetVideoStatesString = targetVideoStates.reduce<string>((states, cur)=>{return `${states}_${cur}`}, "")
+
+
+
     const cols = Math.min(Math.ceil(Math.sqrt(targetTiles.length)), 5)
     const rows = Math.ceil(targetTiles.length / cols)
     const grid = useMemo(()=>{
@@ -67,7 +88,7 @@ export const GridView = ({ excludeSharedContent, width, height}: Props) =>  {
                 })}
             </GridList>
         )
-    },[targetIds]) // eslint-disable-line
+    },[targetIds, targetNames, targetVideoStatesString]) // eslint-disable-line
 
     return (
         <>

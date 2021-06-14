@@ -13,18 +13,24 @@ type Props = {
     viewInLine: number
 };
 export const LineView = ({ excludeSpeaker, excludeSharedContent, width, height, viewInLine}: Props) =>  {
-    const { videoTileStates, activeSpeakerId, getUserNameByAttendeeIdFromList } = useAppState()
+    const { attendees, videoTileStates, activeSpeakerId, getUserNameByAttendeeIdFromList } = useAppState()
 
-    let targetTiles = Object.values(videoTileStates)
+    let targetTiles = Object.values(videoTileStates).filter(tile =>{
+        if(!attendees[tile.boundAttendeeId!]){
+            return true
+        }
+        return attendees[tile.boundAttendeeId!].isVideoPaused === false
+    })
     if(excludeSharedContent){
         targetTiles = targetTiles.filter(tile =>{return tile.isContent !== true})
     }
     if(excludeSpeaker){
         targetTiles = targetTiles.filter(tile =>{return tile.boundAttendeeId !== activeSpeakerId})
     }
-
+    
     // rendering flag
     const targetIds = targetTiles.reduce<string>((ids,cur)=>{return `${ids}_${cur.boundAttendeeId}`},"")
+    const targetNames = targetTiles.reduce<string>((names,cur)=>{return `${names}_${getUserNameByAttendeeIdFromList(cur.boundAttendeeId!)}`},"")
     const view = useMemo(()=>{
         console.log("[LineView] Rendering")
         return (
@@ -44,7 +50,7 @@ export const LineView = ({ excludeSpeaker, excludeSharedContent, width, height, 
 
 
         )
-    }, [targetIds])  // eslint-disable-line
+    }, [targetIds, targetNames])  // eslint-disable-line
 
     return (
         <>

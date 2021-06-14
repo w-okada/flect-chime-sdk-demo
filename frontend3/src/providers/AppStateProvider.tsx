@@ -77,6 +77,8 @@ interface AppStateValue {
     updateMeetingInfo: ()=>void
     ownerId:string
     isOwner:boolean
+    setPauseVideo: (attendeeId: string, pause: boolean) => void
+    
     /** For Device State */
     audioInputList: DeviceInfo[] | null
     videoInputList: DeviceInfo[] | null
@@ -188,7 +190,7 @@ export const AppStateProvider = ({ children }: Props) => {
             createMeeting, joinMeeting, enterMeeting, leaveMeeting, 
             startShareScreen, stopShareScreen, getUserNameByAttendeeIdFromList,
             meetingSession, activeRecorder, allRecorder, audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, isShareContent, activeSpeakerId,countAttendees,
-            updateMeetingInfo, ownerId, isOwner
+            updateMeetingInfo, ownerId, isOwner, setPauseVideo
            } = useMeetingState({userId, idToken, accessToken, refreshToken,})
     const { audioInputList, videoInputList, audioOutputList, reloadDevices } = useDeviceState()
     const { screenWidth, screenHeight} = useWindowSizeChangeListener()
@@ -259,6 +261,8 @@ export const AppStateProvider = ({ children }: Props) => {
         updateMeetingInfo,
         ownerId,
         isOwner,
+        setPauseVideo,
+        
         /** For Device State */
         audioInputList,
         videoInputList,

@@ -111,6 +111,11 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
         setIsOwner(props.userId === ownerId)
     }
 
+    const setPauseVideo = (attendeeId:string, pause:boolean) =>{
+        console.log("SET PAUSE VIDEO", attendeeId, pause)
+        chimeClient.setPauseVideo(attendeeId, pause)
+    }
+
     ///////////////////////////
     /// for recovery
     ///////////////////////////
@@ -143,7 +148,8 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
             getUserNameByAttendeeIdFromList,
             countAttendees,
 
-            updateMeetingInfo, ownerId, isOwner
+            updateMeetingInfo, ownerId, isOwner,
+            setPauseVideo, 
         }
 
 
