@@ -280,7 +280,7 @@ const startMeetingManager = async (email, meetingName, attendeeId, headers, body
  * @email caller's email. if this email is not the meeting owner's one, invoke hmm failed.
  */
 const getMeetingManagerInformation = async (email, meetingName, attendeeId, headers, body) =>{
-    console.log("startMeetingManager")
+    console.log("getMeetingManager")
     //// (1) If there is no meeting, return fail
     let meetingInfo = await meeting.getMeetingInfo2(meetingName);
     if (meetingInfo === null) {
@@ -297,7 +297,7 @@ const getMeetingManagerInformation = async (email, meetingName, attendeeId, head
     console.log("OWNERID", ownerId, "email", email)
     if(ownerId != email){
         return {
-            code: 'permission denyed',
+            code: 'PermissionDenied',
             message: 'Meeting owner id does not match email'
         }
     }
@@ -306,11 +306,13 @@ const getMeetingManagerInformation = async (email, meetingName, attendeeId, head
     console.log("HmmTaskArn", meetingInfo.HmmTaskArn)
     if(meetingInfo.HmmTaskArn.length <32){
         return {
-            code: 'there is no hmm',
+            code: 'NoHMM',
             message: `there is no hmm taskArn:${meetingInfo.HmmTaskArn}`
         }
     }
     let interfaceId = ""
+    let desiredStatus = ""
+    let lastStatus = ""
     try{
         const p = new Promise((resolve, reject)=>{
             ecs.describeTasks({
@@ -324,6 +326,9 @@ const getMeetingManagerInformation = async (email, meetingName, attendeeId, head
                     return
                 }
                 if(res.tasks.length!=0 && res.tasks[0].desiredStatus === "RUNNING"){
+                    desiredStatus = res.tasks[0].desiredStatus
+                    lastStatus = res.tasks[0].lastStatus
+
                     const container = res.tasks[0].containers[0]
                     const attachements = res.tasks[0].attachments
                     const interface = res.tasks[0].containers[0].networkInterfaces[0]
@@ -351,7 +356,7 @@ const getMeetingManagerInformation = async (email, meetingName, attendeeId, head
     }catch(e){
         console.log(e)
         return {
-            code: 'exist check exception',
+            code: 'ExistCheckException',
             message: e
         }
     }
@@ -376,8 +381,10 @@ const getMeetingManagerInformation = async (email, meetingName, attendeeId, head
     const publicIp = await p
 
     return {
-        code:    'end',
-        publicIp: publicIp
+        code:    'SUCCESS',
+        publicIp: publicIp,
+        lastStatus: lastStatus,
+        desiredStatus: desiredStatus,
     }
 }
 

@@ -211,7 +211,7 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
     useEffect(() => {
         meetingSession?.audioVideo?.realtimeSubscribeToReceiveDataMessage(
             RealtimeDataApp.HMM,
-            receiveData
+            receiveData 
         )
         return () => {
             meetingSession?.audioVideo?.realtimeUnsubscribeFromReceiveDataMessage(RealtimeDataApp.HMM)

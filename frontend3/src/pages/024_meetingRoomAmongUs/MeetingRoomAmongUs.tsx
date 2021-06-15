@@ -18,6 +18,7 @@ import { SettingDialog } from "./components/dialog/SettingDialog";
 import { AudienceList } from "./components/AudienceList";
 import { CreditPanel } from "./components/CreditPanel";
 import { ChatArea } from "./components/ChatArea";
+import { useScheduler } from "../../providers/hooks/useScheduler";
 
 type ChimeState = {
     arenaMicrophone:boolean
@@ -168,7 +169,7 @@ export const MeetingRoomAmongUs = () => {
     const {meetingSession, attendeeId, videoTileStates, videoInputDeviceSetting, audioInputDeviceSetting, audioOutputDeviceSetting,
         isOwner, publicIp,
         startHMM, sendTerminate, sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, hMMStatus, stateLastUpdate,
-        currentGameState, sendRegisterAmongUsUserName
+        currentGameState, sendRegisterAmongUsUserName, updateHMMInfo
     } = useAppState()
     const [settingDialogOpen, setSettingDialogOpen] = useState(false);
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
@@ -177,12 +178,18 @@ export const MeetingRoomAmongUs = () => {
 
     const [userName, _setUserName] = useState<string>()
     const [ captureStream, setCaptureStream ] = useState<MediaStream>()
+    const { tenSecondsTaskTrigger } = useScheduler()
 
     const setUserName = (newUserName:string) =>{
         _setUserName(newUserName)
     }
 
     const targetTilesId = Object.keys(videoTileStates).reduce<string>((sum,cur)=>{return `${sum}-${cur}`},"")
+
+    useEffect(()=>{
+        console.log("UPDATE HMM INFO")
+        updateHMMInfo()
+    }, [tenSecondsTaskTrigger])
 
     // initialize auido/video output
     useEffect(()=>{
