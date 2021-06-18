@@ -28,7 +28,7 @@ This is a video conference system with amazon chime sdk. This software uses AWS 
 
 ![recorder](https://user-images.githubusercontent.com/48346627/109095121-78aa7400-775e-11eb-9ce9-9b4fd737b750.gif)
 
-## Experimental Feature
+## Experimental Feature (pre-release)
 - Amongus automute and share screen.
 
 ![image](https://user-images.githubusercontent.com/48346627/122492356-8f801980-d020-11eb-992e-5554e287a401.png)
