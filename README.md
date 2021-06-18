@@ -33,7 +33,7 @@ This is a video conference system with amazon chime sdk. This software uses AWS 
 
 ![image](https://user-images.githubusercontent.com/48346627/122492356-8f801980-d020-11eb-992e-5554e287a401.png)
 
-![see detail](doc/AUC3/pdf)
+[see detail](doc/AUC3.pdf)
 
 
 # Installation
