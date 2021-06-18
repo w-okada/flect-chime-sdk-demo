@@ -28,6 +28,14 @@ This is a video conference system with amazon chime sdk. This software uses AWS 
 
 ![recorder](https://user-images.githubusercontent.com/48346627/109095121-78aa7400-775e-11eb-9ce9-9b4fd737b750.gif)
 
+## Experimental Feature
+- Amongus automute and share screen.
+
+![image](https://user-images.githubusercontent.com/48346627/122492356-8f801980-d020-11eb-992e-5554e287a401.png)
+
+![see detail](doc/AUC3/pdf)
+
+
 # Installation
 ## Prerequisite
 
@@ -62,14 +70,12 @@ $ npm install -g aws-cdk
 ```
 
 ### (4) install docker (optional)
-If you want to use HMM (Headless Meeting Manager), you should install docker.
+If you want to build HMM (Headless Meeting Manager), you should install docker.
 HMM run on AWS Fargate which needs docker image. In building process, this docker image is created. 
 
 see [docker offical page](https://docs.docker.com/engine/install/)
 
-
 You can disable HMM, in backend config mentioned later.
-
 
 ## Build backend
 ### (1) define stack name
