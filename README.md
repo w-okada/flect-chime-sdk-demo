@@ -44,8 +44,18 @@ It is assumed that AWS Credential is configured. If you have not yet done so, pl
 
 https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html
 
+### (2) AWS CLI
+AWS CLI install
 
-### (2) install node
+```
+https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/install-cliv2-linux.html
+```
+
+```
+https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/install-cliv2-windows.html
+```
+
+### (3) install node
 see [nodejs's offical page](https://nodejs.org/en/)
 
 If you use debian as a root, below may help.
@@ -61,7 +71,7 @@ $ npm install -g n
 $ n latest
 $ npm update -g npm
 ```
-### (3) install aws-sdk
+### (4) install aws-sdk
 see [aws's offical page](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html)
 
 If you use debian as a root, below may help.
@@ -69,7 +79,12 @@ If you use debian as a root, below may help.
 $ npm install -g aws-cdk
 ```
 
-### (4) install docker (optional)
+### (5) react-script
+```
+$ npm install -g create-react-app
+```
+
+### (6) install docker (optional)
 If you want to build HMM (Headless Meeting Manager), you should install docker.
 HMM run on AWS Fargate which needs docker image. In building process, this docker image is created. 
 
@@ -77,20 +92,6 @@ see [docker offical page](https://docs.docker.com/engine/install/)
 
 You can disable HMM, in backend config mentioned later.
 
-### (5) react-script
-```
-$ npm install -g create-react-app
-```
-### (6) AWS CLI
-AWS CLI install
-
-```
-https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/install-cliv2-linux.html
-```
-
-```
-https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/install-cliv2-windows.html
-```
 
 ## Build backend
 ### (1) define stack name
@@ -142,8 +143,6 @@ $ npm install
 $ npm run build
 $ node bin/importBackendSetting.js
 $ node script/list_resources.js
-$ npm install clsx  ###### TODO 
-$ npm install materialui  ###### TODO
 $ npx react-scripts build
 ```
 
