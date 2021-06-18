@@ -37,8 +37,8 @@ This is a video conference system with amazon chime sdk. This software uses AWS 
 
 
 # Installation
-## Prerequisite
 
+## Prerequisite
 ### (1) setup AWS Credential
 It is assumed that AWS Credential is configured. If you have not yet done so, please refer to this page to configure it.
 
@@ -77,6 +77,21 @@ see [docker offical page](https://docs.docker.com/engine/install/)
 
 You can disable HMM, in backend config mentioned later.
 
+### (5) react-script
+```
+$ npm install -g create-react-app
+```
+### (6) AWS CLI
+AWS CLI install
+
+```
+https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/install-cliv2-linux.html
+```
+
+```
+https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/install-cliv2-windows.html
+```
+
 ## Build backend
 ### (1) define stack name
 Define the stack name for backend.
@@ -84,18 +99,27 @@ Define the stack name for backend.
 $ emacs backend/bin/config.ts
 
 export const BACKEND_STACK_NAME = 'BackendStack' # <-- You should change. (*1)
-export const FRONTEND_LOCAL_DEV = false          # <-- Set false for deployment.
-export const USE_DOCKER = true                   # <-- If you want to disable HMM, changet to false.
+export const FRONTEND_LOCAL_DEV = false          # <-- Set false for deployment(only for developper).
+export const USE_DOCKER = false                   # <-- If you want to build HMM, changet to true(only for developper).
 ```
 (*1) This demo uses S3 bucket whose name is defined with this value. So, this value should be global unique.
 
 ### (2) build and deploy backend
-
+#### (2-1) For linux and mac
 ```
 $ cd backend
 $ npm install
 $ npm run build_all
 ```
+
+#### (2-2) For Windows
+It is better to use debian on docker or wsl2 and follow (2-1) above. If you really want to use windows, you can use this command. However, it is not guaranteed.
+```
+$ cd backend
+$ npm install
+$ npm run build_all
+```
+
 
 ## Build frontend
 Note: frontend and fontend2 are depricated. Please use frontend3
@@ -103,16 +127,35 @@ Note: frontend and fontend2 are depricated. Please use frontend3
 ### (1) build
 when you run `npm run build`, you get the information of backend
 
+#### (1-1) For linux and mac
 ```
 $ cd frontend3
 $ npm install
 $ npm run build
 ```
 
+#### (1-2) For Windows
+It is better to use debian on docker or wsl2 and follow (1-1) above. If you really want to use windows, you can use this command. However, it is not guaranteed.
+```
+$ cd frontend3
+$ npm install
+$ npm run build
+$ node bin/importBackendSetting.js
+$ node script/list_resources.js
+$ npm install clsx  ###### TODO 
+$ npm install materialui  ###### TODO
+$ npx react-scripts build
+```
+
+
 ### (2) deploy frontend
+#### (2-1) For linux and mac
 ```
 $ sh sync.sh
 ```
+#### (2-2) For Windows
+It is better to use debian on docker or wsl2 and follow (1-1) above. If you really want to use windows, open `sync.sh` with the notepad and exec the command in the file.
+
 
 ### (3) access to the demo
 You can find URL of demo in `demo_url.txt`. Please access this URL with browser.
