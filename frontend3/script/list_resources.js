@@ -15,7 +15,7 @@ const entries = fs.readdirSync(resourceRoute, { withFileTypes: true })
             categoryName.toUpperCase(),
             fs.readdirSync(categoryDir, { withFileTypes: true })
                 .filter(f => !f.isDirectory())
-                .map(r => { return "'" + path.join('resources', categoryName, r.name) + "'" })
+                .map(r => { return "'" + ['resources', categoryName, r.name].join("/") + "'" })
                 .join(',')
         )
     })
