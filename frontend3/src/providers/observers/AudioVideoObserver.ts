@@ -15,7 +15,12 @@ class AudioVideoObserverTemplate implements AudioVideoObserver {
         console.log('session started');
     }
     audioVideoDidStop(sessionStatus: MeetingSessionStatus): void {
-        console.log(`session stopped from ${JSON.stringify(sessionStatus)}`);
+        console.log(`session stopped from1 ${JSON.stringify(sessionStatus)}`);
+        console.log(`session stopped from2 ${sessionStatus.isFailure()}`);
+        console.log(`session stopped from3 ${sessionStatus.isAudioConnectionFailure()}`);
+        console.log(`session stopped from4 ${sessionStatus.isTerminal()}`);
+        console.log(`session stopped from5 ${sessionStatus.statusCode()}`);
+        console.log(`session stopped from6 ${sessionStatus.toString!()}`);
         if (sessionStatus.statusCode() === MeetingSessionStatusCode.AudioCallEnded) {
             console.log(`meeting ended`);
             // @ts-ignore

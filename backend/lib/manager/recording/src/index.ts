@@ -309,7 +309,7 @@ puppeteer.launch({
     });
 
     await page.exposeFunction('onCustomEvent', async(e:any) => {
-        console.log(`ZZZZZZZZZZZZZZZZZZZZZ ${e.type} fired`, e.detail || '');
+        console.log(`!!!!!!! Event Fired! !!!!!! ${e.type} fired`, e.detail || '');
         const s3 = new aws.S3({ params: { Bucket: bucketName } });
         let promises:Promise<any>[] = []
 

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Tooltip, IconButton, Divider, FormControl, InputLabel, Select, MenuItem } from '@material-ui/core'
 import { useAppState } from "../../providers/AppStateProvider";
 import EmojiPeopleIcon from '@material-ui/icons/EmojiPeople';
-import { blueGrey } from '@material-ui/core/colors';
+import { blueGrey, red } from '@material-ui/core/colors';
 import CameraRollIcon from '@material-ui/icons/CameraRoll';
 import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
 import { useStyles } from "./css";
@@ -161,6 +161,8 @@ const mapFileNames = [
     'map04_Airship.png',
 ]
 
+export type ViewMode = "MultiTileView" | "SeparateView"
+
 
 export const MeetingRoomAmongUs = () => {
     const classes = useStyles();
@@ -184,6 +186,8 @@ export const MeetingRoomAmongUs = () => {
         _setUserName(newUserName)
     }
 
+    const [ viewMode, setViewMode ] = useState<ViewMode>("MultiTileView")
+
     const targetTilesId = Object.keys(videoTileStates).reduce<string>((sum,cur)=>{return `${sum}-${cur}`},"")
 
     useEffect(()=>{
@@ -203,7 +207,6 @@ export const MeetingRoomAmongUs = () => {
 
         // @ts-ignore
         document.body.style = 'background: black;';
-
 
         // /// tmp
         // meetingSession?.deviceController.listAudioOutputDevices().then(res=>{
@@ -253,18 +256,31 @@ export const MeetingRoomAmongUs = () => {
             const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
             tileviewComp.style.display = "block"
             meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
-                if(x.state().boundAttendeeId === currentGameState.hmmAttendeeId){
-                    x.unpause()
-                    x.bindVideoElement(tileviewComp)
-                    tileviewComp.play()
-                    console.log("video stream:", tileviewComp.videoWidth, tileviewComp.videoHeight)
+                if(viewMode==="MultiTileView"){
+                    if(x.state().boundAttendeeId === currentGameState.hmmAttendeeId){
+                        x.unpause()
+                        x.bindVideoElement(tileviewComp)
+                        tileviewComp.play()
+                        console.log("video stream:", tileviewComp.videoWidth, tileviewComp.videoHeight)
+                    }else{
+                        x.pause()
+                        x.bindVideoElement(null)
+                    }
+                }else{ // SeparateView
+                    const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
+                    x.bindVideoElement(userViewComp)
+        
+                    console.log("video stream:", userViewComp.videoWidth, userViewComp.videoHeight)
+                    userViewComp.play()
+
+                    if(x.state().boundAttendeeId === currentGameState.hmmAttendeeId){
+                        x.pause()
+                        x.bindVideoElement(null)
+                    }else{
+                        x.unpause()
+                        x.bindVideoElement(userViewComp)
+                    }
                 }
-    
-                // const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
-                // x.bindVideoElement(userViewComp)
-    
-                // console.log("video stream:", userViewComp.videoWidth, userViewComp.videoHeight)
-                // userViewComp.play()
             })
         }else{
             // show map
@@ -831,41 +847,47 @@ export const MeetingRoomAmongUs = () => {
                             <div style={{width:"30%", height:"100%", alignItems:"center" }}>
                             </div>
                         </div>
-                        <div style={{height:"80%", display:"flex", flexDirection:"row"}}>
-                            <video id="tileView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <img id="mapView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} alt="map" />
+
+
+                        <div style={{height:"80%", display:viewMode==="MultiTileView" ? "block":"none" }}>
+                            <div style={{height:"100%", display:"flex", flexDirection:"row" }}>
+                                <video id="tileView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} />
+                                <img id="mapView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} alt="map" />
+                            </div>
                         </div>
 
                         <div>
                             <audio id="arena_speaker" hidden />
                         </div>
 
+                        <div style={{height:"80%", display:viewMode==="SeparateView" ? "block":"none" }}>
+                            <div style={{display:"flex", flexDirection:"row"}}>
+                                <video id="userView0"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView1"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView2"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView3"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                            </div>
+                            <div style={{display:"flex", flexDirection:"row"}}>
+                                <video id="userView4"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView5"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView6"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView7"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                            </div>
+                            <div style={{display:"flex", flexDirection:"row"}}>
+                                <video id="userView8"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView9"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView10"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView11"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                            </div>
+                            <div style={{display:"flex", flexDirection:"row"}}>
+                                <video id="userView12"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView13"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView14"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                                <video id="userView15"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
+                            </div>
+                        </div>
 
-{/* 
-                        <div style={{display:"flex", flexDirection:"row"}}>
-                            <video id="userView0"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView1"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView2"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView3"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                        </div>
-                        <div style={{display:"flex", flexDirection:"row"}}>
-                            <video id="userView4"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView5"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView6"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView7"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                        </div>
-                        <div style={{display:"flex", flexDirection:"row"}}>
-                            <video id="userView8"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView9"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView10"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView11"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                        </div>
-                        <div style={{display:"flex", flexDirection:"row"}}>
-                            <video id="userView12"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView13"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView14"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            <video id="userView15"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                        </div> */}
+
 
                     </div>
 
@@ -885,7 +907,7 @@ export const MeetingRoomAmongUs = () => {
 
                 </div>
                 <LeaveMeetingDialog open={leaveDialogOpen} onClose={()=>setLeaveDialogOpen(false)} />
-                <SettingDialog      open={settingDialogOpen} onClose={()=>setSettingDialogOpen(false)} />
+                <SettingDialog open={settingDialogOpen} onClose={()=>setSettingDialogOpen(false)} viewMode={viewMode} setViewMode={setViewMode}/>
                 <div id="info1"/>
             </div>
 

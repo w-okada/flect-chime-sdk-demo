@@ -383,10 +383,14 @@ export class ChimeClient {
     setPauseVideo = (attendeeId:string, pause:boolean) =>{
         if(this.attendees[attendeeId]){
             this.attendees[attendeeId].isVideoPaused = pause
+            if(pause){
+                this.meetingSession!.audioVideo.unbindVideoElement(this.videoTileStates[attendeeId].tileId!)
+                this.meetingSession!.audioVideo.pauseVideoTile(this.videoTileStates[attendeeId].tileId!)
+            }else{
+                this.meetingSession!.audioVideo.unpauseVideoTile(this.videoTileStates[attendeeId].tileId!)
+            }
             this.attendeesUpdated(this.attendees)
         }else{
         }
     }
-
-
 }

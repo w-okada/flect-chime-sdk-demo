@@ -174,9 +174,11 @@ export class BackendStack extends cdk.Stack {
       streamPrefix: "fargate",
     })
 
+
     const taskDefinition = new ecs.FargateTaskDefinition(this, `${id}_fargate_task`, {
       family: this.node.tryGetContext('serviceName'),
       cpu: 2048,
+      // memoryLimitMiB: 5120,
       memoryLimitMiB: 4096,
     });
 
@@ -185,7 +187,18 @@ export class BackendStack extends cdk.Stack {
         containerName: `${id}_manager_container`,
         image: ecs.ContainerImage.fromAsset("lib/manager"),
         cpu: 2048,
+        // memoryLimitMiB: 4096,
+        memoryLimitMiB: 5120,
+        logging: logging,
+      });
+    }else{
+      const image = ecs.ContainerImage.fromRegistry(`dannadori/hmm:latest`)
+      const container = taskDefinition.addContainer("DefaultContainer", {
+        containerName: `${id}_manager_container`,
+        image: image,
+        cpu: 2048,
         memoryLimitMiB: 4096,
+        // memoryLimitMiB: 5120,
         logging: logging,
       });
     }

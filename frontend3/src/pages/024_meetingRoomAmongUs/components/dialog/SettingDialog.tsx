@@ -1,11 +1,15 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, Typography } from "@material-ui/core"
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, InputLabel, MenuItem, Select, Typography } from "@material-ui/core"
 import React, { useState } from "react"
 import { useAppState } from "../../../../providers/AppStateProvider"
 import { useStyles } from "../../css"
+import { ViewMode } from "../../MeetingRoomAmongUs"
 
 type SettingDialogProps={
     open:boolean,
     onClose:()=>void
+
+    viewMode:ViewMode
+    setViewMode:(mode:ViewMode) => void
 }
 
 export const SettingDialog = (props:SettingDialogProps) =>{
@@ -51,6 +55,10 @@ export const SettingDialog = (props:SettingDialogProps) =>{
             setGuiCounter(guiCounter+1)
         }
     }    
+
+    const onViewModeChanged = async (e:any) =>{
+        props.setViewMode(e.target.value)
+    }
 
 
     return(
@@ -103,7 +111,23 @@ export const SettingDialog = (props:SettingDialogProps) =>{
                                 })}
                             </Select>
                         </FormControl>
-                    </form>                    
+
+
+                        <Divider />
+                        <Typography variant="h5" gutterBottom>
+                            Experimental
+                        </Typography>
+                        <FormControl className={classes.formControl} >
+                            <InputLabel>View Mode</InputLabel>
+                            <Select onChange={onViewModeChanged} value={props.viewMode} >
+                                {["MultiTileView", "SeparateView"].map(val => {
+                                    return <MenuItem value={val} key={val}>{val}</MenuItem>
+                                })}
+                            </Select>
+                        </FormControl>
+
+                    </form>
+
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={props.onClose} color="primary">

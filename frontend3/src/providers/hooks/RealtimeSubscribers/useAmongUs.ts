@@ -33,7 +33,12 @@ export const COLORS = [
     'purple',
     'brown',
     'cyan',
-    'lime'
+    'lime',
+    'maroon',
+    'rose',
+    'banana',
+    'tan',
+    'sunset',
 ]
 
 export const ICONS_ALIVE = COLORS.map(x=>{

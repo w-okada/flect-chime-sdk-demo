@@ -6,7 +6,7 @@ import { useScheduler } from "../../../providers/hooks/useScheduler"
 export const useStatusMonitor = () =>{
 
     const { tenSecondsTaskTrigger } = useScheduler()
-    const { attendees, attendeeId } = useAppState()
+    const { attendees, attendeeId, meetingSession } = useAppState()
     const [ meetingActive, setMeetingActive ] = useState(true)
     const [ noAttendeesCount, setNoAttendeesCount] = useState(0)
 
@@ -26,6 +26,8 @@ export const useStatusMonitor = () =>{
         console.log("meetingActive1:", meetingActive, pureAttendees)
         const attendeeList = pureAttendees.reduce((prev,cur)=>{return prev+"_____"+cur}, "")
         console.log(`meetingActive2:${attendeeList}`)
+
+        console.log(`meetingActive3:${meetingSession?.audioVideo.hasStartedLocalVideoTile()?"started":"stop"}`)
         
         if(meetingActive){
             setNoAttendeesCount(0)

@@ -143,10 +143,6 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
         meetingSession?.audioVideo!.realtimeSendDataMessage(RealtimeDataApp.HMM , JSON.stringify(reatimeData))
     }
 
-    useEffect (()=>{
-        sendHMMCommand({command:HMMCmd.NOTIFY_AMONGUS_STATUS, data:gameState})
-    },[gameState]) // eslint-disable-line
-
     const sendRegisterAmongUsUserName = (userName:string, attendeeId:string) =>{
         sendHMMCommand({command:HMMCmd.REGISTER_AMONGUS_USER_NAME, data:[userName, attendeeId]})
     }
@@ -161,7 +157,7 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
         }
 
         const mess = data.data as HMMMessage
-        console.log("RECEIVE REALTIME DATA", mess)
+        console.log("RECEIVE REALTIME DATA1 ", mess.command)
         switch(mess.command){
             case "START_RECORD":
                 // setRecordingEnable(true)
@@ -195,11 +191,13 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
                 break
             case "NOTIFY_AMONGUS_STATUS": // handle by client
                 const gameState = mess.data as GameState
+                console.log("RECEIVE REALTIME DATA2 ", JSON.stringify(gameState))
                 setCurrentGameState(gameState)
                 break
 
             case "REGISTER_AMONGUS_USER_NAME": // handle by hmm
                 const [userName, attendeeId] = mess.data as string[]
+                console.log("RECEIVE REALTIME DATA2 ", userName, attendeeId)
                 /// As registerUserName in client, gameState remain initial state, so ignored this update process.
                 registerUserName(userName, attendeeId)
                 break
@@ -221,6 +219,6 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
         sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp,
         sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus, sendRegisterAmongUsUserName,
         startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, terminateCounter, hMMStatus, stateLastUpdate,
-        updateGameState, currentGameState
+        updateGameState, currentGameState, gameState
     }
 }

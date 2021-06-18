@@ -116,6 +116,7 @@ interface AppStateValue {
 
     updateGameState: (ev: string, data: string) => void
     currentGameState: GameState
+    gameState: GameState
     /** For WhiteBoard */
     addDrawingData: ((data: DrawingData) => void) | undefined
     drawingData: DrawingData[]
@@ -202,7 +203,7 @@ export const AppStateProvider = ({ children }: Props) => {
     const { sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp, 
             sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus, sendRegisterAmongUsUserName,
             startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, terminateCounter, hMMStatus, stateLastUpdate,
-            updateGameState, currentGameState,
+            updateGameState, currentGameState, gameState
           } = useRealtimeSubscribeHMM({meetingSession, attendeeId, meetingName, idToken, accessToken, refreshToken})
 
     const logger = meetingSession?.logger
@@ -293,6 +294,7 @@ export const AppStateProvider = ({ children }: Props) => {
         sendRegisterAmongUsUserName,
         updateGameState,
         currentGameState,
+        gameState,
         // recordingEnable, 
         // shareTileViewEnable, 
         // terminateTriggerd, 

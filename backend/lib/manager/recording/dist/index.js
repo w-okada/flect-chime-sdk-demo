@@ -365,7 +365,7 @@ puppeteer_1.default.launch({
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0:
-                                    console.log("ZZZZZZZZZZZZZZZZZZZZZ " + e.type + " fired", e.detail || '');
+                                    console.log("!!!!!!! Event Fired! !!!!!! " + e.type + " fired", e.detail || '');
                                     s3 = new aws.S3({ params: { Bucket: bucketName } });
                                     promises = [];
                                     _a = e.type;

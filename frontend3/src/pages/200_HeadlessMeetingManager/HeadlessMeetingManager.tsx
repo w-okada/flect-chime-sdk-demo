@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
+import { HMMCmd } from "../../providers/hooks/RealtimeSubscribers/useRealtimeSubscribeHMM";
 import { useScheduler } from "../../providers/hooks/useScheduler";
 import { LocalLogger } from "../../utils/localLogger";
 import { RecorderView } from "./components/views/RecorderView";
@@ -35,7 +36,7 @@ export const HeadlessMeetingManager = () => {
 
 
     const { handleSinginWithOnetimeCode, joinMeeting, enterMeeting, attendees, sendHMMStatus, terminateCounter,
-            audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, audioOutputList,
+            audioInputDeviceSetting, videoInputDeviceSetting, audioOutputDeviceSetting, audioOutputList, sendHMMCommand, gameState,
             updateGameState} = useAppState()
     const [ state, setState] = useState<State>({internalStage:"Signining", userName:null})
 
@@ -43,6 +44,14 @@ export const HeadlessMeetingManager = () => {
     const { isRecording, setActiveCanvas, setAllCanvas, stopRecord } = useRecorder({meetingName:meetingName||"unknown"})
     const { isSharingTileView, setTileCanvas } = useShareTileView({meetingName:meetingName||"unknown"})
     const { tenSecondsTaskTrigger } = useScheduler()
+
+    useEffect (()=>{
+        console.log("HMM_SEND_STATUS------->",JSON.stringify(gameState))
+        sendHMMCommand({command:HMMCmd.NOTIFY_AMONGUS_STATUS, data:gameState})
+    },[gameState]) // eslint-disable-line
+
+
+
 
     const setTileCanvasExport = (canvas:HTMLCanvasElement) => {
         setAllCanvas(canvas)
