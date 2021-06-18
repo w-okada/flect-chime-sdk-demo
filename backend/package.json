@@ -15,7 +15,7 @@
     "build_docker":"npm run build_docker_script && cd lib/manager/&& docker build -t dannadori/hmm . && cd -",
     "// [Comment_03] //": "push_docker_image: push image to dockerhub with generate docker image",
     "push_docker_image":"npm run build_docker && docker push dannadori/hmm",
-    "build_all": "npm run build_docker_script && npm run build && cdk deploy --outputs-file cfn_outputs.json"
+    "build_all": "npm run build && cdk deploy --outputs-file cfn_outputs.json"
   },
   "devDependencies": {
     "@aws-cdk/assert": "^1.105.0",
