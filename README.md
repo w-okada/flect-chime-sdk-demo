@@ -71,20 +71,8 @@ $ npm install -g n
 $ n latest
 $ npm update -g npm
 ```
-### (4) install aws-sdk
-see [aws's offical page](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html)
 
-If you use debian as a root, below may help.
-```
-$ npm install -g aws-cdk
-```
-
-### (5) react-script
-```
-$ npm install -g create-react-app
-```
-
-### (6) install docker (optional)
+### (4) install docker (optional)
 If you want to build HMM (Headless Meeting Manager), you should install docker.
 HMM run on AWS Fargate which needs docker image. In building process, this docker image is created. 
 
@@ -174,7 +162,7 @@ $ cat cfn_outputs.json |grep -e "Bucket"
 
 Then, execute this command.
 ```
-$ cdk destroy
+$ npx cdk destroy
 ```
 
 
