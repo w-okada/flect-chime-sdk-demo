@@ -18,11 +18,12 @@ type State = {
 }
 const logger = new LocalLogger("HeadlessMeetingManager")
 
-function sleep(ms:number) {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
+const sleep = async(ms:number)=>{
+    const p = new Promise((resolve) => {
+        setTimeout(resolve, ms);
     });
-} 
+    await p
+}
 
 
 export const HeadlessMeetingManager = () => {
@@ -63,7 +64,7 @@ export const HeadlessMeetingManager = () => {
         logger.log("meeting is no active. stop recording...")
         await stopRecord()
         logger.log("meeting is no active. stop recording...done. sleep 20sec")
-        await sleep(20)
+        await sleep(20 * 1000)
         logger.log("meeting is no active. stop recording...done. sleep 20sec done.")
         logger.log("terminate event fire")
 

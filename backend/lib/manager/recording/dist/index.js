@@ -345,6 +345,8 @@ puppeteer_1.default.launch({
             document.addEventListener('terminate', function (e) {
                 // @ts-ignore
                 window.onCustomEvent({ type: 'terminate', detail: e.detail });
+            });
+            document.addEventListener('uploadVideo', function (e) {
                 // @ts-ignore
                 window.onCustomEvent({ type: 'uploadVideo', detail: e.detail });
             });
@@ -365,7 +367,7 @@ puppeteer_1.default.launch({
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0:
-                                    console.log("!!!!!!! Event Fired! !!!!!! " + e.type + " fired", e.detail || '');
+                                    console.log("!!!!!!! Event Fired!!! !!!!!! " + e.type + " fired", e.detail || '');
                                     s3 = new aws.S3({ params: { Bucket: bucketName } });
                                     promises = [];
                                     _a = e.type;
@@ -381,12 +383,6 @@ puppeteer_1.default.launch({
                                 case 2:
                                     _b.sent();
                                     console.log("wait 20sec for download process done");
-                                    try {
-                                        browser.close();
-                                    }
-                                    catch (exception) {
-                                        console.log("browser closing exception ..., " + exception);
-                                    }
                                     try {
                                         io_server.disconnectSockets();
                                     }
@@ -426,6 +422,12 @@ puppeteer_1.default.launch({
                                 case 3:
                                     _b.sent();
                                     console.log("Terminating,,, done");
+                                    try {
+                                        browser.close();
+                                    }
+                                    catch (exception) {
+                                        console.log("browser closing exception ..., " + exception);
+                                    }
                                     return [3 /*break*/, 6];
                                 case 4:
                                     console.log("uploadVideo----------------!");

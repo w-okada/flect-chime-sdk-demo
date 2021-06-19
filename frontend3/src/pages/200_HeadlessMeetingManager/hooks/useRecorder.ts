@@ -97,6 +97,7 @@ export const useRecorder = (props:UseRecorderProps) =>{
         startRecord()
     },[startRecordingCounter]) // eslint-disable-line
     useEffect(()=>{
+        console.log("STOP RECORDER:FROM COUNTER!::", startRecordingCounter, stopRecordingCounter)
         console.log("STOP RECORDER:::", startRecordingCounter, stopRecordingCounter)
         stopRecord()
     },[stopRecordingCounter]) // eslint-disable-line

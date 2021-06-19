@@ -309,7 +309,7 @@ puppeteer.launch({
     });
 
     await page.exposeFunction('onCustomEvent', async(e:any) => {
-        console.log(`!!!!!!! Event Fired! !!!!!! ${e.type} fired`, e.detail || '');
+        console.log(`!!!!!!! Event Fired!!! !!!!!! ${e.type} fired`, e.detail || '');
         const s3 = new aws.S3({ params: { Bucket: bucketName } });
         let promises:Promise<any>[] = []
 
@@ -320,11 +320,6 @@ puppeteer.launch({
                 await sleep(1000 * 20)
                 console.log("wait 20sec for download process done")
 
-                try{
-                    browser.close();
-                }catch(exception){
-                    console.log(`browser closing exception ..., ${exception}`)
-                }
                 try{
                     io_server.disconnectSockets();
                 }catch(exception){
@@ -365,6 +360,11 @@ puppeteer.launch({
                 
                 console.log(`Terminating,,, done`)
 
+                try{
+                    browser.close();
+                }catch(exception){
+                    console.log(`browser closing exception ..., ${exception}`)
+                }
                 
                 break
             case "uploadVideo":
@@ -403,9 +403,11 @@ puppeteer.launch({
             document.addEventListener('terminate', e => {
                 // @ts-ignore
                 window.onCustomEvent({ type: 'terminate', detail: e.detail });
+            });
+            document.addEventListener('uploadVideo', e => {
                 // @ts-ignore
                 window.onCustomEvent({ type: 'uploadVideo', detail: e.detail });
-            });
+            })
         });
     }
 

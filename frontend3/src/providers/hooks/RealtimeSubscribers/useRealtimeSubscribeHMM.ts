@@ -165,7 +165,7 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
                 setStartRecordingCounter(startRecordingCounter+1)
                 break
             case "STOP_RECORD":
-                console.log("RECEIVE REALTIME DATA2", mess)
+                console.log("RECEIVE REALTIME DATA2 STOP RECORDER", mess)
                 // setRecordingEnable(false)
                 setStopRecordingCounter(stopRecordingCounter+1)
                 break
