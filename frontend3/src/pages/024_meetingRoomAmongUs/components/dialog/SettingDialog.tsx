@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, InputLabel, MenuItem, Select, Typography } from "@material-ui/core"
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, InputLabel, MenuItem, Select, Switch, Typography } from "@material-ui/core"
 import React, { useState } from "react"
 import { useAppState } from "../../../../providers/AppStateProvider"
 import { useStyles } from "../../css"
@@ -10,6 +10,8 @@ type SettingDialogProps={
 
     viewMode:ViewMode
     setViewMode:(mode:ViewMode) => void
+    debugEnable:boolean
+    setDebugEnable:(mode:boolean) => void
 }
 
 export const SettingDialog = (props:SettingDialogProps) =>{
@@ -59,6 +61,10 @@ export const SettingDialog = (props:SettingDialogProps) =>{
     const onViewModeChanged = async (e:any) =>{
         props.setViewMode(e.target.value)
     }
+    const onDebugEnableChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
+        props.setDebugEnable(event.target.checked )
+    };
+    
 
 
     return(
@@ -124,6 +130,16 @@ export const SettingDialog = (props:SettingDialogProps) =>{
                                     return <MenuItem value={val} key={val}>{val}</MenuItem>
                                 })}
                             </Select>
+                        </FormControl>
+
+                        <FormControl className={classes.formControl} >
+                            <InputLabel>debug</InputLabel>
+                            <Switch
+                                checked={props.debugEnable}
+                                onChange={onDebugEnableChanged}
+                                name="aaaaa"
+                                inputProps={{ 'aria-label': 'secondary checkbox' }}
+                            />
                         </FormControl>
 
                     </form>

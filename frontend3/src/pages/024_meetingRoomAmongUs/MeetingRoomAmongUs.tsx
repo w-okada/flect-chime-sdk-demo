@@ -141,6 +141,14 @@ const ChimeState_Discuss_Arena:ChimeState = {
 }
 
 
+const ChimeState_Debug:ChimeState = {
+    arenaMicrophone:true,
+    arenaSpeaker:true,
+    arenaShareScreen:true,
+    arenaViewScreen:true,
+    fieldMicrophone:false,
+    fieldSpeaker:false,
+}
 
 
 const ChimeStateType = {
@@ -151,6 +159,8 @@ const ChimeStateType = {
     "Task_Dead"      : ChimeState_Task_Dead,
     "Discuss_Dead"   : ChimeState_Discuss_Dead,
     "Discuss_Arena"  : ChimeState_Discuss_Arena,
+
+    "Debug"          :ChimeState_Debug,
 }
 
 const mapFileNames = [
@@ -181,6 +191,8 @@ export const MeetingRoomAmongUs = () => {
     const [userName, _setUserName] = useState<string>()
     const [ captureStream, setCaptureStream ] = useState<MediaStream>()
     const { tenSecondsTaskTrigger } = useScheduler()
+
+    const [debugEnable, setDebugEnable] = useState(false)
 
     const setUserName = (newUserName:string) =>{
         _setUserName(newUserName)
@@ -312,6 +324,11 @@ export const MeetingRoomAmongUs = () => {
         console.log("Find current player:::", currentGameState)
         console.log("Find current player::GAME STATE:", currentGameState.state)
 
+        if(debugEnable){
+            setChimeState(ChimeStateType.Debug)
+            return
+        }
+
         /////// For Arena
         if(!player){
             // in arena
@@ -367,7 +384,7 @@ export const MeetingRoomAmongUs = () => {
         }
         console.log("Find current player::: 7")
 
-    },[currentGameState]) // eslint-disable-line
+    },[currentGameState, debugEnable]) // eslint-disable-line
 
     //// AV Controle
     useEffect(()=>{
@@ -389,12 +406,22 @@ export const MeetingRoomAmongUs = () => {
         if(chimeState.arenaShareScreen){
             console.log("ENABLE VIDEO: TRUE")
 
+
+            //////// captureStream can not be kept between sharedDisplay enable and disable. (captureStream changed to default webcam, severe issue)
+            // if(captureStream){
+            //     videoInputDeviceSetting!.setVideoInput(captureStream).then(()=>{
+            //         videoInputDeviceSetting!.startLocalVideoTile()
+            //     })                    
+            // }
+
             const canvasEl  = document.getElementById("captureCanvas") as HTMLCanvasElement
             // @ts-ignore
             const stream = canvasEl.captureStream() as MediaStream
             videoInputDeviceSetting!.setVideoInput(stream).then(()=>{
                 videoInputDeviceSetting!.startLocalVideoTile()
             })
+
+
         }else{
             console.log("ENABLE VIDEO: FALSE")
             videoInputDeviceSetting!.stopLocalVideoTile()
@@ -461,9 +488,9 @@ export const MeetingRoomAmongUs = () => {
         videoEl.addEventListener("click", listenEvent)
 
        return ()=>{videoEl.removeEventListener("click", listenEvent)}
-    },[captureStream]) // eslint-disable-line
+    },[]) // eslint-disable-line
 
-
+    
     //////////////////////////
     /// (1) hmm state
     //////////////////////////
@@ -907,7 +934,10 @@ export const MeetingRoomAmongUs = () => {
 
                 </div>
                 <LeaveMeetingDialog open={leaveDialogOpen} onClose={()=>setLeaveDialogOpen(false)} />
-                <SettingDialog open={settingDialogOpen} onClose={()=>setSettingDialogOpen(false)} viewMode={viewMode} setViewMode={setViewMode}/>
+                <SettingDialog open={settingDialogOpen} onClose={()=>setSettingDialogOpen(false)} 
+                    viewMode={viewMode} setViewMode={setViewMode} 
+                    debugEnable={debugEnable} setDebugEnable={setDebugEnable}
+                    />
                 <div id="info1"/>
             </div>
 
