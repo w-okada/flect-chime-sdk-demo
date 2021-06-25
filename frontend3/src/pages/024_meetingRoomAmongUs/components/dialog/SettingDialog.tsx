@@ -12,6 +12,15 @@ type SettingDialogProps={
     setViewMode:(mode:ViewMode) => void
     debugEnable:boolean
     setDebugEnable:(mode:boolean) => void
+    screenSize:number[]
+    setScreenSize:(size:number[])=>void
+}
+
+const ScreenSize:{[key:string]:number[]} = {
+    "640x480":[640,480],
+    "320x240":[320,240],
+    "160x120":[160,120],
+    "64x48":[64,48]
 }
 
 export const SettingDialog = (props:SettingDialogProps) =>{
@@ -64,7 +73,10 @@ export const SettingDialog = (props:SettingDialogProps) =>{
     const onDebugEnableChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
         props.setDebugEnable(event.target.checked )
     };
-    
+    const onScreenSizeChanged = (e:any) => {
+        const size = ScreenSize[e.target.value as string]
+        props.setScreenSize(size)
+    }
 
 
     return(
@@ -137,11 +149,19 @@ export const SettingDialog = (props:SettingDialogProps) =>{
                             <Switch
                                 checked={props.debugEnable}
                                 onChange={onDebugEnableChanged}
-                                name="aaaaa"
                                 inputProps={{ 'aria-label': 'secondary checkbox' }}
                             />
                         </FormControl>
 
+
+                        <FormControl className={classes.formControl} >
+                            <InputLabel>canvas size</InputLabel>
+                            <Select onChange={onScreenSizeChanged} value={`${props.screenSize[0]}x${props.screenSize[1]}`} >
+                                {Object.keys(ScreenSize).map(val => {
+                                    return <MenuItem value={val} key={val}>{val}</MenuItem>
+                                })}
+                            </Select>
+                        </FormControl>
                     </form>
 
                 </DialogContent>

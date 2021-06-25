@@ -192,13 +192,14 @@ export const MeetingRoomAmongUs = () => {
     const [ captureStream, setCaptureStream ] = useState<MediaStream>()
     const { tenSecondsTaskTrigger } = useScheduler()
 
-    const [debugEnable, setDebugEnable] = useState(false)
 
     const setUserName = (newUserName:string) =>{
         _setUserName(newUserName)
     }
 
     const [ viewMode, setViewMode ] = useState<ViewMode>("MultiTileView")
+    const [ debugEnable, setDebugEnable] = useState(false)
+    const [ screenSize, setScreenSize] = useState<number[]>([640,480])
 
     const targetTilesId = Object.keys(videoTileStates).reduce<string>((sum,cur)=>{return `${sum}-${cur}`},"")
 
@@ -212,10 +213,10 @@ export const MeetingRoomAmongUs = () => {
         const audioEl = document.getElementById("arena_speaker") as HTMLAudioElement
         audioOutputDeviceSetting!.setOutputAudioElement(audioEl)
 
-        const canvasEl  = document.getElementById("captureCanvas") as HTMLCanvasElement
+        // const canvasEl  = document.getElementById("captureCanvas") as HTMLCanvasElement
         // @ts-ignore
-        const stream = canvasEl.captureStream() as MediaStream
-        videoInputDeviceSetting?.setVideoInput(stream)
+        // const stream = canvasEl.captureStream() as MediaStream
+        // videoInputDeviceSetting?.setVideoInput(stream)
 
         // @ts-ignore
         document.body.style = 'background: black;';
@@ -413,6 +414,15 @@ export const MeetingRoomAmongUs = () => {
             //         videoInputDeviceSetting!.startLocalVideoTile()
             //     })                    
             // }
+
+
+            // const videoEl  = document.getElementById("capture") as HTMLVideoElement
+            // // @ts-ignore
+            // const stream = videoEl.captureStream() as MediaStream
+            // videoInputDeviceSetting!.setVideoInput(stream).then(()=>{
+            //     videoInputDeviceSetting!.startLocalVideoTile()
+            // })
+
 
             const canvasEl  = document.getElementById("captureCanvas") as HTMLCanvasElement
             // @ts-ignore
@@ -869,7 +879,7 @@ export const MeetingRoomAmongUs = () => {
                             </div>
                             <div style={{width:"30%", height:"100%", alignItems:"center" }}>
                             <video width="640" height="480" id="capture" style={{width:"50%", height:"100%", borderStyle:"dashed",borderColor: blueGrey[400]}} />
-                            <canvas width="640" height="480" id="captureCanvas" hidden />
+                            <canvas width={screenSize[0]} height={screenSize[1]} id="captureCanvas" hidden />
                             </div>
                             <div style={{width:"30%", height:"100%", alignItems:"center" }}>
                             </div>
@@ -937,6 +947,7 @@ export const MeetingRoomAmongUs = () => {
                 <SettingDialog open={settingDialogOpen} onClose={()=>setSettingDialogOpen(false)} 
                     viewMode={viewMode} setViewMode={setViewMode} 
                     debugEnable={debugEnable} setDebugEnable={setDebugEnable}
+                    screenSize={screenSize} setScreenSize={setScreenSize}
                     />
                 <div id="info1"/>
             </div>

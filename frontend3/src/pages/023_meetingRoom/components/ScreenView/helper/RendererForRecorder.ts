@@ -87,61 +87,146 @@ export class RendererForRecorder {
         ctx.fillStyle="#000000"
         ctx.clearRect(0,0,this.dstCanvas!.width,this.dstCanvas!.height)
         ctx.fillRect(0,0,this.dstCanvas!.width,this.dstCanvas!.height)
-        this.srcVideos.forEach((video,index)=>{
-            let rate
-            // if(video.videoWidth / video.videoHeight > this.dstCanvas!.width / this.dstCanvas!.height){
-            if(video.videoWidth / this.maxWidth > video.videoHeight / this.maxHeight){
-                rate = this.maxWidth / video.videoWidth
-            }else{
-                rate = this.maxHeight / video.videoHeight
-            }
-            const w = video.videoWidth * rate
-            const h = video.videoHeight * rate
-            const offset_x_per_area = (this.maxWidth - w) / 2
-            const offset_y_per_area = (this.maxHeight - h) / 2
+        // this.srcVideos.forEach((video,index)=>{
+        //     let rate
+        //     if(video.videoWidth / this.maxWidth > video.videoHeight / this.maxHeight){
+        //         rate = this.maxWidth / video.videoWidth
+        //     }else{
+        //         rate = this.maxHeight / video.videoHeight
+        //     }
+        //     const w = video.videoWidth * rate
+        //     const h = video.videoHeight * rate
+        //     const offset_x_per_area = (this.maxWidth - w) / 2
+        //     const offset_y_per_area = (this.maxHeight - h) / 2
 
-            const global_offset_x = (index % this.cols) * this.maxWidth  + offset_x_per_area
-            const global_offset_y = Math.floor(index / this.cols) * this.maxHeight + offset_y_per_area
-            const position = [Math.ceil(global_offset_x), Math.ceil(global_offset_y), Math.ceil(w), Math.ceil(h)]
+        //     const global_offset_x = (index % this.cols) * this.maxWidth  + offset_x_per_area
+        //     const global_offset_y = Math.floor(index / this.cols) * this.maxHeight + offset_y_per_area
+        //     const position = [Math.ceil(global_offset_x), Math.ceil(global_offset_y), Math.ceil(w), Math.ceil(h)]
 
-            // console.log(">>>>>>>>>>>>>>>",video, position)
-            ctx.drawImage(video, position[0], position[1], position[2], position[3])
+        //     // console.log(">>>>>>>>>>>>>>>",video, position)
+        //     ctx.drawImage(video, position[0], position[1], position[2], position[3])
 
-            if(this.titles[index]){
-                let title = this.titles[index]
-                ctx.textAlign='left'
-                ctx.textBaseline='top'
+        //     if(this.titles[index]){
+        //         let title = this.titles[index]
+        //         ctx.textAlign='left'
+        //         ctx.textBaseline='top'
 
-                const fontsize = Math.ceil(Math.floor(h/ 10))
-                ctx.font = `${fontsize}px Arial`
-                if(title.length > 10){
-                    title = title.substring(0,10)
-                }
-                const textWidth = ctx.measureText(title).width
-                ctx.fillStyle="#ffffff99"
-                const textAreaposition = [position[0]+5, position[1] + position[3] - fontsize - 5, textWidth, fontsize]
+        //         const fontsize = Math.ceil(Math.floor(h/ 10))
+        //         ctx.font = `${fontsize}px Arial`
+        //         if(title.length > 10){
+        //             title = title.substring(0,10)
+        //         }
+        //         const textWidth = ctx.measureText(title).width
+        //         ctx.fillStyle="#ffffff99"
+        //         const textAreaposition = [position[0]+5, position[1] + position[3] - fontsize - 5, textWidth, fontsize]
                 
-                ctx.fillRect(textAreaposition[0], textAreaposition[1], textAreaposition[2], textAreaposition[3])
+        //         ctx.fillRect(textAreaposition[0], textAreaposition[1], textAreaposition[2], textAreaposition[3])
 
-                ctx.fillStyle=blueGrey[900]
-                ctx.fillText(title, position[0]+5, position[1] + position[3] - fontsize - 5)
-            }else{
-                let title = "NO TITLE"
-                ctx.fillStyle=blueGrey[900]
-                const fontsize = Math.ceil(Math.floor(h/ 10))
-                ctx.font = `${fontsize}px Arial`
-                ctx.fillText(title, position[0]+5, position[1] + position[3] - fontsize - 5)
+        //         ctx.fillStyle=blueGrey[900]
+        //         ctx.fillText(title, position[0]+5, position[1] + position[3] - fontsize - 5)
+        //     }else{
+        //         let title = "NO TITLE"
+        //         ctx.fillStyle=blueGrey[900]
+        //         const fontsize = Math.ceil(Math.floor(h/ 10))
+        //         ctx.font = `${fontsize}px Arial`
+        //         ctx.fillText(title, position[0]+5, position[1] + position[3] - fontsize - 5)
+        //     }
+        // })
+
+
+
+
+
+        const promises = this.srcVideos.map((video,index)=>{
+            const p = new Promise<void>((resolve,reject)=>{
+                let rate
+                if(video.videoWidth / this.maxWidth > video.videoHeight / this.maxHeight){
+                    rate = this.maxWidth / video.videoWidth
+                }else{
+                    rate = this.maxHeight / video.videoHeight
+                }
+                const w = video.videoWidth * rate
+                const h = video.videoHeight * rate
+                const offset_x_per_area = (this.maxWidth - w) / 2
+                const offset_y_per_area = (this.maxHeight - h) / 2
+    
+                const global_offset_x = (index % this.cols) * this.maxWidth  + offset_x_per_area
+                const global_offset_y = Math.floor(index / this.cols) * this.maxHeight + offset_y_per_area
+                const position = [Math.ceil(global_offset_x), Math.ceil(global_offset_y), Math.ceil(w), Math.ceil(h)]
+    
+                // console.log(">>>>>>>>>>>>>>>",video, position)
+                ctx.drawImage(video, position[0], position[1], position[2], position[3])
+    
+                if(this.titles[index]){
+                    let title = this.titles[index]
+                    ctx.textAlign='left'
+                    ctx.textBaseline='top'
+    
+                    const fontsize = Math.ceil(Math.floor(h/ 10))
+                    ctx.font = `${fontsize}px Arial`
+                    if(title.length > 10){
+                        title = title.substring(0,10)
+                    }
+                    const textWidth = ctx.measureText(title).width
+                    ctx.fillStyle="#ffffff99"
+                    const textAreaposition = [position[0]+5, position[1] + position[3] - fontsize - 5, textWidth, fontsize]
+                    
+                    ctx.fillRect(textAreaposition[0], textAreaposition[1], textAreaposition[2], textAreaposition[3])
+    
+                    ctx.fillStyle=blueGrey[900]
+                    ctx.fillText(title, position[0]+5, position[1] + position[3] - fontsize - 5)
+                }else{
+                    let title = "NO TITLE"
+                    ctx.fillStyle=blueGrey[900]
+                    const fontsize = Math.ceil(Math.floor(h/ 10))
+                    ctx.font = `${fontsize}px Arial`
+                    ctx.fillText(title, position[0]+5, position[1] + position[3] - fontsize - 5)
+                }
+                resolve()
+            })
+            return p
+        })
+        Promise.all(promises).then(()=>{
+            if (this.alive) {
+                // console.log("[Recoerder View] request next frame")
+                requestAnimationFrame(() => { this.renderVideos() })
+                // setTimeout(this.renderVideos, 50)
+    
+            } else {
+                console.log("[Recoerder View] stop request next frame")
             }
         })
 
-        if (this.alive) {
-            // console.log("[Recoerder View] request next frame")
-            // requestAnimationFrame(() => { this.renderVideos() })
-            setTimeout(this.renderVideos, 50)
 
-        } else {
-            console.log("[Recoerder View] stop request next frame")
-        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // if (this.alive) {
+        //     // console.log("[Recoerder View] request next frame")
+        //     requestAnimationFrame(() => { this.renderVideos() })
+        //     // setTimeout(this.renderVideos, 50)
+
+        // } else {
+        //     console.log("[Recoerder View] stop request next frame")
+        // }
     }
 
 }

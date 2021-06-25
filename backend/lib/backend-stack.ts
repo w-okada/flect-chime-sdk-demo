@@ -179,7 +179,7 @@ export class BackendStack extends cdk.Stack {
       family: this.node.tryGetContext('serviceName'),
       cpu: 2048,
       // memoryLimitMiB: 5120,
-      memoryLimitMiB: 4096,
+      memoryLimitMiB: 8192,
     });
 
     if(USE_DOCKER){
@@ -188,7 +188,7 @@ export class BackendStack extends cdk.Stack {
         image: ecs.ContainerImage.fromAsset("lib/manager"),
         cpu: 2048,
         // memoryLimitMiB: 4096,
-        memoryLimitMiB: 5120,
+        memoryLimitMiB: 8192,
         logging: logging,
       });
     }else{
@@ -197,7 +197,7 @@ export class BackendStack extends cdk.Stack {
         containerName: `${id}_manager_container`,
         image: image,
         cpu: 2048,
-        memoryLimitMiB: 4096,
+        memoryLimitMiB: 8192,
         // memoryLimitMiB: 5120,
         logging: logging,
       });
