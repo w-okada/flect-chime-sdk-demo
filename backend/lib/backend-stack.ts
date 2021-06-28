@@ -299,6 +299,18 @@ export class BackendStack extends cdk.Stack {
       f.addEnvironment("SECURITY_GROUP_NAME", securityGroup.securityGroupName)
       f.addEnvironment("SECURITY_GROUP_ID", securityGroup.securityGroupId)
 
+
+      //// DEMO URL
+      if(USE_CDN){
+        f.addEnvironment("DEMO_ENDPOINT", `https://${cdn!.distributionDomainName}/index.html`)
+      }else{
+        f.addEnvironment("DEMO_ENDPOINT", `https://${bucket.bucketDomainName}/index.html`)
+      }
+
+
+
+
+
       f.addLayers(nodeModulesLayer)
     }
 
@@ -825,7 +837,6 @@ export class BackendStack extends cdk.Stack {
         description: "DemoEndpoint",
         value: `https://${bucket.bucketDomainName}/index.html`
       })
-
     }
 
     // new cdk.CfnOutput(this, "AmongLoadBalancerDNS", {

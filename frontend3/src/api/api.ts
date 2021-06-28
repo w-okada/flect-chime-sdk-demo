@@ -286,6 +286,8 @@ export const singinWithOnetimeCode = async (meetingName:string, attendeeId:strin
 
     const url = `${BASE_URL}operations/onetime-code-signin`
 
+    console.log("[onetimecode] 1")
+
     const request = { 
         uuid:uuid,
         meetingName: meetingName,
@@ -294,22 +296,38 @@ export const singinWithOnetimeCode = async (meetingName:string, attendeeId:strin
     }
     const requestBody = JSON.stringify(request)
 
-    const response = await fetch(url, {
+    console.log("[onetimecode] 2")
+    try{
+        const response = await fetch(url, {
             method: 'POST',
             body: requestBody,
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             }
-        }
-    );
+        });
 
-    const data = await response.json();
-    console.log("[singinWithOnetimeCode]",data)
-    if (data === null) {
-        throw new Error(`Server error: Join Meeting Failed`);
+        console.log("[onetimecode] 3")
+        const data = await response.json();
+        console.log("[singinWithOnetimeCode]",data)    
+        if (data === null) {
+            throw new Error(`Server error: Join Meeting Failed`);
+        }
+        return data;
+    }catch(exception){
+        console.log("[onetimecode]2-2, ", exception.message)
+        console.log("[onetimecode]2-2, ", JSON.stringify(exception.message))
+        
+
+        console.log("[onetimecode]2-3, ", url)
     }
-    return data;
+    return {
+        result:false,
+        idToken:"b",
+        accessToken:"c",
+        attendeeName: "d",
+    }
+
 }
 
 
@@ -394,7 +412,7 @@ export const getMeetingInfo = async(meetingName: string, idToken: string, access
  * @param code 
  */
 export const getManagerInfo = async (meetingName: string, attendeeId: string, idToken: string, accessToken: string, refreshToken: string):
-Promise<{ code: string, publicIp:string }> => {
+Promise<{ code: string, publicIp:string, lastStatus:string,  desiredStatus:string}> => {
 
     const url = `${BASE_URL}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}/operations/get-manager-info`
 

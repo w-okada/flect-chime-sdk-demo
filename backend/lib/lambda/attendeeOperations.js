@@ -11,6 +11,7 @@ var taskDefinitionArnManager = process.env.TASK_DIFINITION_ARN_MANAGER
 var vpcId                    = process.env.VPC_ID // not used
 var subnetId                 = process.env.SUBNET_ID
 var bucketDomainName         = process.env.BUCKET_DOMAIN_NAME
+var demoEndpoint             = process.env.DEMO_ENDPOINT
 var managerContainerName     = process.env.MANAGER_CONTAINER_NAME
 var bucketArn                = process.env.BUCKET_ARN
 var bucketName               = process.env.BUCKET_NAME
@@ -204,7 +205,7 @@ const startMeetingManager = async (email, meetingName, attendeeId, headers, body
     var uuid = oneCodeGenResult['uuid']
 
     //// (5) invoke HMM fargate container
-    var meetingURL = `https://${bucketDomainName}/index.html?code=${code}&uuid=${uuid}&meetingName=${meetingName}&attendeeId=${attendeeId}&stage=HEADLESS_MEETING_MANAGER`
+    var meetingURL = `${demoEndpoint}?code=${code}&uuid=${uuid}&meetingName=${meetingName}&attendeeId=${attendeeId}&stage=HEADLESS_MEETING_MANAGER`
     var params = {
         cluster: clusterArn ,
         count: 1,

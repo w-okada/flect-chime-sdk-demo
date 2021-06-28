@@ -93,6 +93,7 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
     const updateHMMInfo = async () =>{
         const res = await getManagerInfo(props.meetingName!, attendeeId!, props.idToken!, props.accessToken!, props.refreshToken!)
         const publicIp = res.publicIp
+        const lastStatus = res. lastStatus
         setPublicIp(publicIp)
     }
 
