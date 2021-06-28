@@ -286,8 +286,6 @@ export const singinWithOnetimeCode = async (meetingName:string, attendeeId:strin
 
     const url = `${BASE_URL}operations/onetime-code-signin`
 
-    console.log("[onetimecode] 1")
-
     const request = { 
         uuid:uuid,
         meetingName: meetingName,
@@ -296,7 +294,6 @@ export const singinWithOnetimeCode = async (meetingName:string, attendeeId:strin
     }
     const requestBody = JSON.stringify(request)
 
-    console.log("[onetimecode] 2")
     try{
         const response = await fetch(url, {
             method: 'POST',
@@ -307,7 +304,6 @@ export const singinWithOnetimeCode = async (meetingName:string, attendeeId:strin
             }
         });
 
-        console.log("[onetimecode] 3")
         const data = await response.json();
         console.log("[singinWithOnetimeCode]",data)    
         if (data === null) {
@@ -315,19 +311,15 @@ export const singinWithOnetimeCode = async (meetingName:string, attendeeId:strin
         }
         return data;
     }catch(exception){
-        console.log("[onetimecode]2-2, ", exception.message)
-        console.log("[onetimecode]2-2, ", JSON.stringify(exception.message))
-        
-
-        console.log("[onetimecode]2-3, ", url)
+        console.log("[onetimecode] exception:", exception.message)
+        console.log("[onetimecode] exception: ", JSON.stringify(exception.message))
     }
     return {
         result:false,
-        idToken:"b",
-        accessToken:"c",
-        attendeeName: "d",
+        idToken:"",
+        accessToken:"",
+        attendeeName: "",
     }
-
 }
 
 
