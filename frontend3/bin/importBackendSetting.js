@@ -29,9 +29,9 @@ fs.writeFileSync('./sync.sh', outputString);
 
 //// output access url
 console.log("generate access url")
-const bucketDomainName = outputs["BucketDomainName"]
+const DemoEndpoint = outputs["DemoEndpoint"]
 outputString=""
-outputString += `https://${bucketDomainName}/index.html \n`
+outputString += `${DemoEndpoint} \n`
 
 fs.writeFileSync('./demo_url.txt', outputString);
 

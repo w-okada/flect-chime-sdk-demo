@@ -9,12 +9,12 @@ import { CfnOutput, Duration, ConcreteDependable } from '@aws-cdk/core';
 import * as s3 from '@aws-cdk/aws-s3'
 import { ManagedPolicy, Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 import { Role, ServicePrincipal } from "@aws-cdk/aws-iam";
-import { FRONTEND_LOCAL_DEV, USE_DOCKER } from '../bin/config';
+import { FRONTEND_LOCAL_DEV, USE_DOCKER, USE_CDN } from '../bin/config';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as ecs from "@aws-cdk/aws-ecs";
 import * as logs from "@aws-cdk/aws-logs";
-import * as elb from "@aws-cdk/aws-elasticloadbalancingv2";
-
+import * as cloudfront from "@aws-cdk/aws-cloudfront";
+import * as iam from "@aws-cdk/aws-iam";
 
 export class BackendStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -94,8 +94,64 @@ export class BackendStack extends cdk.Stack {
       publicReadAccess: true,
     })
 
+    let cdn:cloudfront.CloudFrontWebDistribution
+    if(USE_CDN){
+      const oai = new cloudfront.OriginAccessIdentity(this, "my-oai");
 
-
+      const myBucketPolicy = new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["s3:GetObject"],
+        principals: [
+          new iam.CanonicalUserPrincipal(
+            oai.cloudFrontOriginAccessIdentityS3CanonicalUserId
+          ),
+        ],
+        resources: [bucket.bucketArn + "/*"],
+      });
+      bucket.addToResourcePolicy(myBucketPolicy);
+  
+      // Create CloudFront WebDistribution
+      cdn = new cloudfront.CloudFrontWebDistribution(this, "WebsiteDistribution", {
+        viewerCertificate: {
+          aliases: [],
+          props: {
+            cloudFrontDefaultCertificate: true,
+          },
+        },
+        priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
+        originConfigs: [
+          {
+            s3OriginSource: {
+              s3BucketSource: bucket,
+              originAccessIdentity: oai,
+            },
+            behaviors: [
+              {
+                isDefaultBehavior: true,
+                minTtl: cdk.Duration.seconds(0),
+                maxTtl: cdk.Duration.days(365),
+                defaultTtl: cdk.Duration.days(1),
+                pathPattern: "my-contents/*",
+              },
+            ],
+          },
+        ],
+        errorConfigurations: [
+          {
+            errorCode: 403,
+            responsePagePath: "/index.html",
+            responseCode: 200,
+            errorCachingMinTtl: 0,
+          },
+          {
+            errorCode: 404,
+            responsePagePath: "/index.html",
+            responseCode: 200,
+            errorCachingMinTtl: 0,
+          },
+        ],
+      });
+    }    
     //////////////////////////////////////
     //// Storage Resources (DynamoDB)
     //////////////////////////////////////
@@ -386,7 +442,11 @@ export class BackendStack extends cdk.Stack {
         // origin = "'https://localhost:3000'"
         origin = "'https://192.168.0.4:3000'"
       } else {
-        origin = `'https://${bucket.bucketDomainName}'`
+        if(USE_CDN){
+          origin = `'https://${cdn!.distributionDomainName}'`
+        }else{
+          origin = `'https://${bucket.bucketDomainName}'`
+        }
       }
       apiResource.addMethod('OPTIONS', new MockIntegration({
         integrationResponses: [{
@@ -745,6 +805,28 @@ export class BackendStack extends cdk.Stack {
       description: "WebSocketEndpoint",
       value: webSocketApi.attrApiEndpoint,
     })
+
+    if(USE_CDN){
+      new CfnOutput(this, "CDNComainName", {
+        description: "CDNComainName",
+        value: cdn!.distributionDomainName,
+      })
+    }
+
+
+    //// DEMO URL
+    if(USE_CDN){
+      new CfnOutput(this, "DemoEndpoint", {
+        description: "DemoEndpoint",
+        value: `https://${cdn!.distributionDomainName}/index.html`,
+      })
+    }else{
+      new CfnOutput(this, "DemoEndpoint", {
+        description: "DemoEndpoint",
+        value: `https://${bucket.bucketDomainName}/index.html`
+      })
+
+    }
 
     // new cdk.CfnOutput(this, "AmongLoadBalancerDNS", {
     //   value: lb_among.loadBalancerDnsName
