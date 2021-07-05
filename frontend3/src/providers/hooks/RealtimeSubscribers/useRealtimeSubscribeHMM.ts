@@ -62,6 +62,7 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
     
     const [ hMMCommandData, setHMMComandData] = useState<RealtimeData[]>([])
     const [ publicIp, setPublicIp] = useState<string>("")
+    const [ lastHMMStatus, setLastHMMStatus] = useState<string>("")
 
     const [ startRecordingCounter, setStartRecordingCounter] = useState(0)
     const [ stopRecordingCounter, setStopRecordingCounter] = useState(0)
@@ -92,9 +93,24 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
     }
     const updateHMMInfo = async () =>{
         const res = await getManagerInfo(props.meetingName!, attendeeId!, props.idToken!, props.accessToken!, props.refreshToken!)
-        const publicIp = res.publicIp
-        const lastStatus = res. lastStatus
-        setPublicIp(publicIp)
+        console.log("[updateHMMInfo]", res)
+        if(res.code === "EXIST_CHECK_EXCEPTION"){
+            const publicIp = "N/A"
+            const lastHMMStatus = "N/A"
+            setPublicIp(publicIp)
+            setLastHMMStatus(lastHMMStatus)
+            setHMMStatus({
+                active:false,
+                recording:false,
+                shareTileView:false,
+            })
+
+        }else if (res.code === "SUCCESS"){
+            const publicIp = res.publicIp
+            const lastHMMStatus = res.lastStatus
+            setPublicIp(publicIp)
+            setLastHMMStatus(lastHMMStatus)
+        }
     }
 
     const sendStartRecord = () => {
@@ -220,6 +236,6 @@ export const useRealtimeSubscribeHMM = (props: UseRealtimeSubscribeHMMProps) =>{
         sendHMMCommand, hMMCommandData, startHMM, updateHMMInfo, publicIp,
         sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, sendTerminate, sendHMMStatus, sendRegisterAmongUsUserName,
         startRecordingCounter, stopRecordingCounter, startShareTileViewCounter, stopShareTileViewCounter, terminateCounter, hMMStatus, stateLastUpdate,
-        updateGameState, currentGameState, gameState
+        updateGameState, currentGameState, gameState, lastHMMStatus
     }
 }

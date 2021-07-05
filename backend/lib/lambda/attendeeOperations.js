@@ -357,7 +357,7 @@ const getMeetingManagerInformation = async (email, meetingName, attendeeId, head
     }catch(e){
         console.log(e)
         return {
-            code: 'ExistCheckException',
+            code: 'EXIST_CHECK_EXCEPTION',
             message: e
         }
     }

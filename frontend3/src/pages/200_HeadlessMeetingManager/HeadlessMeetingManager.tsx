@@ -91,8 +91,6 @@ export const HeadlessMeetingManager = () => {
     },[tenSecondsTaskTrigger]) // eslint-disable-line
 
 
-
-
     useEffect(()=>{
         if(state.internalStage === "Signining"){
             logger.log("Singining....")

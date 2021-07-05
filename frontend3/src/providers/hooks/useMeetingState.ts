@@ -104,11 +104,10 @@ export const useMeetingState = (props:UseMeetingStateProps) => {
 
     const updateMeetingInfo = async () =>{
         const meetingInfo = await getMeetingInfo(meetingName, props.idToken!, props.accessToken!, props.refreshToken!)
-        const ownerId = meetingInfo.Metadata.OwnerId
         console.log(meetingInfo)
         console.log("new ownerId", ownerId)
-        setOwnerId(ownerId)
-        setIsOwner(props.userId === ownerId)
+
+        setIsOwner(meetingInfo.IsOwner)
     }
 
     const setPauseVideo = (attendeeId:string, pause:boolean) =>{

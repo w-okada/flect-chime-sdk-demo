@@ -88,6 +88,12 @@ exports.getMeeting = async (event, context, callback) => {
 
     const response = utils.getResponseTemplate()
     const meetingInfo = await meeting.getMeetingInfo2(meetingName)
+    if(meetingInfo.Metadata.OwnerId === email){
+        meetingInfo.IsOwner = true
+    }else{
+        meetingInfo.IsOwner = false
+    }
+     
     response.body = JSON.stringify(meetingInfo)
     callback(null, response)
 }

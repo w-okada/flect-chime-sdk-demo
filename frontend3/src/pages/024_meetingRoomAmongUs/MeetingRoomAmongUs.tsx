@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { Tooltip, IconButton, Divider, FormControl, InputLabel, Select, MenuItem } from '@material-ui/core'
+import { Tooltip, IconButton, Divider, FormControl, InputLabel, Select, MenuItem, CircularProgress } from '@material-ui/core'
 import { useAppState } from "../../providers/AppStateProvider";
 import EmojiPeopleIcon from '@material-ui/icons/EmojiPeople';
 import { blueGrey, red } from '@material-ui/core/colors';
@@ -181,7 +181,7 @@ export const MeetingRoomAmongUs = () => {
     const {meetingSession, attendeeId, videoTileStates, videoInputDeviceSetting, audioInputDeviceSetting, audioOutputDeviceSetting,
         isOwner, publicIp,
         startHMM, sendTerminate, sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, hMMStatus, stateLastUpdate,
-        currentGameState, sendRegisterAmongUsUserName, updateHMMInfo
+        currentGameState, sendRegisterAmongUsUserName, updateHMMInfo, lastHMMStatus
     } = useAppState()
     const [settingDialogOpen, setSettingDialogOpen] = useState(false);
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
@@ -523,25 +523,70 @@ export const MeetingRoomAmongUs = () => {
     },[isOwner]) // eslint-disable-line
     /// (1-2) hmm active
     const managerStateComp = useMemo(()=>{
-        return (
-            hMMStatus.active?
-            <>
-                <Tooltip title={"hmm active"}>
-                    <IconButton classes={{root:classes.menuButton}} onClick={()=>{sendTerminate()}}>                    
-                        <SportsEsportsIcon className={classes.activeState_hmm} fontSize="large"/>
-                    </IconButton>                    
-                </Tooltip>
-            </>
-            :
-            <>
-                <Tooltip title={"hmm not active"}>
-                    <IconButton classes={{root:classes.menuButton}} onClick={()=>{startHMM()}}>                    
-                        <SportsEsportsIcon className={classes.inactiveState} fontSize="large"/>
-                    </IconButton>
-                </Tooltip>
-            </>
-        )
-    },[hMMStatus.active]) // eslint-disable-line
+        if(hMMStatus.active === false && (!lastHMMStatus || lastHMMStatus==="N/A")){ // Not active
+            return(
+                <>
+                    <Tooltip title={`hmm not active: ${lastHMMStatus}`}>
+                        <IconButton classes={{root:classes.menuButton}} onClick={()=>{startHMM()}}>                    
+                            <SportsEsportsIcon className={classes.inactiveState} fontSize="large"/>
+                        </IconButton>
+                    </Tooltip>
+                </>
+            )
+        }else if(hMMStatus.active === false && lastHMMStatus === "PROVISIONING"){ // Invoking && Provisioning
+            return (
+                <>
+                    <Tooltip title={"invoking hmm: provisioning"}>
+                        <CircularProgress />               
+                    </Tooltip>
+                </>
+            )
+        }else if(hMMStatus.active === false && lastHMMStatus === "PENDING"){  // Invoking && PENDING
+            return (
+                <>
+                    <Tooltip title={"invoking hmm: pending"}>
+                        <CircularProgress />               
+                    </Tooltip>
+                </>
+            )
+        }else if(hMMStatus.active === true && lastHMMStatus === "PENDING"){ // already invoked (1)
+            return (
+                <>
+                    <Tooltip title={"invoking hmm: already invoked"}>
+                        <CircularProgress />               
+                    </Tooltip>
+                </>
+            )
+        }else if(hMMStatus.active === false && lastHMMStatus === "RUNNING"){ // already invoked (2)
+            return (
+                <>
+                    <Tooltip title={"invoking hmm: already invoked"}>
+                        <CircularProgress />               
+                    </Tooltip>
+                </>
+            )
+        }else if(hMMStatus.active === true && lastHMMStatus === "RUNNING"){ //invoked
+            return (
+                <>
+                    <Tooltip title={"hmm active"}>
+                        <IconButton classes={{root:classes.menuButton}} onClick={()=>{sendTerminate()}}>                    
+                            <SportsEsportsIcon className={classes.activeState_hmm} fontSize="large"/>
+                        </IconButton>                    
+                    </Tooltip>
+                </>
+            )
+        }else{
+            return (
+                <>
+                    <Tooltip title={`active:${hMMStatus.active}, last status: ${lastHMMStatus}`}>
+                        <IconButton classes={{root:classes.menuButton}} onClick={()=>{startHMM()}}>                    
+                            <SportsEsportsIcon className={classes.inactiveState} fontSize="large"/>
+                        </IconButton>
+                    </Tooltip>
+                </>
+            )
+        }
+    },[hMMStatus.active, lastHMMStatus]) // eslint-disable-line
     /// (1-3) hmm recording
     const recordingStateComp = useMemo(()=>{
         return (
