@@ -89,7 +89,8 @@ $ emacs backend/bin/config.ts
 
 export const BACKEND_STACK_NAME = 'BackendStack' # <-- You should change. (*1)
 export const FRONTEND_LOCAL_DEV = false          # <-- Set false for deployment(only for developper).
-export const USE_DOCKER = false                   # <-- If you want to build HMM, changet to true(only for developper).
+export const USE_DOCKER = false                  # <-- If you want to build HMM, changet to true(only for developper).
+export const USE_CDN = false                     # <--- If you want to use cloudfront, set true
 ```
 (*1) This demo uses S3 bucket whose name is defined with this value. So, this value should be global unique.
 
@@ -197,4 +198,9 @@ meeting_URLはconsoleから取れる。
 backend/lib/manager$ docker build -t hmm .
 
 docker run -p 3000:3000 -v `pwd`:/work --env MEETING_URL="xxx"  --env BUCKET_ARN="xxx" hmm
+
+
+$ docker build -t dannadori/hmm . --no-cache
+$ docker login
+$ docker push dannadori/hmm 
 
