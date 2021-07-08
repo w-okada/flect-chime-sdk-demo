@@ -1,0 +1,32 @@
+{
+  "name": "@dannadori/flect-chime-lib",
+  "version": "1.0.2",
+  "description": "",
+  "main": "dist/flect-amazon-chime-lib.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "webpack": "npx webpack --config webpack.config.js",
+    "clean": "rimraf dist/*",
+    "build": "node bin/importBackendSetting.js && npm-run-all clean webpack && cp dist/flect-amazon-chime-lib.js demo/"
+  },
+  "keywords": [],
+  "author": "dannadori <wataru.okada@flect.co.jp> (https://zenn.dev/wok)",
+  "license": "ISC",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "ts-loader": "^9.2.3",
+    "tsconfig-paths": "^3.10.1",
+    "typescript": "^4.3.5",
+    "webpack": "^5.43.0",
+    "webpack-cli": "^4.7.2",
+    "worker-plugin": "^5.0.1"
+  },
+  "dependencies": {
+    "@dannadori/bodypix-worker-js": "^1.0.31",
+    "@dannadori/googlemeet-segmentation-tflite-worker-js": "^1.0.14",
+    "@dannadori/googlemeet-segmentation-worker-js": "^1.0.13",
+    "amazon-chime-sdk-js": "^2.13.0",
+    "amazon-cognito-identity-js": "^5.0.3"
+  }
+}
