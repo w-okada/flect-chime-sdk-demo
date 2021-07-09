@@ -2,6 +2,11 @@ import { AuthenticationDetails, CognitoUser, CognitoUserAttribute, CognitoUserPo
 
 export class CognitoClient{
     private _userPool:CognitoUserPool
+    private _userId:string|null = null
+    get userId():string|null{return this._userId}
+    private _password:string|null = null
+    get password():string|null{return this._password}
+
     private _idToken:string|null = null
     get idToken():string|null{return this._idToken}
     private _accessToken:string|null = null
@@ -9,11 +14,13 @@ export class CognitoClient{
     private _refreshToken:string|null = null
     get refreshToken():string|null{return this._refreshToken}
 
-    constructor(userPoolId:string, clientId:string){
+    constructor(userPoolId:string, clientId:string, defaultUserId:string|null=null, defaultPassword:string|null=null){
         this._userPool = new CognitoUserPool({
             UserPoolId: userPoolId,
             ClientId: clientId,
         })
+        this._userId = defaultUserId
+        this._password = defaultPassword
     }
 
 
@@ -34,6 +41,7 @@ export class CognitoClient{
                     this._accessToken = result.getAccessToken().getJwtToken()
                     this._idToken = result.getIdToken().getJwtToken()
                     this._refreshToken = result.getRefreshToken().getToken()
+                    this._userId = userId
                     resolve()
                 },
                 onFailure: (err) => {

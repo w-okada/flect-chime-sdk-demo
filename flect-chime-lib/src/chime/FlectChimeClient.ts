@@ -43,22 +43,50 @@ export class FlectChimeClient {
     * meeting infos
     */
     private _meetingName: string | null = null
+    get meetingName():string|null{
+        return this._meetingName
+    }
     private _meetingId: string | null = null
+    get meetingId():string|null{
+        return this._meetingId
+    }
     private _joinToken: string | null = null
+    get joinToken():string|null{
+        return this._joinToken
+    }
     private _userName: string | null = null
+    get userName():string|null{
+        return this._userName
+    }
     private _attendeeId: string | null = null
+    get attendeeId():string|null{
+        return this._attendeeId
+    }
     private _meetingSession: DefaultMeetingSession|null = null
+    get meetingSession():DefaultMeetingSession|null{
+        return this._meetingSession
+    }
     private _videoTileStates: { [attendeeId: string]: VideoTileState } = {}
+    get videoTileStates():{ [attendeeId: string]: VideoTileState }{
+        return this._videoTileStates
+    }
     private _attendees: { [attendeeId: string]: AttendeeState } = {} 
+    get attendees(): { [attendeeId: string]: AttendeeState }{
+        return this._attendees
+    }
     private _isShareContent:boolean = false
+    get isShareContent():boolean{
+        return this._isShareContent
+    }
     private _activeSpeakerId:string|null = null
+    get activeSpeakerId():string|null{
+        return this._activeSpeakerId
+    }
 
+    //// I/O
     private _audioInputDeviceSetting: AudioInputDeviceSetting|null = null
     private _videoInputDeviceSetting: VideoInputDeviceSetting|null = null
     private _audioOutputDeviceSetting: AudioOutputDeviceSetting|null = null
-    get meetingSession():DefaultMeetingSession | null{
-        return this._meetingSession
-    }
     get audioInputDeviceSetting():AudioInputDeviceSetting | null{
         return this._audioInputDeviceSetting
     }
@@ -69,6 +97,22 @@ export class FlectChimeClient {
         return this._audioOutputDeviceSetting
     }    
 
+
+    ///////////////////////////////////////////
+    // Listener
+    ///////////////////////////////////////////
+    private _activeSpekaerUpdateListener = (activeSpeakerId:string|null)=>{}
+    setActiveSpekaerUpdateListener = (l:(activeSpeakerId:string|null)=>void) =>{
+        this._activeSpekaerUpdateListener = l
+    }
+    private _attendeesUpdateListener = (list:{ [attendeeId: string]: AttendeeState } )=>{}
+    setAttendeesUpdateListener = ( l:((list:{ [attendeeId: string]: AttendeeState } )=>void) )  => {
+        this._attendeesUpdateListener = l
+    }
+    private _videoTileStateUpdateListener = (list:{ [attendeeId: string]: VideoTileState }) =>{}
+    setVideoTileStateUpdateListener = ( l: ((list:{ [attendeeId: string]: VideoTileState }) =>void)) =>{
+        this._videoTileStateUpdateListener = l
+    }
 
     ///////////////////////////////////////////
     // Feature Management
@@ -148,6 +192,7 @@ export class FlectChimeClient {
             if (!this._videoTileStates[tileState.boundAttendeeId]) {
                 console.log("[FlectChimeClient][AudioVideoObserver] new tile added", tileState)
                 this._videoTileStates[tileState.boundAttendeeId] = tileState
+                this._videoTileStateUpdateListener(this._videoTileStates)
                 return
             }
             console.log("[FlectChimeClient][AudioVideoObserver] no change?", tileState)
@@ -161,6 +206,7 @@ export class FlectChimeClient {
             console.log("[FlectChimeClient][AudioVideoObserver] removedAttendeeId", removedAttendeeId)
             if (removedAttendeeId) {
                 delete this._videoTileStates[removedAttendeeId]
+                this._videoTileStateUpdateListener(this._videoTileStates)
             }
         }
         this._meetingSession.audioVideo.addObserver(audioVideoOserver)
@@ -243,6 +289,7 @@ export class FlectChimeClient {
                             this._attendees[attendeeId].signalStrength = signalStrength || 0
                         }
                     )
+                    this._attendeesUpdateListener(this._attendees)
                 } else {
                     console.log(`[FlectChimeClient][AttendeeIdPresenceSubscriber]  ${attendeeId} is already in attendees`);
                 }
@@ -251,6 +298,7 @@ export class FlectChimeClient {
                 // Delete Subscribe volume Indicator   
                 this.meetingSession!.audioVideo.realtimeUnsubscribeFromVolumeIndicator(attendeeId)
                 delete this._attendees[attendeeId]
+                this._attendeesUpdateListener(this._attendees)
                 return;
             }
         })
@@ -273,6 +321,7 @@ export class FlectChimeClient {
                 }
                 if(this._activeSpeakerId !== activeSpeakerId){
                     this._activeSpeakerId = activeSpeakerId
+                    this._activeSpekaerUpdateListener(this._activeSpeakerId)
                 }
             },
             (scores: { [attendeeId: string]: number }) => {
@@ -313,6 +362,23 @@ export class FlectChimeClient {
         this._meetingName = ""
         this._attendees = {}
         this._videoTileStates = {}
+    }
+
+
+
+
+    ///////////////////////////////////////////
+    // Utility
+    ///////////////////////////////////////////
+    getContentTiles = () =>{
+        return Object.values(this._videoTileStates).filter(tile=>{return tile.isContent})
+    }
+    getActiveSpeakerTile = () =>{
+        if(this._activeSpeakerId && this._videoTileStates[this._activeSpeakerId]){
+            return this._videoTileStates[this._activeSpeakerId] 
+        }else{
+            return null
+        }
     }
 
     setPauseVideo = (attendeeId:string, pause:boolean) =>{

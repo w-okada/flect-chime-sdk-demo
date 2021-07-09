@@ -118,7 +118,8 @@ export class VirtualBackground implements VideoFrameProcessor {
     googlemeetTFLiteConfig = (() => {
         const c = generateGoogleMeetSegmentationTFLiteDefaultConfig()
         c.processOnLocal = true
-        c.modelPath = `${process.env.PUBLIC_URL}/models/96x160/segm_lite_v681.tflite`
+        // c.modelPath = `${process.env.PUBLIC_URL}/models/96x160/segm_lite_v681.tflite`
+        c.modelPath = `./models/96x160/segm_lite_v681.tflite`
         // c.modelPath = `${process.env.PUBLIC_URL}/models/128x128/segm_lite_v509.tflite`
         // c.modelPath = ${process.env.PUBLIC_URL}/models/144x256/segm_full_v679.tflite`
         return c
@@ -301,6 +302,7 @@ export class VirtualBackground implements VideoFrameProcessor {
         const frontWidth = conf.width * conf.frontWidth
         const frontHeight = conf.height * conf.frontHeight
         this.targetCanvas.getContext("2d")!.drawImage(this.canvasFrontResized, frontPositionX, frontPositionY, frontWidth, frontHeight)
+        return
     }
 
 
@@ -400,6 +402,7 @@ export class VirtualBackground implements VideoFrameProcessor {
         }
 
         this.targetCanvas.getContext("2d")!.drawImage(this.personCanvas, 0, 0, this.targetCanvas.width, this.targetCanvas.height)
+        return
     }
 
 
@@ -456,6 +459,7 @@ export class VirtualBackground implements VideoFrameProcessor {
 
         // (5) draw personcanvas
         dstCtx.drawImage(this.personCanvas, 0, 0, this.targetCanvas.width, this.targetCanvas.height)
+        return
     }
 
     convert_none = (foreground: HTMLCanvasElement) => {
