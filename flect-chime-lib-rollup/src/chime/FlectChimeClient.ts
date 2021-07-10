@@ -5,6 +5,8 @@ import AudioVideoObserverTemplate from "./observer/AudioVideoObserverTemplate"
 import { AudioInputDeviceSetting } from "./io/AudioInputDeviceSetting"
 import { VideoInputDeviceSetting } from "./io/VideoInputDeviceSetting"
 import { AudioOutputDeviceSetting } from "./io/AudioOutputDeviceSetting"
+import { RealtimeSubscribeChatClient } from "./realtime/RealtimeSubscribeChatClient"
+import { RealtimeData } from "./realtime/const"
 
 export type AttendeeState = {
     attendeeId: string
@@ -97,6 +99,18 @@ export class FlectChimeClient {
         return this._audioOutputDeviceSetting
     }    
 
+    ///////////////////////////////////////////////////////////
+    // Tools
+    // Note: whiteboard is independent from ChimeClient (use websocket)
+    ///////////////////////////////////////////////////////
+    private _chatClient:RealtimeSubscribeChatClient|null = null
+    sendMessage = (text: string) =>{
+        this._chatClient?.sendChatData(text)
+    }
+    get chatData():RealtimeData[]{
+        return this._chatClient? this._chatClient.chatData : []
+    }
+
 
     ///////////////////////////////////////////
     // Listener
@@ -114,6 +128,11 @@ export class FlectChimeClient {
         this._videoTileStateUpdateListener = l
     }
 
+    private _chatDataUpdateListener = (list:RealtimeData[]) =>{console.log("[FlectChimeClient][RealtimeSubscribeChatClient] default listener(chime client)!")}
+    setChatDataUpdateListener = ( l: ((list:RealtimeData[]) =>void)) =>{
+        this._chatDataUpdateListener = l
+    }
+
     ///////////////////////////////////////////
     // Feature Management
     ///////////////////////////////////////////
@@ -125,8 +144,6 @@ export class FlectChimeClient {
         await this.meetingSession!.audioVideo.stopContentShare()
         this._isShareContent = false
     }
-
-    
 
     ///////////////////////////////////////////
     // Meeting Management
@@ -223,7 +240,6 @@ export class FlectChimeClient {
         await this.meetingSession?.audioVideo.listVideoInputDevices()
         await this.meetingSession?.audioVideo.listAudioOutputDevices()
     }
-
 
     /**
      * (C) Enter Meeting Room
@@ -330,7 +346,7 @@ export class FlectChimeClient {
                         this._attendees[attendeeId].score = scores[attendeeId];
                     }
                 }
-                this._attendees = this._attendees
+                this._attendeesUpdateListener(this._attendees)
             }, 5000)
 
         // (4) start 
@@ -338,8 +354,12 @@ export class FlectChimeClient {
         await this.videoInputDeviceSetting!.setVideoInputEnable(true)
         await this.audioInputDeviceSetting!.setAudioInputEnable(true)
         await this.audioOutputDeviceSetting!.setAudioOutputEnable(true)
-    }
 
+        // (5) enable chat
+        this._chatClient = new RealtimeSubscribeChatClient(this)
+        this._chatClient.setChatDataUpdateListener(this._chatDataUpdateListener)
+
+    }
 
     /**
      * (D) leave meeting
@@ -364,34 +384,54 @@ export class FlectChimeClient {
         this._videoTileStates = {}
     }
 
-
-
-
     ///////////////////////////////////////////
     // Utility
     ///////////////////////////////////////////
-    getContentTiles = () =>{
+    getContentTiles = () => {
         return Object.values(this._videoTileStates).filter(tile=>{return tile.isContent})
     }
-    getActiveSpeakerTile = () =>{
+    getActiveSpeakerTile = () => {
         if(this._activeSpeakerId && this._videoTileStates[this._activeSpeakerId]){
             return this._videoTileStates[this._activeSpeakerId] 
         }else{
             return null
         }
     }
+    getTilesWithFilter = (excludeSpeaker:boolean, excludeSharedContent:boolean) =>{
+        let targetTiles = Object.values(this._videoTileStates).filter(tile =>{
+            if( excludeSharedContent && tile.isContent === true){
+                return false
+            }
+            if(excludeSpeaker && tile.boundAttendeeId === this._activeSpeakerId){
+                return false
+            }
 
-    setPauseVideo = (attendeeId:string, pause:boolean) =>{
+            if(!this._attendees[tile.boundAttendeeId!]){ // if attendees not found, show tile.
+                return true
+            }
+
+            return this._attendees[tile.boundAttendeeId!].isVideoPaused === false
+        })
+        return targetTiles
+    }
+
+    setPauseVideo = async (attendeeId:string, pause:boolean) =>{
         if(this._attendees[attendeeId]){
             this._attendees[attendeeId].isVideoPaused = pause
             if(pause){
-                this.meetingSession!.audioVideo.unbindVideoElement(this._videoTileStates[attendeeId].tileId!)
-                this.meetingSession!.audioVideo.pauseVideoTile(this._videoTileStates[attendeeId].tileId!)
+                if(this.meetingSession?.audioVideo.getVideoTile(this._videoTileStates[attendeeId].tileId!)?.state().localTile === false){
+                    await this.meetingSession!.audioVideo.unbindVideoElement(this._videoTileStates[attendeeId].tileId!)
+                    await this.meetingSession!.audioVideo.pauseVideoTile(this._videoTileStates[attendeeId].tileId!)
+                }
             }else{
-                this.meetingSession!.audioVideo.unpauseVideoTile(this._videoTileStates[attendeeId].tileId!)
+                await this.meetingSession!.audioVideo.unpauseVideoTile(this._videoTileStates[attendeeId].tileId!)
             }
+            this._attendeesUpdateListener(this._attendees)
         }else{
         }
     }
 
+    getUserNameByAttendeeIdFromList = (attendeeId: string) => {
+        return this._attendees[attendeeId] ? this._attendees[attendeeId].name : attendeeId
+    }    
 }

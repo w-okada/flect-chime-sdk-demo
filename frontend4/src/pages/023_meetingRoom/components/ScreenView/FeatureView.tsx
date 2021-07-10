@@ -12,9 +12,9 @@ type FeatureViewProps = {
 
 export const FeatureView = ({ pictureInPicture, focusTarget, width, height}: FeatureViewProps) =>  {
     const lineViewOffset = height * 0.7
-    // const mainView = useMemo(()=>{
-    //     return <FullScreenView height={height * 0.7} width={width} pictureInPicture={"None"} focusTarget={"SharedContent"}/>
-    // },[width, height])
+    const mainView = useMemo(()=>{
+        return <FullScreenView height={height * 0.7} width={width} pictureInPicture={"None"} focusTarget={"SharedContent"}/>
+    },[width, height])
     
     const attendeeView = useMemo(()=>{
         return <LineView height={height * 0.3} width={width} excludeSharedContent={false} excludeSpeaker={false} viewInLine={5}/>
@@ -23,8 +23,7 @@ export const FeatureView = ({ pictureInPicture, focusTarget, width, height}: Fea
     return(
         <>
         <div>
-            {/* {mainView} */}
-            <FullScreenView height={height * 0.7} width={width} pictureInPicture={"None"} focusTarget={"SharedContent"}/>
+            {mainView}
         </div>
         <div style={{position:"relative", top:lineViewOffset }}>
             {attendeeView}

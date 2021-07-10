@@ -24,11 +24,10 @@ import { STAGE, useStageManager } from "./hooks/useStageManager";
 
 
 
-import { CognitoClient, FlectChimeClient, WebSocketWhiteboardClient } from "@dannadori/flect-chime-lib"
+import { CognitoClient, FlectChimeClient, WebSocketWhiteboardClient, AttendeeState, RealtimeData, DrawingData } from "@dannadori/flect-chime-lib"
 import { RestAPIEndpoint, UserPoolClientId, UserPoolId, WebSocketEndpoint } from "../BackendConfig";
 import { DeviceInfo, useDeviceState } from "./hooks/useDeviceState";
 import { useWindowSizeChangeListener } from "./hooks/useWindowSizeChange";
-import { AttendeeState } from "@dannadori/flect-chime-lib/dist/chime/FlectChimeClient";
 import { VideoTileState } from "amazon-chime-sdk-js";
 
 type Props = {
@@ -199,6 +198,11 @@ export const AppStateProvider = ({ children }: Props) => {
             c.setVideoTileStateUpdateListener( (videoTileStateList: {[attendeeId: string]: VideoTileState})=>{
                 setLastUpdateTime(new Date().getTime())
             })
+            c.setChatDataUpdateListener((list:RealtimeData[])=>{
+                console.log("RECEIVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                setLastUpdateTime(new Date().getTime())
+            })
+            
             return c
         }else{
             return null
@@ -218,6 +222,9 @@ export const AppStateProvider = ({ children }: Props) => {
         if(chimeClient && chimeClient.meetingSession){
             const messagingURLWithQuery = `${WebSocketEndpoint}/Prod?joinToken=${chimeClient.joinToken}&meetingId=${chimeClient.meetingId}&attendeeId=${chimeClient.attendeeId}`
             const c = new WebSocketWhiteboardClient(chimeClient.attendeeId!, messagingURLWithQuery, chimeClient.meetingSession!.logger, recreateWebSocketWhiteboardClient)
+            c.setWhiteboardDataUpdateListener((data: DrawingData[] ) =>{
+                setLastUpdateTime(new Date().getTime())
+            })
             return c
         }else{
             return null

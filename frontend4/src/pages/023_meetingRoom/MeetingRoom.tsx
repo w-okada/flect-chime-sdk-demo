@@ -143,7 +143,7 @@ export const MeetingRoom = () => {
 
 
                 <div style={{marginTop:toolbarHeight, position:"absolute", display:"flex"}}>
-                    {/* <Drawer
+                    <Drawer
                         variant="permanent"
                         classes={{
                             paper: clsx(classes.drawerPaper, !drawerOpen && classes.drawerPaperClose),
@@ -175,7 +175,7 @@ export const MeetingRoom = () => {
                         </CustomAccordion>
                                                 
 
-                    </Drawer> */}
+                    </Drawer>
 
                     <main style={{height:`${screenHeight - toolbarHeight - bufferHeight}px`}}>
                         {mainView}

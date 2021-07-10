@@ -1,4 +1,5 @@
-import { FlectChimeClient } from "./chime/FlectChimeClient"
+import { AttendeeState, FlectChimeClient } from "./chime/FlectChimeClient"
+import { RealtimeData } from "./chime/realtime/const"
 import { CognitoClient } from "./cognito/CognitoClient"
 import { RestApiClient } from "./rest/RestApiClient"
 import { DrawableVideoTile } from "./websocket/WebSocketWhiteboard/DrawableVideoTile"
@@ -12,5 +13,7 @@ export {
     DrawableVideoTile,
     DrawingCmd, 
     DrawingMode, 
-    DrawingData
+    DrawingData,
+    RealtimeData,
+    AttendeeState,
 }

@@ -53,8 +53,15 @@ export class WebSocketWhiteboardClient{
         this.wsClient.addEventListener(TOPIC_NAME, (wsMessages:WebSocketMessage[])=>{
             const newDrawingData = wsMessages.reduce<DrawingData[]>((sum:any[],cur:WebSocketMessage)=>{return [...sum, ...(cur.data as DrawingData[])]},[])
             this.drawingData = newDrawingData
+            this._whiteboardDataUpdateListener(this.drawingData)
         })
     }
+
+    private _whiteboardDataUpdateListener = (data: DrawingData[] ) =>{}
+    setWhiteboardDataUpdateListener = ( l: ((data:DrawingData[]) =>void)) =>{
+        this._whiteboardDataUpdateListener = l
+    }
+
  
     addDrawingData = (data:DrawingData) => {
         // loopback
