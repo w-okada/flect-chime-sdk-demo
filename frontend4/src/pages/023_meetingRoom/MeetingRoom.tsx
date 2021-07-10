@@ -67,13 +67,21 @@ export const MeetingRoom = () => {
         setGuiCounter(guiCounter+1)
     }
 
-    const enableShareScreen = (val:boolean) =>{
-        alert("not implements")
-        // if(val){
-        //     startShareScreen()
-        // }else{
-        //     stopShareScreen()
-        // }
+    const enableShareScreen = async(val:boolean) =>{
+        if(val){
+            try{
+                // @ts-ignore https://github.com/microsoft/TypeScript/issues/31821
+                const media = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true } )
+                chimeClient!.startShareContent(media)
+                setGuiCounter(guiCounter+1)
+
+            }catch(e){
+                console.log(e)
+            }
+        }else{
+            chimeClient!.stopShareContent()
+            setGuiCounter(guiCounter+1)
+        }
     }
 
     const appBar = useMemo(()=>{
@@ -108,7 +116,7 @@ export const MeetingRoom = () => {
                 </Toolbar>
             </AppBar>
         )
-    },[drawerOpen, chimeClient!.audioInputDeviceSetting!.audioInputEnable, chimeClient!.videoInputDeviceSetting!.videoInputEnable, chimeClient!.audioOutputDeviceSetting!.audioOutputEnable, screenType])
+    },[drawerOpen, chimeClient!.audioInputDeviceSetting!.audioInputEnable, chimeClient!.videoInputDeviceSetting!.videoInputEnable, chimeClient!.audioOutputDeviceSetting!.audioOutputEnable, screenType, chimeClient?.isShareContent])
 
     const mainView = useMemo(()=>{
         switch(screenType){
