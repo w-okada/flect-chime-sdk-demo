@@ -11,7 +11,7 @@ type FullScreenProps = {
 };
 
 export const FullScreenView = ({ pictureInPicture, focusTarget, width, height}: FullScreenProps) =>  {
-    const {chimeClient, whiteBoardClient} = useAppState()
+    const {chimeClient, whiteboardClient} = useAppState()
     
     const contentsTiles    = chimeClient!.getContentTiles()
     const activeSpekerTile = chimeClient!.getActiveSpeakerTile()
@@ -38,7 +38,7 @@ export const FullScreenView = ({ pictureInPicture, focusTarget, width, height}: 
                         return <div key={index}>no share contets, no active speaker</div>
                     }
                     const idPrefix = `drawable-videotile-${tile.boundAttendeeId}`
-                    return <DrawableVideoTile chimeClient={chimeClient!} whiteBoardClient={whiteBoardClient!} key={idPrefix} idPrefix={idPrefix} tile={tile} width={contentWidth} height={height}/>
+                    return <DrawableVideoTile chimeClient={chimeClient!} whiteboardClient={whiteboardClient!} key={idPrefix} idPrefix={idPrefix} tile={tile} width={contentWidth} height={height}/>
                 })}
             </div>
         )

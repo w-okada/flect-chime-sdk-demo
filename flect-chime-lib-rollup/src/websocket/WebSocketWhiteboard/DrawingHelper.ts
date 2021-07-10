@@ -7,12 +7,15 @@ export class DrawingHelper{
     private inDrawing = false
     private previousPosition = [0, 0]
     private lastSendingTime = 0
-    private _drawingStroke = ""
-    private _lineWidth = 3
-    private _drawingMode:keyof typeof DrawingMode = "DISABLE"
-    set drawingStroke(val:string){this._drawingStroke = val}
-    set lineWidth(val:number){this._lineWidth = val}
-    set drawingMode(val:keyof typeof DrawingMode){this._drawingMode = val}
+    // private _drawingStroke = ""
+    // private _lineWidth = 3
+    // private _drawingMode:keyof typeof DrawingMode = "DISABLE"
+    // set drawingStroke(val:string){this._drawingStroke = val}
+    // set lineWidth(val:number){this._lineWidth = val}
+    // set drawingMode(val:keyof typeof DrawingMode){
+    //     console.log("change drawing mode", val)
+    //     this._drawingMode = val
+    // }
 
     private canvasId 
     private client
@@ -63,14 +66,16 @@ export class DrawingHelper{
             const startYR = startY / trueHeight
             const endXR = (endX - restW) / trueWidth
             const endYR = endY / trueHeight
+
+            console.log("drawingMode!!!", this.client.drawingMode, this.client.drawingMode === "DRAW" ? "DRAW" : "ERASE" )
             drawingData = {
-                drawingCmd: this._drawingMode === "DRAW" ? "DRAW" : "ERASE" ,
+                drawingCmd: this.client.drawingMode === "DRAW" ? "DRAW" : "ERASE" ,
                 startXR: startXR,
                 startYR: startYR,
                 endXR: endXR,
                 endYR: endYR,
-                stroke: this._drawingStroke,
-                lineWidth: this._lineWidth,
+                stroke: this.client.drawingStroke,
+                lineWidth: this.client.lineWidth,
                 canvasId: this.canvasId
 
             }
@@ -83,14 +88,17 @@ export class DrawingHelper{
             const startYR = (startY - restH) / trueHeight
             const endXR = endX / trueWidth
             const endYR = (endY - restH) / trueHeight
+
+            console.log("drawingMode!!!", this.client.drawingMode, this.client.drawingMode === "DRAW" ? "DRAW" : "ERASE" )
+
             drawingData = {
-                drawingCmd: this._drawingMode === "DRAW" ? "DRAW" : "ERASE" ,
+                drawingCmd: this.client.drawingMode === "DRAW" ? "DRAW" : "ERASE" ,
                 startXR: startXR,
                 startYR: startYR,
                 endXR: endXR,
                 endYR: endYR,
-                stroke: this._drawingStroke,
-                lineWidth: this._lineWidth,
+                stroke: this.client.drawingStroke,
+                lineWidth: this.client.lineWidth,
                 canvasId: this.canvasId
             }
         }

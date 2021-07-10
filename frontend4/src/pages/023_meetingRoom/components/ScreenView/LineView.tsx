@@ -10,7 +10,7 @@ type Props = {
     viewInLine: number
 };
 export const LineView = ({ excludeSpeaker, excludeSharedContent, width, height, viewInLine}: Props) =>  {
-    const { chimeClient, whiteBoardClient } = useAppState()
+    const { chimeClient, whiteboardClient } = useAppState()
     const targetTiles = chimeClient!.getTilesWithFilter(excludeSpeaker, excludeSharedContent)
     
     // rendering flag
@@ -24,7 +24,7 @@ export const LineView = ({ excludeSpeaker, excludeSharedContent, width, height, 
                     const idPrefix = `drawable-videotile-list-${tile.boundAttendeeId}`
                     return (
                         <div key={`line-view-${i}`} style={{height:height-2, margin:"1px", flex:"0 0 auto", position:"relative"}} >
-                            <DrawableVideoTile chimeClient={chimeClient!} whiteBoardClient={whiteBoardClient!} key={idPrefix} idPrefix={idPrefix} idSuffix="LineView" tile={tile} width={width/viewInLine} height={height}/>                        
+                            <DrawableVideoTile chimeClient={chimeClient!} whiteboardClient={whiteboardClient!} key={idPrefix} idPrefix={idPrefix} idSuffix="LineView" tile={tile} width={width/viewInLine} height={height}/>                        
                             <div style={{position:"absolute", lineHeight:1, fontSize:14, height:15, top:height-20, left:5, background:tile.boundAttendeeId === chimeClient!.activeSpeakerId?"#ee7777cc":"#777777cc"}}>
                                 {chimeClient!.getUserNameByAttendeeIdFromList(tile.boundAttendeeId?tile.boundAttendeeId:"")}
                             </div>

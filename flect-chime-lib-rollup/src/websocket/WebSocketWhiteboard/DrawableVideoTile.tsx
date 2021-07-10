@@ -1,12 +1,12 @@
-import { VideoTileState } from "amazon-chime-sdk-js";
+import { ConsoleLogger, VideoTileState } from "amazon-chime-sdk-js";
 import { useEffect, useMemo, useState } from "react";
 import { FlectChimeClient } from "../../chime/FlectChimeClient";
 import { DrawingHelper } from "./DrawingHelper";
-import { WebSocketWhiteboardClient } from "./WebSocketWhiteboardClient";
+import { DrawingData, WebSocketWhiteboardClient } from "./WebSocketWhiteboardClient";
 
 type DrawableVideoTileProps = {    
     chimeClient: FlectChimeClient
-    whiteBoardClient: WebSocketWhiteboardClient,
+    whiteboardClient: WebSocketWhiteboardClient,
 
     tile: VideoTileState,
     idPrefix: string, // prefix for HTMLVideoElement and HTMLCanvasElement
@@ -16,10 +16,12 @@ type DrawableVideoTileProps = {
 }
 
 export const DrawableVideoTile: React.FC<DrawableVideoTileProps> = (props:DrawableVideoTileProps) =>{
+    console.log("DRAWABLE")
+    const [ updateCount, setUpdateCount ] = useState(0)
     const drawingHelper = useMemo(()=>{
         return new DrawingHelper(
             `${props.idPrefix}-canvas${props.idSuffix?"#"+props.idSuffix:""}`, // This id is unique in whiteboard app. to idetify one tile from multiple ones.
-            props.whiteBoardClient,
+            props.whiteboardClient,
         )
     },[]) // eslint-disable-line
 
@@ -36,6 +38,14 @@ export const DrawableVideoTile: React.FC<DrawableVideoTileProps> = (props:Drawab
         )
     },[props.idPrefix, props.tile, props.width, props.height])  // eslint-disable-line
 
+
+    useEffect(()=>{
+        const updateWhiteboardData = (data: DrawingData[]) =>{
+            setUpdateCount(updateCount+1)
+        }
+        props.whiteboardClient.addWhiteboardDataUpdateListener(updateWhiteboardData)
+        return ()=>{props.whiteboardClient.removeWhiteboardDataUpdateListener(updateWhiteboardData)}
+    })
 
     // Bind and Fit Size
     useEffect(()=>{
@@ -84,8 +94,8 @@ export const DrawableVideoTile: React.FC<DrawableVideoTileProps> = (props:Drawab
         // ctx.strokeStyle = drawingStroke
         // ctx.lineWidth   = lineWidth
         ctx.clearRect(0,0, canvasElement.width,  canvasElement.height)
-        console.log("[DrawableVideoTile] apply DrawingData----", props.whiteBoardClient.drawingData)
-        props.whiteBoardClient.drawingData.forEach((data)=>{
+        console.log("[DrawableVideoTile] apply DrawingData----", props.whiteboardClient.drawingData)
+        props.whiteboardClient.drawingData.forEach((data)=>{
             if(data.drawingCmd === "DRAW" && data.canvasId && (data.canvasId.indexOf(canvasElementId) >= 0 || canvasElementId.indexOf(data.canvasId) >= 0 )){
                 ctx.beginPath();
                 ctx.moveTo(data.startXR * canvasElement.width, data.startYR * canvasElement.height);
@@ -103,7 +113,7 @@ export const DrawableVideoTile: React.FC<DrawableVideoTileProps> = (props:Drawab
             }
         })
 
-    },[props.idPrefix, props.tile, props.whiteBoardClient.drawingData, drawingNeedUpdate])  // eslint-disable-line
+    },[props.idPrefix, props.tile, props.whiteboardClient.drawingData, drawingNeedUpdate])  // eslint-disable-line
 
     return(<>{view}</>)
 }

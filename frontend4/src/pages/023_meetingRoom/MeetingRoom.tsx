@@ -36,7 +36,7 @@ const theme = createTheme({
 
 
 export const MeetingRoom = () => {
-    console.log("meeting room !!!!!!")
+    // console.log("meeting room !!!!!!")
     const classes = useStyles()
     const [drawerOpen, setDrawerOpen] = useState(false)
 

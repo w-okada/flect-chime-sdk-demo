@@ -17,7 +17,6 @@ export const AttendeesTable = () => {
     const targetNames = Object.values(chimeClient!.attendees).reduce<string>((names,cur)=>{return `${names}_${cur.name}`},"")
     const targetVideoStates:VideoState[] = Object.values(chimeClient!.attendees).map( x =>{
         if(!chimeClient!.videoTileStates[x.attendeeId]){
-            console.log("LOCAL TEST1")
             return "NOT_SHARE"
         }
         if( x.attendeeId === chimeClient!.attendeeId){ // For Loca Tile
@@ -33,10 +32,8 @@ export const AttendeesTable = () => {
         }
         // For Remote Tile
         if(x.isVideoPaused){
-            console.log("LOCAL TEST3", chimeClient!.meetingSession!.audioVideo.getLocalVideoTile()?.state().active)
             return "PAUSED"
         }else{
-            console.log("LOCAL TEST4", chimeClient!.meetingSession!.audioVideo.getLocalVideoTile()?.state().active)
             return "ENABLED"
         }
     })

@@ -42,7 +42,7 @@ interface AppStateValue {
     /** For Credential */
     cognitoClient: CognitoClient,
     chimeClient: FlectChimeClient | null,
-    whiteBoardClient: WebSocketWhiteboardClient | null,
+    whiteboardClient: WebSocketWhiteboardClient | null,
     // userId?: string,
     // password?: string,
     // idToken?: string,
@@ -199,7 +199,6 @@ export const AppStateProvider = ({ children }: Props) => {
                 setLastUpdateTime(new Date().getTime())
             })
             c.setChatDataUpdateListener((list:RealtimeData[])=>{
-                console.log("RECEIVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 setLastUpdateTime(new Date().getTime())
             })
             
@@ -218,11 +217,12 @@ export const AppStateProvider = ({ children }: Props) => {
         console.log("websocket recreate!!!!")
         setRecreateWebSocketWhiteboardClientCount(recreateWebSocketWhiteboardClientCount + 1)
     }
-    const whiteBoardClient = useMemo(()=>{
+    const whiteboardClient = useMemo(()=>{
         if(chimeClient && chimeClient.meetingSession){
             const messagingURLWithQuery = `${WebSocketEndpoint}/Prod?joinToken=${chimeClient.joinToken}&meetingId=${chimeClient.meetingId}&attendeeId=${chimeClient.attendeeId}`
             const c = new WebSocketWhiteboardClient(chimeClient.attendeeId!, messagingURLWithQuery, chimeClient.meetingSession!.logger, recreateWebSocketWhiteboardClient)
-            c.setWhiteboardDataUpdateListener((data: DrawingData[] ) =>{
+            c.addWhiteboardDataUpdateListener((data: DrawingData[] ) =>{
+                console.log("DRAWINGDATA", data)
                 setLastUpdateTime(new Date().getTime())
             })
             return c
@@ -283,7 +283,7 @@ export const AppStateProvider = ({ children }: Props) => {
         /** For Credential */
         cognitoClient,
         chimeClient,
-        whiteBoardClient,
+        whiteboardClient,
     //     userId,
     //     password, 
     //     idToken, 

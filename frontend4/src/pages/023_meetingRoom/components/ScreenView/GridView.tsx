@@ -47,7 +47,7 @@ type VideoState = "ENABLED" | "PAUSED" | "NOT_SHARE"
 export const GridView = ({ excludeSharedContent, width, height}: Props) =>  {
     const classes = useStyles()
 
-    const { chimeClient, whiteBoardClient } = useAppState()
+    const { chimeClient, whiteboardClient } = useAppState()
     const targetTiles = chimeClient!.getTilesWithFilter(false, excludeSharedContent)
 
 
@@ -75,7 +75,7 @@ export const GridView = ({ excludeSharedContent, width, height}: Props) =>  {
                     const idPrefix = `drawable-videotile-${tile.boundAttendeeId}`
                     return (
                         <GridListTile key={tile.boundAttendeeId} cols={1}>
-                            <DrawableVideoTile chimeClient={chimeClient!} whiteBoardClient={whiteBoardClient!} key={idPrefix} idPrefix={idPrefix} idSuffix="GridView" tile={tile} width={width/cols} height={height/rows}/>                        
+                            <DrawableVideoTile chimeClient={chimeClient!} whiteboardClient={whiteboardClient!} key={idPrefix} idPrefix={idPrefix} idSuffix="GridView" tile={tile} width={width/cols} height={height/rows}/>                        
                             <GridListTileBar2 style={{background:tile.boundAttendeeId === chimeClient!.activeSpeakerId?"#ee7777cc":"#777777cc"}} title={chimeClient!.getUserNameByAttendeeIdFromList(tile.boundAttendeeId?tile.boundAttendeeId:"")} />
                         </GridListTile>
                     )

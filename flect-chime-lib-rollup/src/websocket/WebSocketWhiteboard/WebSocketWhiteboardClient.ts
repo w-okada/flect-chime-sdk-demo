@@ -36,7 +36,7 @@ const SEND_INTERVAL_NUM  = 100
 export class WebSocketWhiteboardClient{
     lineWidth     = 3
     drawingStroke = "#aaaaaaaa"
-    drawingMode   = DrawingMode.DISABLE
+    drawingMode: keyof typeof DrawingMode = DrawingMode.DISABLE
     drawingData:DrawingData[] = []
 
     lock = new AsyncLock();
@@ -53,13 +53,19 @@ export class WebSocketWhiteboardClient{
         this.wsClient.addEventListener(TOPIC_NAME, (wsMessages:WebSocketMessage[])=>{
             const newDrawingData = wsMessages.reduce<DrawingData[]>((sum:any[],cur:WebSocketMessage)=>{return [...sum, ...(cur.data as DrawingData[])]},[])
             this.drawingData = newDrawingData
-            this._whiteboardDataUpdateListener(this.drawingData)
+            this._whiteboardDataUpdateListeners.forEach(x=>{
+                x(this.drawingData)
+           })
         })
     }
 
-    private _whiteboardDataUpdateListener = (data: DrawingData[] ) =>{}
-    setWhiteboardDataUpdateListener = ( l: ((data:DrawingData[]) =>void)) =>{
-        this._whiteboardDataUpdateListener = l
+
+    private _whiteboardDataUpdateListeners = [(data: DrawingData[] ) =>{}]
+    addWhiteboardDataUpdateListener = ( l: ((data:DrawingData[]) =>void)) =>{
+        this._whiteboardDataUpdateListeners.push(l) 
+    }
+    removeWhiteboardDataUpdateListener = ( l: ((data:DrawingData[]) =>void)) =>{
+        this._whiteboardDataUpdateListeners = this._whiteboardDataUpdateListeners.filter(x =>{return x !== l }) 
     }
 
  
