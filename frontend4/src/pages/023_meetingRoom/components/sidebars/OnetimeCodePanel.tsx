@@ -5,46 +5,46 @@ import { useAppState } from '../../../../providers/AppStateProvider';
 var QRCode = require('qrcode.react');
 
 export const OnetimeCodePanel = () => {
-    // const classes = useStyles();
+    const classes = useStyles();
     // const { meetingName, attendeeId, idToken, accessToken, refreshToken} = useAppState()
-    // const [url, setURL] = useState<string>()
-    // const [onetimeCode, setOnetimeCode] = useState<string>()
+    const [ url, setURL] = useState<string>()
+    const [ onetimeCode, setOnetimeCode] = useState<string>()
+    const { chimeClient } = useAppState()
 
-    // const qrcode = useMemo(()=>{
-    //     return url ? <QRCode value={url} />:<></>
-    // },[url])
+    const qrcode = useMemo(()=>{
+        return url ? <QRCode value={url} />:<></>
+    },[url])
 
-    // const handleGenerateOnetimeCode = async () =>{
-    //     const res = await generateOnetimeCode(meetingName!, attendeeId!, idToken!, accessToken!, refreshToken!)
-    //     const url = `${window.location.href}?stage=MEETING_MANAGER_SIGNIN&uuid=${res.uuid}&meetingName=${meetingName}&attendeeId=${attendeeId}`
-    //     console.log("generatecode",res, url)
+    const handleGenerateOnetimeCode = async () =>{
+        const res = await chimeClient!.generateOnetimeCode()
+        const url = `${window.location.href}?stage=MEETING_MANAGER_SIGNIN&uuid=${res.uuid}&meetingName=${chimeClient!.meetingName}&attendeeId=${chimeClient!.attendeeId}`
+        console.log("generatecode",res, url)
+        setURL(url)
+        setOnetimeCode(res.code)
+    }
 
-    //     setURL(url)
-    //     setOnetimeCode(res.code)
-    // }
+    return (
+            <div className={classes.root}>
+                <Typography variant="body1" color="textSecondary">
+                    One Time Code
+                </Typography>
 
-    // return (
-    //         <div className={classes.root}>
-    //             <Typography variant="body1" color="textSecondary">
-    //                 One Time Code
-    //             </Typography>
+                <Link onClick={(e: any) => { handleGenerateOnetimeCode() }}>
+                    generateCode
+                </Link>
 
-    //             <Link onClick={(e: any) => { handleGenerateOnetimeCode() }}>
-    //                 generateCode
-    //             </Link>
+                <Typography variant="body1" color="textSecondary">
+                    <a href={url}  target="_blank" rel="noopener noreferrer">{url}</a>
+                </Typography>
 
-    //             <Typography variant="body1" color="textSecondary">
-    //                 <a href={url}  target="_blank" rel="noopener noreferrer">{url}</a>
-    //             </Typography>
+                {qrcode}
 
-    //             {qrcode}
+                <div>
+                    {onetimeCode}
+                </div>
 
-    //             <div>
-    //                 {onetimeCode}
-    //             </div>
-
-    //         </div>
-    // );
+            </div>
+    );
 
     return(<></>)
 }

@@ -1,4 +1,3 @@
-import { RestApiClient } from "../flect-amazon-chime-lib"
 import { ConsoleLogger, DefaultActiveSpeakerPolicy, DefaultDeviceController, DefaultMeetingSession, LogLevel, MeetingSessionConfiguration, VideoTileState } from "amazon-chime-sdk-js"
 import { DeviceChangeObserverImpl } from "./observer/DeviceChangeObserverImpl"
 import AudioVideoObserverTemplate from "./observer/AudioVideoObserverTemplate"
@@ -7,6 +6,7 @@ import { VideoInputDeviceSetting } from "./io/VideoInputDeviceSetting"
 import { AudioOutputDeviceSetting } from "./io/AudioOutputDeviceSetting"
 import { RealtimeSubscribeChatClient } from "./realtime/RealtimeSubscribeChatClient"
 import { RealtimeData } from "./realtime/const"
+import { RestApiClient } from "../rest/RestApiClient"
 
 export type AttendeeState = {
     attendeeId: string
@@ -383,6 +383,15 @@ export class FlectChimeClient {
         this._attendees = {}
         this._videoTileStates = {}
     }
+
+
+    /***
+     * (x) 
+     */
+    generateOnetimeCode = async ()=> {
+        return this._restApiClient.generateOnetimeCode(this._meetingName!, this._attendeeId!)
+    }
+
 
     ///////////////////////////////////////////
     // Utility

@@ -16,7 +16,6 @@ type DrawableVideoTileProps = {
 }
 
 export const DrawableVideoTile: React.FC<DrawableVideoTileProps> = (props:DrawableVideoTileProps) =>{
-    console.log("DRAWABLE")
     const [ updateCount, setUpdateCount ] = useState(0)
     const drawingHelper = useMemo(()=>{
         return new DrawingHelper(

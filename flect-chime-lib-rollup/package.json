@@ -1,6 +1,6 @@
 {
   "name": "@dannadori/flect-chime-lib",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "",
   "main": "dist/flect-amazon-chime-lib.js",
   "scripts": {
@@ -14,6 +14,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^19.0.0",
     "@rollup/plugin-node-resolve": "^13.0.0",
+    "@types/uuid": "^8.3.1",
     "npm-run-all": "^4.1.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -24,13 +25,14 @@
     "ts-loader": "^9.2.3",
     "tsconfig-paths": "^3.10.1",
     "typescript": "^4.3.5",
-    "worker-plugin": "^5.0.1",
-    "@types/uuid": "^8.3.1"
+    "worker-plugin": "^5.0.1"
   },
   "dependencies": {
     "@dannadori/bodypix-worker-js": "^1.0.31",
     "@dannadori/googlemeet-segmentation-tflite-worker-js": "^1.0.14",
     "@dannadori/googlemeet-segmentation-worker-js": "^1.0.13",
+    "@ffmpeg/core": "^0.10.0",
+    "@ffmpeg/ffmpeg": "^0.10.1",
     "amazon-chime-sdk-js": "^2.13.0",
     "amazon-cognito-identity-js": "^5.0.4",
     "async-lock": "^1.3.0"

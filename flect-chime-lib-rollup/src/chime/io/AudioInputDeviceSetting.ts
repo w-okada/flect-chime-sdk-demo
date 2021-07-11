@@ -17,7 +17,7 @@ export class AudioInputDeviceSetting {
     audioSuppressionEnable: boolean = true
     voiceFocusSpec: VoiceFocusSpec | null = { variant: "c10" }
 
-    audioInputForRecord: MediaStream | string | null = null
+    audioInputForRecord: MediaStream | null = null
 
     constructor(meetingSession: MeetingSession) {
         this.meetingSession = meetingSession

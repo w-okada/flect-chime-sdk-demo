@@ -18,13 +18,11 @@ export const FullScreenView = ({ pictureInPicture, focusTarget, width, height}: 
 
     let targetTiles:VideoTileState[] = []
 
-    console.log("contents!!!1 ",contentsTiles.length)
     if(contentsTiles.length > 0){
         targetTiles = targetTiles.concat(contentsTiles)
     }else if(activeSpekerTile){
         targetTiles.push(activeSpekerTile)
     }
-    console.log("contents!!!2",targetTiles.length)
 
     // rendering flag
     const targetIds = targetTiles.reduce<string>((ids,cur)=>{return `${ids}_${cur.boundAttendeeId}`},"")

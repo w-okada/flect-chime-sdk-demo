@@ -4,9 +4,16 @@ import { Pause, FiberManualRecord } from '@material-ui/icons'
 import { useStyles } from './css';
 import { useAppState } from '../../../../providers/AppStateProvider';
 import { DefaultDeviceController } from 'amazon-chime-sdk-js';
+import { useVideoComposeCanvas, useRecorder } from '@dannadori/flect-chime-lib'
+
 
 export const RecorderPanel = () => {
-    // const classes = useStyles();
+    const classes = useStyles();
+    const { chimeClient } = useAppState()
+
+    const [ sourceVideo, setSourceVideo] = useState<HTMLCanvasElement | HTMLVideoElement | MediaStream | null>(null)
+
+
     // const { activeRecorder, audioInputDeviceSetting } = useAppState()
     // const  [recorderCanvas, setRecorderCanvas] = useState<HTMLCanvasElement|null>(null)
     // const [ isEncoding, setIsEncoding ] = useState(false)
@@ -136,5 +143,66 @@ export const RecorderPanel = () => {
     //     </div>
     // );
 
-    return(<></>)
+    const notifyVideoStream = (ms:MediaStream) =>{ 
+        console.log("MediaStream:", ms)
+        setSourceVideo(ms)
+    }
+
+    // const [r, sr] = useState(useVideoComposeCanvas({
+    //     chimeClient:chimeClient!,
+    //     mode: "ALL",
+    //     canvasWidth:640,
+    //     canvasHeight:480,
+    //     displayWidth:64,
+    //     displayHeight:48,
+    //     drawTitle:true,
+    //     notifyVideoStream:notifyVideoStream,
+    //     framerate:15
+    // }))
+    
+    const r1 = useVideoComposeCanvas({
+        chimeClient:chimeClient!,
+        mode: "ALL",
+        canvasWidth:640,
+        canvasHeight:480,
+        displayWidth:64,
+        displayHeight:48,
+        drawTitle:true,
+        notifyVideoStream:notifyVideoStream,
+        framerate:15
+    })
+
+
+    // const sourceLocalAudio = useMemo(()=>{
+    //     if(chimeClient!.audioInputDeviceSetting?.audioInputForRecord instanceof MediaStream){
+    //         return chimeClient!.audioInputDeviceSetting?.audioInputForRecord
+    //     }else if(typeof chimeClient!.audioInputDeviceSetting?.audioInputForRecord === "string"){
+    //         return navigator.mediaDevices.getUserMedia({audio:{deviceId:chimeClient!.audioInputDeviceSetting?.audioInputForRecord}})
+    //     }else{
+    //         return null
+    //     }
+    // },[chimeClient!.audioInputDeviceSetting?.audioInputForRecord])
+    const { started, start, stop } = useRecorder({
+        sourceVideo: sourceVideo,
+        sourceLocalAudio: chimeClient!.audioInputDeviceSetting!.audioInputForRecord,
+        sourceRemoteAudio: chimeClient!.audioOutputDeviceSetting!.outputAudioElement,
+        filename: "testfile.mp4"
+    })
+
+    return(
+        <div style={{display:"flex", flexDirection:"column"}}>
+            {r1.videoComposeCanvas}
+            <Button onClick={r1.toggleEnable}>aaaa</Button>
+            <div>
+                {started? "STARTED!!": "STOPPED"}
+            </div>
+
+            <div>
+                <Button onClick={start}>start</Button>
+            </div>
+            <div>
+                <Button onClick={stop}>stop</Button>
+            </div>
+        </div>
+    )
 }
