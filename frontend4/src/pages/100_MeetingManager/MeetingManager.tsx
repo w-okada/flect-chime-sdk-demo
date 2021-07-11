@@ -1,4 +1,4 @@
-import { AppBar, Button, CircularProgress, Container, createMuiTheme, createStyles, createTheme, CssBaseline, makeStyles, ThemeProvider, Toolbar } from "@material-ui/core";
+import { AppBar, Button, CircularProgress, Container, createTheme, CssBaseline, ThemeProvider, Toolbar } from "@material-ui/core";
 import React, { useEffect, useMemo, useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
 import { DialogOpener } from "../023_meetingRoom/components/appbars/DialogOpener";
@@ -14,12 +14,6 @@ import { RecorderPanel } from "../023_meetingRoom/components/sidebars/RecorderPa
 import { useStyles } from "./css";
 import { useMeetingManagerStatusManager } from "./useMeetingManagerStatusManager";
 
-type InternalStage = "Signining" | "Joining" | "Entering"
-
-type State = {
-    internalStage: InternalStage,
-    userName: string | null
-}
 
 export const MeetingManager = () => {
     const classes = useStyles();
@@ -79,7 +73,7 @@ export const MeetingManager = () => {
             return(<>unknwon status</>)
         }
 
-    },[internalStage, challengeCode, isLoading])
+    },[internalStage, challengeCode, isLoading]) // eslint-disable-line
 
     const codeSelectorView = useMemo(()=>{
         return (
@@ -96,7 +90,7 @@ export const MeetingManager = () => {
                 </div>
             </Container>
         )
-    }, [codeSelector])
+    }, [codeSelector]) // eslint-disable-line
     
     ////////////////////////////////
     /////// (2) entering      //////
@@ -107,7 +101,8 @@ export const MeetingManager = () => {
         }else{
 
         }
-    },[internalStage, chimeClient])
+    },[internalStage, chimeClient])// eslint-disable-line
+
     const waitingForEntering = useMemo(()=>{
         return (
             <Container maxWidth="xs">
@@ -117,7 +112,7 @@ export const MeetingManager = () => {
                 </div>
             </Container>
         )
-    }, [codeSelector])
+    }, [codeSelector])// eslint-disable-line
 
 
     ////////////////////////////////
@@ -198,7 +193,7 @@ export const MeetingManager = () => {
         }else{
             return(<>unknwon status</>)
         }
-    },[internalStage])
+    },[internalStage]) // eslint-disable-line
 
     useEffect(()=>{
         if(internalStage === "InMeeting"){

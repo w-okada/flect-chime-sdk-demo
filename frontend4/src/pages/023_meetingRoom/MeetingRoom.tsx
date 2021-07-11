@@ -116,7 +116,7 @@ export const MeetingRoom = () => {
                 </Toolbar>
             </AppBar>
         )
-    },[drawerOpen, chimeClient!.audioInputDeviceSetting!.audioInputEnable, chimeClient!.videoInputDeviceSetting!.videoInputEnable, chimeClient!.audioOutputDeviceSetting!.audioOutputEnable, screenType, chimeClient?.isShareContent])
+    },[drawerOpen, chimeClient!.audioInputDeviceSetting!.audioInputEnable, chimeClient!.videoInputDeviceSetting!.videoInputEnable, chimeClient!.audioOutputDeviceSetting!.audioOutputEnable, screenType, chimeClient!.isShareContent]) // eslint-disable-line
 
     const mainView = useMemo(()=>{
         switch(screenType){

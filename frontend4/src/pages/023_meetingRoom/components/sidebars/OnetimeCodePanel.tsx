@@ -46,7 +46,6 @@ export const OnetimeCodePanel = () => {
             </div>
     );
 
-    return(<></>)
 }
 
  

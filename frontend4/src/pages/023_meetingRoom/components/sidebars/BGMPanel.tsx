@@ -121,5 +121,4 @@ export const BGMPanel = () => {
         </div>
     );
 
-    return (<></>)
 }

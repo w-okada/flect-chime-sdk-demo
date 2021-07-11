@@ -42,7 +42,7 @@ export const FullScreenView = ({ pictureInPicture, focusTarget, width, height}: 
                 })}
             </div>
         )
-    },[targetIds, width, height])
+    },[targetIds, width, height]) // eslint-disable-line
 
     return(<>{view}</>)
 

@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { useAppState } from '../../../../providers/AppStateProvider';
-import { useStyles } from './css';
 import { IconButton, Tooltip } from '@material-ui/core';
 import VideocamIcon from '@material-ui/icons/Videocam';
 import VideocamOffIcon from '@material-ui/icons/VideocamOff';
@@ -8,7 +7,6 @@ import VideocamOffIcon from '@material-ui/icons/VideocamOff';
 type VideoState = "ENABLED" | "PAUSED" | "NOT_SHARE"
 
 export const AttendeesTable = () => {
-    const classes = useStyles()
 
     const { chimeClient } = useAppState()
     // const {attendees, videoTileStates, setPauseVideo} = useAppState()
@@ -93,7 +91,7 @@ export const AttendeesTable = () => {
                 {l}
             </div>
         )
-    },[targetIds, targetNames, targetVideoStatesString])
+    },[targetIds, targetNames, targetVideoStatesString]) // eslint-disable-line
 
     return(
         <> 
@@ -102,7 +100,5 @@ export const AttendeesTable = () => {
             </div>
         </>
     )
-
-    return (<></>)
 }
 

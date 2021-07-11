@@ -1,5 +1,5 @@
-import { FlectChimeClient, RestApiClient } from "@dannadori/flect-chime-lib"
-import {  useEffect, useState } from "react"
+import { RestApiClient } from "@dannadori/flect-chime-lib"
+import { useEffect, useState } from "react"
 import { RestAPIEndpoint } from "../../BackendConfig"
 import { useAppState } from "../../providers/AppStateProvider"
 
@@ -27,7 +27,7 @@ export const useMeetingManagerStatusManager = (props:MeetingManagerStatusManager
             setInternalStage("SelectCode")
             setChallengeCode(challenge.codes)
         })
-    },[])
+    },[]) // eslint-disable-line
 
     const sendChallengeCode = async(code:string) =>{
         const restClient = new RestApiClient(RestAPIEndpoint, "", "", "")
