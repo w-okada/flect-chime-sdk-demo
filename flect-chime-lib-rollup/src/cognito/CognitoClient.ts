@@ -4,15 +4,19 @@ export class CognitoClient{
     private _userPool:CognitoUserPool
     private _userId:string|null = null
     get userId():string|null{return this._userId}
+    set userId(val:string|null){this._userId=val}
     private _password:string|null = null
     get password():string|null{return this._password}
 
     private _idToken:string|null = null
     get idToken():string|null{return this._idToken}
+    set idToken(val:string|null){this._idToken=val}
     private _accessToken:string|null = null
     get accessToken():string|null{return this._accessToken}
+    set accessToken(val:string|null){this._accessToken=val}
     private _refreshToken:string|null = null
     get refreshToken():string|null{return this._refreshToken}
+    set refreshToken(val:string|null){this._refreshToken=val}
 
     constructor(userPoolId:string, clientId:string, defaultUserId:string|null=null, defaultPassword:string|null=null){
         this._userPool = new CognitoUserPool({

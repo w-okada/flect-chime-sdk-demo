@@ -17,7 +17,7 @@ export const OnetimeCodePanel = () => {
 
     const handleGenerateOnetimeCode = async () =>{
         const res = await chimeClient!.generateOnetimeCode()
-        const url = `${window.location.href}?stage=MEETING_MANAGER_SIGNIN&uuid=${res.uuid}&meetingName=${chimeClient!.meetingName}&attendeeId=${chimeClient!.attendeeId}`
+        const url = `${window.location.href}?stage=MEETING_MANAGER&uuid=${res.uuid}&meetingName=${chimeClient!.meetingName}&attendeeId=${chimeClient!.attendeeId}`
         console.log("generatecode",res, url)
         setURL(url)
         setOnetimeCode(res.code)

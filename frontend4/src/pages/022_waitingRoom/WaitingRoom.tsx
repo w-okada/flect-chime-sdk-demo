@@ -7,36 +7,6 @@ import { useStyles } from "../000_common/Style";
 import { VirtualBackgroundSegmentationType } from "@dannadori/flect-chime-lib/dist/chime/frame/VirtualBackground";
 import { DeviceInfo } from "../../providers/hooks/useDeviceState";
 
-// const useStyles = makeStyles((theme) => ({
-//     paper: {
-//         marginTop: theme.spacing(8),
-//         display: 'flex',
-//         flexDirection: 'column',
-//         alignItems: 'center',
-//     },
-//     avatar: {
-//         margin: theme.spacing(1),
-//         backgroundColor: theme.palette.primary.main,
-//     },
-//     form: {
-//         width: '100%',
-//         marginTop: theme.spacing(1),
-//     },
-//     submit: {
-//         margin: theme.spacing(3, 0, 2),
-//     },
-
-//     formControl: {
-//         margin: theme.spacing(1),
-//         width: '100%'
-//         // minWidth: 120,
-//     },
-
-//     cameraPreview: {
-//         width: '50%'
-//     },
-// }));
-
 export const WaitingRoom = () => {
     const classes = useStyles()
     const { chimeClient, audioInputList, videoInputList, audioOutputList, reloadDevices, setStage } = useAppState()

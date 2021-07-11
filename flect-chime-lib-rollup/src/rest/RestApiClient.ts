@@ -305,9 +305,9 @@ export class RestApiClient{
 
 
     /**
-     * (7) singinWithOnetimeCodeRequest
+     * (7) requestOnetimeSigninChallengeRequest
      */
-    singinWithOnetimeCodeRequest = async (meetingName:string, attendeeId:string, uuid:string):Promise<SinginWithOnetimeCodeRequestResponse> => { 
+    requestOnetimeSigninChallengeRequest = async (meetingName:string, attendeeId:string, uuid:string):Promise<SinginWithOnetimeCodeRequestResponse> => { 
 
         const url = `${this._baseUrl}operations/onetime-code-signin-request`
 

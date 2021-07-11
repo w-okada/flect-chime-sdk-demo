@@ -388,10 +388,18 @@ export class FlectChimeClient {
     /***
      * (x) 
      */
-    generateOnetimeCode = async ()=> {
+    generateOnetimeCode = async() => {
         return this._restApiClient.generateOnetimeCode(this._meetingName!, this._attendeeId!)
     }
-
+    // requestOnetimeSigninChallengeRequest  = async(uuid:string) =>{
+    //     return this._restApiClient.requestOnetimeSigninChallengeRequest(this._meetingName!, this._attendeeId!, uuid)
+    // }
+    // singinWithOnetimeCode = async(uuid:string, code:string) =>{
+    //     const res = await this._restApiClient.singinWithOnetimeCode(this._meetingName!, this._attendeeId!, uuid, code)
+    //     if(res.result){
+    //         this._idToken = 
+    //     }
+    // }
 
     ///////////////////////////////////////////
     // Utility

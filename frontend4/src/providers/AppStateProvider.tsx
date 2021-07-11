@@ -39,6 +39,7 @@ type APP_MODE = "chime" | "amongus"
 
 interface AppStateValue {
     mode: APP_MODE,
+    setLastUpdateTime: (t:number)=>void
     /** For Credential */
     cognitoClient: CognitoClient,
     chimeClient: FlectChimeClient | null,
@@ -179,13 +180,16 @@ export const useAppState = (): AppStateValue => {
 
 const query = new URLSearchParams(window.location.search);
 
-export const AppStateProvider = ({ children }: Props) => {
 
-    const [lastUpdateTime, setLastUpdateTime] = useState(0)
+export const AppStateProvider = ({ children }: Props) => {
+    const [ mode, setMode ] = useState(query.get("mode") as APP_MODE| "chime" )  // eslint-disable-line
+    const { stage, setStage } = useStageManager({initialStage:query.get("stage") as STAGE|null})
+    const [ lastUpdateTime, setLastUpdateTime ] = useState(0)
 
     const cognitoClient = useMemo(()=>{
         return new CognitoClient(UserPoolId, UserPoolClientId, "mail2wokada@gmail.com", "test222")
     },[])
+
     const chimeClient = useMemo(()=>{
         if(cognitoClient.userId && cognitoClient.idToken && cognitoClient.accessToken && cognitoClient.refreshToken){
             const c = new FlectChimeClient(cognitoClient.userId, cognitoClient.idToken, cognitoClient.accessToken, cognitoClient.refreshToken, RestAPIEndpoint)
@@ -201,9 +205,9 @@ export const AppStateProvider = ({ children }: Props) => {
             c.setChatDataUpdateListener((list:RealtimeData[])=>{
                 setLastUpdateTime(new Date().getTime())
             })
-            
             return c
         }else{
+            console.log(">>>>>>>>", cognitoClient.userId, cognitoClient.idToken, cognitoClient.accessToken, cognitoClient.refreshToken)
             return null
         }
     },[cognitoClient.userId, cognitoClient.idToken, cognitoClient.accessToken, cognitoClient.refreshToken])
@@ -259,8 +263,6 @@ export const AppStateProvider = ({ children }: Props) => {
     //        } = useMeetingState({userId, idToken, accessToken, refreshToken,})
     const { audioInputList, videoInputList, audioOutputList, reloadDevices } = useDeviceState()
     const { screenWidth, screenHeight} = useWindowSizeChangeListener()
-    const [ mode, setMode ] = useState(query.get("mode") as APP_MODE| "chime" )  // eslint-disable-line
-    const { stage, setStage } = useStageManager({initialStage:query.get("stage") as STAGE|null})
     const { messageActive, messageType, messageTitle, messageDetail, setMessage, resolveMessage } = useMessageState()
 
     // const { chatData, sendChatData} = useRealtimeSubscribeChat({meetingSession, attendeeId})
@@ -280,6 +282,7 @@ export const AppStateProvider = ({ children }: Props) => {
 
     const providerValue = {
         mode,
+        setLastUpdateTime,
         /** For Credential */
         cognitoClient,
         chimeClient,

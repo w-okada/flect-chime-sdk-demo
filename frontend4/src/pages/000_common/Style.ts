@@ -45,7 +45,7 @@ export const useStyles = makeStyles((theme) => ({
         "&.Mui-focused": {
           color: "blue",
         },
-    },
+    }
 
 }));
 
@@ -106,5 +106,4 @@ export const useAmongUsStyles = makeStyles((theme) => ({
           color: "blue",
         },
     },
-
 }));

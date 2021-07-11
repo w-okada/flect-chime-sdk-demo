@@ -75,7 +75,6 @@ export const MeetingRoom = () => {
                 const media = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true } )
                 chimeClient!.startShareContent(media)
                 setGuiCounter(guiCounter+1)
-
             }catch(e){
                 console.log(e)
             }

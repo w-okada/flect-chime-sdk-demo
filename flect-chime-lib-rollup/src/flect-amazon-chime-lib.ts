@@ -3,13 +3,13 @@ import { RealtimeData } from "./chime/realtime/const"
 import { CognitoClient } from "./cognito/CognitoClient"
 import { useVideoComposeCanvas } from "./components/useVideoComposeCanvas"
 import { useRecorder } from "./recorder/useRecorder"
-// import { RestApiClient } from "./rest/RestApiClient"
+import { RestApiClient } from "./rest/RestApiClient"
 import { DrawableVideoTile } from "./websocket/WebSocketWhiteboard/DrawableVideoTile"
 import { WebSocketWhiteboardClient, DrawingCmd, DrawingMode, DrawingData} from "./websocket/WebSocketWhiteboard/WebSocketWhiteboardClient"
 
 export {
     CognitoClient,
-    // RestApiClient,
+    RestApiClient,
     FlectChimeClient,
     WebSocketWhiteboardClient,
     DrawableVideoTile,
