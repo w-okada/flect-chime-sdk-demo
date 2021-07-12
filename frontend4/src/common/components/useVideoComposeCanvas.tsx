@@ -32,6 +32,7 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
     const toggleEnable = () =>{
         setEnable(!enable)
     }
+    const [ updateCount, setUpdateCount ] = useState(0)
 
 
     const getTargetTiles = () =>{
@@ -47,6 +48,8 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
 
             // ActiveSpeaker
             const activeSpekerTile = props.chimeClient!.getActiveSpeakerTile()
+            console.log("active speaker", activeSpekerTile)
+            console.log("attendees", props.chimeClient!.attendees)
             if(activeSpekerTile){
                 return [activeSpekerTile]
             }
@@ -197,6 +200,9 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
     },[targetIds])
     
 
-    return { videoComposeCanvas, enable, toggleEnable }
+    return { 
+        videoComposeCanvas, enable, toggleEnable,
+        update: ()=>{console.log("update!", updateCount+1);setUpdateCount(updateCount+1)}
+     }
 }
 

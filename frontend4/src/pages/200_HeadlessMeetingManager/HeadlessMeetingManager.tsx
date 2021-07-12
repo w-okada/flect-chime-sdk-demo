@@ -22,7 +22,7 @@ export const HeadlessMeetingManager = () => {
     const code        = query.get('code') || null // OnetimeCode
 
 
-    const { chimeClient } = useAppState()
+    const { chimeClient, audioOutputList } = useAppState()
     const { internalStage, enterMeeting } = useHeadlessMeetingManagerStatusManager({
         meetingName: meetingName!,
         attendeeId: attendeeId!,
@@ -155,6 +155,21 @@ export const HeadlessMeetingManager = () => {
     //     }
     // },[chimeClient, chimeClient?.audioOutputDeviceSetting])
 
+
+    useEffect(()=>{
+        if(internalStage === "InMeeting"){
+            console.log("SEtting Speaker!")
+            const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
+            chimeClient!.audioOutputDeviceSetting!.setAudioOutput(audioOutput).then(async()=>{
+                const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
+                audioElement.autoplay=true
+                audioElement.volume = 1
+                await chimeClient!.audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
+            })
+        }
+    },[internalStage]) // eslint-disable-line
+
+
     
 
     const view = (()=>{
@@ -167,7 +182,11 @@ export const HeadlessMeetingManager = () => {
 
     return(
         <>
-            {view}
+            {/* {view} */}
+            <div>
+            {/* <audio id="for-speaker" style={{display:"none"}}/> */}
+            <audio id="for-speaker" controls/>
+            </div>
         </>
     )
     // return (

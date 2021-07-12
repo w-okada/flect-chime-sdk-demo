@@ -11,7 +11,7 @@ type Props = {
 };
 export const LineView = ({ excludeSpeaker, excludeSharedContent, width, height, viewInLine}: Props) =>  {
     const { chimeClient, whiteboardClient } = useAppState()
-    const targetTiles = chimeClient!.getTilesWithFilter(excludeSpeaker, excludeSharedContent)
+    const targetTiles = chimeClient!.getTilesWithFilter(excludeSpeaker, excludeSharedContent, false)
     
     // rendering flag
     const targetIds = targetTiles.reduce<string>((ids,cur)=>{return `${ids}_${cur.boundAttendeeId}`},"")

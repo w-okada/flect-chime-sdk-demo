@@ -12,26 +12,35 @@ import { CreditPanel } from "../023_meetingRoom/components/sidebars/CreditPanel"
 import { CustomAccordion } from "../023_meetingRoom/components/sidebars/CustomAccordion";
 import { RecorderPanel } from "../023_meetingRoom/components/sidebars/RecorderPanel";
 import { useStyles } from "./css";
-import { useMeetingManagerStatusManager } from "./useMeetingManagerStatusManager";
+import { useHMeetingManagerStatusManager } from "./useMeetingManagerStatusManager";
 
 
-export const MeetingManager = () => {
+export const HMeetingManager = () => {
     const classes = useStyles();
     //// Query Parameters
     const query       = new URLSearchParams(window.location.search);
     const meetingName = query.get('meetingName') || null  // meeting name is already encoded
     const attendeeId  = query.get('attendeeId') || null
     const uuid        = query.get('uuid') || null
+    const code        = query.get('code') || null // OnetimeCode
 
     const { setMessage, chimeClient, audioOutputList } = useAppState()
     const [ isLoading, setIsLoading] = useState(false)
     const [ guiCounter, setGuiCounter] = useState(0)
 
-    const { internalStage, challengeCode, sendChallengeCode, enterMeeting } = useMeetingManagerStatusManager({
+    const { internalStage, challengeCode, sendChallengeCode, enterMeeting } = useHMeetingManagerStatusManager({
         meetingName: meetingName!,
         attendeeId: attendeeId!,
         uuid: uuid!,
+        code: code!,
     })
+
+    // useEffect(()=>{
+    //     sendChallengeCode(code!).then(()=>{
+    //         console.log("CHALLENGE DONE")
+    //     })
+    // },[])
+
     const onetimeCodeClicked = async(code:string) =>{
         setIsLoading(true)
         const res = await sendChallengeCode(code)
@@ -41,8 +50,13 @@ export const MeetingManager = () => {
             setMessage("Exception", "Signin error", [`can not sigin. please generate code and retry.`] )
             setIsLoading(false)
         }
-
     }
+
+    // useEffect(()=>{
+    //     sendChallengeCode(code!).then(()=>{
+    //         console.log("SEND CHALLENGE!")
+    //     })
+    // },[])
 
     ////////////////////////////////
     /////// (1) Code Selector //////
@@ -226,8 +240,10 @@ export const MeetingManager = () => {
 
     ///// Return Component ////
     if(internalStage === "Initializing" || internalStage === "SelectCode"){
+        // return <>waiting 1</>
         return codeSelectorView
     }else if(internalStage === "WaitForEntering"){
+        // return <>waiting 2</>
         return waitingForEntering
     }else{
         return meetingRoomForManager

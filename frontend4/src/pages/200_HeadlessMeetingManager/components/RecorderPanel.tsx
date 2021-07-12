@@ -20,18 +20,18 @@ export const RecorderPanel = () => {
         setSourceVideoActive(ms)
     }
 
-    // const all = useVideoComposeCanvas({
-    //     chimeClient:chimeClient!,
-    //     mode: "ALL",
-    //     canvasWidth:640,
-    //     canvasHeight:480,
-    //     displayWidth:64,
-    //     displayHeight:48,
-    //     drawTitle:true,
-    //     notifyVideoStream:notifyVideoStreamAll,
-    //     framerate:15,
-    //     autoplay:true
-    // })
+    const all = useVideoComposeCanvas({
+        chimeClient:chimeClient!,
+        mode: "ALL",
+        canvasWidth:640,
+        canvasHeight:480,
+        displayWidth:64,
+        displayHeight:48,
+        drawTitle:true,
+        notifyVideoStream:notifyVideoStreamAll,
+        framerate:15,
+        autoplay:true
+    })
     const active = useVideoComposeCanvas({
         chimeClient:chimeClient!,
         mode: "ACTIVE",
@@ -45,12 +45,11 @@ export const RecorderPanel = () => {
         autoplay:true
     })
 
-    // const all_rec = useRecorder({
-    //     sourceVideo: sourceVideoAll,
-    //     sourceLocalAudio: chimeClient!.audioInputDeviceSetting!.audioInputForRecord,
-    //     sourceRemoteAudio: chimeClient!.audioOutputDeviceSetting!.outputAudioElement,
-    //     filename: "testfile_all.mp4"
-    // })
+    const all_rec = useRecorder({
+        sourceVideo: sourceVideoAll,
+        chimeClient: chimeClient!,
+        filename: "testfile_all.mp4"
+    })
 
     const active_rec = useRecorder({
         sourceVideo: sourceVideoActive,
@@ -58,56 +57,28 @@ export const RecorderPanel = () => {
         filename: "testfile_active.mp4"
     })
 
-    // const view = useMemo(()=>{
-    //     if(chimeClient){
-    //         return(
-    //             <>
-    //                 <div style={{display:"flex", flexDirection:"column"}}>
-    //                     <div>
-    //                         a
-    //                     {all.videoComposeCanvas}
-    //                     </div>
-    //                     <div>
-    //                         b
-    //                     {active.videoComposeCanvas}
-    //                     </div>
 
-    //                     <div>
-    //                         ALL:{all_rec.started ? "STARTED!!": "STOPPED"}
-    //                     </div>
-    //                     <div>
-    //                         Active:{active_rec.started ? "STARTED!!": "STOPPED"}
-    //                     </div>
-    //                 </div>
-    //             </>
-    //         )
-    //     }else{
-    //         return(
-    //             <>
-    //             waiting
-    //             </>
-    //         )
+    const allTileIds = chimeClient!.getTilesWithFilter(false, false, true).reduce( (pre,cur)=>{return `${pre}_${cur.boundAttendeeId}`}, "")
+    const activeSpeakerId = chimeClient!.getActiveSpeakerTile()?.boundAttendeeId
 
-    //     }
-
-    // },[chimeClient])
-
-    const view = (()=>{
+    const view = useMemo(()=>{
+        active.update()
+        all.update()
         if(chimeClient){
             return(
                 <>
                     <div style={{display:"flex", flexDirection:"column"}}>
                         <div>
-                            a
-                        {/* {all.videoComposeCanvas} */}
+                            all
+                        {all.videoComposeCanvas}
                         </div>
                         <div>
-                            b
+                            active
                         {active.videoComposeCanvas}
                         </div>
 
                         <div>
-                            {/* ALL:{all_rec.started ? "STARTED!!": "STOPPED"} */}
+                            ALL:{all_rec.started ? "STARTED!!": "STOPPED"}
                         </div>
                         <div>
                             Active:{active_rec.started ? "STARTED!!": "STOPPED"}
@@ -123,7 +94,41 @@ export const RecorderPanel = () => {
             )
 
         }
-    })()
+
+    },[chimeClient, allTileIds, activeSpeakerId])
+
+    // const view = (()=>{
+    //     if(chimeClient){
+    //         return(
+    //             <>
+    //                 <div style={{display:"flex", flexDirection:"column"}}>
+    //                     <div>
+    //                         a
+    //                     {/* {all.videoComposeCanvas} */}
+    //                     </div>
+    //                     <div>
+    //                         b
+    //                     {active.videoComposeCanvas}
+    //                     </div>
+
+    //                     <div>
+    //                         {/* ALL:{all_rec.started ? "STARTED!!": "STOPPED"} */}
+    //                     </div>
+    //                     <div>
+    //                         Active:{active_rec.started ? "STARTED!!": "STOPPED"}
+    //                     </div>
+    //                 </div>
+    //             </>
+    //         )
+    //     }else{
+    //         return(
+    //             <>
+    //             waiting
+    //             </>
+    //         )
+
+    //     }
+    // })()
 
     return(
         <>

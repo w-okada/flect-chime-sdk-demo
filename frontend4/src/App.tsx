@@ -14,6 +14,7 @@ import { WaitingRoom } from './pages/022_waitingRoom/WaitingRoom';
 import { MeetingRoom } from './pages/023_meetingRoom/MeetingRoom';
 import { HeadlessMeetingManager } from './pages/200_HeadlessMeetingManager/HeadlessMeetingManager';
 import { MeetingManager } from './pages/100_MeetingManager/MeetingManager';
+import { HMeetingManager } from './pages/101_HMeetingManager/HMeetingManager';
 // import { Verify } from './pages/012_verify';
 // import { RequestChangePassword } from './pages/013_requestChangePassword';
 // import { NewPassword } from './pages/014_newPassword';
@@ -66,7 +67,8 @@ const Router = () => {
             case "MEETING_MANAGER":
                 return <MeetingManager />
             case "HEADLESS_MEETING_MANAGER":
-                return <HeadlessMeetingManager />
+                return <HMeetingManager />
+                // return <HeadlessMeetingManager />
 
             default:
                 return <div>no view</div>

@@ -48,7 +48,7 @@ export const GridView = ({ excludeSharedContent, width, height}: Props) =>  {
     const classes = useStyles()
 
     const { chimeClient, whiteboardClient } = useAppState()
-    const targetTiles = chimeClient!.getTilesWithFilter(false, excludeSharedContent)
+    const targetTiles = chimeClient!.getTilesWithFilter(false, excludeSharedContent, false)
 
 
     // rendering flag

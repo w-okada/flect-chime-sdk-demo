@@ -374,20 +374,24 @@ export class FlectChimeClient {
                 this._attendeesUpdateListener(this._attendees)
             }, 5000)
 
+        console.log("active detector")
+
         // (4) start 
-        this.meetingSession?.audioVideo.start()
+        this.meetingSession!.audioVideo.start()
         await this.videoInputDeviceSetting!.setVideoInputEnable(true)
         await this.audioInputDeviceSetting!.setAudioInputEnable(true)
         await this.audioOutputDeviceSetting!.setAudioOutputEnable(true)
+        console.log("start")
 
         // (5) enable chat
         this._chatClient = new RealtimeSubscribeChatClient(this)
         this._chatClient.setChatDataUpdateListener(this._chatDataUpdateListener)
+        console.log("chat")
 
         // (6) enable hmm
         this._hmmClient = new RealtimeSubscribeHMMClient(this, this._restApiClient)
         this._hmmClient.realtimeSubscribeHMMClientListener = this._hmmListener
-
+        console.log("hmm")
     }
 
     /**
@@ -437,18 +441,22 @@ export class FlectChimeClient {
         return Object.values(this._videoTileStates).filter(tile => { return tile.isContent })
     }
     getActiveSpeakerTile = () => {
+        console.log("active speaker2::::", this._activeSpeakerId)
         if (this._activeSpeakerId && this._videoTileStates[this._activeSpeakerId]) {
             return this._videoTileStates[this._activeSpeakerId]
         } else {
             return null
         }
     }
-    getTilesWithFilter = (excludeSpeaker: boolean, excludeSharedContent: boolean) => {
+    getTilesWithFilter = (excludeSpeaker: boolean, excludeSharedContent: boolean, excludeLocal:boolean) => {
         let targetTiles = Object.values(this._videoTileStates).filter(tile => {
             if (excludeSharedContent && tile.isContent === true) {
                 return false
             }
             if (excludeSpeaker && tile.boundAttendeeId === this._activeSpeakerId) {
+                return false
+            }
+            if (excludeLocal && tile.localTile){
                 return false
             }
 

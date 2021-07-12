@@ -44,15 +44,16 @@ export const useHeadlessMeetingManagerStatusManager = (props:HeadlessMeetingMeet
     const enterMeeting = async() =>{
         if(chimeClient){
             console.log("[useHeadlessMeetingManagerStatusMaanger] Joining...")
-            chimeClient.joinMeeting(props.meetingName, `Manager(${userName})`).then(()=>{
+            chimeClient.joinMeeting(props.meetingName, `HMM(${userName})`).then(()=>{
                 console.log("[useHeadlessMeetingManagerStatusMaanger] entering...")
 
                 const p1 = chimeClient.audioInputDeviceSetting!.setAudioInput("dummy")
                 const p2 = chimeClient.videoInputDeviceSetting!.setVideoInput(null)
-                chimeClient.videoInputDeviceSetting!.setVirtualForegrounEnable(false)
-                chimeClient.videoInputDeviceSetting!.setVirtualBackgrounEnable(false)    
-                const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
-                const p3 = chimeClient.audioOutputDeviceSetting!.setAudioOutput(audioOutput)
+                // chimeClient.videoInputDeviceSetting!.setVirtualForegrounEnable(false)
+                // chimeClient.videoInputDeviceSetting!.setVirtualBackgrounEnable(false)
+                // const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
+                // const p3 = chimeClient.audioOutputDeviceSetting!.setAudioOutput(audioOutput)
+                const p3 = chimeClient.audioOutputDeviceSetting!.setAudioOutput(null)
                 chimeClient.enterMeeting().then(()=>{
                     Promise.all([p1,p2,p3]).then(()=>{
                         setInternalStage("InMeeting")
