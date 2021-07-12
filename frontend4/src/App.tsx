@@ -63,8 +63,6 @@ const Router = () => {
                     console.log("meeting room ")
                     return <MeetingRoom />
                 }
-            // case "MEETING_MANAGER_SIGN":
-            //     return <MeetingManagerSign />
             case "MEETING_MANAGER":
                 return <MeetingManager />
             case "HEADLESS_MEETING_MANAGER":
