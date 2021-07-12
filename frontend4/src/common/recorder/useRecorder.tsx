@@ -1,21 +1,17 @@
-import { FFmpeg, createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg"
+import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg"
+import { DefaultDeviceController } from "amazon-chime-sdk-js"
 import { useEffect, useMemo, useState } from "react"
+import { FlectChimeClient } from "../chime/FlectChimeClient"
 
 type RecorderCanvasProps = {
     sourceVideo: HTMLCanvasElement | HTMLVideoElement | MediaStream | null
-    sourceLocalAudio: HTMLAudioElement | MediaStream | null
-    sourceRemoteAudio: HTMLAudioElement | MediaStream | null
+    chimeClient: FlectChimeClient
     filename: string
 }
 
 export const useRecorder = (props: RecorderCanvasProps) => {
-    // const [ sourceVideo, setSourceVideo ] = useState<HTMLCanvasElement|HTMLVideoElement|MediaStream|null>(null) 
-    // const [ sourceLocalAudio, setSourceLocalAudio] = useState<HTMLAudioElement|MediaStream|null>(null)
-    // const [ sourceRemoteAudio, setSourceRemoteAudio] = useState<HTMLAudioElement|MediaStream|null>(null)
-
-    // const chunks = useMemo<Blob[]>(() => { return [] }, [])
     const [chunks, setChunks] = useState<Blob[]>([])
-    const ffmpeg = useMemo(() => { return createFFmpeg({ log: true, corePath:"./ffmpeg/ffmpeg-core.js" }) }, [])
+    const ffmpeg = useMemo(() => { return createFFmpeg({ log: true, corePath: "./ffmpeg/ffmpeg-core.js" }) }, [])
 
     const [start, setStart] = useState(false)
 
@@ -39,23 +35,25 @@ export const useRecorder = (props: RecorderCanvasProps) => {
                 })
             }
 
-            //// Adding Local Audio Track
-            // [props.sourceRemoteAudio].forEach(a => {
-                [props.sourceLocalAudio, props.sourceRemoteAudio].forEach(a => {
-                    if (a instanceof HTMLAudioElement) {
-                        //@ts-ignore
-                        const audioStream = a.captureStream() as MediaStream
-                        audioStream.getTracks().forEach(t => {
-                            console.log("added tracks(from element):", t)
-                            stream.addTrack(t)
-                        })
-                    } else if (a instanceof MediaStream) {
-                        a.getTracks().forEach(t => {
-                        console.log("added tracks:", t)
-                        stream.addTrack(t)
-                    })
-                }
-            })
+
+            const sourceLocalAudioStream = props.chimeClient.audioInputDeviceSetting!.audioInputForRecord
+            // @ts-ignore    
+            const sourceRemoteAudioStream = props.chimeClient.audioOutputDeviceSetting!.outputAudioElement?.captureStream()
+            const audioContext = DefaultDeviceController.getAudioContext();
+            const outputNode = audioContext.createMediaStreamDestination();
+            const sourceNode1 = audioContext.createMediaStreamSource(sourceRemoteAudioStream);
+            sourceNode1.connect(outputNode)
+            if(sourceLocalAudioStream){
+                const sourceNode2 = audioContext.createMediaStreamSource(sourceLocalAudioStream as MediaStream);
+                sourceNode2.connect(outputNode)
+            }
+
+            [outputNode.stream].forEach(s=>{
+                s?.getTracks().forEach(t=>{
+                    console.log("added tracks:", t)
+                    stream.addTrack(t)
+                })
+            });
 
             const options = {
                 mimeType: 'video/webm;codecs=h264,opus'
@@ -74,7 +72,7 @@ export const useRecorder = (props: RecorderCanvasProps) => {
         return () => {
             if (recorder) {
                 console.log("recorder stop!!!!!!!!!")
-                
+
                 recorder.stop()
                 const a = document.createElement("a")
                 a.download = props.filename
@@ -88,19 +86,19 @@ export const useRecorder = (props: RecorderCanvasProps) => {
                         });
                         resolve()
                     })
-                }else{
+                } else {
                     ffmpegWaitPromise = new Promise<void>(async (resolve, reject) => {
                         resolve()
                     })
                 }
 
-                ffmpegWaitPromise.then(async ()=>{
+                ffmpegWaitPromise.then(async () => {
                     const name = 'record.webm'
-                    
+
                     ffmpeg.FS('writeFile', name, await fetchFile(new Blob(chunks)));
                     console.log("FFMPEG START!")
                     await ffmpeg.run('-i', name, '-c', 'copy', props.filename)
-                    const data = ffmpeg.FS('readFile',  props.filename)
+                    const data = ffmpeg.FS('readFile', props.filename)
                     a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
                     a.click()
                     console.log("FFMPEG DONE!")
@@ -110,10 +108,10 @@ export const useRecorder = (props: RecorderCanvasProps) => {
         }
     }, [start])
 
-    return { 
-        started: start,  
-        start: ()=>{setStart(true)},
-        stop:  ()=>{setStart(false)}
+    return {
+        started: start,
+        start: () => { setStart(true) },
+        stop: () => { setStart(false) }
     }
 
 }

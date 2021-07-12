@@ -1,7 +1,8 @@
 import React, { useState }  from 'react';
 import { Button } from '@material-ui/core';
 import { useAppState } from '../../../../providers/AppStateProvider';
-import { useVideoComposeCanvas, useRecorder } from '@dannadori/flect-chime-lib'
+import { useVideoComposeCanvas } from '../../../../common/components/useVideoComposeCanvas';
+import { useRecorder } from '../../../../common/recorder/useRecorder';
 
 
 export const RecorderPanel = () => {
@@ -16,8 +17,8 @@ export const RecorderPanel = () => {
 
     const r1 = useVideoComposeCanvas({
         chimeClient:chimeClient!,
-        // mode: "ALL",
-        mode: "ACTIVE",
+        mode: "ALL",
+        // mode: "ACTIVE",
         canvasWidth:640,
         canvasHeight:480,
         displayWidth:64,
@@ -30,10 +31,21 @@ export const RecorderPanel = () => {
 
     const { started, start, stop } = useRecorder({
         sourceVideo: sourceVideo,
-        sourceLocalAudio: chimeClient!.audioInputDeviceSetting!.audioInputForRecord,
-        sourceRemoteAudio: chimeClient!.audioOutputDeviceSetting!.outputAudioElement,
+        chimeClient: chimeClient!,
         filename: "testfile.mp4"
     })
+
+    const setVolume = () =>{
+        const au = document.getElementById("for-speaker") as HTMLAudioElement
+        console.log("VOLUME:::", au.volume)
+        if(au.volume===0){
+            au.volume=1
+            console.log("NEW VOLUME:::", au.volume)
+        }else{
+            au.volume=0
+            console.log("NEW VOLUME:::", au.volume)
+        }
+    }
 
     return(
         <div style={{display:"flex", flexDirection:"column"}}>
@@ -48,6 +60,9 @@ export const RecorderPanel = () => {
             </div>
             <div>
                 <Button onClick={stop}>stop</Button>
+            </div>
+            <div>
+                <Button onClick={setVolume}>volu</Button>
             </div>
         </div>
     )

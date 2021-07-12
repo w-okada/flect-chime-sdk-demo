@@ -1,4 +1,3 @@
-import { useRecorder, useVideoComposeCanvas } from "@dannadori/flect-chime-lib";
 import React, { useEffect, useMemo, useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
 import { RecorderPanel } from "./components/RecorderPanel";

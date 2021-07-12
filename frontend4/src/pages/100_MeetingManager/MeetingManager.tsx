@@ -130,6 +130,7 @@ export const MeetingManager = () => {
 
     const meetingRoomForManager = useMemo(()=>{
         if(internalStage === "InMeeting"){
+            console.log("IN MEETING CALLED!!!!")
             return (
                 <ThemeProvider theme={theme}>
                     <CssBaseline />
@@ -198,11 +199,13 @@ export const MeetingManager = () => {
     useEffect(()=>{
         if(internalStage === "InMeeting"){
             const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
-            chimeClient!.audioOutputDeviceSetting!.setAudioOutput(audioOutput).then(()=>{
+            chimeClient!.audioOutputDeviceSetting!.setAudioOutput(audioOutput).then(async()=>{
+                console.log("AUDIO OUTPUT0", audioOutput)
                 const audioElement = document.getElementById("for-speaker")! as HTMLAudioElement
-                audioElement.autoplay=false
-                audioElement.volume = 0
-                chimeClient!.audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
+                audioElement.autoplay=true
+                // audioElement.volume = 1
+                await chimeClient!.audioOutputDeviceSetting!.setOutputAudioElement(audioElement)
+                console.log("AUDIO OUTPUT1", audioElement)
             })
         }
     },[internalStage]) // eslint-disable-line
@@ -231,5 +234,6 @@ export const MeetingManager = () => {
         return waitingForEntering
     }else{
         return meetingRoomForManager
+        // return <>not here</>
     }
 }

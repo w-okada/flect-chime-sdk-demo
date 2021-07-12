@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useAppState } from "../../../../providers/AppStateProvider";
 import { FocustTarget, PictureInPictureType } from "./const";
 import { VideoTileState } from "amazon-chime-sdk-js";
-import { DrawableVideoTile } from "@dannadori/flect-chime-lib"
+import { DrawableVideoTile } from "../../../../common/websocket/WebSocketWhiteboard/DrawableVideoTile";
 type FullScreenProps = {
     pictureInPicture: PictureInPictureType
     focusTarget: FocustTarget

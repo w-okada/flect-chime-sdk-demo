@@ -1,6 +1,6 @@
-import { RestApiClient } from "@dannadori/flect-chime-lib"
 import { useEffect, useState } from "react"
 import { RestAPIEndpoint } from "../../BackendConfig"
+import { RestApiClient } from "../../common/rest/RestApiClient"
 import { useAppState } from "../../providers/AppStateProvider"
 
 type InternalStage = "Initializing" | "SelectCode" | "WaitForEntering" | "InMeeting"
@@ -19,7 +19,7 @@ export const useMeetingManagerStatusManager = (props:MeetingManagerStatusManager
     const [ challengeCode, setChallengeCode] = useState<string[]>([])
     const [ userName, setUserName ] = useState<string>("")
 
-    const { cognitoClient, setLastUpdateTime, chimeClient } = useAppState() 
+    const { setStage, cognitoClient, setLastUpdateTime, chimeClient, audioOutputList } = useAppState() 
 
     useEffect(()=>{
         const restClient = new RestApiClient(RestAPIEndpoint, "", "", "")
@@ -53,10 +53,13 @@ export const useMeetingManagerStatusManager = (props:MeetingManagerStatusManager
                 console.log("[useMeetingManagerStatusMaanger] entering...")
                 const p1 = chimeClient.audioInputDeviceSetting!.setAudioInput("dummy")
                 const p2 = chimeClient.videoInputDeviceSetting!.setVideoInput(null)
-                const p3 = chimeClient.audioOutputDeviceSetting!.setAudioOutput(null)
+                // const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
+                // const p3 = chimeClient.audioOutputDeviceSetting!.setAudioOutput(audioOutput)
+                const p3 = chimeClient.audioOutputDeviceSetting!.setAudioOutput(null)                
                 chimeClient.enterMeeting().then(()=>{
                     Promise.all([p1,p2,p3]).then(()=>{
                         setInternalStage("InMeeting")
+                        // setStage("MEETING_MANAGER")
                     })
                 }).catch(e=>{
                     console.log(`[useMeetingManagerStatusMaanger] ${e}`)

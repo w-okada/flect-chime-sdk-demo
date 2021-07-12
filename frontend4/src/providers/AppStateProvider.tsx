@@ -24,12 +24,15 @@ import { STAGE, useStageManager } from "./hooks/useStageManager";
 
 
 
-import { CognitoClient, FlectChimeClient, WebSocketWhiteboardClient, AttendeeState, RealtimeData, DrawingData } from "@dannadori/flect-chime-lib"
 import { RestAPIEndpoint, UserPoolClientId, UserPoolId, WebSocketEndpoint } from "../BackendConfig";
 import { DeviceInfo, useDeviceState } from "./hooks/useDeviceState";
 import { useWindowSizeChangeListener } from "./hooks/useWindowSizeChange";
 import { VideoTileState } from "amazon-chime-sdk-js";
-import { GameState, HMMStatus } from "@dannadori/flect-chime-lib/dist/chime/realtime/RealtimeSubscribeHMMClient";
+import { CognitoClient } from "../common/cognito/CognitoClient";
+import { AttendeeState, FlectChimeClient } from "../common/chime/FlectChimeClient";
+import { DrawingData, WebSocketWhiteboardClient } from "../common/websocket/WebSocketWhiteboard/WebSocketWhiteboardClient";
+import { GameState, HMMStatus } from "../common/chime/realtime/RealtimeSubscribeHMMClient";
+import { RealtimeData } from "../common/chime/realtime/const";
 
 type Props = {
     children: ReactNode;

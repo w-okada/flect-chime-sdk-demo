@@ -4,8 +4,8 @@ import { useAppState } from "../../providers/AppStateProvider";
 import { MeetingRoom } from '@material-ui/icons'
 import { Copyright } from "../000_common/Copyright";
 import { useStyles } from "../000_common/Style";
-import { VirtualBackgroundSegmentationType } from "@dannadori/flect-chime-lib/dist/chime/frame/VirtualBackground";
 import { DeviceInfo } from "../../providers/hooks/useDeviceState";
+import { VirtualBackgroundSegmentationType } from "../../common/chime/frame/VirtualBackground";
 
 export const WaitingRoom = () => {
     const classes = useStyles()

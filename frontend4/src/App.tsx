@@ -12,8 +12,8 @@ import { CreateMeetingRoom } from './pages/021_createMeetingRoom';
 import { WaitingRoomAmongUs } from './pages/022_waitingRoom/WaitingRoomAmongUs';
 import { WaitingRoom } from './pages/022_waitingRoom/WaitingRoom';
 import { MeetingRoom } from './pages/023_meetingRoom/MeetingRoom';
-import { MeetingManager } from './pages/100_MeetingManager/MeetingManager';
 import { HeadlessMeetingManager } from './pages/200_HeadlessMeetingManager/HeadlessMeetingManager';
+import { MeetingManager } from './pages/100_MeetingManager/MeetingManager';
 // import { Verify } from './pages/012_verify';
 // import { RequestChangePassword } from './pages/013_requestChangePassword';
 // import { NewPassword } from './pages/014_newPassword';
@@ -63,6 +63,8 @@ const Router = () => {
                     console.log("meeting room ")
                     return <MeetingRoom />
                 }
+            // case "MEETING_MANAGER_SIGN":
+            //     return <MeetingManagerSign />
             case "MEETING_MANAGER":
                 return <MeetingManager />
             case "HEADLESS_MEETING_MANAGER":

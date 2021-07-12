@@ -71,18 +71,16 @@ export const AttendeesTable = () => {
             }
 
             return(
-                <>
-                    <div style={{display:"flex", flexDirection:"row"}} key={x.attendeeId}>
-                        <Tooltip title={`${x.attendeeId}`}>
-                            <div>
-                                {x.name} 
-                            </div>
-                        </Tooltip>
-                            <div>
-                                {videoStateComp}
-                            </div>
-                    </div>
-                </>
+                <div style={{display:"flex", flexDirection:"row"}} key={x.attendeeId}>
+                    <Tooltip title={`${x.attendeeId}`}>
+                        <div>
+                            {x.name} 
+                        </div>
+                    </Tooltip>
+                        <div>
+                            {videoStateComp}
+                        </div>
+                </div>
             )
         })
 

@@ -1,6 +1,6 @@
-import { DrawableVideoTile } from "@dannadori/flect-chime-lib";
 import { GridList, GridListTile, GridListTileBar, makeStyles, withStyles } from "@material-ui/core";
 import React, { useMemo } from "react";
+import { DrawableVideoTile } from "../../../../common/websocket/WebSocketWhiteboard/DrawableVideoTile";
 import { useAppState } from "../../../../providers/AppStateProvider";
 
 

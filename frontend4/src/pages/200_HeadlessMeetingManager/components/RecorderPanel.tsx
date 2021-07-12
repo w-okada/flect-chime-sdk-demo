@@ -1,7 +1,8 @@
 import React, { useMemo, useState }  from 'react';
 import { Button } from '@material-ui/core';
-import { useVideoComposeCanvas, useRecorder } from '@dannadori/flect-chime-lib'
 import { useAppState } from '../../../providers/AppStateProvider';
+import { useVideoComposeCanvas } from '../../../common/components/useVideoComposeCanvas';
+import { useRecorder } from '../../../common/recorder/useRecorder';
 
 
 export const RecorderPanel = () => {
@@ -53,8 +54,7 @@ export const RecorderPanel = () => {
 
     const active_rec = useRecorder({
         sourceVideo: sourceVideoActive,
-        sourceLocalAudio: chimeClient!.audioInputDeviceSetting!.audioInputForRecord,
-        sourceRemoteAudio: chimeClient!.audioOutputDeviceSetting!.outputAudioElement,
+        chimeClient: chimeClient!,
         filename: "testfile_active.mp4"
     })
 
