@@ -5,10 +5,6 @@ import { RealtimeData, RealtimeDataApp } from "./const";
 import { v4 } from 'uuid';
 import { FlectChimeClient } from "../../flect-amazon-chime-lib";
 
-type UseRealtimeSubscribeChat = {
-    meetingSession?:DefaultMeetingSession
-    attendeeId:string
-}
 export class RealtimeSubscribeChatClient{
     private _chimeClient:FlectChimeClient
     constructor(chimeClient:FlectChimeClient){
@@ -58,5 +54,5 @@ export class RealtimeSubscribeChatClient{
 
         this._chatDataUpdateListener(this._chatData)
     }
-
+    
 }

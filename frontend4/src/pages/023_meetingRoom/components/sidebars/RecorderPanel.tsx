@@ -16,14 +16,16 @@ export const RecorderPanel = () => {
 
     const r1 = useVideoComposeCanvas({
         chimeClient:chimeClient!,
-        mode: "ALL",
+        // mode: "ALL",
+        mode: "ACTIVE",
         canvasWidth:640,
         canvasHeight:480,
         displayWidth:64,
         displayHeight:48,
         drawTitle:true,
         notifyVideoStream:notifyVideoStream,
-        framerate:15
+        framerate:15,
+        autoplay:false
     })
 
     const { started, start, stop } = useRecorder({

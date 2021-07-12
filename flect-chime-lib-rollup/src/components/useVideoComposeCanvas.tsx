@@ -20,13 +20,15 @@ type RecorderCanvasProps = {
     notifyVideoStream: (ms:MediaStream) => void,
     framerate:number
 
+    autoplay: boolean
+
 }
 
 export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
     const recorederCanvasId = useMemo(()=>{
         return v4()
     },[])
-    const [ enable, setEnable] = useState(false)
+    const [ enable, setEnable] = useState(props.autoplay)
     const toggleEnable = () =>{
         setEnable(!enable)
     }
@@ -96,6 +98,10 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
             const p = new Promise<void>((resolve, reject)=>{
                 const videoId = `recorder-canvas-video-${recorederCanvasId}-${index}`
                 const videoElem = document.getElementById(videoId) as HTMLVideoElement
+                if(!videoElem){
+                    resolve()
+                    return 
+                }
 
                 let rate
                 if(videoElem.videoWidth / maxWidth > videoElem.videoHeight / maxHeight){

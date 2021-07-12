@@ -13,7 +13,8 @@ export const useRecorder = (props: RecorderCanvasProps) => {
     // const [ sourceLocalAudio, setSourceLocalAudio] = useState<HTMLAudioElement|MediaStream|null>(null)
     // const [ sourceRemoteAudio, setSourceRemoteAudio] = useState<HTMLAudioElement|MediaStream|null>(null)
 
-    const chunks = useMemo<Blob[]>(() => { return [] }, [])
+    // const chunks = useMemo<Blob[]>(() => { return [] }, [])
+    const [chunks, setChunks] = useState<Blob[]>([])
     const ffmpeg = useMemo(() => { return createFFmpeg({ log: true, corePath:"./ffmpeg/ffmpeg-core.js" }) }, [])
 
     const [start, setStart] = useState(false)
@@ -39,16 +40,17 @@ export const useRecorder = (props: RecorderCanvasProps) => {
             }
 
             //// Adding Local Audio Track
-            [props.sourceLocalAudio, props.sourceRemoteAudio].forEach(a => {
-                if (a instanceof HTMLAudioElement) {
-                    //@ts-ignore
-                    const audioStream = a.captureStream() as MediaStream
-                    audioStream.getTracks().forEach(t => {
-                        console.log("added tracks:", t)
-                        stream.addTrack(t)
-                    })
-                } else if (a instanceof MediaStream) {
-                    a.getTracks().forEach(t => {
+            // [props.sourceRemoteAudio].forEach(a => {
+                [props.sourceLocalAudio, props.sourceRemoteAudio].forEach(a => {
+                    if (a instanceof HTMLAudioElement) {
+                        //@ts-ignore
+                        const audioStream = a.captureStream() as MediaStream
+                        audioStream.getTracks().forEach(t => {
+                            console.log("added tracks:", t)
+                            stream.addTrack(t)
+                        })
+                    } else if (a instanceof MediaStream) {
+                        a.getTracks().forEach(t => {
                         console.log("added tracks:", t)
                         stream.addTrack(t)
                     })
@@ -58,16 +60,21 @@ export const useRecorder = (props: RecorderCanvasProps) => {
             const options = {
                 mimeType: 'video/webm;codecs=h264,opus'
             }
+            console.log("create media recorder")
             recorder = new MediaRecorder(stream, options)
             recorder.ondataavailable = (e: BlobEvent) => {
                 console.log("ondataavailable datasize", e.data.size)
                 chunks.push(e.data)
             }
+            console.log("create media start")
             recorder.start(1000)
+            console.log("create media start")
         }
 
         return () => {
             if (recorder) {
+                console.log("recorder stop!!!!!!!!!")
+                
                 recorder.stop()
                 const a = document.createElement("a")
                 a.download = props.filename
@@ -97,6 +104,7 @@ export const useRecorder = (props: RecorderCanvasProps) => {
                     a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
                     a.click()
                     console.log("FFMPEG DONE!")
+                    setChunks([])
                 })
             }
         }

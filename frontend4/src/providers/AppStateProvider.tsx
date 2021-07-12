@@ -29,6 +29,7 @@ import { RestAPIEndpoint, UserPoolClientId, UserPoolId, WebSocketEndpoint } from
 import { DeviceInfo, useDeviceState } from "./hooks/useDeviceState";
 import { useWindowSizeChangeListener } from "./hooks/useWindowSizeChange";
 import { VideoTileState } from "amazon-chime-sdk-js";
+import { GameState, HMMStatus } from "@dannadori/flect-chime-lib/dist/chime/realtime/RealtimeSubscribeHMMClient";
 
 type Props = {
     children: ReactNode;
@@ -44,6 +45,7 @@ interface AppStateValue {
     cognitoClient: CognitoClient,
     chimeClient: FlectChimeClient | null,
     whiteboardClient: WebSocketWhiteboardClient | null,
+    amongusGameState: GameState | undefined,
     // userId?: string,
     // password?: string,
     // idToken?: string,
@@ -190,6 +192,9 @@ export const AppStateProvider = ({ children }: Props) => {
         return new CognitoClient(UserPoolId, UserPoolClientId, "mail2wokada@gmail.com", "test222")
     },[])
 
+    // const [ hmmStatus,setHmmStatus] = useState<HMMStatus>({active:false, recording:false, shareTileView:false})
+    const [ amongusGameState, setAmongusGameState] = useState<GameState>()
+
     const chimeClient = useMemo(()=>{
         if(cognitoClient.userId && cognitoClient.idToken && cognitoClient.accessToken && cognitoClient.refreshToken){
             const c = new FlectChimeClient(cognitoClient.userId, cognitoClient.idToken, cognitoClient.accessToken, cognitoClient.refreshToken, RestAPIEndpoint)
@@ -205,6 +210,44 @@ export const AppStateProvider = ({ children }: Props) => {
             c.setChatDataUpdateListener((list:RealtimeData[])=>{
                 setLastUpdateTime(new Date().getTime())
             })
+            c.setHMMListener({
+                startRecordRequestReceived: () => {
+                    if(stage === "HEADLESS_MEETING_MANAGER"){
+                    }
+                },
+                stopRecordRequestReceived: () => {
+                    if(stage === "HEADLESS_MEETING_MANAGER"){
+                    }
+                 },
+                startShareTileviewRequestReceived: () => {
+                    if(stage === "HEADLESS_MEETING_MANAGER"){
+                    }
+                },
+                stopShareTileviewRequestReceived: () => {
+                    if(stage === "HEADLESS_MEETING_MANAGER"){
+                    }
+                },
+                terminateRequestReceived: () => {
+                    if(stage === "HEADLESS_MEETING_MANAGER"){
+                    }
+                },
+                notificationReceived: (status: HMMStatus) => {
+                    if(stage !== "HEADLESS_MEETING_MANAGER"){
+                        // setHmmStatus(status)
+                        setLastUpdateTime(new Date().getTime())
+                    }
+                },
+                amongusNotificationReceived: (gameState: GameState) => {
+                    if(stage !== "HEADLESS_MEETING_MANAGER"){
+                        setAmongusGameState(gameState)
+                    }
+                },
+                registerAmongusUserNameRequestReceived: (userName: string, attendeeId: string) => {
+                    if(stage === "HEADLESS_MEETING_MANAGER"){
+                    }
+                },
+            })
+            
             return c
         }else{
             console.log(">>>>>>>>", cognitoClient.userId, cognitoClient.idToken, cognitoClient.accessToken, cognitoClient.refreshToken)
@@ -287,6 +330,7 @@ export const AppStateProvider = ({ children }: Props) => {
         cognitoClient,
         chimeClient,
         whiteboardClient,
+        amongusGameState,
     //     userId,
     //     password, 
     //     idToken, 

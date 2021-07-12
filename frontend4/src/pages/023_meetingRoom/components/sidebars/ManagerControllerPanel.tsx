@@ -9,142 +9,135 @@ import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
 
   
 export const ManagerControllerPanel = () => {
-    // const classes = useStyles();
-    // const {ownerId, isOwner, publicIp,
-    //       startHMM, sendTerminate, sendStartRecord, sendStopRecord, sendStartShareTileView, sendStopShareTileView, hMMStatus, stateLastUpdate,
-    //       currentGameState
-    //     } = useAppState()
+    const classes = useStyles();
+    const { chimeClient, amongusGameState } = useAppState()
 
+    const ownerStateComp = useMemo(()=>{
+        return (
+            chimeClient!.isOwner?
+            <>
+                <Tooltip title={"Your are owner"}>
+                    <EmojiPeopleIcon className={classes.activeState}/>
+                </Tooltip>
+            </>
+            :
+            <>
+                <Tooltip title={"Your are not owner"}>
+                    <EmojiPeopleIcon className={classes.inactiveState}/>
+                </Tooltip>
+            </>
+        )
+    },[chimeClient!.isOwner])  // eslint-disable-line
 
-    // const ownerStateComp = useMemo(()=>{
-    //     return (
-    //         isOwner?
-    //         <>
-    //             <Tooltip title={"Your are owner"}>
-    //                 <EmojiPeopleIcon className={classes.activeState}/>
-    //             </Tooltip>
-    //         </>
-    //         :
-    //         <>
-    //             <Tooltip title={"Your are not owner"}>
-    //                 <EmojiPeopleIcon className={classes.inactiveState}/>
-    //             </Tooltip>
-    //         </>
-    //     )
-    // },[isOwner])  // eslint-disable-line
+    const managerStateComp = useMemo(()=>{
+        return (
+            chimeClient!.hmmClient!.hmmActive?
+            <>
+                <Tooltip title={"hmm active"}>
+                    <SportsEsportsIcon className={classes.activeState}/>
+                </Tooltip>
+            </>
+            :
+            <>
+                <Tooltip title={"hmm not active"}>
+                    <SportsEsportsIcon className={classes.inactiveState}/>
+                </Tooltip>
+            </>
+        )
+    },[chimeClient!.hmmClient!.hmmActive])  // eslint-disable-line
 
-    // const managerStateComp = useMemo(()=>{
-    //     return (
-    //         hMMStatus.active?
-    //         <>
-    //             <Tooltip title={"hmm active"}>
-    //                 <SportsEsportsIcon className={classes.activeState}/>
-    //             </Tooltip>
-    //         </>
-    //         :
-    //         <>
-    //             <Tooltip title={"hmm not active"}>
-    //                 <SportsEsportsIcon className={classes.inactiveState}/>
-    //             </Tooltip>
-    //         </>
-    //     )
-    // },[hMMStatus.active])  // eslint-disable-line
+    const recordingStateComp = useMemo(()=>{
+        return (
+            chimeClient!.hmmClient!.hmmRecording?
+            <>
+                <Tooltip title={"recording"}>
+                    <CameraRollIcon className={classes.activeState}/>
+                </Tooltip>
+            </>
+            :
+            <>
+                <Tooltip title={"not recording"}>
+                    <CameraRollIcon className={classes.inactiveState}/>
+                </Tooltip>
+            </>
+        )
+    },[chimeClient!.hmmClient!.hmmRecording])  // eslint-disable-line
 
-    // const recordingStateComp = useMemo(()=>{
-    //     return (
-    //         hMMStatus.recording?
-    //         <>
-    //             <Tooltip title={"recording"}>
-    //                 <CameraRollIcon className={classes.activeState}/>
-    //             </Tooltip>
-    //         </>
-    //         :
-    //         <>
-    //             <Tooltip title={"not recording"}>
-    //                 <CameraRollIcon className={classes.inactiveState}/>
-    //             </Tooltip>
-    //         </>
-    //     )
-    // },[hMMStatus.recording])  // eslint-disable-line
-
-    // const shareTileViewStateComp = useMemo(()=>{
-    //     return (
-    //         hMMStatus.shareTileView?
-    //         <>
-    //             <Tooltip title={"share tile view"}>
-    //                 <ScreenShareIcon className={classes.activeState}/>
-    //             </Tooltip>
-    //         </>
-    //         :
-    //         <>
-    //             <Tooltip title={"not share share tile view"}>
-    //                 <ScreenShareIcon className={classes.inactiveState}/>
-    //             </Tooltip>
-    //         </>
-    //     )
-    // },[hMMStatus.shareTileView])  // eslint-disable-line
+    const shareTileViewStateComp = useMemo(()=>{
+        return (
+            chimeClient!.hmmClient!.hmmShareTileview?
+            <>
+                <Tooltip title={"share tile view"}>
+                    <ScreenShareIcon className={classes.activeState}/>
+                </Tooltip>
+            </>
+            :
+            <>
+                <Tooltip title={"not share share tile view"}>
+                    <ScreenShareIcon className={classes.inactiveState}/>
+                </Tooltip>
+            </>
+        )
+    },[chimeClient!.hmmClient!.hmmShareTileview])  // eslint-disable-line
     
-    // const stateLastUpdateTime = useMemo(()=>{
-    //     const datetime = new Date(stateLastUpdate);
-    //     // const d = datetime.toLocaleDateString()
-    //     const t = datetime.toLocaleTimeString()
-    //     // return `${d} ${t}`
-    //     return `${t}`
-    // },[stateLastUpdate])
+    const stateLastUpdateTime = useMemo(()=>{
+        const datetime = new Date(chimeClient!.hmmClient!.hmmLastUpdate);
+        // const d = datetime.toLocaleDateString()
+        const t = datetime.toLocaleTimeString()
+        // return `${d} ${t}`
+        return `${t}`
+    },[chimeClient!.hmmClient!.hmmLastUpdate])
 
-    // useEffect(()=>{
-    //     console.log(currentGameState)
-    //     // console.log("AMONG:", amongUsStates.slice(-1)[0])
-    // },[currentGameState])
+    useEffect(()=>{
+        console.log(amongusGameState)
+        // console.log("AMONG:", amongUsStates.slice(-1)[0])
+    },[amongusGameState])
    
 
-    // return (
-    //         <div className={classes.root}>                
-    //             <Typography variant="body1" color="textSecondary">
-    //                 Manager 
-    //             </Typography>
-    //             {ownerStateComp}
-    //             {managerStateComp}
-    //             {recordingStateComp}
-    //             {shareTileViewStateComp}
+    return (
+            <div className={classes.root}>                
+                <Typography variant="body1" color="textSecondary">
+                    Manager 
+                </Typography>
+                {ownerStateComp}
+                {managerStateComp}
+                {recordingStateComp}
+                {shareTileViewStateComp}
 
-    //             <br/>
-    //             lastupdate:{stateLastUpdateTime}
-    //             <br/>
+                <br/>
+                lastupdate:{stateLastUpdateTime}
+                <br/>
 
-    //             <br/>
+                <br/>
 
-    //             <Button size="small" className={classes.margin} onClick={()=>{startHMM()}} >
-    //                 run manager
-    //             </Button>
-    //             <Button size="small" className={classes.margin} onClick={()=>{ sendTerminate() }}>
-    //                 stop manager
-    //             </Button>
+                <Button size="small" className={classes.margin} onClick={()=>{ chimeClient!.hmmClient!.startHMM() }} >
+                    run manager
+                </Button>
+                <Button size="small" className={classes.margin} onClick={()=>{ chimeClient!.hmmClient!.sendTerminate() }}>
+                    stop manager
+                </Button>
 
-    //             <Button size="small" className={classes.margin} onClick={()=>{sendStartRecord()}}>
-    //                 start recording
-    //             </Button>
-    //             <Button size="small" className={classes.margin} onClick={()=>{sendStopRecord()}}>
-    //                 stop recording
-    //             </Button>
+                <Button size="small" className={classes.margin} onClick={()=>{ chimeClient!.hmmClient!.sendStartRecord()}}>
+                    start recording
+                </Button>
+                <Button size="small" className={classes.margin} onClick={()=>{ chimeClient!.hmmClient!.sendStopRecord()}}>
+                    stop recording
+                </Button>
 
-    //             <Button size="small" className={classes.margin} onClick={()=>{sendStartShareTileView()}}>
-    //                 start share tileview
-    //             </Button>
-    //             <Button size="small" className={classes.margin} onClick={()=>{sendStopShareTileView()}}>
-    //                 stop share tileview
-    //             </Button>
-    //             <div>
-    //                 <br/>
-    //                 Owner:{ownerId}
-    //                 <br />
-    //                 {publicIp? `publicIp ${publicIp}`:""}
-    //             </div>
+                <Button size="small" className={classes.margin} onClick={()=>{ chimeClient!.hmmClient!.sendStartShareTileView()}}>
+                    start share tileview
+                </Button>
+                <Button size="small" className={classes.margin} onClick={()=>{ chimeClient!.hmmClient!.sendStopShareTileView()}}>
+                    stop share tileview
+                </Button>
+                <div>
+                    { chimeClient?.hmmClient?.hmmPublicIp ? chimeClient?.hmmClient?.hmmPublicIp:"no ip"}
+                </div>
 
 
-    //         </div>
+            </div>
 
-    // );
+    );
 
 
     return(<></>)

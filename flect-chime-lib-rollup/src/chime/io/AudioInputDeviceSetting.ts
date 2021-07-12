@@ -39,7 +39,7 @@ export class AudioInputDeviceSetting {
         /// no use audio input
         if (device === null || enable === false) {
             console.log("[DeviceSetting] AudioInput is null or disabled.")
-            // this.audioInputForRecord = null // not needed??
+            this.audioInputForRecord = null // this is for record. if not recorder doesn't work...
             if(this.outputNode){
                 this.midNode?.disconnect()
                 // await this.meetingSession.audioVideo.chooseAudioInputDevice(this.outputNode.stream)  // not needed??

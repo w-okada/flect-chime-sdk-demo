@@ -7,6 +7,7 @@ import { AudioOutputDeviceSetting } from "./io/AudioOutputDeviceSetting"
 import { RealtimeSubscribeChatClient } from "./realtime/RealtimeSubscribeChatClient"
 import { RealtimeData } from "./realtime/const"
 import { RestApiClient } from "../rest/RestApiClient"
+import { GameState, HMMStatus, RealtimeSubscribeHMMClient, RealtimeSubscribeHMMClientListener } from "./realtime/RealtimeSubscribeHMMClient"
 
 export type AttendeeState = {
     attendeeId: string
@@ -19,7 +20,7 @@ export type AttendeeState = {
     signalStrength: number
     isSharedContent: boolean
     ownerId: string
-    isVideoPaused:boolean
+    isVideoPaused: boolean
 }
 
 export class FlectChimeClient {
@@ -33,7 +34,7 @@ export class FlectChimeClient {
     private _accessToken: string
     private _refreshToken: string
 
-    constructor(userId: string, idToken: string, accessToken: string, refreshToken: string, restEndPoint:string) {
+    constructor(userId: string, idToken: string, accessToken: string, refreshToken: string, restEndPoint: string) {
         this._userId = userId
         this._idToken = idToken
         this._accessToken = accessToken
@@ -45,102 +46,126 @@ export class FlectChimeClient {
     * meeting infos
     */
     private _meetingName: string | null = null
-    get meetingName():string|null{
+    get meetingName(): string | null {
         return this._meetingName
     }
     private _meetingId: string | null = null
-    get meetingId():string|null{
+    get meetingId(): string | null {
         return this._meetingId
     }
     private _joinToken: string | null = null
-    get joinToken():string|null{
+    get joinToken(): string | null {
         return this._joinToken
     }
     private _userName: string | null = null
-    get userName():string|null{
+    get userName(): string | null {
         return this._userName
     }
     private _attendeeId: string | null = null
-    get attendeeId():string|null{
+    get attendeeId(): string | null {
         return this._attendeeId
     }
-    private _meetingSession: DefaultMeetingSession|null = null
-    get meetingSession():DefaultMeetingSession|null{
+    private _meetingSession: DefaultMeetingSession | null = null
+    get meetingSession(): DefaultMeetingSession | null {
         return this._meetingSession
     }
     private _videoTileStates: { [attendeeId: string]: VideoTileState } = {}
-    get videoTileStates():{ [attendeeId: string]: VideoTileState }{
+    get videoTileStates(): { [attendeeId: string]: VideoTileState } {
         return this._videoTileStates
     }
-    private _attendees: { [attendeeId: string]: AttendeeState } = {} 
-    get attendees(): { [attendeeId: string]: AttendeeState }{
+    private _attendees: { [attendeeId: string]: AttendeeState } = {}
+    get attendees(): { [attendeeId: string]: AttendeeState } {
         return this._attendees
     }
-    private _isShareContent:boolean = false
-    get isShareContent():boolean{
+    private _isShareContent: boolean = false
+    get isShareContent(): boolean {
         return this._isShareContent
     }
-    private _activeSpeakerId:string|null = null
-    get activeSpeakerId():string|null{
+    private _activeSpeakerId: string | null = null
+    get activeSpeakerId(): string | null {
         return this._activeSpeakerId
+    }
+    private _isOwner: boolean = false
+    get isOwner(): boolean {
+        return this._isOwner
     }
 
     //// I/O
-    private _audioInputDeviceSetting: AudioInputDeviceSetting|null = null
-    private _videoInputDeviceSetting: VideoInputDeviceSetting|null = null
-    private _audioOutputDeviceSetting: AudioOutputDeviceSetting|null = null
-    get audioInputDeviceSetting():AudioInputDeviceSetting | null{
+    private _audioInputDeviceSetting: AudioInputDeviceSetting | null = null
+    private _videoInputDeviceSetting: VideoInputDeviceSetting | null = null
+    private _audioOutputDeviceSetting: AudioOutputDeviceSetting | null = null
+    get audioInputDeviceSetting(): AudioInputDeviceSetting | null {
         return this._audioInputDeviceSetting
     }
-    get videoInputDeviceSetting():VideoInputDeviceSetting | null{
+    get videoInputDeviceSetting(): VideoInputDeviceSetting | null {
         return this._videoInputDeviceSetting
     }
-    get audioOutputDeviceSetting():AudioOutputDeviceSetting | null{
+    get audioOutputDeviceSetting(): AudioOutputDeviceSetting | null {
         return this._audioOutputDeviceSetting
-    }    
+    }
 
     ///////////////////////////////////////////////////////////
     // Tools
     // Note: whiteboard is independent from ChimeClient (use websocket)
     ///////////////////////////////////////////////////////
-    private _chatClient:RealtimeSubscribeChatClient|null = null
-    sendMessage = (text: string) =>{
+    private _chatClient: RealtimeSubscribeChatClient | null = null
+    sendMessage = (text: string) => {
         this._chatClient?.sendChatData(text)
     }
-    get chatData():RealtimeData[]{
-        return this._chatClient? this._chatClient.chatData : []
+    get chatData(): RealtimeData[] {
+        return this._chatClient ? this._chatClient.chatData : []
     }
 
+    private _hmmClient: RealtimeSubscribeHMMClient | null = null
+    get hmmClient():RealtimeSubscribeHMMClient|null{
+        return this._hmmClient
+    }
 
     ///////////////////////////////////////////
     // Listener
     ///////////////////////////////////////////
-    private _activeSpekaerUpdateListener = (activeSpeakerId:string|null)=>{}
-    setActiveSpekaerUpdateListener = (l:(activeSpeakerId:string|null)=>void) =>{
+    private _activeSpekaerUpdateListener = (activeSpeakerId: string | null) => { }
+    setActiveSpekaerUpdateListener = (l: (activeSpeakerId: string | null) => void) => {
         this._activeSpekaerUpdateListener = l
     }
-    private _attendeesUpdateListener = (list:{ [attendeeId: string]: AttendeeState } )=>{}
-    setAttendeesUpdateListener = ( l:((list:{ [attendeeId: string]: AttendeeState } )=>void) )  => {
+    private _attendeesUpdateListener = (list: { [attendeeId: string]: AttendeeState }) => { }
+    setAttendeesUpdateListener = (l: ((list: { [attendeeId: string]: AttendeeState }) => void)) => {
         this._attendeesUpdateListener = l
     }
-    private _videoTileStateUpdateListener = (list:{ [attendeeId: string]: VideoTileState }) =>{}
-    setVideoTileStateUpdateListener = ( l: ((list:{ [attendeeId: string]: VideoTileState }) =>void)) =>{
+    private _videoTileStateUpdateListener = (list: { [attendeeId: string]: VideoTileState }) => { }
+    setVideoTileStateUpdateListener = (l: ((list: { [attendeeId: string]: VideoTileState }) => void)) => {
         this._videoTileStateUpdateListener = l
     }
-
-    private _chatDataUpdateListener = (list:RealtimeData[]) =>{console.log("[FlectChimeClient][RealtimeSubscribeChatClient] default listener(chime client)!")}
-    setChatDataUpdateListener = ( l: ((list:RealtimeData[]) =>void)) =>{
+    private _chatDataUpdateListener = (list: RealtimeData[]) => { console.log("[FlectChimeClient][RealtimeSubscribeChatClient] default listener(chime client)!") }
+    setChatDataUpdateListener = (l: ((list: RealtimeData[]) => void)) => {
         this._chatDataUpdateListener = l
+    }
+
+    private _hmmListener:RealtimeSubscribeHMMClientListener = {
+        startRecordRequestReceived: () => { },
+        stopRecordRequestReceived: () => { },
+        startShareTileviewRequestReceived: () => { },
+        stopShareTileviewRequestReceived: () => { },
+        terminateRequestReceived: () => { },
+        notificationReceived: (status: HMMStatus) => { },
+        amongusNotificationReceived: (gameState: GameState) => { },
+        registerAmongusUserNameRequestReceived: (userName: string, attendeeId: string) => { },
+    }
+    setHMMListener = (hmmListener:RealtimeSubscribeHMMClientListener) => {
+        this._hmmListener = hmmListener
+        if(this._hmmClient){
+            this._hmmClient.realtimeSubscribeHMMClientListener = hmmListener
+        }
     }
 
     ///////////////////////////////////////////
     // Feature Management
     ///////////////////////////////////////////
-    startShareContent = async (media:MediaStream) =>{
+    startShareContent = async (media: MediaStream) => {
         await this.meetingSession!.audioVideo.startContentShare(media)
         this._isShareContent = true
     }
-    stopShareContent = async () =>{
+    stopShareContent = async () => {
         await this.meetingSession!.audioVideo.stopContentShare()
         this._isShareContent = false
     }
@@ -261,13 +286,13 @@ export class FlectChimeClient {
             if (present) {
                 if (attendeeId in this._attendees === false) {
                     let userName = ""
-                    if(attendeeId.indexOf("#")>0){                        
+                    if (attendeeId.indexOf("#") > 0) {
                         userName = attendeeId
-                    }else{
-                        try{
+                    } else {
+                        try {
                             const result = await this._restApiClient.getUserNameByAttendeeId(this._meetingName!, attendeeId)
                             userName = result.result === "success" ? result.name : attendeeId
-                        }catch{
+                        } catch {
                             userName = attendeeId
                         }
                     }
@@ -283,14 +308,14 @@ export class FlectChimeClient {
                         signalStrength: 0,
                         isSharedContent: false,
                         ownerId: "",
-                        isVideoPaused:false,
+                        isVideoPaused: false,
                     }
                     if (attendeeId.split("#").length === 2) {
                         new_attendee.isSharedContent = true
                         new_attendee.ownerId = attendeeId.split("#")[0]
                     }
                     this._attendees[attendeeId] = new_attendee
-                    
+
 
                     // Add Subscribe volume Indicator
                     this.meetingSession!.audioVideo.realtimeSubscribeToVolumeIndicator(attendeeId,
@@ -324,7 +349,7 @@ export class FlectChimeClient {
             new DefaultActiveSpeakerPolicy(),
             (activeSpeakers: string[]) => {
                 console.log("[FlectChimeClient][AttendeeIdPresenceSubscriber] Active Speaker::::::::::::::::::::", activeSpeakers)
-                let activeSpeakerId:string|null = null
+                let activeSpeakerId: string | null = null
                 for (const attendeeId in this._attendees) {
                     this._attendees[attendeeId].active = false;
                 }
@@ -335,7 +360,7 @@ export class FlectChimeClient {
                         break
                     }
                 }
-                if(this._activeSpeakerId !== activeSpeakerId){
+                if (this._activeSpeakerId !== activeSpeakerId) {
                     this._activeSpeakerId = activeSpeakerId
                     this._activeSpekaerUpdateListener(this._activeSpeakerId)
                 }
@@ -359,6 +384,10 @@ export class FlectChimeClient {
         this._chatClient = new RealtimeSubscribeChatClient(this)
         this._chatClient.setChatDataUpdateListener(this._chatDataUpdateListener)
 
+        // (6) enable hmm
+        this._hmmClient = new RealtimeSubscribeHMMClient(this, this._restApiClient)
+        this._hmmClient.realtimeSubscribeHMMClientListener = this._hmmListener
+
     }
 
     /**
@@ -377,7 +406,7 @@ export class FlectChimeClient {
         this.videoInputDeviceSetting!.stopPreview()
         this.meetingSession.audioVideo.stopLocalVideoTile()
         this.meetingSession.audioVideo.stop()
-        
+
         this._userName = ""
         this._meetingName = ""
         this._attendees = {}
@@ -388,7 +417,7 @@ export class FlectChimeClient {
     /***
      * (x) 
      */
-    generateOnetimeCode = async() => {
+    generateOnetimeCode = async () => {
         return this._restApiClient.generateOnetimeCode(this._meetingName!, this._attendeeId!)
     }
     // requestOnetimeSigninChallengeRequest  = async(uuid:string) =>{
@@ -405,25 +434,25 @@ export class FlectChimeClient {
     // Utility
     ///////////////////////////////////////////
     getContentTiles = () => {
-        return Object.values(this._videoTileStates).filter(tile=>{return tile.isContent})
+        return Object.values(this._videoTileStates).filter(tile => { return tile.isContent })
     }
     getActiveSpeakerTile = () => {
-        if(this._activeSpeakerId && this._videoTileStates[this._activeSpeakerId]){
-            return this._videoTileStates[this._activeSpeakerId] 
-        }else{
+        if (this._activeSpeakerId && this._videoTileStates[this._activeSpeakerId]) {
+            return this._videoTileStates[this._activeSpeakerId]
+        } else {
             return null
         }
     }
-    getTilesWithFilter = (excludeSpeaker:boolean, excludeSharedContent:boolean) =>{
-        let targetTiles = Object.values(this._videoTileStates).filter(tile =>{
-            if( excludeSharedContent && tile.isContent === true){
+    getTilesWithFilter = (excludeSpeaker: boolean, excludeSharedContent: boolean) => {
+        let targetTiles = Object.values(this._videoTileStates).filter(tile => {
+            if (excludeSharedContent && tile.isContent === true) {
                 return false
             }
-            if(excludeSpeaker && tile.boundAttendeeId === this._activeSpeakerId){
+            if (excludeSpeaker && tile.boundAttendeeId === this._activeSpeakerId) {
                 return false
             }
 
-            if(!this._attendees[tile.boundAttendeeId!]){ // if attendees not found, show tile.
+            if (!this._attendees[tile.boundAttendeeId!]) { // if attendees not found, show tile.
                 return true
             }
 
@@ -432,23 +461,28 @@ export class FlectChimeClient {
         return targetTiles
     }
 
-    setPauseVideo = async (attendeeId:string, pause:boolean) =>{
-        if(this._attendees[attendeeId]){
+    setPauseVideo = async (attendeeId: string, pause: boolean) => {
+        if (this._attendees[attendeeId]) {
             this._attendees[attendeeId].isVideoPaused = pause
-            if(pause){
-                if(this.meetingSession?.audioVideo.getVideoTile(this._videoTileStates[attendeeId].tileId!)?.state().localTile === false){
+            if (pause) {
+                if (this.meetingSession?.audioVideo.getVideoTile(this._videoTileStates[attendeeId].tileId!)?.state().localTile === false) {
                     await this.meetingSession!.audioVideo.unbindVideoElement(this._videoTileStates[attendeeId].tileId!)
                     await this.meetingSession!.audioVideo.pauseVideoTile(this._videoTileStates[attendeeId].tileId!)
                 }
-            }else{
+            } else {
                 await this.meetingSession!.audioVideo.unpauseVideoTile(this._videoTileStates[attendeeId].tileId!)
             }
             this._attendeesUpdateListener(this._attendees)
-        }else{
+        } else {
         }
     }
 
     getUserNameByAttendeeIdFromList = (attendeeId: string) => {
         return this._attendees[attendeeId] ? this._attendees[attendeeId].name : attendeeId
-    }    
+    }
+
+    updateMeetingInfo = async () => {
+        const meetingInfo = await this._restApiClient.getMeetingInfo(this._meetingName!)
+        this._isOwner = meetingInfo.IsOwner
+    }
 }
