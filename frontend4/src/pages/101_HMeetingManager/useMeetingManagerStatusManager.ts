@@ -48,26 +48,6 @@ export const useHMeetingManagerStatusManager = (props:MeetingManagerStatusManage
         }
     }
 
-    // useEffect(()=>{
-    //     const restClient = new RestApiClient(RestAPIEndpoint, "", "", "")
-    //     const res = restClient.singinWithOnetimeCode(props.meetingName, props.attendeeId, props.uuid, props.code).then(res=>{
-    //         if(res.result){
-    //             cognitoClient.userId       = "MANAGER"
-    //             cognitoClient.idToken      = res.idToken!
-    //             cognitoClient.accessToken  = res.accessToken!
-    //             cognitoClient.refreshToken = "N/A"
-    //             setUserName(res.attendeeName!)
-    //             setLastUpdateTime(new Date().getTime())
-    //             setInternalStage("WaitForEntering")
-    //             return res
-    //         }else{
-    //             console.log("[useHeadlessMeetingManagerStatusMaanger] ERROR: Cannot sign in...")
-    //             return res
-    //         }
-    //     })
-    // },[]) // eslint-disable-line
-
-
     const enterMeeting = async() =>{
         if(chimeClient){
             console.log("[useMeetingManagerStatusMaanger] Joining...")
@@ -75,8 +55,6 @@ export const useHMeetingManagerStatusManager = (props:MeetingManagerStatusManage
                 console.log("[useMeetingManagerStatusMaanger] entering...")
                 const p1 = chimeClient.audioInputDeviceSetting!.setAudioInput("dummy")
                 const p2 = chimeClient.videoInputDeviceSetting!.setVideoInput(null)
-                // const audioOutput = (audioOutputList && audioOutputList!.length > 0) ? audioOutputList[0].deviceId:null
-                // const p3 = chimeClient.audioOutputDeviceSetting!.setAudioOutput(audioOutput)
                 const p3 = chimeClient.audioOutputDeviceSetting!.setAudioOutput(null)                
                 chimeClient.enterMeeting().then(()=>{
                     Promise.all([p1,p2,p3]).then(()=>{

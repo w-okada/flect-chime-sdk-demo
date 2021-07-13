@@ -18,7 +18,7 @@ import { HeadlessMeetingManager } from './pages/101_HMeetingManager/HeadlessMeet
 
 const Router = () => {
     const { stage, mode } = useAppState()
-    console.log(`[App] stage:${stage} mode:${mode}`)
+    // console.log(`[App] stage:${stage} mode:${mode}`)
 
     const page = useMemo(()=>{
         switch(stage){

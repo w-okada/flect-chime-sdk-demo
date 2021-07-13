@@ -166,7 +166,7 @@ export const AppStateProvider = ({ children }: Props) => {
             setChimeClient(c)
             return c
         }else{
-            console.log(">>>>>>>>", cognitoClient.userId, cognitoClient.idToken, cognitoClient.accessToken, cognitoClient.refreshToken)
+            console.log("[AppStateProvider] can not create chime client yet. ", cognitoClient.userId, cognitoClient.idToken, cognitoClient.accessToken, cognitoClient.refreshToken)
             return null
         }
     },[cognitoClient.userId, cognitoClient.idToken, cognitoClient.accessToken, cognitoClient.refreshToken]) // eslint-disable-line

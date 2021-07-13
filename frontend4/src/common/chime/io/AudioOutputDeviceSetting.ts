@@ -65,10 +65,8 @@ export class AudioOutputDeviceSetting{
 
     private setRelationToAudioElement = async () => {
         if(this.audioOutput){
-            console.log("BIND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             await this.bindOutputAudioElement()
         }else{
-            console.log("UNBIND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             await this.unbindOutputAudioElement()
         }
     }
