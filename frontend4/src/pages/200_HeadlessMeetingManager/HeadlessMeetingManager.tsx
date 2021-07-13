@@ -1,8 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect} from "react";
 import { useAppState } from "../../providers/AppStateProvider";
 import { RecorderPanel } from "./components/RecorderPanel";
 import { useHeadlessMeetingManagerStatusManager } from "./useHeadlessMeetingManagerStatusManager";
 
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! //
+// --autoplay-policy=no-user-gesture-required で起動することが前提。
+// これがないとsignalを受け付けられない。(why...!?)
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! //
 
 
 const sleep = async(ms:number)=>{
@@ -13,7 +18,7 @@ const sleep = async(ms:number)=>{
 }
 
 
-export const HeadlessMeetingManager = () => {
+export const HeadlessMeetingManager_old = () => {
     //// Query Parameters
     const query = new URLSearchParams(window.location.search);
     const meetingName = query.get('meetingName') || null  // meeting name is already encoded

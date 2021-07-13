@@ -12,27 +12,13 @@ import { CreateMeetingRoom } from './pages/021_createMeetingRoom';
 import { WaitingRoomAmongUs } from './pages/022_waitingRoom/WaitingRoomAmongUs';
 import { WaitingRoom } from './pages/022_waitingRoom/WaitingRoom';
 import { MeetingRoom } from './pages/023_meetingRoom/MeetingRoom';
-import { HeadlessMeetingManager } from './pages/200_HeadlessMeetingManager/HeadlessMeetingManager';
 import { MeetingManager } from './pages/100_MeetingManager/MeetingManager';
-import { HMeetingManager } from './pages/101_HMeetingManager/HMeetingManager';
-// import { Verify } from './pages/012_verify';
-// import { RequestChangePassword } from './pages/013_requestChangePassword';
-// import { NewPassword } from './pages/014_newPassword';
-// import { Entrance } from './pages/020_entrance';
-// import { CreateMeetingRoom } from './pages/021_createMeetingRoom';
-// import { WaitingRoom } from './pages/022_waitingRoom/WaitingRoom';
-// import { WaitingRoomAmongUs } from './pages/022_waitingRoom/WaitingRoomAmongUs';
-// import { MeetingRoom } from './pages/023_meetingRoom/MeetingRoom';
-// import { MeetingRoomAmongUs } from './pages/024_meetingRoomAmongUs/MeetingRoomAmongUs';
-// import { MeetingManagerSignin } from './pages/100_MeetingManagerSignin/MeetingManagerSingin';
-// import { MeetingManager } from './pages/101_MeetingManager/MeetingManager';
-// import { HeadlessMeetingManager } from './pages/200_HeadlessMeetingManager/HeadlessMeetingManager';
-// import { AppStateProvider, useAppState } from './providers/AppStateProvider';
-
+import { MeetingRoomAmongUs } from './pages/024_meetingRoomAmongUs/MeetingRoomAmongUs';
+import { HeadlessMeetingManager } from './pages/101_HMeetingManager/HeadlessMeetingManager';
 
 const Router = () => {
     const { stage, mode } = useAppState()
-    console.log(`[App] stage:${stage}`)
+    console.log(`[App] stage:${stage} mode:${mode}`)
 
     const page = useMemo(()=>{
         switch(stage){
@@ -59,7 +45,7 @@ const Router = () => {
             case "MEETING_ROOM":
                 if(mode === "amongus"){
                     console.log("meeting room among")
-                    return <WaitingRoomAmongUs />
+                    return <MeetingRoomAmongUs />
                 }else {
                     console.log("meeting room ")
                     return <MeetingRoom />
@@ -67,7 +53,7 @@ const Router = () => {
             case "MEETING_MANAGER":
                 return <MeetingManager />
             case "HEADLESS_MEETING_MANAGER":
-                return <HMeetingManager />
+                return <HeadlessMeetingManager />
                 // return <HeadlessMeetingManager />
 
             default:

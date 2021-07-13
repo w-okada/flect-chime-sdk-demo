@@ -52,11 +52,11 @@ export type GameState = {
     map: number
     connectCode: string
     players: PlayerState[]
-
 }
 
 
 export interface RealtimeSubscribeHMMClientListener {
+    /// For Command
     startRecordRequestReceived: () => void
     stopRecordRequestReceived: () => void
     startShareTileviewRequestReceived: () => void
@@ -67,6 +67,11 @@ export interface RealtimeSubscribeHMMClientListener {
 
     amongusNotificationReceived: (gameState: GameState) => void
     registerAmongusUserNameRequestReceived: (userName: string, attendeeId: string) => void
+
+
+    /// State Management
+    hMMStateUpdated: () => void
+
 }
 
 
@@ -80,21 +85,13 @@ export class RealtimeSubscribeHMMClient {
             RealtimeDataApp.HMM,
             this.receiveHMMData
         )
+        this.updateHMMInfo()
     }
 
     private _hMMCommandData: RealtimeData[] = []
-    private _listener: RealtimeSubscribeHMMClientListener = {
-        startRecordRequestReceived: () => { },
-        stopRecordRequestReceived: () => { },
-        startShareTileviewRequestReceived: () => { },
-        stopShareTileviewRequestReceived: () => { },
-        terminateRequestReceived: () => { },
-        notificationReceived: (status: HMMStatus) => { },
-        amongusNotificationReceived: (gameState: GameState) => { },
-        registerAmongusUserNameRequestReceived: (userName: string, attendeeId: string) => { },
-    }
-    set realtimeSubscribeHMMClientListener(l: RealtimeSubscribeHMMClientListener) {
-        this._listener = l
+    private _realtimeSubscribeHMMClientListener: RealtimeSubscribeHMMClientListener|null =  null
+    setRealtimeSubscribeHMMClientListener = (l:RealtimeSubscribeHMMClientListener|null) =>{
+        this._realtimeSubscribeHMMClientListener = l
     }
 
     private _hmmPublicIp: string | null = null
@@ -177,12 +174,7 @@ export class RealtimeSubscribeHMMClient {
 
 
     //// 3. for hmm
-    sendHMMStatus = (active:boolean, recording:boolean, shareTileView:boolean) =>{
-        const status:HMMStatus = {
-            active,
-            recording,
-            shareTileView
-        }
+    sendHMMStatus = (status:HMMStatus) =>{
         this.sendHMMCommand({command:HMMCmd.NOTIFY_STATUS, data:status})
     }
 
@@ -211,23 +203,23 @@ export class RealtimeSubscribeHMMClient {
         switch (mess.command) {
             case "START_RECORD":
                 console.log("RECEIVE REALTIME DATA1", JSON.stringify(mess))
-                this._listener.startRecordRequestReceived()
+                this._realtimeSubscribeHMMClientListener?.startRecordRequestReceived()
                 break
             case "STOP_RECORD":
                 console.log("RECEIVE REALTIME DATA2", JSON.stringify(mess))
-                this._listener.stopRecordRequestReceived()
+                this._realtimeSubscribeHMMClientListener?.stopRecordRequestReceived()
                 break
             case "START_SHARE_TILEVIEW":
                 console.log("RECEIVE REALTIME DATA3", JSON.stringify(mess))
-                this._listener.startShareTileviewRequestReceived()
+                this._realtimeSubscribeHMMClientListener?.startShareTileviewRequestReceived()
                 break
             case "STOP_SHARE_TILEVIEW":
                 console.log("RECEIVE REALTIME DATA4", JSON.stringify(mess))
-                this._listener.stopShareTileviewRequestReceived()
+                this._realtimeSubscribeHMMClientListener?.stopShareTileviewRequestReceived()
                 break
             case "TERMINATE":
                 console.log("RECEIVE REALTIME DATA5", JSON.stringify(mess))
-                this._listener.terminateRequestReceived()
+                this._realtimeSubscribeHMMClientListener?.terminateRequestReceived()
                 break
             case "NOTIFY_STATUS":
                 console.log("RECEIVE REALTIME DATA6-1", JSON.stringify(mess))
@@ -237,21 +229,20 @@ export class RealtimeSubscribeHMMClient {
                 this._hmmRecording = status.recording
                 this._hmmShareTileview = status.shareTileView
                 this._hmmLastUpdate = new Date().getTime() 
-                this._listener.notificationReceived(status)
+                this._realtimeSubscribeHMMClientListener?.notificationReceived(status)
                 break
             case "NOTIFY_AMONGUS_STATUS": // handle by client
                 console.log("RECEIVE REALTIME DATA7-1", JSON.stringify(mess))
                 const gameState = mess.data as GameState
                 console.log("RECEIVE REALTIME DATA7-2", JSON.stringify(gameState))
-                this._listener.amongusNotificationReceived(gameState)
+                this._realtimeSubscribeHMMClientListener?.amongusNotificationReceived(gameState)
                 break
             case "REGISTER_AMONGUS_USER_NAME": // handle by hmm
                 console.log("RECEIVE REALTIME DATA8-1", JSON.stringify(mess))
                 const [userName, attendeeId] = mess.data as string[]
                 console.log("RECEIVE REALTIME DATA8-2", userName, attendeeId)
-                this._listener.registerAmongusUserNameRequestReceived(userName, attendeeId)
+                this._realtimeSubscribeHMMClientListener?.registerAmongusUserNameRequestReceived(userName, attendeeId)
                 break
-
         }
         this._hMMCommandData.push(data)
     }

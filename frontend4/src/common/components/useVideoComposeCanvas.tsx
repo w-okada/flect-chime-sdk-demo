@@ -6,6 +6,7 @@ import { blueGrey } from "@material-ui/core/colors";
 export const RecorderMode = {  
     ALL:"ALL",
     ACTIVE:"ACTIVE",
+    EXCLUDE_ME:"EXCLUDE_ME",
 } as const
 
 type RecorderCanvasProps = {    
@@ -38,7 +39,7 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
     const getTargetTiles = () =>{
         if(props.mode === "ALL"){
             // All
-            return Object.values(props.chimeClient.videoTileStates)
+            return Object.values(props.chimeClient.getTilesWithFilter(false, false, false))
         }else if(props.mode === "ACTIVE"){
             // Contents
             const contentsTiles    = props.chimeClient!.getContentTiles()
@@ -53,6 +54,8 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
             if(activeSpekerTile){
                 return [activeSpekerTile]
             }
+        }else if(props.mode ==="EXCLUDE_ME"){
+            return props.chimeClient.getContentTilesExcludeMe()
         }
         return []
     }
@@ -69,7 +72,7 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
             )
         })
         return elems
-    },[targetIds])
+    },[targetIds]) // eslint-disable-line
 
     const view = useMemo(()=>{
         return(
@@ -90,7 +93,7 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
             }
         })
         return elems
-    },[targetIds])
+    },[targetIds]) // eslint-disable-line
 
     const renderRef = useRef(0);
 
@@ -167,13 +170,12 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
         const maxHeight = props.canvasHeight / rows
 
         const canvasElem = document.getElementById(`recorder-canvas-canvas-${recorederCanvasId}`) as HTMLCanvasElement
-        const ctx = canvasElem.getContext("2d")!
         renderRef.current = requestAnimationFrame(()=>{render(canvasElem, cols, rows, maxWidth, maxHeight)})
         return ()=>{
             console.log("CANCEL", renderRef.current)
             cancelAnimationFrame(renderRef.current)
         }
-    },[targetIds, enable])
+    },[targetIds, enable]) // eslint-disable-line
 
 
     // Notify the mediastream
@@ -183,7 +185,7 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
         // @ts-ignore
         const videoStream = canvasElem.captureStream(props.framerate) as MediaStream
         props.notifyVideoStream(videoStream)
-    },[])
+    },[]) // eslint-disable-line
 
     const videoComposeCanvas = useMemo(()=>{
         return (
@@ -197,12 +199,19 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
             </div>
         )
     
-    },[targetIds])
+    },[targetIds]) // eslint-disable-line
     
 
     return { 
         videoComposeCanvas, enable, toggleEnable,
-        update: ()=>{console.log("update!", updateCount+1);setUpdateCount(updateCount+1)}
+        update: ()=>{console.log("update!", updateCount+1);setUpdateCount(updateCount+1)},
+        captureStream: ()=>{
+            const canvasElem = document.getElementById(`recorder-canvas-canvas-${recorederCanvasId}`) as HTMLCanvasElement
+            // @ts-ignore
+            const ms = canvasElem.captureStream()
+            return ms
+        }
+            
      }
 }
 

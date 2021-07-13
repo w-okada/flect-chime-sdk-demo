@@ -4,6 +4,13 @@ import { RealtimeData, RealtimeDataApp } from "./const";
 import { v4 } from 'uuid';
 import { FlectChimeClient } from "../FlectChimeClient";
 
+
+
+
+export interface RealtimeSubscribeChatClientListener {
+    chatDataUpdated: (list:RealtimeData[]) => void
+}
+
 export class RealtimeSubscribeChatClient{
     private _chimeClient:FlectChimeClient
     constructor(chimeClient:FlectChimeClient){
@@ -23,10 +30,11 @@ export class RealtimeSubscribeChatClient{
     ///////
     // Listener
     ///////
-    private _chatDataUpdateListener = (list:RealtimeData[]) =>{console.log("[FlectChimeClient][RealtimeSubscribeChatClient] default listener!")}
-    setChatDataUpdateListener = ( l: ((list:RealtimeData[]) =>void)) =>{
-        this._chatDataUpdateListener = l
+    private _realtimeSubscribeChatClientListener:RealtimeSubscribeChatClientListener |null = null
+    setRealtimeSubscribeChatClientListener = (l:RealtimeSubscribeChatClientListener | null) =>{
+        this._realtimeSubscribeChatClientListener = l
     }
+
 
     sendChatData = (text: string) => {
         console.log("chatdata::", this._chimeClient.attendeeId)
@@ -41,7 +49,7 @@ export class RealtimeSubscribeChatClient{
         this._chimeClient.meetingSession?.audioVideo!.realtimeSendDataMessage(RealtimeDataApp.CHAT , JSON.stringify(mess))
         // this._cahtData.push(mess)
         this._chatData = [...this._chatData, mess]
-        this._chatDataUpdateListener(this._chatData)
+        this._realtimeSubscribeChatClientListener?.chatDataUpdated(this._chatData)
     }
 
     private receiveChatData = (mess: DataMessage) => {
@@ -51,7 +59,7 @@ export class RealtimeSubscribeChatClient{
         // this._cahtData.push(data)
         this._chatData = [...this._chatData, data] 
 
-        this._chatDataUpdateListener(this._chatData)
+        this._realtimeSubscribeChatClientListener?.chatDataUpdated(this._chatData)
     }
     
 }

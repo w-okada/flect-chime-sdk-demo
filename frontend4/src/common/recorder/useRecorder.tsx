@@ -106,7 +106,7 @@ export const useRecorder = (props: RecorderCanvasProps) => {
                 })
             }
         }
-    }, [start])
+    }, [start]) // eslint-disable-line
 
     return {
         started: start,

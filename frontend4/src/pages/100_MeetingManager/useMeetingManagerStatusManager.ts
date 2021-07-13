@@ -19,7 +19,7 @@ export const useMeetingManagerStatusManager = (props:MeetingManagerStatusManager
     const [ challengeCode, setChallengeCode] = useState<string[]>([])
     const [ userName, setUserName ] = useState<string>("")
 
-    const { setStage, cognitoClient, setLastUpdateTime, chimeClient, audioOutputList } = useAppState() 
+    const { cognitoClient, setLastUpdateTime, chimeClient } = useAppState() 
 
     useEffect(()=>{
         const restClient = new RestApiClient(RestAPIEndpoint, "", "", "")

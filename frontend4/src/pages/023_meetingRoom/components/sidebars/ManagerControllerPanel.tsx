@@ -86,7 +86,7 @@ export const ManagerControllerPanel = () => {
         const t = datetime.toLocaleTimeString()
         // return `${d} ${t}`
         return `${t}`
-    },[chimeClient!.hmmClient!.hmmLastUpdate])
+    },[chimeClient?.hmmClient?.hmmLastUpdate]) // eslint-disable-line
 
     useEffect(()=>{
         console.log(amongusGameState)
@@ -138,9 +138,6 @@ export const ManagerControllerPanel = () => {
             </div>
 
     );
-
-
-    return(<></>)
 }
 
  

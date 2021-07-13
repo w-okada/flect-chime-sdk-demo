@@ -98,7 +98,7 @@ export class WebSocketClient{
                 const res = this.websocketAdapter!.send(message)
                 console.log("[FlectChimeClient][WebSocketClient] send data(ws):", message.length, "sending result:", res)
             }else{
-                throw("adapter is not open")
+                throw Error("adapter is not open")
             }
         }catch(excpetion){
             console.log("[FlectChimeClient][WebSocketClient] send data(ws) Exception:", message.length, excpetion)

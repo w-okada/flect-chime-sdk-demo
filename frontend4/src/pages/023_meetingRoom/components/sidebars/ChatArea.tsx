@@ -21,7 +21,7 @@ export const ChatArea = () => {
         return(
             <div className={classes.messageArea}>
                 {
-                    chimeClient?.chatData.map((d, i) => {
+                    chimeClient?.chatClient?.chatData.map((d, i) => {
                         return (
                             <div key={`mes${i}`} className={classes.message}>
                                 <Typography className={classes.title} color="textSecondary">
@@ -34,7 +34,7 @@ export const ChatArea = () => {
                 }
             </div>            
         )
-    },[chimeClient?.chatData]) // eslint-disable-line
+    },[chimeClient?.chatClient?.chatData]) // eslint-disable-line
 
 
 
