@@ -21,6 +21,7 @@ import { useScheduler } from "../../providers/hooks/useScheduler";
 import { ICONS_ALIVE, ICONS_DEAD, REGIONS, STATES } from "../../common/chime/realtime/hmmModules/RealtimeSubscribeHMMModuleAmongUsServer";
 
 type ChimeState = {
+    name: string
     arenaMicrophone:boolean
     arenaSpeaker:boolean
     arenaShareScreen:boolean
@@ -31,6 +32,7 @@ type ChimeState = {
 
 //// Single Channel
 const ChimeState_Arena:ChimeState = {
+    name:"ChimeState_Arena",
     arenaMicrophone:true,
     arenaSpeaker:true,
     arenaShareScreen:false,
@@ -40,6 +42,7 @@ const ChimeState_Arena:ChimeState = {
 }
 
 const ChimeState_Lobby:ChimeState = {
+    name:"ChimeState_Lobby",
     arenaMicrophone:true,
     arenaSpeaker:true,
     arenaShareScreen:true,
@@ -49,6 +52,7 @@ const ChimeState_Lobby:ChimeState = {
 }
 
 const ChimeState_Task:ChimeState = {
+    name:"ChimeState_Task",
     arenaMicrophone:false,
     arenaSpeaker:false,
     arenaShareScreen:true,
@@ -58,6 +62,7 @@ const ChimeState_Task:ChimeState = {
 }
 
 const ChimeState_Discuss:ChimeState = {
+    name:"ChimeState_Discuss",
     arenaMicrophone:true,
     arenaSpeaker:true,
     arenaShareScreen:true,
@@ -68,6 +73,7 @@ const ChimeState_Discuss:ChimeState = {
 
 
 const ChimeState_Task_Dead:ChimeState = {
+    name:"ChimeState_Task_Dead",
     arenaMicrophone:true,
     arenaSpeaker:true,
     arenaShareScreen:true,
@@ -77,6 +83,7 @@ const ChimeState_Task_Dead:ChimeState = {
 }
 
 const ChimeState_Discuss_Dead:ChimeState = {
+    name:"ChimeState_Discuss_Dead",
     arenaMicrophone:false,
     arenaSpeaker:true,
     arenaShareScreen:true,
@@ -86,6 +93,7 @@ const ChimeState_Discuss_Dead:ChimeState = {
 }
 
 const ChimeState_Discuss_Arena:ChimeState = {
+    name:"ChimeState_Discuss_Arena",
     arenaMicrophone:false,
     arenaSpeaker:true,
     arenaShareScreen:false,
@@ -96,6 +104,7 @@ const ChimeState_Discuss_Arena:ChimeState = {
 
 
 const ChimeState_Debug:ChimeState = {
+    name:"ChimeState_Debug",
     arenaMicrophone:true,
     arenaSpeaker:true,
     arenaShareScreen:true,
@@ -197,7 +206,8 @@ export const MeetingRoomAmongUs = () => {
             tileviewComp.style.display = "block"
             chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                 if(viewMode==="MultiTileView"){
-                    if(x.state().boundAttendeeId === amongusGameState?.hmmAttendeeId){
+                    if(amongusGameState?.hmmAttendeeId && x.state().boundAttendeeId && x.state().boundAttendeeId!.indexOf(amongusGameState.hmmAttendeeId) >=0 ){
+                    // if(x.state().boundAttendeeId === amongusGameState?.hmmAttendeeId){
                         x.unpause()
                         x.bindVideoElement(tileviewComp)
                         tileviewComp.play()
@@ -248,9 +258,9 @@ export const MeetingRoomAmongUs = () => {
     //// Chime State change
     useEffect(()=>{
         const player = amongusGameState?.players.find(x=>{return x.attendeeId === chimeClient!.attendeeId})
-        console.log("Find current player:::", player)
-        console.log("Find current player:::", amongusGameState)
-        console.log("Find current player::GAME STATE:", amongusGameState?.state)
+        console.log("Find current player(player):::", player)
+        console.log("Find current player(gamestatus):::", amongusGameState)
+        console.log("Find current player(state)::GAME STATE:", amongusGameState?.state)
 
         if(debugEnable){
             setChimeState(ChimeStateType.Debug)
@@ -260,8 +270,8 @@ export const MeetingRoomAmongUs = () => {
         /////// For Arena
         if(!player){
             // in arena
-            console.log("Find current player::: 1")
-            if(amongusGameState?.state === 2){
+            console.log("Find current player(type)::: 1")
+            if(amongusGameState?.state == 2){
                 setChimeState(ChimeStateType.Discuss_Arena)
                 return
             }else{
@@ -272,51 +282,50 @@ export const MeetingRoomAmongUs = () => {
 
         /////// For Field
         /// Lobby
-        if(amongusGameState?.state === 0){
+        if(amongusGameState?.state == 0){
             // in lobby(0)
-            console.log("Find current player::: 2")
+            console.log("Find current player(type)::: 2")
             setChimeState(ChimeStateType.Lobby)
             return
         }
 
         //// Task
-        if(amongusGameState?.state === 1){
-            console.log("Find current player::: 3-1")
+        if(amongusGameState?.state == 1){
+            console.log("Find current player(type)::: 3-1")
             // in task
             if(player.isDead || player.disconnected){
-                console.log("Find current player::: 3")
+                console.log("Find current player(type)::: 3")
                 // dead man
                 setChimeState(ChimeStateType.Task_Dead)
                 return
             }else{
                 // task
-                console.log("Find current player::: 4")
+                console.log("Find current player(type)::: 4")
                 setChimeState(ChimeStateType.Task)
                 return
             }
         }
         //// Discuss
-        if(amongusGameState?.state === 2){
+        if(amongusGameState?.state == 2){
             //in discussing
             if(player.isDead || player.disconnected){
                 // dead man
-                console.log("Find current player::: 5")
+                console.log("Find current player(type)::: 5")
                 setChimeState(ChimeStateType.Discuss_Dead)
                 return
             }else{
                 // discuss
-                console.log("Find current player::: 6")
+                console.log("Find current player(type)::: 6")
                 setChimeState(ChimeStateType.Discuss)
                 return
             }
         }
-        console.log("Find current player::: 7")
+        console.log("Find current player(type)::: 7")
 
     },[amongusGameState, debugEnable]) // eslint-disable-line
 
     //// AV Controle
     useEffect(()=>{
-
         if(chimeState.arenaMicrophone){
             chimeClient!.audioInputDeviceSetting!.unmute()
         }else{
@@ -718,6 +727,15 @@ export const MeetingRoomAmongUs = () => {
         )
     },[amongusGameState?.players])  // eslint-disable-line
 
+    const userState = useMemo(()=>{
+        return (
+            <div>
+                State:{chimeState.name}
+            </div>
+        )
+    }, [chimeState])
+
+
     /////////////////////////////
     /// (5) User List
     ////////////////////////////
@@ -725,7 +743,12 @@ export const MeetingRoomAmongUs = () => {
         return(
             <div>
                 {
-                    amongusGameState?.players.map(x=>{
+                    amongusGameState?.players.sort((a,b)=>{
+                        if(a.name===b.name){
+                            return 0
+                        }
+                        return (a.name > b.name) ? 1 : -1
+                    }).map(x=>{
                         return(
                             <div>
                                 {
@@ -806,6 +829,7 @@ export const MeetingRoomAmongUs = () => {
                 <div id="main" style={{height:"100%", display:"flex", flexDirection:"row"}}>
                     <div style={{width:"20%", display:"flex", flexDirection:"column"}}>
                         {userChooser}
+                        {userState}
                         {userList}
                     </div>
 

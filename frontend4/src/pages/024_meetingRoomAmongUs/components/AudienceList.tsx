@@ -14,7 +14,15 @@ export const AudienceList = () => {
 
     const targetIds   = Object.values(chimeClient!.videoTileStates).reduce<string>((ids,cur)=>{return `${ids}_${cur.boundAttendeeId}`},"")
     const targetNames = Object.values(chimeClient!.attendees).reduce<string>((names,cur)=>{return `${names}_${cur.name}`},"")
-    const targetVideoStates:VideoState[] = Object.values(chimeClient!.attendees).map(x=>{
+
+    const sortedAudiences = Object.values(chimeClient!.attendees).sort((a,b)=>{
+        if(a.name===b.name){
+            return 0
+        }
+        return (a.name > b.name) ? 1 : -1
+    })
+
+    const targetVideoStates:VideoState[] = Object.values(sortedAudiences).map(x=>{
         if(!chimeClient!.videoTileStates[x.attendeeId]){
             return "NOT_SHARE"
         }
@@ -47,31 +55,34 @@ export const AudienceList = () => {
     // },[attendees])
 
     const audienceList = useMemo(()=>{        
-        const l = Object.values(chimeClient!.attendees).map((x, index)=>{
-            let videoStateComp 
-            switch(targetVideoStates[index]){
-                case "ENABLED":
-                    videoStateComp = (
-                        <Tooltip title={`click to pause`}>
-                            <IconButton style={{width: "20px", height:"20px"}} onClick={ ()=>{chimeClient!.setPauseVideo(x.attendeeId, true)} } >
-                                <VideocamIcon></VideocamIcon>
-                            </IconButton>
-                        </Tooltip>
-                    )
-                    break
-                case "PAUSED":
-                    videoStateComp = (
-                        <Tooltip title={`click to play`}>
-                            <IconButton style={{width: "20px", height:"20px"}} onClick={ ()=>{chimeClient!.setPauseVideo(x.attendeeId, false)} } >
-                                <VideocamOffIcon  ></VideocamOffIcon>
-                            </IconButton>
-                        </Tooltip>
-                    )
-                    break
-                case "NOT_SHARE":
-                    videoStateComp = <></>
-                    break
+        const l = sortedAudiences.map((x, index)=>{
+            if(x.attendeeId.indexOf("#content")>0){
+                return <></>
             }
+            // let videoStateComp 
+            // switch(targetVideoStates[index]){
+            //     case "ENABLED":
+            //         videoStateComp = (
+            //             <Tooltip title={`click to pause`}>
+            //                 <IconButton style={{width: "20px", height:"20px", color:"white"  }} onClick={ ()=>{chimeClient!.setPauseVideo(x.attendeeId, true)} } >
+            //                     <VideocamIcon></VideocamIcon>
+            //                 </IconButton>
+            //             </Tooltip>
+            //         )
+            //         break
+            //     case "PAUSED":
+            //         videoStateComp = (
+            //             <Tooltip title={`click to play`}>
+            //                 <IconButton style={{width: "20px", height:"20px", color:"white" }} onClick={ ()=>{chimeClient!.setPauseVideo(x.attendeeId, false)} } >
+            //                     <VideocamOffIcon  ></VideocamOffIcon>
+            //                 </IconButton>
+            //             </Tooltip>
+            //         )
+            //         break
+            //     case "NOT_SHARE":
+            //         videoStateComp = <></>
+            //         break
+            // }
 
         
             return(
@@ -81,9 +92,9 @@ export const AudienceList = () => {
                             {x.name} 
                         </div>
                     </Tooltip>
-                        <div>
+                        {/* <div>
                             {videoStateComp}
-                        </div>
+                        </div> */}
                 </div>
             )
         })

@@ -120,8 +120,8 @@ export class RealtimeSubscribeHMMModuleAmongUsServer{
                 }
             }
         })
-        console.log(`[RealtimeSubscribeHMMModuleAmongUs][updateGameState] Old GameState ${JSON.stringify(this._gameState)}`)
-        console.log(`[RealtimeSubscribeHMMModuleAmongUs][updateGameState] New GameState ${JSON.stringify(newGameState)}`)
+        // console.log(`[RealtimeSubscribeHMMModuleAmongUs][updateGameState] Old GameState ${JSON.stringify(this._gameState)}`)
+        // console.log(`[RealtimeSubscribeHMMModuleAmongUs][updateGameState] New GameState ${JSON.stringify(newGameState)}`)
         this._gameState = newGameState
         this._realtimeSubscribeHMMModuleAmongUsListener?.serverGameStateUpdated(this._gameState)
     }

@@ -83,7 +83,10 @@ export const AppStateProvider = ({ children }: Props) => {
         return new CognitoClient(UserPoolId, UserPoolClientId, "mail2wokada@gmail.com", "test222")
     },[])
 
-    // const [ hmmStatus,setHmmStatus] = useState<HMMStatus>({active:false, recording:false, shareTileView:false})
+    /////////
+    // Chime Client 
+    /////////
+    //// (A) triggers
     const [ amongusGameState, setAmongusGameState] = useState<GameState|null>(null)
     const [ startRecordRequestCounter, setStartRecordRequestCounter ] = useState(0)
     const [ stopRecordRequestCounter, setStopRecordRequestCounter ] = useState(0)
@@ -92,6 +95,7 @@ export const AppStateProvider = ({ children }: Props) => {
     const [ terminateHMMRequestCounter, setTerminateHMMRequestCounter ] = useState(0)
     const { updateGameState, setChimeClient:amongUsSetChimeClient } = useAmongUsServer()
 
+    //// (B) initialization
     const chimeClient = useMemo(()=>{
         if(cognitoClient.userId && cognitoClient.idToken && cognitoClient.accessToken && cognitoClient.refreshToken){
             const c = new FlectChimeClient(cognitoClient.userId, cognitoClient.idToken, cognitoClient.accessToken, cognitoClient.refreshToken, RestAPIEndpoint)
@@ -192,10 +196,19 @@ export const AppStateProvider = ({ children }: Props) => {
         }
     },[chimeClient, chimeClient?.attendeeId, chimeClient?.meetingSession, recreateWebSocketWhiteboardClientCount]) // eslint-disable-line
 
+
+    //////////
+    // etc
+    //////////
     const { audioInputList, videoInputList, audioOutputList, reloadDevices } = useDeviceState()
     const { screenWidth, screenHeight} = useWindowSizeChangeListener()
     const { messageActive, messageType, messageTitle, messageDetail, setMessage, resolveMessage } = useMessageState()
 
+
+
+    //////////
+    // return value
+    //////////
 
     const providerValue = {
         mode,

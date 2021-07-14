@@ -168,7 +168,7 @@ export const RecorderPanel = () => {
                         <button id="io_click" onClick={()=>{
                             const ev = document.getElementById("io_event") as HTMLInputElement
                             const data = document.getElementById("io_data") as HTMLInputElement
-                            console.log("RECEIVE DATA:", data.value)
+                            // console.log("RECEIVE DATA:", data.value)
                             updateGameState(ev.value, data.value)
                         }} />
                     </div>

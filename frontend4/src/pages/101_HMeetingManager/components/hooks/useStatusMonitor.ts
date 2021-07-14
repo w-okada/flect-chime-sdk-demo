@@ -41,5 +41,6 @@ export const useStatusMonitor = () =>{
             }
         }
     },[tenSecondsTaskTrigger]) // eslint-disable-line
+    
     return {meetingActive}
 }
