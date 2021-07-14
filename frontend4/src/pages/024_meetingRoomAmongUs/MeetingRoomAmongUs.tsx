@@ -18,7 +18,7 @@ import { AudienceList } from "./components/AudienceList";
 import { CreditPanel } from "./components/CreditPanel";
 import { ChatArea } from "./components/ChatArea";
 import { useScheduler } from "../../providers/hooks/useScheduler";
-import { ICONS_ALIVE, ICONS_DEAD, REGIONS, STATES } from "../../common/components/useAmongUs";
+import { ICONS_ALIVE, ICONS_DEAD, REGIONS, STATES } from "../../common/chime/realtime/hmmModules/RealtimeSubscribeHMMModuleAmongUsServer";
 
 type ChimeState = {
     arenaMicrophone:boolean

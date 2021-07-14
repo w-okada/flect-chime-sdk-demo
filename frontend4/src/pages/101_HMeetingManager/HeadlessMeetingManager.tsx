@@ -32,8 +32,8 @@ export const HeadlessMeetingManager = () => {
     ////////////////////////////////
     useEffect(()=>{
         if(internalStage === "SelectCode"){
-            sendChallengeCode(code!).then(()=>{
-                console.log("CHALLENGE DONE")
+            sendChallengeCode(code!).then((res)=>{
+                console.log(`[HeadlessMeetingManager] challenge result:${res.result}`)
             })
         }
     },[internalStage]) // eslint-disable-line

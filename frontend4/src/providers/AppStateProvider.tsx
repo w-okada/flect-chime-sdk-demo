@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { ReactNode } from "react";
 import { MessageType, useMessageState } from "./hooks/useMessageState";
 import { STAGE, useStageManager } from "./hooks/useStageManager";
@@ -11,7 +11,7 @@ import { AttendeeState, FlectChimeClient } from "../common/chime/FlectChimeClien
 import { DrawingData, WebSocketWhiteboardClient } from "../common/websocket/WebSocketWhiteboard/WebSocketWhiteboardClient";
 import { GameState, HMMStatus } from "../common/chime/realtime/RealtimeSubscribeHMMClient";
 import { RealtimeData } from "../common/chime/realtime/const";
-import { useAmongUs } from "../common/components/useAmongUs";
+import { useAmongUsServer } from "../common/components/useAmongUsServer";
 
 type Props = {
     children: ReactNode;
@@ -59,7 +59,6 @@ interface AppStateValue {
     setStopRecordRequestCounter: (d:number)=>void
 
     updateGameState: (ev: string, data: string) => void
-    registerUserName: (userName: string, attendeeId: string) => Promise<void>
 }
 
 const AppStateContext = React.createContext<AppStateValue | null>(null);
@@ -91,7 +90,7 @@ export const AppStateProvider = ({ children }: Props) => {
     const [ startShareTileviewRequestCounter, setStartShareTileviewRequestCounter ] = useState(0)
     const [ stopShareTileviewRequestCounter, setStopShareTileviewRequestCounter ] = useState(0)
     const [ terminateHMMRequestCounter, setTerminateHMMRequestCounter ] = useState(0)
-    const { setChimeClient, updateGameState, registerUserName } = useAmongUs({})
+    const { updateGameState, setChimeClient:amongUsSetChimeClient } = useAmongUsServer()
 
     const chimeClient = useMemo(()=>{
         if(cognitoClient.userId && cognitoClient.idToken && cognitoClient.accessToken && cognitoClient.refreshToken){
@@ -152,24 +151,23 @@ export const AppStateProvider = ({ children }: Props) => {
                 amongusNotificationReceived: (gameState: GameState) => {
                     if(stage !== "HEADLESS_MEETING_MANAGER"){
                         setAmongusGameState(gameState)
-                    }
-                },
-                registerAmongusUserNameRequestReceived: (userName: string, attendeeId: string) => {
-                    if(stage === "HEADLESS_MEETING_MANAGER"){
-                        registerUserName(userName, attendeeId) 
+                        console.log("[AppStateProvider] gamestatus: ", amongusGameState)
                     }
                 },
                 hMMStateUpdated: ()=>{
                     setLastUpdateTime(new Date().getTime())
                 },
             })
-            setChimeClient(c)
             return c
         }else{
             console.log("[AppStateProvider] can not create chime client yet. ", cognitoClient.userId, cognitoClient.idToken, cognitoClient.accessToken, cognitoClient.refreshToken)
             return null
         }
     },[cognitoClient.userId, cognitoClient.idToken, cognitoClient.accessToken, cognitoClient.refreshToken]) // eslint-disable-line
+
+    useEffect(()=>{
+        amongUsSetChimeClient(chimeClient)
+    },[chimeClient]) // eslint-disable-line
 
 
     ///////////////////
@@ -237,7 +235,6 @@ export const AppStateProvider = ({ children }: Props) => {
         terminateHMMRequestCounter,    
         setStopRecordRequestCounter,
         updateGameState, 
-        registerUserName,
     };
 
     return (

@@ -168,7 +168,6 @@ export const RecorderPanel = () => {
                         <button id="io_click" onClick={()=>{
                             const ev = document.getElementById("io_event") as HTMLInputElement
                             const data = document.getElementById("io_data") as HTMLInputElement
-                            console.log("RECEIVE DATA:", ev.value)
                             console.log("RECEIVE DATA:", data.value)
                             updateGameState(ev.value, data.value)
                         }} />
@@ -185,7 +184,7 @@ export const RecorderPanel = () => {
 
         }
 
-    }, [chimeClient, allTileIds, activeSpeakerId]) // eslint-disable-line
+    }, [chimeClient, allTileIds, activeSpeakerId, updateGameState]) // eslint-disable-line
 
 
     return (

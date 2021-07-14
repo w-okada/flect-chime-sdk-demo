@@ -3,6 +3,7 @@ import { RestApiClient } from "../../rest/RestApiClient"
 import { FlectChimeClient } from "../FlectChimeClient"
 import { RealtimeData, RealtimeDataApp } from "./const"
 import { v4 } from 'uuid';
+import { RealtimeSubscribeHMMModuleAmongUsServer } from "./hmmModules/RealtimeSubscribeHMMModuleAmongUsServer";
 export const HMMCmd = {
     START_RECORD: "START_RECORD",
     STOP_RECORD: "STOP_RECORD",
@@ -66,8 +67,6 @@ export interface RealtimeSubscribeHMMClientListener {
     notificationReceived: (status: HMMStatus) => void
 
     amongusNotificationReceived: (gameState: GameState) => void
-    registerAmongusUserNameRequestReceived: (userName: string, attendeeId: string) => void
-
 
     /// State Management
     hMMStateUpdated: () => void
@@ -78,6 +77,13 @@ export interface RealtimeSubscribeHMMClientListener {
 export class RealtimeSubscribeHMMClient {
     private _chimeClient: FlectChimeClient
     private _restApiClient: RestApiClient
+
+    // Modules
+    private _amongUsServer:RealtimeSubscribeHMMModuleAmongUsServer|null = null
+    get amongUsServer():RealtimeSubscribeHMMModuleAmongUsServer|null{return this._amongUsServer}
+
+
+
     constructor(chimeClient: FlectChimeClient, restApiClient: RestApiClient) {
         this._chimeClient = chimeClient
         this._restApiClient = restApiClient
@@ -86,6 +92,12 @@ export class RealtimeSubscribeHMMClient {
             this.receiveHMMData
         )
         this.updateHMMInfo()
+        this._amongUsServer = new RealtimeSubscribeHMMModuleAmongUsServer(this._chimeClient.attendeeId!)
+        this._amongUsServer.setRealtimeSubscribeHMMModuleAmongUsListener({
+            serverGameStateUpdated: (gameState:GameState) =>{
+                this.sendAmongusStatus(gameState)
+            }
+        })
     }
 
     private _hMMCommandData: RealtimeData[] = []
@@ -241,7 +253,8 @@ export class RealtimeSubscribeHMMClient {
                 console.log("RECEIVE REALTIME DATA8-1", JSON.stringify(mess))
                 const [userName, attendeeId] = mess.data as string[]
                 console.log("RECEIVE REALTIME DATA8-2", userName, attendeeId)
-                this._realtimeSubscribeHMMClientListener?.registerAmongusUserNameRequestReceived(userName, attendeeId)
+                const chimeUserName = this._chimeClient.getUserNameByAttendeeIdFromList(attendeeId)
+                this._amongUsServer?.registerUserName(userName, attendeeId, chimeUserName)
                 break
         }
         this._hMMCommandData.push(data)

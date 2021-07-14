@@ -1,5 +1,7 @@
-import { useState } from "react"
-import { FlectChimeClient } from "../chime/FlectChimeClient"
+
+export interface RealtimeSubscribeHMMModuleAmongUsListener {
+    serverGameStateUpdated: (gameState:GameState) => void
+}
 
 export const STATES = [
     'LOBBY', // 0
@@ -90,18 +92,26 @@ const initialState:GameState = {
     players: [],
 }
 
-type UseAmongUsProps = {
-}
 
-export const useAmongUs = (props:UseAmongUsProps) =>{
-    const [ chimeClient, setChimeClient ] = useState<FlectChimeClient>()
-    const [ gameState, setGameState] = useState(initialState)
+export class RealtimeSubscribeHMMModuleAmongUsServer{
+    private _gameState:GameState = initialState
+    private _hmmAttendeeId = ""
+    private _realtimeSubscribeHMMModuleAmongUsListener:RealtimeSubscribeHMMModuleAmongUsListener|null = null
 
-    const updateGameState = (ev:string, data:string) => {
+    constructor(hmmAttendeeId:string){
+        this._hmmAttendeeId = hmmAttendeeId
+    }
+
+    setRealtimeSubscribeHMMModuleAmongUsListener(l:RealtimeSubscribeHMMModuleAmongUsListener|null){
+        this._realtimeSubscribeHMMModuleAmongUsListener = l
+    }
+
+
+    updateGameState = (ev:string, data:string) => {
         const newGameState = JSON.parse(data) as GameState
-        newGameState.hmmAttendeeId = chimeClient?.attendeeId!
+        newGameState.hmmAttendeeId = this._hmmAttendeeId
         // Copy user name
-        gameState.players.forEach(x =>{
+        this._gameState.players.forEach(x =>{
             if(x.attendeeId){
                 const newPlayer = newGameState.players.find(y=>{return x.name === y.name})
                 if(newPlayer){
@@ -110,50 +120,32 @@ export const useAmongUs = (props:UseAmongUsProps) =>{
                 }
             }
         })
-
-
-        // // update isDead discvoered
-        // if(newGameState.state == 2){ // When state is Discussion, isDead state can be discovered
-        //     newGameState.players.forEach(x=>{
-        //         if(x.isDead){
-        //             x.isDeadDiscovered = true
-        //         }
-        //     })
-        // }
-        // // update purged
-        // if(newGameState.state == 1 && gameState.state == 2){ // When state is changed from Discussion to Tasks, purged state can be discovered
-        //     newGameState.players.forEach(x=>{
-        //         if(x.isDead){
-        //             x.isDeadDiscovered = true
-        //         }
-        //     })
-        // }
-
-        setGameState(newGameState)
+        console.log(`[RealtimeSubscribeHMMModuleAmongUs][updateGameState] Old GameState ${JSON.stringify(this._gameState)}`)
+        console.log(`[RealtimeSubscribeHMMModuleAmongUs][updateGameState] New GameState ${JSON.stringify(newGameState)}`)
+        this._gameState = newGameState
+        this._realtimeSubscribeHMMModuleAmongUsListener?.serverGameStateUpdated(this._gameState)
     }
 
-    const registerUserName = async (userName:string, attendeeId:string) =>{
-        const unregisterTarget = gameState.players.find(x=>{return x.attendeeId === attendeeId})
+    registerUserName = (userName:string, attendeeId:string, chimeUserName:string) =>{
+        const unregisterTarget = this._gameState.players.find(x=>{return x.attendeeId === attendeeId})
         if(unregisterTarget){
             unregisterTarget.attendeeId = undefined
             unregisterTarget.chimeName = undefined
         }
-
-        const targetPlayer = gameState.players.find(x=>{return x.name === userName})
+        console.log(`Register User Name ${JSON.stringify(this._gameState)}`)
+        const targetPlayer = this._gameState.players.find(x=>{return x.name === userName})
         if(!targetPlayer){
             console.log(`user ${userName} is not found`)
-            setGameState({...gameState})
             return
         }
         if(targetPlayer.attendeeId){
             console.log(`${targetPlayer.name} is already registered as ${targetPlayer.attendeeId}`)
-            setGameState({...gameState})
             return
         }
         targetPlayer.attendeeId = attendeeId
-        targetPlayer.chimeName  = await chimeClient?.getUserNameByAttendeeIdFromList(attendeeId)
+        targetPlayer.chimeName  = chimeUserName
         console.log(`${targetPlayer.name} is registaerd as ${targetPlayer.attendeeId}`)
-        setGameState({...gameState})
+        this._realtimeSubscribeHMMModuleAmongUsListener?.serverGameStateUpdated(this._gameState)
     }
-    return { setChimeClient, gameState, updateGameState, registerUserName }
+
 }
