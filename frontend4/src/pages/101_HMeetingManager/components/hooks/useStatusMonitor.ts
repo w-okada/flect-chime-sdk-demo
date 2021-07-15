@@ -23,11 +23,11 @@ export const useStatusMonitor = () =>{
             meetingActive = false
         }
 
-        console.log( `[HeadlessManager][MeetingStatusMonitor] active:${meetingActive}, pureAttendees:${JSON.stringify(pureAttendees)}`)
+        // console.log( `[HeadlessManager][MeetingStatusMonitor] active:${meetingActive}, pureAttendees:${JSON.stringify(pureAttendees)}`)
         const attendeeList = pureAttendees.reduce((prev,cur)=>{return prev+"_____"+cur}, "")
         console.log(`[HeadlessManager][MeetingStatusMonitor] pureAttendees:${attendeeList}`)
-        console.log(`[HeadlessManager][MeetingStatusMonitor] pureAttendees: share contents? ${chimeClient.isShareContent? "true" : "false"}`)
-        console.log((`[HeadlessManager][MeetingStatusMonitor] pureAttendees: attendees ? ${JSON.stringify(chimeClient.attendees)}`))
+        // console.log(`[HeadlessManager][MeetingStatusMonitor] pureAttendees: share contents? ${chimeClient.isShareContent? "true" : "false"}`)
+        // console.log((`[HeadlessManager][MeetingStatusMonitor] pureAttendees: attendees ? ${JSON.stringify(chimeClient.attendees)}`))
         
 
         const maxCount = 5

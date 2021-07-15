@@ -77,7 +77,7 @@ export const WhiteboardPanel = () => {
                 <div className={classes.margin} />
             </div>
             <Button variant="outlined" size="small" color="primary" className={classes.margin}  onClick={() => {
-            const drawingData: DrawingData = {
+                const drawingData: DrawingData = {
                     drawingCmd: "CLEAR",
                     startXR: 0,
                     startYR: 0,

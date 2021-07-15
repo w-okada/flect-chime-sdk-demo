@@ -23,6 +23,7 @@ export const ACTIONS = [
     'DISCONNECT',       // 5
     'EXILE'             // 6
 ]
+
 export const COLORS = [
     'red',
     'blue',
@@ -44,6 +45,26 @@ export const COLORS = [
     'sunset',
     'sunset',
 ]
+export const COLORS_RGB:{[kye:string]:string} = {
+    "red"     : "#BE0032",
+    'blue'    : "#2252C1",
+    'green'   : "#3BAF75",
+    'pink'    : "#FF69B4",
+    'orange'  : "#E67928",
+    'yellow'  : "#F0E448",
+    'black'   : "#000000",
+    'white'   : "#FFFFFF",
+    'purple'  : "#A757A8",
+    'brown'   : "#6B3E08",
+    'cyan'    : "#66ffcc",
+    'lime'    : "#B9DD64",
+    'maroon'  : "#7F4428",
+    'rose'    : "#e83f5f",
+    'banana'  : "#FFBF11",
+    'tan'     : "#c1813f",
+    'sunset'  : "#f6b483",
+}
+
 
 export const ICONS_ALIVE = COLORS.map(x=>{
     return `resources/amongus/${x}.png`
@@ -59,7 +80,6 @@ export const ICONS_DEAD = COLORS.map(x=>{
 //     dlekS = 3,
 //     Airship = 4,
 // }
-
 
 type PlayerState = {
     name:string

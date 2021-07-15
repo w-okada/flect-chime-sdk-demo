@@ -18,7 +18,9 @@ import { AudienceList } from "./components/AudienceList";
 import { CreditPanel } from "./components/CreditPanel";
 import { ChatArea } from "./components/ChatArea";
 import { useScheduler } from "../../providers/hooks/useScheduler";
-import { ICONS_ALIVE, ICONS_DEAD, REGIONS, STATES } from "../../common/chime/realtime/hmmModules/RealtimeSubscribeHMMModuleAmongUsServer";
+import { COLORS, COLORS_RGB, ICONS_ALIVE, ICONS_DEAD, REGIONS, STATES } from "../../common/chime/realtime/hmmModules/RealtimeSubscribeHMMModuleAmongUsServer";
+import { DrawableImageTile } from "../../common/websocket/WebSocketWhiteboard/DrawableImageTile";
+import { DrawingData } from "../../common/websocket/WebSocketWhiteboard/WebSocketWhiteboardClient";
 
 type ChimeState = {
     name: string
@@ -141,7 +143,7 @@ export const MeetingRoomAmongUs = () => {
     const classes = useStyles();
     const animationRef = useRef(0);
 
-    const { chimeClient, amongusGameState } = useAppState()
+    const { chimeClient, whiteboardClient, amongusGameState } = useAppState()
     const [settingDialogOpen, setSettingDialogOpen] = useState(false);
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 
@@ -193,19 +195,10 @@ export const MeetingRoomAmongUs = () => {
 
     //// Main Screen Changer
     useEffect(()=>{
-        // if(!currentGameState.hmmAttendeeId){
-        //     return
-        // }
         if(chimeState.arenaViewScreen){
-            // hide map
-            const mapViewComp = document.getElementById("mapView") as HTMLImageElement
-            mapViewComp.style.display = "none"
-
-
-            const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
-            tileviewComp.style.display = "block"
             chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                 if(viewMode==="MultiTileView"){
+                    const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
                     if(amongusGameState?.hmmAttendeeId && x.state().boundAttendeeId && x.state().boundAttendeeId!.indexOf(amongusGameState.hmmAttendeeId) >=0 ){
                     // if(x.state().boundAttendeeId === amongusGameState?.hmmAttendeeId){
                         x.unpause()
@@ -234,18 +227,101 @@ export const MeetingRoomAmongUs = () => {
             })
         }else{
             // show map
-            const mapViewComp = document.getElementById("mapView") as HTMLImageElement
-            mapViewComp.style.display = "block"
-            mapViewComp.src=`/resources/amongus/map/${amongusGameState ? mapFileNames[amongusGameState.map]:""}`
+            // const mapViewComp = document.getElementById("mapView") as HTMLImageElement
+            // mapViewComp.src=`/resources/amongus/map/${amongusGameState ? mapFileNames[amongusGameState.map]:""}`
 
-            const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
-            tileviewComp.style.display = "none"
             chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                 x.pause()
             })
 
         }
-    },[targetTilesId, amongusGameState?.hmmAttendeeId, chimeState.arenaViewScreen]) // eslint-disable-line
+    },[targetTilesId, amongusGameState?.hmmAttendeeId, chimeState.arenaViewScreen, viewMode]) // eslint-disable-line
+    
+    const mainScreen = useMemo(()=>{
+        if(chimeState.arenaViewScreen && amongusGameState?.state != 2){             // gamestate "2" is discussion
+            console.log(`arena_view ${amongusGameState?.state}`)
+            if(viewMode==="MultiTileView"){
+                return (
+                    <video id="tileView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} />
+                )
+            }else{
+                return(
+                    <div style={{height:"80%" }}>
+                        <div style={{display:"flex", flexDirection:"row"}}>
+                            <video id="userView0"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView1"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView2"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView3"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                        </div>
+                        <div style={{display:"flex", flexDirection:"row"}}>
+                            <video id="userView4"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView5"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView6"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView7"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                        </div>
+                        <div style={{display:"flex", flexDirection:"row"}}>
+                            <video id="userView8"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView9"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView10"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView11"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                        </div>
+                        <div style={{display:"flex", flexDirection:"row"}}>
+                            <video id="userView12"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView13"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView14"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                            <video id="userView15"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                        </div>
+                    </div>
+                )
+            }
+        }else{
+            // show map
+            const player = amongusGameState?.players.find(x=>{return x.attendeeId === chimeClient!.attendeeId})
+
+            const imgSrc =`/resources/amongus/map/${amongusGameState ? mapFileNames[amongusGameState.map]:""}`
+            if(chimeClient && whiteboardClient){
+                // if(chimeClient && whiteboardClient && amongusGameState?.state == 2){
+                    if(player){
+                    whiteboardClient.drawingMode = "DRAW"
+                    const colorName = COLORS[player.color]
+                    const rgb = COLORS_RGB[colorName]
+                    if(rgb){
+                        whiteboardClient.drawingStroke = rgb
+                    }else{
+                        whiteboardClient.drawingStroke = "#FFFFFF"
+                    }
+                }else{
+                    whiteboardClient.drawingMode = "ERASE"
+                }
+                return (
+                    <div style={{width:"100%"}}>
+                        <DrawableImageTile chimeClient={chimeClient} src={imgSrc} whiteboardClient={whiteboardClient} idPrefix={"mapViewImg"} width={"65%"} height={"80%"}/>
+                    </div>
+                )
+            }else{
+                return (<img id="mapView" src={imgSrc} style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} alt="map" />)
+            }
+        }
+    },[targetTilesId, amongusGameState?.hmmAttendeeId, chimeState.arenaViewScreen, amongusGameState?.state, viewMode])
+
+    ///// clear Drwaing 
+    useEffect(()=>{
+        const drawingData: DrawingData = {
+            drawingCmd: "CLEAR",
+            startXR: 0,
+            startYR: 0,
+            endXR: 0,
+            endYR: 0,
+            stroke: "black",
+            lineWidth: 2
+        }
+        if(whiteboardClient){
+            whiteboardClient.addDrawingData(drawingData)
+        }else{
+            console.log("[WhiteboardPanel] addDrawingData is undefined")
+        }
+
+    },[amongusGameState?.state])
 
     //// UserName Change
     useEffect(()=>{
@@ -436,7 +512,6 @@ export const MeetingRoomAmongUs = () => {
        return ()=>{videoEl.removeEventListener("click", listenEvent)}
     },[]) // eslint-disable-line
 
-    
     //////////////////////////
     /// (1) hmm state
     //////////////////////////
@@ -458,12 +533,24 @@ export const MeetingRoomAmongUs = () => {
         )
     },[chimeClient!.isOwner]) // eslint-disable-line
     /// (1-2) hmm active
+    ///// (1-2-1) startClicked (for local debug) 
+    const startHmmClientClicked = async () =>{
+        const res = await chimeClient!.hmmClient!.startHMM()
+        //// For local Debug
+        const meetingRoomSuffix = res.url.substring(res.url.indexOf("/index.html"))
+        const newMeetingURL = `https://192.168.0.4:3000/${meetingRoomSuffix}`
+        const dockerCmd = `docker run -p 13000:3000 -v \`pwd\`:/work --env MEETING_URL="${newMeetingURL}"  --env BUCKET_ARN="xxx" dannadori/hmm`
+        console.log(`[For Local Debug] docker command: ${dockerCmd}`)
+
+
+    }
+    ///// (1-2-2) comonent
     const managerStateComp = useMemo(()=>{
         if(chimeClient!.hmmClient!.hmmActive === false && (!chimeClient!.hmmClient!.hmmLastStatus || chimeClient!.hmmClient!.hmmLastStatus === "N/A")){ // Not active
             return(
                 <>
                     <Tooltip title={`hmm not active: ${chimeClient!.hmmClient!.hmmLastStatus}`}>
-                        <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.startHMM()}}>                    
+                        <IconButton classes={{root:classes.menuButton}} onClick={startHmmClientClicked}>                    
                             <SportsEsportsIcon className={classes.inactiveState} fontSize="large"/>
                         </IconButton>
                     </Tooltip>
@@ -515,7 +602,7 @@ export const MeetingRoomAmongUs = () => {
             return (
                 <>
                     <Tooltip title={`active:${chimeClient!.hmmClient!.hmmActive}, last status: ${chimeClient!.hmmClient!.hmmLastStatus}`}>
-                        <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.startHMM()}}>                    
+                        <IconButton classes={{root:classes.menuButton}} onClick={startHmmClientClicked}>                    
                             <SportsEsportsIcon className={classes.inactiveState} fontSize="large"/>
                         </IconButton>
                     </Tooltip>
@@ -847,46 +934,17 @@ export const MeetingRoomAmongUs = () => {
                         </div>
 
 
-                        <div style={{height:"80%", display:viewMode==="MultiTileView" ? "block":"none" }}>
-                            <div style={{height:"100%", display:"flex", flexDirection:"row" }}>
-                                <video id="tileView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} />
-                                <img id="mapView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} alt="map" />
+                        <div style={{height:"80%", width:"100%", }}>
+                            <div style={{height:"100%", width:"100%", display:"flex", flexDirection:"row" }}>
+                                {/* <video id="tileView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} />
+                                <img id="mapView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} alt="map" /> */}
+                                {mainScreen}
                             </div>
                         </div>
 
                         <div>
                             <audio id="arena_speaker" hidden />
                         </div>
-
-                        <div style={{height:"80%", display:viewMode==="SeparateView" ? "block":"none" }}>
-                            <div style={{display:"flex", flexDirection:"row"}}>
-                                <video id="userView0"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView1"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView2"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView3"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            </div>
-                            <div style={{display:"flex", flexDirection:"row"}}>
-                                <video id="userView4"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView5"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView6"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView7"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            </div>
-                            <div style={{display:"flex", flexDirection:"row"}}>
-                                <video id="userView8"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView9"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView10"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView11"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            </div>
-                            <div style={{display:"flex", flexDirection:"row"}}>
-                                <video id="userView12"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView13"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView14"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                                <video id="userView15"  style={{width:"23%",  borderStyle:"solid",borderColor: red[900]}} />
-                            </div>
-                        </div>
-
-
-
                     </div>
 
                     <div style={{width:"10%", height:"100%", display:"flex", flexDirection:"column"}}>

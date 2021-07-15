@@ -3,7 +3,8 @@ import { RestApiClient } from "../../rest/RestApiClient"
 import { FlectChimeClient } from "../FlectChimeClient"
 import { RealtimeData, RealtimeDataApp } from "./const"
 import { v4 } from 'uuid';
-import { RealtimeSubscribeHMMModuleAmongUsServer } from "./hmmModules/RealtimeSubscribeHMMModuleAmongUsServer";
+import { GameState, RealtimeSubscribeHMMModuleAmongUsServer } from "./hmmModules/RealtimeSubscribeHMMModuleAmongUsServer";
+import { deflate, inflate } from 'pako'
 export const HMMCmd = {
     START_RECORD: "START_RECORD",
     STOP_RECORD: "STOP_RECORD",
@@ -24,35 +25,9 @@ export type HMMStatus = {
     shareTileView: boolean
 }
 
-export type AmongUsStatus = {
-    event: string,
-    data: string
-}
-
 export type HMMMessage = {
     command: keyof typeof HMMCmd,
     data?: any
-}
-
-type PlayerState = {
-    name: string
-    isDead: boolean
-    isDeadDiscovered: boolean
-    disconnected: boolean
-    color: number
-    action: number
-    attendeeId?: string
-    chimeName?: string
-}
-
-export type GameState = {
-    hmmAttendeeId: string
-    state: number
-    lobbyCode: string
-    gameRegion: number
-    map: number
-    connectCode: string
-    players: PlayerState[]
 }
 
 
@@ -129,6 +104,7 @@ export class RealtimeSubscribeHMMClient {
         const res = await this._restApiClient.startManager(this._chimeClient.meetingName!, this._chimeClient.attendeeId!)
         console.log("[RealtimeSubscribeHMMClient] start HMM", res)
         this._hMMCommandData = []
+        return res
     }
 
     updateHMMInfo = async () => {
@@ -159,7 +135,10 @@ export class RealtimeSubscribeHMMClient {
             createdDate: new Date().getTime(),
             senderId: this._chimeClient.attendeeId!
         }
-        this._chimeClient.meetingSession!.audioVideo!.realtimeSendDataMessage(RealtimeDataApp.HMM, JSON.stringify(reatimeData))
+        const sendData = JSON.stringify(reatimeData)
+        const compressedData = deflate(sendData)
+        console.log(`------------- SEND DATA LENGTH -------------  ${sendData.length} -> ${compressedData.length}`)
+        this._chimeClient.meetingSession!.audioVideo!.realtimeSendDataMessage(RealtimeDataApp.HMM, compressedData)
     }
 
 
@@ -201,9 +180,20 @@ export class RealtimeSubscribeHMMClient {
     // Receive Command
     ///////////////////////////////
     receiveHMMData = (dataMessage: DataMessage) => {
-        const senderId = dataMessage.senderAttendeeId
-        const data = JSON.parse(dataMessage.text()) as RealtimeData
-        data.senderId = senderId
+        // const senderId = dataMessage.senderAttendeeId
+        // const data = JSON.parse(dataMessage.text()) as RealtimeData
+        // data.senderId = senderId
+        // console.log("[RealtimeSubscribeHMMClient] ReceiveData:", data)
+
+        // if (this._hMMCommandData.length === 0) {
+        //     this.updateHMMInfo()
+        // }
+
+        // const mess = data.data as HMMMessage
+        // console.log("RECEIVE REALTIME DATA", mess.command)
+
+        const decompressedData = inflate(dataMessage.data,{to:"string"})
+        const data = JSON.parse(decompressedData)
         console.log("[RealtimeSubscribeHMMClient] ReceiveData:", data)
 
         if (this._hMMCommandData.length === 0) {
@@ -212,6 +202,7 @@ export class RealtimeSubscribeHMMClient {
 
         const mess = data.data as HMMMessage
         console.log("RECEIVE REALTIME DATA", mess.command)
+
         switch (mess.command) {
             case "START_RECORD":
                 console.log("RECEIVE REALTIME DATA1", JSON.stringify(mess))

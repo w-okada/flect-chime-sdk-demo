@@ -197,7 +197,7 @@ meeting_URLはconsoleから取れる。
 
 backend/lib/manager$ docker build -t hmm .
 
-docker run -p 3000:3000 -v `pwd`:/work --env MEETING_URL="xxx"  --env BUCKET_ARN="xxx" hmm
+docker run -p 3000:3000 -v `pwd`:/work --env MEETING_URL="xxx"  --env BUCKET_ARN="xxx" dannadori/hmm
 
 
 $ docker build -t dannadori/hmm . --no-cache

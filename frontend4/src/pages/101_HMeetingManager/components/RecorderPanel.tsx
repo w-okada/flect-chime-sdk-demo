@@ -19,7 +19,7 @@ export const RecorderPanel = () => {
     const { chimeClient,
         startRecordRequestCounter, stopRecordRequestCounter,
         startShareTileviewRequestCounter, stopShareTileviewRequestCounter,
-        terminateHMMRequestCounter, updateGameState,
+        terminateHMMRequestCounter
     } = useAppState()
     const { meetingActive } = useStatusMonitor()
     const notifyVideoStreamAll = (ms: MediaStream) => {
@@ -162,17 +162,6 @@ export const RecorderPanel = () => {
                             Active:{active_rec.started ? "STARTED!!" : "STOPPED"}
                         </div>
                     </div>
-                    <div>
-                        <input id="io_event"/>
-                        <input id="io_data"/>
-                        <button id="io_click" onClick={()=>{
-                            const ev = document.getElementById("io_event") as HTMLInputElement
-                            const data = document.getElementById("io_data") as HTMLInputElement
-                            // console.log("RECEIVE DATA:", data.value)
-                            updateGameState(ev.value, data.value)
-                        }} />
-                    </div>
-
                 </>
             )
         } else {
@@ -184,7 +173,7 @@ export const RecorderPanel = () => {
 
         }
 
-    }, [chimeClient, allTileIds, activeSpeakerId, updateGameState]) // eslint-disable-line
+    }, [chimeClient, allTileIds, activeSpeakerId]) // eslint-disable-line
 
 
     return (

@@ -49,8 +49,8 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
 
             // ActiveSpeaker
             const activeSpekerTile = props.chimeClient!.getActiveSpeakerTile()
-            console.log("active speaker", activeSpekerTile)
-            console.log("attendees", props.chimeClient!.attendees)
+            // console.log("[useVideoComposeCanvas] active speaker", activeSpekerTile)
+            // console.log("[useVideoComposeCanvas] attendees", props.chimeClient!.attendees)
             if(activeSpekerTile){
                 return [activeSpekerTile]
             }
@@ -172,7 +172,7 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
         const canvasElem = document.getElementById(`recorder-canvas-canvas-${recorederCanvasId}`) as HTMLCanvasElement
         renderRef.current = requestAnimationFrame(()=>{render(canvasElem, cols, rows, maxWidth, maxHeight)})
         return ()=>{
-            console.log("CANCEL", renderRef.current)
+            console.log(`[useVideoComposeCanvas] CANCEL ${renderRef.current}`)
             cancelAnimationFrame(renderRef.current)
         }
     },[targetIds, enable]) // eslint-disable-line
@@ -204,7 +204,7 @@ export const useVideoComposeCanvas = (props:RecorderCanvasProps ) =>{
 
     return { 
         videoComposeCanvas, enable, toggleEnable,
-        update: ()=>{console.log("update!", updateCount+1);setUpdateCount(updateCount+1)},
+        update: ()=>{console.log(`[useVideoComposeCanvas] update! ${updateCount+1}`);setUpdateCount(updateCount+1)},
         captureStream: ()=>{
             const canvasElem = document.getElementById(`recorder-canvas-canvas-${recorederCanvasId}`) as HTMLCanvasElement
             // @ts-ignore

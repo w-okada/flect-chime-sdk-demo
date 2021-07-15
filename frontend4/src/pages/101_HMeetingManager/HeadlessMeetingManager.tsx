@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo} from "react";
 import { useAppState } from "../../providers/AppStateProvider";
+import { AmongUsServerComponent } from "./components/AmongUsServerComponent";
 import { RecorderPanel } from "./components/RecorderPanel";
 import { useStyles } from "./css";
 import { useHMeetingManagerStatusManager } from "./useMeetingManagerStatusManager";
@@ -54,11 +55,11 @@ export const HeadlessMeetingManager = () => {
     ////////////////////////////////
     const meetingRoomForManager = useMemo(()=>{
         if(internalStage === "InMeeting"){
-            console.log("IN MEETING CALLED!!!!")
             return (
                 <div>
                     <div className={classes.root}>
                         <RecorderPanel />
+                        <AmongUsServerComponent />
                     </div>
                     <div>
                         <audio id="for-speaker" style={{display:"none"}}/>

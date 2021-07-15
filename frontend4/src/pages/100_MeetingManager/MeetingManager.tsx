@@ -130,7 +130,6 @@ export const MeetingManager = () => {
 
     const meetingRoomForManager = useMemo(()=>{
         if(internalStage === "InMeeting"){
-            console.log("IN MEETING CALLED!!!!")
             return (
                 <ThemeProvider theme={theme}>
                     <CssBaseline />

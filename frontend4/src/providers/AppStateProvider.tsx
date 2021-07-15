@@ -9,9 +9,10 @@ import { VideoTileState } from "amazon-chime-sdk-js";
 import { CognitoClient } from "../common/cognito/CognitoClient";
 import { AttendeeState, FlectChimeClient } from "../common/chime/FlectChimeClient";
 import { DrawingData, WebSocketWhiteboardClient } from "../common/websocket/WebSocketWhiteboard/WebSocketWhiteboardClient";
-import { GameState, HMMStatus } from "../common/chime/realtime/RealtimeSubscribeHMMClient";
+import { HMMStatus } from "../common/chime/realtime/RealtimeSubscribeHMMClient";
 import { RealtimeData } from "../common/chime/realtime/const";
 import { useAmongUsServer } from "../common/components/useAmongUsServer";
+import { GameState } from "../common/chime/realtime/hmmModules/RealtimeSubscribeHMMModuleAmongUsServer";
 
 type Props = {
     children: ReactNode;
@@ -187,7 +188,6 @@ export const AppStateProvider = ({ children }: Props) => {
             const messagingURLWithQuery = `${WebSocketEndpoint}/Prod?joinToken=${chimeClient.joinToken}&meetingId=${chimeClient.meetingId}&attendeeId=${chimeClient.attendeeId}`
             const c = new WebSocketWhiteboardClient(chimeClient.attendeeId!, messagingURLWithQuery, chimeClient.meetingSession!.logger, recreateWebSocketWhiteboardClient)
             c.addWhiteboardDataUpdateListener((data: DrawingData[] ) =>{
-                console.log("DRAWINGDATA", data)
                 setLastUpdateTime(new Date().getTime())
             })
             return c

@@ -257,13 +257,13 @@ const uploadGameState = (_finalize:boolean) =>{
             }else{
                 setTimeout(()=>{
                     uploadGameState(finalize)
-                }, 1000 * 2)
+                }, 1000 * 1)
             }
         })
     }else{
         setTimeout(()=>{
             uploadGameState(finalize)
-        }, 1000 * 2)
+        }, 1000 * 1)
     }
 }
 uploadGameState(finalize)

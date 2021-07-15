@@ -8,14 +8,14 @@ type DrawableVideoTileProps = {
     chimeClient: FlectChimeClient
     whiteboardClient: WebSocketWhiteboardClient,
 
-    tile: VideoTileState,
+    src: string
     idPrefix: string, // prefix for HTMLVideoElement and HTMLCanvasElement
     idSuffix?: string, // suffix for HTMLVideoElement and HTMLCanvasElement (for feature)
     width:number|string,
     height:number|string,
 }
 
-export const DrawableVideoTile: React.FC<DrawableVideoTileProps> = (props:DrawableVideoTileProps) =>{
+export const DrawableImageTile: React.FC<DrawableVideoTileProps> = (props:DrawableVideoTileProps) =>{
     const [ updateCount, setUpdateCount ] = useState(0)
     const drawingHelper = useMemo(()=>{
         return new DrawingHelper(
@@ -24,20 +24,23 @@ export const DrawableVideoTile: React.FC<DrawableVideoTileProps> = (props:Drawab
         )
     },[]) // eslint-disable-line
 
-
     const [drawingNeedUpdate, setDrawaingNeedUpdate] = useState(0)
-    const videoElementId = `${props.idPrefix}-video`
+    const imgElementId = `${props.idPrefix}-img`
     const canvasElementId = `${props.idPrefix}-canvas`
     const view = useMemo(()=>{
         const width = typeof props.width === "number" ?  `${props.width}px` : props.width
         const height = typeof props.height === "number" ?  `${props.height}px` : props.height
+        console.log(`[DrawableImageTile:] ${width}x${height}`)
         return(
-            <div style={{width:width, height:height }}>
-                <video id={videoElementId} style={{objectFit:"contain", position:"absolute", height:height, width:width}}/>
+            <div >
+                {/* <img id={imgElementId }      style={{position:"absolute", height:height, width:width}} /> */}
+                <img id={imgElementId }      style={{objectFit:"contain", position:"absolute", height:height, width:width}} />
                 <canvas id={canvasElementId} style={{objectFit:"contain", position:"absolute", height:height, width:width}} />
+                {/* <img id={imgElementId } style={{objectFit:"contain", position:"absolute", height:height, width:width}} />
+                <canvas id={canvasElementId} style={{objectFit:"contain", position:"absolute", height:height, width:width}} /> */}
             </div>
         )
-    },[props.idPrefix, props.tile, props.width, props.height])  // eslint-disable-line
+    },[props.idPrefix, props.src, props.width, props.height])  // eslint-disable-line
 
 
     useEffect(()=>{
@@ -50,28 +53,22 @@ export const DrawableVideoTile: React.FC<DrawableVideoTileProps> = (props:Drawab
 
     // Bind and Fit Size
     useEffect(()=>{
-        const videoElement = document.getElementById(videoElementId)! as HTMLVideoElement
+        const imgElement = document.getElementById(imgElementId)! as HTMLImageElement
         // Fit Canvas Size
-        videoElement.onloadedmetadata = () =>{
-            console.log("loaded video")
-            const canvasElementId = `${props.idPrefix}-canvas`
+        imgElement.onloadedmetadata = () => {
+            console.log("loaded img")
             const canvasElement = document.getElementById(canvasElementId)! as HTMLCanvasElement
-            if(!videoElement || !canvasElement){
-                console.log("[DrawableVideoTile] no video element or no canvas element")
+            if(!imgElement || !canvasElement){
+                console.log("[DrawableImageTile] no imglement or no canvas element")
                 return
             }
-            canvasElement.width = videoElement.videoWidth
-            canvasElement.height = videoElement.videoHeight
+            canvasElement.width  = imgElement.width
+            canvasElement.height = imgElement.height
+            console.log(`[DrawableImageTile] ---------   ${canvasElement.width}, ${canvasElement.height}`)
             setDrawaingNeedUpdate(drawingNeedUpdate+1) // above resize delete drawing.
         }
-        // Bind Video
-        console.log("[DrawableVideoTile] bind view")
-        if(videoElement &&  props.tile.tileId){
-            props.chimeClient!.meetingSession?.audioVideo.bindVideoElement(props.tile.tileId, videoElement)
-        }else{
-            console.log("BIND FAILED", videoElementId, videoElement)
-        }
-    },[props.idPrefix, props.tile, props.width, props.height])  // eslint-disable-line
+        imgElement.src = props.src
+    },[props.idPrefix, props.src, props.width, props.height])  // eslint-disable-line
 
     // Set Drawing Listeners
     useEffect(()=>{
@@ -114,7 +111,7 @@ export const DrawableVideoTile: React.FC<DrawableVideoTileProps> = (props:Drawab
             }
         })
 
-    },[props.idPrefix, props.tile, props.whiteboardClient.drawingData, drawingNeedUpdate])  // eslint-disable-line
+    },[props.idPrefix, props.src, props.whiteboardClient.drawingData, drawingNeedUpdate])  // eslint-disable-line
 
     return(<>{view}</>)
 }
