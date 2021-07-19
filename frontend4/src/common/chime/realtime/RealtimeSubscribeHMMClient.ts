@@ -117,6 +117,7 @@ export class RealtimeSubscribeHMMClient {
             this._hmmRecording = false
             this._hmmShareTileview = false
         } else if (res.code === "SUCCESS") {
+            this._hmmActive = true
             this._hmmPublicIp = res.publicIp
             this._hmmLastStatus = res.lastStatus
         }
@@ -206,18 +207,22 @@ export class RealtimeSubscribeHMMClient {
         switch (mess.command) {
             case "START_RECORD":
                 console.log("RECEIVE REALTIME DATA1", JSON.stringify(mess))
+                this._hmmRecording = true
                 this._realtimeSubscribeHMMClientListener?.startRecordRequestReceived()
                 break
             case "STOP_RECORD":
                 console.log("RECEIVE REALTIME DATA2", JSON.stringify(mess))
+                this._hmmRecording = false
                 this._realtimeSubscribeHMMClientListener?.stopRecordRequestReceived()
                 break
             case "START_SHARE_TILEVIEW":
                 console.log("RECEIVE REALTIME DATA3", JSON.stringify(mess))
+                this._hmmShareTileview = true
                 this._realtimeSubscribeHMMClientListener?.startShareTileviewRequestReceived()
                 break
             case "STOP_SHARE_TILEVIEW":
                 console.log("RECEIVE REALTIME DATA4", JSON.stringify(mess))
+                this._hmmShareTileview = false
                 this._realtimeSubscribeHMMClientListener?.stopShareTileviewRequestReceived()
                 break
             case "TERMINATE":

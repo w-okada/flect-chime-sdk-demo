@@ -1,4 +1,3 @@
-import { VideoTileState } from "amazon-chime-sdk-js";
 import { useEffect, useMemo, useState } from "react";
 import { FlectChimeClient } from "../../chime/FlectChimeClient";
 import { DrawingHelper } from "./DrawingHelper";
@@ -34,7 +33,7 @@ export const DrawableImageTile: React.FC<DrawableVideoTileProps> = (props:Drawab
         return(
             <div >
                 {/* <img id={imgElementId }      style={{position:"absolute", height:height, width:width}} /> */}
-                <img id={imgElementId }      style={{objectFit:"contain", position:"absolute", height:height, width:width}} />
+                <img id={imgElementId }  alt="map" style={{objectFit:"contain", position:"absolute", height:height, width:width}} />
                 <canvas id={canvasElementId} style={{objectFit:"contain", position:"absolute", height:height, width:width}} />
                 {/* <img id={imgElementId } style={{objectFit:"contain", position:"absolute", height:height, width:width}} />
                 <canvas id={canvasElementId} style={{objectFit:"contain", position:"absolute", height:height, width:width}} /> */}

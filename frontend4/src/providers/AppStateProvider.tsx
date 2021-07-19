@@ -81,7 +81,7 @@ export const AppStateProvider = ({ children }: Props) => {
     const [ lastUpdateTime, setLastUpdateTime ] = useState(0) // eslint-disable-line
 
     const cognitoClient = useMemo(()=>{
-        return new CognitoClient(UserPoolId, UserPoolClientId, "mail2wokada@gmail.com", "test222")
+        return new CognitoClient(UserPoolId, UserPoolClientId)
     },[])
 
     /////////
@@ -180,11 +180,12 @@ export const AppStateProvider = ({ children }: Props) => {
     ///////////////////
     const [recreateWebSocketWhiteboardClientCount,  setRecreateWebSocketWhiteboardClientCount] = useState(0)
     const recreateWebSocketWhiteboardClient = () =>{
-        console.log("websocket recreate!!!!")
+        console.log("whiteboard client recreate requested...")
         setRecreateWebSocketWhiteboardClientCount(recreateWebSocketWhiteboardClientCount + 1)
     }
     const whiteboardClient = useMemo(()=>{
         if(chimeClient && chimeClient.meetingSession){
+            console.log("[AppStateProvider] recreate whiteboard client!")
             const messagingURLWithQuery = `${WebSocketEndpoint}/Prod?joinToken=${chimeClient.joinToken}&meetingId=${chimeClient.meetingId}&attendeeId=${chimeClient.attendeeId}`
             const c = new WebSocketWhiteboardClient(chimeClient.attendeeId!, messagingURLWithQuery, chimeClient.meetingSession!.logger, recreateWebSocketWhiteboardClient)
             c.addWhiteboardDataUpdateListener((data: DrawingData[] ) =>{

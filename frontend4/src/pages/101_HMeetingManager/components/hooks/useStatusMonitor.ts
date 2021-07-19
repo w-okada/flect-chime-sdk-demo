@@ -24,7 +24,7 @@ export const useStatusMonitor = () =>{
         }
 
         // console.log( `[HeadlessManager][MeetingStatusMonitor] active:${meetingActive}, pureAttendees:${JSON.stringify(pureAttendees)}`)
-        const attendeeList = pureAttendees.reduce((prev,cur)=>{return prev+"_____"+cur}, "")
+        const attendeeList = pureAttendees.reduce((prev,cur)=>{return `${prev}, ${cur}(${chimeClient.getUserNameByAttendeeIdFromList(cur)})`}, "")
         console.log(`[HeadlessManager][MeetingStatusMonitor] pureAttendees:${attendeeList}`)
         // console.log(`[HeadlessManager][MeetingStatusMonitor] pureAttendees: share contents? ${chimeClient.isShareContent? "true" : "false"}`)
         // console.log((`[HeadlessManager][MeetingStatusMonitor] pureAttendees: attendees ? ${JSON.stringify(chimeClient.attendees)}`))
@@ -41,6 +41,14 @@ export const useStatusMonitor = () =>{
             }
         }
     },[tenSecondsTaskTrigger]) // eslint-disable-line
+
+    useEffect(()=>{
+        chimeClient!.hmmClient!.sendHMMStatus({
+            active: chimeClient!.hmmClient!.hmmActive,
+            recording: chimeClient!.hmmClient!.hmmRecording,
+            shareTileView: chimeClient!.hmmClient!.hmmShareTileview,
+        })
+    },[tenSecondsTaskTrigger])
     
     return {meetingActive}
 }

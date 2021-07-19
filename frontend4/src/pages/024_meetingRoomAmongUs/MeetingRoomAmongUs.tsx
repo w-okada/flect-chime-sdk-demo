@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Tooltip, IconButton, Divider, FormControl, InputLabel, Select, MenuItem, CircularProgress } from '@material-ui/core'
 import { useAppState } from "../../providers/AppStateProvider";
 import EmojiPeopleIcon from '@material-ui/icons/EmojiPeople';
-import { blueGrey, red } from '@material-ui/core/colors';
+import { blueGrey } from '@material-ui/core/colors';
 import CameraRollIcon from '@material-ui/icons/CameraRoll';
 import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
 import { useStyles } from "./css";
@@ -238,7 +238,7 @@ export const MeetingRoomAmongUs = () => {
     },[targetTilesId, amongusGameState?.hmmAttendeeId, chimeState.arenaViewScreen, viewMode]) // eslint-disable-line
     
     const mainScreen = useMemo(()=>{
-        if(chimeState.arenaViewScreen && amongusGameState?.state != 2){             // gamestate "2" is discussion
+        if(chimeState.arenaViewScreen && amongusGameState?.state != 2){ // eslint-disable-line
             console.log(`arena_view ${amongusGameState?.state}`)
             if(viewMode==="MultiTileView"){
                 return (
@@ -279,9 +279,9 @@ export const MeetingRoomAmongUs = () => {
             const player = amongusGameState?.players.find(x=>{return x.attendeeId === chimeClient!.attendeeId})
 
             const imgSrc =`/resources/amongus/map/${amongusGameState ? mapFileNames[amongusGameState.map]:""}`
-            if(chimeClient && whiteboardClient){
-                // if(chimeClient && whiteboardClient && amongusGameState?.state == 2){
-                    if(player){
+            // if(chimeClient && whiteboardClient){
+            if(chimeClient && whiteboardClient && amongusGameState?.state == 2){ // eslint-disable-line
+                if(player){
                     whiteboardClient.drawingMode = "DRAW"
                     const colorName = COLORS[player.color]
                     const rgb = COLORS_RGB[colorName]
@@ -302,7 +302,7 @@ export const MeetingRoomAmongUs = () => {
                 return (<img id="mapView" src={imgSrc} style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} alt="map" />)
             }
         }
-    },[targetTilesId, amongusGameState?.hmmAttendeeId, chimeState.arenaViewScreen, amongusGameState?.state, viewMode])
+    },[targetTilesId, amongusGameState?.hmmAttendeeId, chimeState.arenaViewScreen, amongusGameState?.state, viewMode]) // eslint-disable-line
 
     ///// clear Drwaing 
     useEffect(()=>{
@@ -321,7 +321,7 @@ export const MeetingRoomAmongUs = () => {
             console.log("[WhiteboardPanel] addDrawingData is undefined")
         }
 
-    },[amongusGameState?.state])
+    },[amongusGameState?.state]) // eslint-disable-line
 
     //// UserName Change
     useEffect(()=>{
@@ -347,7 +347,7 @@ export const MeetingRoomAmongUs = () => {
         if(!player){
             // in arena
             console.log("Find current player(type)::: 1")
-            if(amongusGameState?.state == 2){
+            if(amongusGameState?.state == 2){ // eslint-disable-line
                 setChimeState(ChimeStateType.Discuss_Arena)
                 return
             }else{
@@ -358,7 +358,7 @@ export const MeetingRoomAmongUs = () => {
 
         /////// For Field
         /// Lobby
-        if(amongusGameState?.state == 0){
+        if(amongusGameState?.state == 0){ // eslint-disable-line
             // in lobby(0)
             console.log("Find current player(type)::: 2")
             setChimeState(ChimeStateType.Lobby)
@@ -366,7 +366,7 @@ export const MeetingRoomAmongUs = () => {
         }
 
         //// Task
-        if(amongusGameState?.state == 1){
+        if(amongusGameState?.state == 1){ // eslint-disable-line
             console.log("Find current player(type)::: 3-1")
             // in task
             if(player.isDead || player.disconnected){
@@ -382,7 +382,7 @@ export const MeetingRoomAmongUs = () => {
             }
         }
         //// Discuss
-        if(amongusGameState?.state == 2){
+        if(amongusGameState?.state == 2){  // eslint-disable-line
             //in discussing
             if(player.isDead || player.disconnected){
                 // dead man
@@ -557,6 +557,14 @@ export const MeetingRoomAmongUs = () => {
                 </>
             )
         }else if(chimeClient!.hmmClient!.hmmActive === false && chimeClient!.hmmClient!.hmmLastStatus === "PROVISIONING"){ // Invoking && Provisioning
+            return (
+                <>
+                    <Tooltip title={"invoking hmm: provisioning"}>
+                        <CircularProgress />               
+                    </Tooltip>
+                </>
+            )
+        }else if(chimeClient!.hmmClient!.hmmActive === true && chimeClient!.hmmClient!.hmmLastStatus === "PROVISIONING"){ // Invoking && Provisioning
             return (
                 <>
                     <Tooltip title={"invoking hmm: provisioning"}>

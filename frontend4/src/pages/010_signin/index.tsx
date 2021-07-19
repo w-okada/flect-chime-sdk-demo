@@ -132,6 +132,9 @@ export const SignIn = () => {
                     <Box mt={8}>
                         <Copyright />
                     </Box>
+                    <Box mt={8}>
+                        v1
+                    </Box>
                 </form>
             </div>
         </Container>

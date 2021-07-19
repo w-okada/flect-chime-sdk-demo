@@ -49,7 +49,7 @@ export class WebSocketClient{
 
     reconnect = (e:Event) => {
         // setTimeout(()=>{
-            console.log("[FlectChimeClient][WebSocketClient] reconnecting... ", e, (new Date()).toLocaleTimeString())
+            console.log(`[FlectChimeClient][WebSocketClient] reconnecting... JSON.stringify(e) ${(new Date()).toLocaleTimeString()}`)
             this.recreate()
             // this.websocketAdapter =  new DefaultWebSocketAdapter(this.logger)
             // this.websocketAdapter!.create(
