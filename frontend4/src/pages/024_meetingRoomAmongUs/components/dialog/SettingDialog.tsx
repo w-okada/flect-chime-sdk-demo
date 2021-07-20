@@ -134,14 +134,14 @@ export const SettingDialog = (props:SettingDialogProps) =>{
                         <Typography variant="h5" gutterBottom>
                             Experimental
                         </Typography>
-                        <FormControl className={classes.formControl} >
+                        {/* <FormControl className={classes.formControl} >
                             <InputLabel>View Mode</InputLabel>
                             <Select onChange={onViewModeChanged} value={props.viewMode} >
                                 {["MultiTileView", "SeparateView"].map(val => {
                                     return <MenuItem value={val} key={val}>{val}</MenuItem>
                                 })}
                             </Select>
-                        </FormControl>
+                        </FormControl> */}
 
                         <FormControl className={classes.formControl} >
                             <InputLabel>debug</InputLabel>
