@@ -195,7 +195,7 @@ export const MeetingRoomAmongUs = () => {
 
     //// Main Screen Changer
     useEffect(()=>{
-        if(chimeState.arenaViewScreen && amongusGameState?.state != 2){
+        if(chimeState.arenaViewScreen && amongusGameState?.state != 2){ // eslint-disable-line
             chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                 if(viewMode==="MultiTileView"){
                     const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
