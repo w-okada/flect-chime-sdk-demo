@@ -33,8 +33,8 @@ This is a video conference system with amazon chime sdk. This software uses AWS 
 
 ![image](https://user-images.githubusercontent.com/48346627/122492356-8f801980-d020-11eb-992e-5554e287a401.png)
 
-[see detail 1](https://docs.google.com/presentation/d/1UPqvkWyP28nXZ4L6EC_o3a8-HfJAJ6E8erHif4dLlBk/edit?usp=sharing)
-[see detail 2](https://docs.google.com/presentation/d/1UCM8z6K3SsFidQAR3CJ9agdVtIfhbnM77iZaFtdsAPk/edit?usp=sharing)
+[description](https://docs.google.com/presentation/d/1UCM8z6K3SsFidQAR3CJ9agdVtIfhbnM77iZaFtdsAPk/edit?usp=sharing)
+[manual](https://docs.google.com/presentation/d/1UPqvkWyP28nXZ4L6EC_o3a8-HfJAJ6E8erHif4dLlBk/edit?usp=sharing)
 
 
 # Installation
