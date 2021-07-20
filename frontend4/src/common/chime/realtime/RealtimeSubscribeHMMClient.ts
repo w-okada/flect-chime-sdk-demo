@@ -138,7 +138,7 @@ export class RealtimeSubscribeHMMClient {
         }
         const sendData = JSON.stringify(reatimeData)
         const compressedData = deflate(sendData)
-        console.log(`------------- SEND DATA LENGTH -------------  ${sendData.length} -> ${compressedData.length}`)
+        console.log(`[RealtimeSubscribeHMMClient] SEND DATA (${sendData.length} -> ${compressedData.length})`)
         this._chimeClient.meetingSession!.audioVideo!.realtimeSendDataMessage(RealtimeDataApp.HMM, compressedData)
     }
 

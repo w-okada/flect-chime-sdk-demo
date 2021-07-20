@@ -109,7 +109,7 @@ export const RecorderPanel = () => {
         const max = 5
         const sleepTime = 1000 * 5
         for(let i = 0; i < max; i++){
-            console.log(`sleep... for recording ${i}/${max}, interval:${sleepTime}ms`)
+            console.log(`[RecorderPanel] finalizing. sleep... for recording ${i}/${max}, interval:${sleepTime}ms`)
             await sleep(sleepTime)
         }
         // Notify puppetier

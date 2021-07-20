@@ -152,6 +152,7 @@ export const MeetingRoomAmongUs = () => {
     const [userName, _setUserName] = useState<string>()
     const [ captureStream, setCaptureStream ] = useState<MediaStream>()
     const { tenSecondsTaskTrigger } = useScheduler()
+    const [ justHMMStartClicked, setJustHMMStartClicked ] = useState(false)
 
 
     const setUserName = (newUserName:string) =>{
@@ -168,6 +169,11 @@ export const MeetingRoomAmongUs = () => {
         console.log("UPDATE HMM INFO")
         chimeClient!.hmmClient?.updateHMMInfo()
     }, [tenSecondsTaskTrigger]) // eslint-disable-line
+    useEffect(()=>{
+        if(chimeClient!.hmmClient!.hmmActive){
+            setJustHMMStartClicked(false)
+        }
+    }, [chimeClient!.hmmClient!.hmmActive]) // eslint-disable-line
 
     // initialize auido/video output
     useEffect(()=>{
@@ -542,11 +548,21 @@ export const MeetingRoomAmongUs = () => {
         const dockerCmd = `docker run -p 13000:3000 -v \`pwd\`:/work --env MEETING_URL="${newMeetingURL}"  --env BUCKET_ARN="xxx" dannadori/hmm`
         console.log(`[For Local Debug] docker command: ${dockerCmd}`)
 
-
+        setJustHMMStartClicked(true)
     }
+    
     ///// (1-2-2) comonent
     const managerStateComp = useMemo(()=>{
-        if(chimeClient!.hmmClient!.hmmActive === false && (!chimeClient!.hmmClient!.hmmLastStatus || chimeClient!.hmmClient!.hmmLastStatus === "N/A")){ // Not active
+        if(justHMMStartClicked){
+            return (
+                <>
+                    <Tooltip title={"waiting first response... "}>
+                        <CircularProgress />               
+                    </Tooltip>
+                </>
+            )
+
+        }else if(chimeClient!.hmmClient!.hmmActive === false && (!chimeClient!.hmmClient!.hmmLastStatus || chimeClient!.hmmClient!.hmmLastStatus === "N/A")){ // Not active
             return(
                 <>
                     <Tooltip title={`hmm not active: ${chimeClient!.hmmClient!.hmmLastStatus}`}>
@@ -575,7 +591,7 @@ export const MeetingRoomAmongUs = () => {
         }else if(chimeClient!.hmmClient!.hmmActive === false && chimeClient!.hmmClient!.hmmLastStatus === "PENDING"){  // Invoking && PENDING
             return (
                 <>
-                    <Tooltip title={"invoking hmm: pending"}>
+                    <Tooltip title={"invoking hmm: pending(f)"}>
                         <CircularProgress />               
                     </Tooltip>
                 </>
@@ -583,7 +599,7 @@ export const MeetingRoomAmongUs = () => {
         }else if(chimeClient!.hmmClient!.hmmActive === true && chimeClient!.hmmClient!.hmmLastStatus === "PENDING"){ // already invoked (1)
             return (
                 <>
-                    <Tooltip title={"invoking hmm: already invoked"}>
+                    <Tooltip title={"invoking hmm: pending"}>
                         <CircularProgress />               
                     </Tooltip>
                 </>
@@ -617,7 +633,7 @@ export const MeetingRoomAmongUs = () => {
                 </>
             )
         }
-    },[chimeClient!.hmmClient!.hmmActive, chimeClient!.hmmClient!.hmmLastStatus]) // eslint-disable-line
+    },[chimeClient!.hmmClient!.hmmActive, chimeClient!.hmmClient!.hmmLastStatus, justHMMStartClicked ]) // eslint-disable-line
     // /// (1-3) hmm recording
     // const recordingStateComp = useMemo(()=>{
     //     return (

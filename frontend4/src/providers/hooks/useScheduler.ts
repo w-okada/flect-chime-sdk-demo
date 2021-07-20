@@ -5,6 +5,8 @@ export const useScheduler = () =>{
 
     const [ tenSecondsTaskTrigger, setTenSecondsTasksTringer] = useState(0)
     const [ thirtyMinutesSecondsTaskTrigger, setThirtyMinutesSecondsTaskTrigger] = useState(0)
+    const [ oneHourTaskTrigger, setOneHourTaskTrigger] = useState(0)
+    const [ threeHourTaskTrigger, setThreeHourTaskTrigger] = useState(0)
 
     useEffect(() => {
         setInterval(() => {
@@ -15,9 +17,16 @@ export const useScheduler = () =>{
     useEffect(() => {
         setInterval(() => {
             setThirtyMinutesSecondsTaskTrigger(t => t + 1);
-        }, 1000 * 60 + 30)
+        }, 1000 * 60 * 30)
     },[])
 
+    useEffect(() => {
+        setInterval(() => {
+            setThreeHourTaskTrigger(t => t + 1);
+        }, 1000 * 60 * 60)
+    },[])
 
-    return {tenSecondsTaskTrigger, thirtyMinutesSecondsTaskTrigger}
+    return {tenSecondsTaskTrigger, thirtyMinutesSecondsTaskTrigger, oneHourTaskTrigger, threeHourTaskTrigger}
+
+
 }
