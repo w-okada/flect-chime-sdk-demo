@@ -158,7 +158,7 @@ export const MeetingRoomAmongUs = () => {
         _setUserName(newUserName)
     }
 
-    const [ viewMode, setViewMode ] = useState<ViewMode>("MultiTileView")
+    const [ viewMode, setViewMode ] = useState<ViewMode>("SeparateView")
     const [ debugEnable, setDebugEnable] = useState(false)
     const [ screenSize, setScreenSize] = useState<number[]>([640,480])
 
@@ -195,7 +195,7 @@ export const MeetingRoomAmongUs = () => {
 
     //// Main Screen Changer
     useEffect(()=>{
-        if(chimeState.arenaViewScreen){
+        if(chimeState.arenaViewScreen && amongusGameState?.state != 2){
             chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                 if(viewMode==="MultiTileView"){
                     const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
@@ -204,17 +204,16 @@ export const MeetingRoomAmongUs = () => {
                         x.unpause()
                         x.bindVideoElement(tileviewComp)
                         tileviewComp.play()
-                        console.log("video stream:", tileviewComp.videoWidth, tileviewComp.videoHeight)
+                        console.log("video stream1:", tileviewComp.videoWidth, tileviewComp.videoHeight)
                     }else{
                         x.pause()
                         x.bindVideoElement(null)
                     }
                 }else{ // SeparateView
                     const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
-                    x.bindVideoElement(userViewComp)
+                    // x.bindVideoElement(userViewComp)
         
-                    console.log("video stream:", userViewComp.videoWidth, userViewComp.videoHeight)
-                    userViewComp.play()
+                    console.log("video stream2:", userViewComp.videoWidth, userViewComp.videoHeight)
 
                     if(x.state().boundAttendeeId === amongusGameState?.hmmAttendeeId){
                         x.pause()
@@ -222,6 +221,7 @@ export const MeetingRoomAmongUs = () => {
                     }else{
                         x.unpause()
                         x.bindVideoElement(userViewComp)
+                        userViewComp.play()
                     }
                 }
             })
@@ -235,7 +235,7 @@ export const MeetingRoomAmongUs = () => {
             })
 
         }
-    },[targetTilesId, amongusGameState?.hmmAttendeeId, chimeState.arenaViewScreen, viewMode]) // eslint-disable-line
+    },[targetTilesId, amongusGameState?.hmmAttendeeId, chimeState.arenaViewScreen, amongusGameState?.state, viewMode]) // eslint-disable-line
     
     const mainScreen = useMemo(()=>{
         if(chimeState.arenaViewScreen && amongusGameState?.state != 2){ // eslint-disable-line

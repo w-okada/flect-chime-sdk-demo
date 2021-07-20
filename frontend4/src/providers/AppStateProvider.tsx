@@ -156,7 +156,6 @@ export const AppStateProvider = ({ children }: Props) => {
                 amongusNotificationReceived: (gameState: GameState) => {
                     if(stage !== "HEADLESS_MEETING_MANAGER"){
                         setAmongusGameState(gameState)
-                        console.log("[AppStateProvider] gamestatus: ", amongusGameState)
                     }
                 },
                 hMMStateUpdated: ()=>{
