@@ -33,7 +33,8 @@ This is a video conference system with amazon chime sdk. This software uses AWS 
 
 ![image](https://user-images.githubusercontent.com/48346627/122492356-8f801980-d020-11eb-992e-5554e287a401.png)
 
-[see detail](doc/AUC3.pdf)
+[description](https://docs.google.com/presentation/d/1UCM8z6K3SsFidQAR3CJ9agdVtIfhbnM77iZaFtdsAPk/edit?usp=sharing)
+[manual](https://docs.google.com/presentation/d/1UPqvkWyP28nXZ4L6EC_o3a8-HfJAJ6E8erHif4dLlBk/edit?usp=sharing)
 
 
 # Installation
@@ -44,13 +45,15 @@ It is assumed that AWS Credential is configured. If you have not yet done so, pl
 
 https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html
 
-### (2) AWS CLI
-AWS CLI install
+### (2) install AWS CLI
+To know how to install, see the official document.
 
+For Linux
 ```
 https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/install-cliv2-linux.html
 ```
 
+For Windows
 ```
 https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/install-cliv2-windows.html
 ```
@@ -95,31 +98,22 @@ export const USE_CDN = false                     # <--- If you want to use cloud
 (*1) This demo uses S3 bucket whose name is defined with this value. So, this value should be global unique.
 
 ### (2) build and deploy backend
-#### (2-1) For linux and mac
+You can build and deploy by executing commands below. When the command confirm deploying is ok or not, choose "y".
 ```
 $ cd backend
 $ npm install
 $ npm run build_all
 ```
-
-#### (2-2) For Windows
-It is better to use debian on docker or wsl2 and follow (2-1) above. If you really want to use windows, you can use this command. However, it is not guaranteed.
-```
-$ cd backend
-$ npm install
-$ npm run build_all
-```
-
 
 ## Build frontend
-Note: frontend and fontend2 are depricated. Please use frontend3
+Note: frontend and fontend2,3 are depricated. Please use frontend4
 
 ### (1) build
 when you run `npm run build`, you get the information of backend
 
 #### (1-1) For linux and mac
 ```
-$ cd frontend3
+$ cd frontend4
 $ npm install
 $ npm run build
 ```
@@ -127,7 +121,7 @@ $ npm run build
 #### (1-2) For Windows
 It is better to use debian on docker or wsl2 and follow (1-1) above. If you really want to use windows, you can use this command. However, it is not guaranteed.
 ```
-$ cd frontend3
+$ cd frontend4
 $ npm install
 $ npm run build
 $ node bin/importBackendSetting.js

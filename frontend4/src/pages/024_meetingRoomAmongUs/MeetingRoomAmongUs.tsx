@@ -152,13 +152,14 @@ export const MeetingRoomAmongUs = () => {
     const [userName, _setUserName] = useState<string>()
     const [ captureStream, setCaptureStream ] = useState<MediaStream>()
     const { tenSecondsTaskTrigger } = useScheduler()
+    const [ justHMMStartClicked, setJustHMMStartClicked ] = useState(false)
 
 
     const setUserName = (newUserName:string) =>{
         _setUserName(newUserName)
     }
 
-    const [ viewMode, setViewMode ] = useState<ViewMode>("MultiTileView")
+    const [ viewMode, setViewMode ] = useState<ViewMode>("SeparateView")
     const [ debugEnable, setDebugEnable] = useState(false)
     const [ screenSize, setScreenSize] = useState<number[]>([640,480])
 
@@ -168,6 +169,11 @@ export const MeetingRoomAmongUs = () => {
         console.log("UPDATE HMM INFO")
         chimeClient!.hmmClient?.updateHMMInfo()
     }, [tenSecondsTaskTrigger]) // eslint-disable-line
+    useEffect(()=>{
+        if(chimeClient!.hmmClient!.hmmActive){
+            setJustHMMStartClicked(false)
+        }
+    }, [chimeClient!.hmmClient!.hmmActive]) // eslint-disable-line
 
     // initialize auido/video output
     useEffect(()=>{
@@ -195,7 +201,7 @@ export const MeetingRoomAmongUs = () => {
 
     //// Main Screen Changer
     useEffect(()=>{
-        if(chimeState.arenaViewScreen){
+        if(chimeState.arenaViewScreen && amongusGameState?.state != 2){ // eslint-disable-line
             chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                 if(viewMode==="MultiTileView"){
                     const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
@@ -204,17 +210,16 @@ export const MeetingRoomAmongUs = () => {
                         x.unpause()
                         x.bindVideoElement(tileviewComp)
                         tileviewComp.play()
-                        console.log("video stream:", tileviewComp.videoWidth, tileviewComp.videoHeight)
+                        console.log("video stream1:", tileviewComp.videoWidth, tileviewComp.videoHeight)
                     }else{
                         x.pause()
                         x.bindVideoElement(null)
                     }
                 }else{ // SeparateView
                     const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
-                    x.bindVideoElement(userViewComp)
+                    // x.bindVideoElement(userViewComp)
         
-                    console.log("video stream:", userViewComp.videoWidth, userViewComp.videoHeight)
-                    userViewComp.play()
+                    console.log("video stream2:", userViewComp.videoWidth, userViewComp.videoHeight)
 
                     if(x.state().boundAttendeeId === amongusGameState?.hmmAttendeeId){
                         x.pause()
@@ -222,6 +227,7 @@ export const MeetingRoomAmongUs = () => {
                     }else{
                         x.unpause()
                         x.bindVideoElement(userViewComp)
+                        userViewComp.play()
                     }
                 }
             })
@@ -235,7 +241,7 @@ export const MeetingRoomAmongUs = () => {
             })
 
         }
-    },[targetTilesId, amongusGameState?.hmmAttendeeId, chimeState.arenaViewScreen, viewMode]) // eslint-disable-line
+    },[targetTilesId, amongusGameState?.hmmAttendeeId, chimeState.arenaViewScreen, amongusGameState?.state, viewMode]) // eslint-disable-line
     
     const mainScreen = useMemo(()=>{
         if(chimeState.arenaViewScreen && amongusGameState?.state != 2){ // eslint-disable-line
@@ -542,11 +548,21 @@ export const MeetingRoomAmongUs = () => {
         const dockerCmd = `docker run -p 13000:3000 -v \`pwd\`:/work --env MEETING_URL="${newMeetingURL}"  --env BUCKET_ARN="xxx" dannadori/hmm`
         console.log(`[For Local Debug] docker command: ${dockerCmd}`)
 
-
+        setJustHMMStartClicked(true)
     }
+    
     ///// (1-2-2) comonent
     const managerStateComp = useMemo(()=>{
-        if(chimeClient!.hmmClient!.hmmActive === false && (!chimeClient!.hmmClient!.hmmLastStatus || chimeClient!.hmmClient!.hmmLastStatus === "N/A")){ // Not active
+        if(justHMMStartClicked){
+            return (
+                <>
+                    <Tooltip title={"waiting first response... "}>
+                        <CircularProgress />               
+                    </Tooltip>
+                </>
+            )
+
+        }else if(chimeClient!.hmmClient!.hmmActive === false && (!chimeClient!.hmmClient!.hmmLastStatus || chimeClient!.hmmClient!.hmmLastStatus === "N/A")){ // Not active
             return(
                 <>
                     <Tooltip title={`hmm not active: ${chimeClient!.hmmClient!.hmmLastStatus}`}>
@@ -575,7 +591,7 @@ export const MeetingRoomAmongUs = () => {
         }else if(chimeClient!.hmmClient!.hmmActive === false && chimeClient!.hmmClient!.hmmLastStatus === "PENDING"){  // Invoking && PENDING
             return (
                 <>
-                    <Tooltip title={"invoking hmm: pending"}>
+                    <Tooltip title={"invoking hmm: pending(f)"}>
                         <CircularProgress />               
                     </Tooltip>
                 </>
@@ -583,7 +599,7 @@ export const MeetingRoomAmongUs = () => {
         }else if(chimeClient!.hmmClient!.hmmActive === true && chimeClient!.hmmClient!.hmmLastStatus === "PENDING"){ // already invoked (1)
             return (
                 <>
-                    <Tooltip title={"invoking hmm: already invoked"}>
+                    <Tooltip title={"invoking hmm: pending"}>
                         <CircularProgress />               
                     </Tooltip>
                 </>
@@ -617,49 +633,49 @@ export const MeetingRoomAmongUs = () => {
                 </>
             )
         }
-    },[chimeClient!.hmmClient!.hmmActive, chimeClient!.hmmClient!.hmmLastStatus]) // eslint-disable-line
-    /// (1-3) hmm recording
-    const recordingStateComp = useMemo(()=>{
-        return (
-            chimeClient!.hmmClient!.hmmRecording ?
-            <>
-                <Tooltip title={"recording"}>
-                    <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStopRecord()}}>
-                        <CameraRollIcon className={classes.activeState_hmm} fontSize="large"/>
-                    </IconButton>                    
-                </Tooltip>
-            </>
-            :
-            <>
-                <Tooltip title={"not recording"}>
-                    <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStartRecord()}}>
-                        <CameraRollIcon className={classes.inactiveState} fontSize="large"/>
-                    </IconButton>                    
-                </Tooltip>
-            </>
-        )
-    },[chimeClient!.hmmClient!.hmmRecording]) // eslint-disable-line
-    /// (1-4) share multi tile
-    const shareTileViewStateComp = useMemo(()=>{
-        return (
-            chimeClient!.hmmClient!.hmmShareTileview ?
-            <>
-                <Tooltip title={"share tile view"}>
-                    <IconButton classes={{root:classes.menuButton}}  onClick={()=>{chimeClient!.hmmClient!.sendStopShareTileView()}}>                    
-                        <ScreenShareIcon className={classes.activeState_hmm}  fontSize="large"/>
-                    </IconButton>                    
-                </Tooltip>
-            </>
-            :
-            <>
-                <Tooltip title={"not share share tile view"}>
-                    <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStartShareTileView()}}>                    
-                        <ScreenShareIcon className={classes.inactiveState} fontSize="large"/>
-                    </IconButton>                    
-                </Tooltip>
-            </>
-        )
-    },[chimeClient!.hmmClient!.hmmShareTileview])  // eslint-disable-line
+    },[chimeClient!.hmmClient!.hmmActive, chimeClient!.hmmClient!.hmmLastStatus, justHMMStartClicked ]) // eslint-disable-line
+    // /// (1-3) hmm recording
+    // const recordingStateComp = useMemo(()=>{
+    //     return (
+    //         chimeClient!.hmmClient!.hmmRecording ?
+    //         <>
+    //             <Tooltip title={"recording"}>
+    //                 <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStopRecord()}}>
+    //                     <CameraRollIcon className={classes.activeState_hmm} fontSize="large"/>
+    //                 </IconButton>                    
+    //             </Tooltip>
+    //         </>
+    //         :
+    //         <>
+    //             <Tooltip title={"not recording"}>
+    //                 <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStartRecord()}}>
+    //                     <CameraRollIcon className={classes.inactiveState} fontSize="large"/>
+    //                 </IconButton>                    
+    //             </Tooltip>
+    //         </>
+    //     )
+    // },[chimeClient!.hmmClient!.hmmRecording]) // eslint-disable-line
+    // /// (1-4) share multi tile
+    // const shareTileViewStateComp = useMemo(()=>{
+    //     return (
+    //         chimeClient!.hmmClient!.hmmShareTileview ?
+    //         <>
+    //             <Tooltip title={"share tile view"}>
+    //                 <IconButton classes={{root:classes.menuButton}}  onClick={()=>{chimeClient!.hmmClient!.sendStopShareTileView()}}>                    
+    //                     <ScreenShareIcon className={classes.activeState_hmm}  fontSize="large"/>
+    //                 </IconButton>                    
+    //             </Tooltip>
+    //         </>
+    //         :
+    //         <>
+    //             <Tooltip title={"not share share tile view"}>
+    //                 <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStartShareTileView()}}>                    
+    //                     <ScreenShareIcon className={classes.inactiveState} fontSize="large"/>
+    //                 </IconButton>                    
+    //             </Tooltip>
+    //         </>
+    //     )
+    // },[chimeClient!.hmmClient!.hmmShareTileview])  // eslint-disable-line
 
     //// (1-x) lastupdate
     const stateLastUpdateTime = useMemo(()=>{
@@ -871,8 +887,8 @@ export const MeetingRoomAmongUs = () => {
                         <div style={{display:"flex"}}>
                             {ownerStateComp}
                             {managerStateComp}
-                            {recordingStateComp}
-                            {shareTileViewStateComp}
+                            {/* {recordingStateComp}
+                            {shareTileViewStateComp} */}
                         </div>
                         <div>
                             {chimeClient?.hmmClient?.hmmPublicIp?`http://${chimeClient?.hmmClient?.hmmPublicIp}:3000`:""}

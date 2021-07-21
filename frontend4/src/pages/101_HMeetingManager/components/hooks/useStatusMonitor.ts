@@ -5,7 +5,7 @@ import { useScheduler } from "../../../../providers/hooks/useScheduler"
 
 export const useStatusMonitor = () =>{
 
-    const { tenSecondsTaskTrigger } = useScheduler()
+    const { tenSecondsTaskTrigger, threeHourTaskTrigger } = useScheduler()
     const { chimeClient } = useAppState()
     const [ meetingActive, setMeetingActive ] = useState(true)
     const [ noAttendeesCount, setNoAttendeesCount] = useState(0)
@@ -41,6 +41,19 @@ export const useStatusMonitor = () =>{
             }
         }
     },[tenSecondsTaskTrigger]) // eslint-disable-line
+
+    useEffect(()=>{
+        if(threeHourTaskTrigger > 0 ){
+            console.log("#####################################################")
+            console.log("######  Three Hours have passed. Finalize.... #######")
+            console.log("#####################################################")
+            setMeetingActive(false)
+        }else{
+            console.log("#####################################################")
+            console.log("######  Start Three Hours Finalizer....       #######")
+            console.log("#####################################################")
+        }
+    },[threeHourTaskTrigger])
 
     useEffect(()=>{
         chimeClient!.hmmClient!.sendHMMStatus({
