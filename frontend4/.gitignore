@@ -25,5 +25,6 @@ yarn-error.log*
 
 demo_url.txt
 sync.sh
+createInvalidation.sh
 
 src/BackendConfig.ts

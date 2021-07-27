@@ -36,3 +36,10 @@ outputString += `${DemoEndpoint} \n`
 fs.writeFileSync('./demo_url.txt', outputString);
 
 
+//// output invalidation script
+console.log("generate invalidation script")
+const DistributionId = outputs["DistributionId"]
+outputString=""
+outputString += `aws cloudfront create-invalidation --distribution-id ${DistributionId} --paths '/*' \n`
+
+fs.writeFileSync('./createInvalidation.sh', outputString);

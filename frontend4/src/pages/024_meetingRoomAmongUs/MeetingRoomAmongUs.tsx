@@ -159,7 +159,7 @@ export const MeetingRoomAmongUs = () => {
         _setUserName(newUserName)
     }
 
-    const [ viewMode, setViewMode ] = useState<ViewMode>("SeparateView")
+    const [ viewMode, setViewMode ] = useState<ViewMode>("MultiTileView")
     const [ debugEnable, setDebugEnable] = useState(false)
     const [ screenSize, setScreenSize] = useState<number[]>([640,480])
 
@@ -634,48 +634,48 @@ export const MeetingRoomAmongUs = () => {
             )
         }
     },[chimeClient!.hmmClient!.hmmActive, chimeClient!.hmmClient!.hmmLastStatus, justHMMStartClicked ]) // eslint-disable-line
-    // /// (1-3) hmm recording
-    // const recordingStateComp = useMemo(()=>{
-    //     return (
-    //         chimeClient!.hmmClient!.hmmRecording ?
-    //         <>
-    //             <Tooltip title={"recording"}>
-    //                 <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStopRecord()}}>
-    //                     <CameraRollIcon className={classes.activeState_hmm} fontSize="large"/>
-    //                 </IconButton>                    
-    //             </Tooltip>
-    //         </>
-    //         :
-    //         <>
-    //             <Tooltip title={"not recording"}>
-    //                 <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStartRecord()}}>
-    //                     <CameraRollIcon className={classes.inactiveState} fontSize="large"/>
-    //                 </IconButton>                    
-    //             </Tooltip>
-    //         </>
-    //     )
-    // },[chimeClient!.hmmClient!.hmmRecording]) // eslint-disable-line
-    // /// (1-4) share multi tile
-    // const shareTileViewStateComp = useMemo(()=>{
-    //     return (
-    //         chimeClient!.hmmClient!.hmmShareTileview ?
-    //         <>
-    //             <Tooltip title={"share tile view"}>
-    //                 <IconButton classes={{root:classes.menuButton}}  onClick={()=>{chimeClient!.hmmClient!.sendStopShareTileView()}}>                    
-    //                     <ScreenShareIcon className={classes.activeState_hmm}  fontSize="large"/>
-    //                 </IconButton>                    
-    //             </Tooltip>
-    //         </>
-    //         :
-    //         <>
-    //             <Tooltip title={"not share share tile view"}>
-    //                 <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStartShareTileView()}}>                    
-    //                     <ScreenShareIcon className={classes.inactiveState} fontSize="large"/>
-    //                 </IconButton>                    
-    //             </Tooltip>
-    //         </>
-    //     )
-    // },[chimeClient!.hmmClient!.hmmShareTileview])  // eslint-disable-line
+    /// (1-3) hmm recording
+    const recordingStateComp = useMemo(()=>{
+        return (
+            chimeClient!.hmmClient!.hmmRecording ?
+            <>
+                <Tooltip title={"recording"}>
+                    <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStopRecord()}}>
+                        <CameraRollIcon className={classes.activeState_hmm} fontSize="large"/>
+                    </IconButton>                    
+                </Tooltip>
+            </>
+            :
+            <>
+                <Tooltip title={"not recording"}>
+                    <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStartRecord()}}>
+                        <CameraRollIcon className={classes.inactiveState} fontSize="large"/>
+                    </IconButton>                    
+                </Tooltip>
+            </>
+        )
+    },[chimeClient!.hmmClient!.hmmRecording]) // eslint-disable-line
+    /// (1-4) share multi tile
+    const shareTileViewStateComp = useMemo(()=>{
+        return (
+            chimeClient!.hmmClient!.hmmShareTileview ?
+            <>
+                <Tooltip title={"share tile view"}>
+                    <IconButton classes={{root:classes.menuButton}}  onClick={()=>{chimeClient!.hmmClient!.sendStopShareTileView()}}>                    
+                        <ScreenShareIcon className={classes.activeState_hmm}  fontSize="large"/>
+                    </IconButton>                    
+                </Tooltip>
+            </>
+            :
+            <>
+                <Tooltip title={"not share share tile view"}>
+                    <IconButton classes={{root:classes.menuButton}} onClick={()=>{chimeClient!.hmmClient!.sendStartShareTileView()}}>                    
+                        <ScreenShareIcon className={classes.inactiveState} fontSize="large"/>
+                    </IconButton>                    
+                </Tooltip>
+            </>
+        )
+    },[chimeClient!.hmmClient!.hmmShareTileview])  // eslint-disable-line
 
     //// (1-x) lastupdate
     const stateLastUpdateTime = useMemo(()=>{
@@ -747,13 +747,13 @@ export const MeetingRoomAmongUs = () => {
         return (
             chimeState.arenaViewScreen?
             <>
-                <Tooltip title={"ScreenShare On"}>
+                <Tooltip title={"WatchScreen On"}>
                     <ViewComfyIcon className={classes.activeState_arena} fontSize="large"/>
                 </Tooltip>
             </>
             :
             <>
-                <Tooltip title={"ScreenShare Off"}>
+                <Tooltip title={"WatchScreen Off"}>
                     <ViewComfyIcon className={classes.inactiveState} fontSize="large"/>
                 </Tooltip>
             </>
@@ -887,8 +887,8 @@ export const MeetingRoomAmongUs = () => {
                         <div style={{display:"flex"}}>
                             {ownerStateComp}
                             {managerStateComp}
-                            {/* {recordingStateComp}
-                            {shareTileViewStateComp} */}
+                            {recordingStateComp}
+                            {shareTileViewStateComp}
                         </div>
                         <div>
                             {chimeClient?.hmmClient?.hmmPublicIp?`http://${chimeClient?.hmmClient?.hmmPublicIp}:3000`:""}

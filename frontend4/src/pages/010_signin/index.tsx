@@ -133,7 +133,7 @@ export const SignIn = () => {
                         <Copyright />
                     </Box>
                     <Box mt={8}>
-                        v1
+                        v2
                     </Box>
                 </form>
             </div>
