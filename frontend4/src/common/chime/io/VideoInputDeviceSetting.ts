@@ -155,19 +155,19 @@ export class VideoInputDeviceSetting {
     ////////
     setJBFSize = (width:number, height:number) =>{
         if(this.virtualBackgroundProcessor){
-            this.virtualBackgroundProcessor.googlemeetParams.jbfWidth  = width
-            this.virtualBackgroundProcessor.googlemeetParams.jbfHeight = height
+            this.virtualBackgroundProcessor.GMTfjs.googlemeetParams.jbfWidth  = width
+            this.virtualBackgroundProcessor.GMTfjs.googlemeetParams.jbfHeight = height
         }
     }
     getJBFSize = () =>{
-        return (this.virtualBackgroundProcessor?.googlemeetParams.jbfWidth,this.virtualBackgroundProcessor?.googlemeetParams.jbfHeight)
+        return (this.virtualBackgroundProcessor?.GMTfjs.googlemeetParams.jbfWidth,this.virtualBackgroundProcessor?.GMTfjs.googlemeetParams.jbfHeight)
     }
     setLightWrappingEnable = (val:boolean) => {
         if(this.virtualBackgroundProcessor){
-            this.virtualBackgroundProcessor.googleMeetLightWrappingEnable = val
+            this.virtualBackgroundProcessor.GMTfjs.googleMeetLightWrappingEnable = val
         }
     }
     getLightWrappingEnable = () =>{
-        return this.virtualBackgroundProcessor?.googleMeetLightWrappingEnable
+        return this.virtualBackgroundProcessor?.GMTfjs.googleMeetLightWrappingEnable
     }
 }
