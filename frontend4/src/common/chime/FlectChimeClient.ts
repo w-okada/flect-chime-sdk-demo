@@ -405,6 +405,7 @@ export class FlectChimeClient {
         this.videoInputDeviceSetting!.stopPreview()
         this.meetingSession.audioVideo.stopLocalVideoTile()
         this.meetingSession.audioVideo.stop()
+        this.stopShareContent()
 
         this._userName = ""
         this._meetingName = ""
