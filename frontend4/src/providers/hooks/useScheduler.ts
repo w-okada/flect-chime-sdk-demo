@@ -22,8 +22,14 @@ export const useScheduler = () =>{
 
     useEffect(() => {
         setInterval(() => {
-            setThreeHourTaskTrigger(t => t + 1);
+            setOneHourTaskTrigger(t => t + 1);
         }, 1000 * 60 * 60)
+    },[])
+
+    useEffect(() => {
+        setInterval(() => {
+            setThreeHourTaskTrigger(t => t + 1);
+        }, 1000 * 60 * 60 * 3)
     },[])
 
     return {tenSecondsTaskTrigger, thirtyMinutesSecondsTaskTrigger, oneHourTaskTrigger, threeHourTaskTrigger}

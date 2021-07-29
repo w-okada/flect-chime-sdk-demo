@@ -61,7 +61,7 @@ export const useStatusMonitor = () =>{
             recording: chimeClient!.hmmClient!.hmmRecording,
             shareTileView: chimeClient!.hmmClient!.hmmShareTileview,
         })
-    },[tenSecondsTaskTrigger])
+    },[tenSecondsTaskTrigger]) // eslint-disable-line
     
     return {meetingActive}
 }
