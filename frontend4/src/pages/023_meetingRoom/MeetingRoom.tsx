@@ -92,7 +92,7 @@ export const MeetingRoom = () => {
                         <DrawerOpener open={drawerOpen} setOpen={setDrawerOpen} />
                     </div>
                     <div className={classes.toolbarInnnerBox}>
-                        <Title title={chimeClient!.meetingName||""} />
+                        <Title title={`${chimeClient!.userName||""}@${chimeClient!.meetingName||""}`} />
                     </div>
                     <div className={classes.toolbarInnnerBox}>
                         <div className={classes.toolbarInnnerBox}>

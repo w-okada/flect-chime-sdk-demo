@@ -63,13 +63,11 @@ export class VirtualBackgroundGoogleMeetTFLite{
         targetCanvas.getContext("2d")!.drawImage(background, 0, 0, conf.width, conf.height)
         if (conf.type === "None") { // Depends on timing, result is null
             targetCanvas.getContext("2d")!.drawImage(foreground, 0, 0, targetCanvas.width, targetCanvas.height)
-            // return targetCanvas
             return
         }
 
         // (2) generate foreground transparent
         if(!prediction){
-            // return targetCanvas
             return
         }
 

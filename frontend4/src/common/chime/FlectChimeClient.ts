@@ -283,7 +283,10 @@ export class FlectChimeClient {
                 if (attendeeId in this._attendees === false) {
                     let userName = ""
                     if (attendeeId.indexOf("#") > 0) {
+                        const strippedAttendeeId = attendeeId.substring(0,attendeeId.indexOf("#"))
+                        const result = await this._restApiClient.getUserNameByAttendeeId(this._meetingName!, strippedAttendeeId)
                         userName = attendeeId
+                        userName = result.result === "success" ? `Shared Contents[${result.name}]` : attendeeId
                     } else {
                         try {
                             const result = await this._restApiClient.getUserNameByAttendeeId(this._meetingName!, attendeeId)
