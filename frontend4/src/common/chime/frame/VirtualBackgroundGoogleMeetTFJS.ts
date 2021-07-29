@@ -40,6 +40,8 @@ export class VirtualBackgroundGoogleMeetTFJS{
         return m
     })()
 
+    lightWrappingBlur = 10
+    antialiaseBlur    = 4
 
     predict = async (frontCanvas:HTMLCanvasElement, backCanvas:HTMLCanvasElement, targetCanvas:HTMLCanvasElement, config:VirtualBackgroundConfig) => {
         const result = await this.googlemeetManager!.predict(frontCanvas, this.googlemeetParams!)
@@ -60,89 +62,53 @@ export class VirtualBackgroundGoogleMeetTFJS{
         targetCanvas.getContext("2d")!.drawImage(background, 0, 0, conf.width, conf.height)
         if (conf.type === "None") { // Depends on timing, bodypixResult is null
             targetCanvas.getContext("2d")!.drawImage(foreground, 0, 0, targetCanvas.width, targetCanvas.height)
-            return targetCanvas
+            return
         }
 
         // (2) generate foreground transparent
         const prediction = segmentation as number[][]
-        // console.log(prediction)
-        // Person Canvas Mask
-        this.personMaskCanvas.width = prediction[0].length
-        this.personMaskCanvas.height = prediction.length
-        const maskCtx = this.personMaskCanvas.getContext("2d")!
-        maskCtx.clearRect(0, 0, this.personMaskCanvas.width, this.personMaskCanvas.height)
-        const imageData = maskCtx.getImageData(0, 0, this.personMaskCanvas.width, this.personMaskCanvas.height)
-        const data = imageData.data
+        const res = new ImageData(prediction[0].length, prediction.length)
         for (let rowIndex = 0; rowIndex < this.personMaskCanvas.height; rowIndex++) {
             for (let colIndex = 0; colIndex < this.personMaskCanvas.width; colIndex++) {
                 const pix_offset = ((rowIndex * this.personMaskCanvas.width) + colIndex) * 4
                 if (prediction[rowIndex][colIndex] >= 128) {
-                    data[pix_offset + 0] = 0
-                    data[pix_offset + 1] = 0
-                    data[pix_offset + 2] = 0
-                    data[pix_offset + 3] = 0
+                    res.data[pix_offset + 0] = 0
+                    res.data[pix_offset + 1] = 0
+                    res.data[pix_offset + 2] = 0
+                    res.data[pix_offset + 3] = 0
                 } else {
-                    data[pix_offset + 0] = 255
-                    data[pix_offset + 1] = 255
-                    data[pix_offset + 2] = 255
-                    data[pix_offset + 3] = 255
+                    res.data[pix_offset + 0] = 255
+                    res.data[pix_offset + 1] = 255
+                    res.data[pix_offset + 2] = 255
+                    res.data[pix_offset + 3] = 255
                 }
             }
         }
-        const imageDataTransparent = new ImageData(data, this.personMaskCanvas.width, this.personMaskCanvas.height);
-        maskCtx.putImageData(imageDataTransparent, 0, 0)
+        this.personMaskCanvas.width = prediction[0].length
+        this.personMaskCanvas.height = prediction.length
+        this.personMaskCanvas.getContext("2d")!.putImageData(res, 0, 0)
 
-        // Person Canvas
-        this.personCanvas.width = targetCanvas.width
-        this.personCanvas.height = targetCanvas.height
+        // (3) generarte Person Canvas
+        this.personCanvas.width = conf.width
+        this.personCanvas.height = conf.height
         const personCtx = this.personCanvas.getContext("2d")!
         personCtx.clearRect(0, 0, this.personCanvas.width, this.personCanvas.height)
-        personCtx.drawImage(this.personMaskCanvas, 0, 0, this.personCanvas.width, this.personCanvas.height)
+        personCtx.filter = `blur(${this.antialiaseBlur}px)`;
+        personCtx.drawImage(this.personMaskCanvas, 0, 0, this.personCanvas.width, this.personCanvas.height) 
+        personCtx.filter = `none`;
         personCtx.globalCompositeOperation = "source-atop";
         personCtx.drawImage(foreground, 0, 0, this.personCanvas.width, this.personCanvas.height)
-        this.personCanvas.getContext("2d")!.globalCompositeOperation = "source-over";
+        this.personCanvas.getContext("2d")!.globalCompositeOperation = "source-over";        
 
 
+        // (4) apply LightWrapping
+        const dstCtx = targetCanvas.getContext("2d")!
+        dstCtx.filter = `blur(${this.lightWrappingBlur}px)`;
+        dstCtx.drawImage(this.personMaskCanvas, 0, 0, targetCanvas.width, targetCanvas.height)
+        dstCtx.filter = 'none';
 
-        // light wrapping
-        if(this.googleMeetLightWrappingEnable){
-            this.lightWrapCanvas.width = prediction[0].length
-            this.lightWrapCanvas.height = prediction.length
-            const lightWrapImageData = this.lightWrapCanvas.getContext("2d")!.getImageData(0, 0, this.lightWrapCanvas.width, this.lightWrapCanvas.height)
-            const lightWrapdata = lightWrapImageData.data
-    
-            for (let rowIndex = 0; rowIndex < this.lightWrapCanvas.height; rowIndex++) {
-                for (let colIndex = 0; colIndex < this.lightWrapCanvas.width; colIndex++) {
-                    const pix_offset = ((rowIndex * this.lightWrapCanvas.width) + colIndex) * 4
-                    if (prediction[rowIndex][colIndex] > 140) {
-                        lightWrapdata[pix_offset + 0] = 0
-                        lightWrapdata[pix_offset + 1] = 0
-                        lightWrapdata[pix_offset + 2] = 0
-                        lightWrapdata[pix_offset + 3] = 0
-                    } else {
-                        lightWrapdata[pix_offset + 0] = 255
-                        lightWrapdata[pix_offset + 1] = 255
-                        lightWrapdata[pix_offset + 2] = 255
-                        lightWrapdata[pix_offset + 3] = 255
-                    }
-                }
-            }
-            const lightWrapimageDataTransparent = new ImageData(lightWrapdata, this.lightWrapCanvas.width, this.lightWrapCanvas.height);
-            this.lightWrapCanvas.getContext("2d")!.putImageData(lightWrapimageDataTransparent, 0, 0)
-        }
-
-        // Background
-        // (3) merge Front into Bacground
-        const targetCtx = targetCanvas.getContext("2d")!
-        targetCtx.drawImage(this.canvasBackground, 0, 0, targetCanvas.width, targetCanvas.height)
-        if(this.googleMeetLightWrappingEnable){
-            targetCtx.filter = 'blur(2px)';
-            targetCtx.drawImage(this.lightWrapCanvas, 0, 0, targetCanvas.width, targetCanvas.height)
-            targetCtx.filter = 'none';
-        }
-
-        targetCanvas.getContext("2d")!.drawImage(this.personCanvas, 0, 0, targetCanvas.width, targetCanvas.height)
-        return
-
+        // (5) draw personcanvas
+        dstCtx.drawImage(this.personCanvas, 0, 0, targetCanvas.width, targetCanvas.height)
+        return 
     }
 }
