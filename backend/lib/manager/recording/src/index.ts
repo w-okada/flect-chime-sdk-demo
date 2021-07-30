@@ -385,8 +385,8 @@ puppeteer.launch({
                 } catch (exception) {
                     console.log(`file upload to s3 exception ..., ${exception}`)
                 }
+                console.log(`Terminating,,, wait promise...`)
                 await Promise.all(promises)
-
                 console.log(`Terminating,,, done`)
 
                 try {

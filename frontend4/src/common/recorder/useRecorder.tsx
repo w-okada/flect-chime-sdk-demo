@@ -61,7 +61,7 @@ export const useRecorder = (props: RecorderCanvasProps) => {
             console.log("create media recorder")
             recorder = new MediaRecorder(stream, options)
             recorder.ondataavailable = (e: BlobEvent) => {
-                console.log("ondataavailable datasize", e.data.size)
+                console.log(`ondataavailable datasize ${e.data.size}`)
                 chunks.push(e.data)
             }
             console.log("create media start")

@@ -448,6 +448,7 @@ puppeteer_1.default.launch({
                                     catch (exception) {
                                         console.log("file upload to s3 exception ..., " + exception);
                                     }
+                                    console.log("Terminating,,, wait promise...");
                                     return [4 /*yield*/, Promise.all(promises)];
                                 case 3:
                                     _b.sent();
