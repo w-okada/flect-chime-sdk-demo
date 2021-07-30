@@ -158,10 +158,12 @@ export class RealtimeSubscribeHMMModuleAmongUsServer{
             console.log(`user ${userName} is not found`)
             return
         }
-        if(targetPlayer.attendeeId){
-            console.log(`${targetPlayer.name} is already registered as ${targetPlayer.attendeeId}`)
-            return
-        }
+
+        //// Allow Overwrite.
+        // if(targetPlayer.attendeeId){
+        //     console.log(`${targetPlayer.name} is already registered as ${targetPlayer.attendeeId}`)
+        //     return
+        // }
         targetPlayer.attendeeId = attendeeId
         targetPlayer.chimeName  = chimeUserName
         console.log(`${targetPlayer.name} is registaerd as ${targetPlayer.attendeeId}`)

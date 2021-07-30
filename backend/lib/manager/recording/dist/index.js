@@ -78,6 +78,7 @@ var aws = __importStar(require("aws-sdk"));
 // var lock = new AsyncLock({timeout: 1000 * 30 });
 var lock = new async_lock_1.default();
 var finalize = false;
+var browser;
 var page;
 var hostname = '0.0.0.0';
 var port = 3000;
@@ -273,6 +274,7 @@ io_server.on('connection', function (client) {
     // handle socket io event end
     ///////////////////////////////////////////////////////
 });
+var uploadGameStateFailCount = 0;
 var uploadGameState = function (_finalize) {
     // console.log("upload game state1-1[cpu]", os.cpus())
     // console.log("upload game state1-2[total mem]", os.totalmem())
@@ -296,9 +298,35 @@ var uploadGameState = function (_finalize) {
             });
         }); }, function (error, result) {
             if (error) {
-                console.log(now(), 'Upload game state Failure : ', error);
+                uploadGameStateFailCount += 1;
+                console.log(now(), "Upload game state Failure : count=" + uploadGameStateFailCount + ": ", error);
+                if (uploadGameStateFailCount > 30) {
+                    console.log("-- Something is bad. TERMINATE----------------!");
+                    try {
+                        io_server.disconnectSockets();
+                    }
+                    catch (exception) {
+                        console.log("io_server disconnecting exception ..., " + exception);
+                    }
+                    try {
+                        server.close();
+                    }
+                    catch (exception) {
+                        console.log("server closing exception ..., " + exception);
+                    }
+                    finalize = true;
+                    console.log("Terminating,,,");
+                    try {
+                        browser.close();
+                    }
+                    catch (exception) {
+                        console.log("browser closing exception ..., " + exception);
+                    }
+                    console.log("Terminating,,, done");
+                }
             }
             else {
+                uploadGameStateFailCount = 0;
                 console.log(now(), 'Upload game state Success : ', result);
             }
             if (_finalize) {
@@ -306,14 +334,14 @@ var uploadGameState = function (_finalize) {
             else {
                 setTimeout(function () {
                     uploadGameState(finalize);
-                }, 1000 * 2);
+                }, 1000 * 1);
             }
         });
     }
     else {
         setTimeout(function () {
             uploadGameState(finalize);
-        }, 1000 * 2);
+        }, 1000 * 1);
     }
 };
 uploadGameState(finalize);
@@ -339,7 +367,7 @@ puppeteer_1.default.launch({
         '--use-fake-ui-for-media-stream',
         '--use-fake-device-for-media-stream',
     ]
-}).then(function (browser) { return __awaiter(void 0, void 0, void 0, function () {
+}).then(function (res) { return __awaiter(void 0, void 0, void 0, function () {
     function listenFor() {
         return page.evaluateOnNewDocument(function () {
             document.addEventListener('terminate', function (e) {
@@ -354,7 +382,9 @@ puppeteer_1.default.launch({
     }
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, browser.newPage()];
+            case 0:
+                browser = res;
+                return [4 /*yield*/, browser.newPage()];
             case 1:
                 page = _a.sent();
                 page.on("console", function (msg) {
