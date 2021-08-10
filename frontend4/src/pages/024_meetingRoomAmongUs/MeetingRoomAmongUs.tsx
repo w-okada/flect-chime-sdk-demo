@@ -202,35 +202,41 @@ export const MeetingRoomAmongUs = () => {
     //// Main Screen Changer
     useEffect(()=>{
         if(chimeState.arenaViewScreen && amongusGameState?.state != 2){ // eslint-disable-line
-            chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
-                if(viewMode==="MultiTileView"){
+            if(viewMode==="MultiTileView"){
+                chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                     const tileviewComp = document.getElementById("tileView") as HTMLVideoElement
                     if(amongusGameState?.hmmAttendeeId && x.state().boundAttendeeId && x.state().boundAttendeeId!.indexOf(amongusGameState.hmmAttendeeId) >=0 ){
-                    // if(x.state().boundAttendeeId === amongusGameState?.hmmAttendeeId){
-                        x.unpause()
+                        console.log(`MultiTileView Bind ${x.state().boundAttendeeId}, ${amongusGameState?.hmmAttendeeId}`)
+                        chimeClient?.setPauseVideo(x.state().boundAttendeeId!, false)
+                        // x.unpause()
                         x.bindVideoElement(tileviewComp)
                         tileviewComp.play()
-                        console.log("video stream1:", tileviewComp.videoWidth, tileviewComp.videoHeight)
                     }else{
-                        x.pause()
-                        x.bindVideoElement(null)
+                        console.log(`MultiTileView Unbind ${x.state().boundAttendeeId}, ${amongusGameState?.hmmAttendeeId}`)
+                        chimeClient?.setPauseVideo(x.state().boundAttendeeId!, true)
+                        // x.pause()
+                        // x.bindVideoElement(null)
                     }
-                }else{ // SeparateView
+                })
+            }else{ // SeparateView
+                chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
                     const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
                     // x.bindVideoElement(userViewComp)
         
-                    console.log("video stream2:", userViewComp.videoWidth, userViewComp.videoHeight)
-
-                    if(x.state().boundAttendeeId === amongusGameState?.hmmAttendeeId){
-                        x.pause()
-                        x.bindVideoElement(null)
+                    if(amongusGameState && x.state().boundAttendeeId!.indexOf(amongusGameState.hmmAttendeeId) >=0){
+                        console.log(`SeparateView Unbind ${x.state().boundAttendeeId}, ${amongusGameState?.hmmAttendeeId}`)
+                        chimeClient?.setPauseVideo(x.state().boundAttendeeId!, true)
+                        // x.pause()
+                        // x.bindVideoElement(null)
                     }else{
-                        x.unpause()
+                        console.log(`SeparateView Bind ${x.state().boundAttendeeId}, ${amongusGameState?.hmmAttendeeId}`)
+                        chimeClient?.setPauseVideo(x.state().boundAttendeeId!, false)
+                        // x.unpause()
                         x.bindVideoElement(userViewComp)
                         userViewComp.play()
                     }
-                }
-            })
+                })
+            }
         }else{
             // show map
             // const mapViewComp = document.getElementById("mapView") as HTMLImageElement
