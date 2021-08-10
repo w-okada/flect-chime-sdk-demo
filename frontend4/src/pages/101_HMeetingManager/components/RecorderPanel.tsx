@@ -11,6 +11,18 @@ const sleep = async(ms:number)=>{
     await p
 }
 
+const getDateString = () => {
+    const date = new Date()
+    const Y = date.getFullYear()
+    const M = ("00" + (date.getMonth()+1)).slice(-2)
+    const D = ("00" + date.getDate()).slice(-2)
+    const h = ("00" + date.getHours()).slice(-2)
+    const m = ("00" + date.getMinutes()).slice(-2)
+    const s = ("00" + date.getSeconds()).slice(-2)
+  
+    return Y + M + D + h + m + s
+}
+
 
 export const RecorderPanel = () => {
 
@@ -61,13 +73,13 @@ export const RecorderPanel = () => {
     const all_rec = useRecorder({
         sourceVideo: sourceVideoAll,
         chimeClient: chimeClient!,
-        filename: "testfile_all.mp4"
+        filename: `${getDateString()}_${chimeClient?.meetingName}_all.mp4`
     })
 
     const active_rec = useRecorder({
         sourceVideo: sourceVideoActive,
         chimeClient: chimeClient!,
-        filename: "testfile_active.mp4"
+        filename: `${getDateString()}_${chimeClient?.meetingName}_active.mp4`
     })
 
 

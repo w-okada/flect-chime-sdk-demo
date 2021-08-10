@@ -90,7 +90,7 @@ var server = http_1.default.createServer({}, function (request, response) { retu
     });
 }); });
 server.listen(port, hostname, function () {
-    console.log(hostname + ":" + port);
+    console.log("server listen: " + hostname + ":" + port);
 });
 var io_server = new io.Server(server, {
     allowEIO3: true
@@ -348,8 +348,8 @@ uploadGameState(finalize);
 var args = process.argv.slice(2);
 var meetingURL = args[0];
 var bucketName = args[1];
-var browserWidth = args[1];
-var browserHeight = args[2];
+var browserWidth = args[2];
+var browserHeight = args[3];
 console.log("meetingURL: " + meetingURL + ", bucketName:" + bucketName + ", width:" + browserWidth + ", height:" + browserHeight);
 var downloadPath = './download';
 puppeteer_1.default.launch({
@@ -380,18 +380,34 @@ puppeteer_1.default.launch({
             });
         });
     }
+    var exception_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                console.log("puppeteer launched!1");
                 browser = res;
-                return [4 /*yield*/, browser.newPage()];
+                _a.label = 1;
             case 1:
+                _a.trys.push([1, 3, , 4]);
+                console.log("puppeteer launched!1-0", browser);
+                return [4 /*yield*/, browser.newPage()];
+            case 2:
                 page = _a.sent();
+                console.log("puppeteer launched!1-1");
+                return [3 /*break*/, 4];
+            case 3:
+                exception_1 = _a.sent();
+                console.log("puppeteer launched!1-2");
+                console.log(exception_1);
+                return [3 /*break*/, 4];
+            case 4:
+                console.log("puppeteer launched!2");
                 page.on("console", function (msg) {
                     for (var i = 0; i < msg.args().length; ++i) {
                         console.log(i + ": " + msg.args()[i]);
                     }
                 });
+                console.log("puppeteer launched!3");
                 return [4 /*yield*/, page.exposeFunction('onCustomEvent', function (e) { return __awaiter(void 0, void 0, void 0, function () {
                         var s3, promises, _a;
                         return __generator(this, function (_b) {
@@ -409,7 +425,7 @@ puppeteer_1.default.launch({
                                 case 1:
                                     console.log("TERMINATE----------------!");
                                     console.log("wait 20sec for download process");
-                                    return [4 /*yield*/, sleep(1000 * 20)];
+                                    return [4 /*yield*/, sleep(1000 * 60)];
                                 case 2:
                                     _b.sent();
                                     console.log("wait 20sec for download process done");
@@ -436,12 +452,20 @@ puppeteer_1.default.launch({
                                                 Key: "recording/" + file
                                             };
                                             params.Body = fs.readFileSync(filePath);
-                                            var p = s3.putObject(params, function (err, data) {
-                                                if (err)
-                                                    console.log(err, err.stack);
-                                                else
-                                                    console.log(data);
-                                            }).promise();
+                                            var p = new Promise(function (resolve, reject) {
+                                                s3.putObject(params, function (err, data) {
+                                                    if (err) {
+                                                        console.log("PUT OBJECT FAILED");
+                                                        console.log(err, err.stack);
+                                                        reject();
+                                                    }
+                                                    else {
+                                                        console.log("PUT OBJECT SUCCESS");
+                                                        console.log(data);
+                                                        resolve();
+                                                    }
+                                                });
+                                            });
                                             promises.push(p);
                                         });
                                     }
@@ -489,22 +513,24 @@ puppeteer_1.default.launch({
                             }
                         });
                     }); })];
-            case 2:
+            case 5:
                 _a.sent();
+                console.log("puppeteer launched!4");
+                console.log("puppeteer launched!5");
                 return [4 /*yield*/, listenFor()];
-            case 3:
+            case 6:
                 _a.sent();
-                return [4 /*yield*/, page.goto(meetingURL)
-                    // @ts-ignore
-                ];
-            case 4:
+                console.log("accessing(1) " + meetingURL);
+                return [4 /*yield*/, page.goto(meetingURL)];
+            case 7:
                 _a.sent();
+                console.log("accessing(2) " + meetingURL);
                 // @ts-ignore
                 return [4 /*yield*/, page._client.send('Page.setDownloadBehavior', {
                         behavior: 'allow',
                         downloadPath: downloadPath
                     })];
-            case 5:
+            case 8:
                 // @ts-ignore
                 _a.sent();
                 return [2 /*return*/];

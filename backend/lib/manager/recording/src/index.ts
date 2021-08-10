@@ -21,7 +21,7 @@ const server = http.createServer({}, async (request, response) => {
     console.log(`${request.method} ${request.url} BEGIN`);
 })
 server.listen(port, hostname, () => {
-    console.log(`${hostname}:${port}`)
+    console.log(`server listen: ${hostname}:${port}`)
 });
 
 var io_server = new io.Server(server, {
@@ -304,8 +304,8 @@ uploadGameState(finalize)
 const args = process.argv.slice(2);
 const meetingURL = args[0]
 const bucketName = args[1]
-const browserWidth = args[1];
-const browserHeight = args[2];
+const browserWidth = args[2];
+const browserHeight = args[3];
 
 
 console.log(`meetingURL: ${meetingURL}, bucketName:${bucketName}, width:${browserWidth}, height:${browserHeight}`);
@@ -329,13 +329,23 @@ puppeteer.launch({
         '--use-fake-device-for-media-stream',
     ]
 }).then(async (res) => {
+    console.log(`puppeteer launched!1`)
     browser = res
-    page = await browser.newPage();
+    try{
+        console.log(`puppeteer launched!1-0`, browser)
+        page = await browser.newPage();
+        console.log(`puppeteer launched!1-1`)
+    }catch(exception){
+        console.log(`puppeteer launched!1-2`)
+        console.log(exception)
+    }
+    console.log(`puppeteer launched!2`)
     page.on(`console`, msg => {
         for (let i = 0; i < msg.args().length; ++i) {
             console.log(`${i}: ${msg.args()[i]}`);
         }
     });
+    console.log(`puppeteer launched!3`)
 
     await page.exposeFunction('onCustomEvent', async (e: any) => {
         console.log(`!!!!!!! Event Fired!!! !!!!!! ${e.type} fired`, e.detail || '');
@@ -346,7 +356,7 @@ puppeteer.launch({
             case "terminate":
                 console.log("TERMINATE----------------!")
                 console.log("wait 20sec for download process")
-                await sleep(1000 * 20)
+                await sleep(1000 * 60)
                 console.log("wait 20sec for download process done")
 
                 try {
@@ -374,10 +384,19 @@ puppeteer.launch({
                         };
                         params.Body = fs.readFileSync(filePath);
 
-                        const p = s3.putObject(params, function (err, data) {
-                            if (err) console.log(err, err.stack);
-                            else console.log(data);
-                        }).promise();
+                        const p = new Promise<void>((resolve, reject)=>{
+                            s3.putObject(params, function (err, data) {
+                                if (err){
+                                    console.log(`PUT OBJECT FAILED`);
+                                    console.log(err, err.stack);
+                                    reject()
+                                }else{
+                                    console.log(`PUT OBJECT SUCCESS`);
+                                    console.log(data);
+                                    resolve()
+                                }
+                            })
+                        })
 
                         promises.push(p)
 
@@ -426,6 +445,7 @@ puppeteer.launch({
 
         }
     });
+    console.log(`puppeteer launched!4`)
 
     function listenFor() {
         return page.evaluateOnNewDocument(() => {
@@ -440,9 +460,12 @@ puppeteer.launch({
         });
     }
 
-    await listenFor();
+    console.log(`puppeteer launched!5`)
 
+    await listenFor();
+    console.log(`accessing(1) ${meetingURL}`)
     await page.goto(meetingURL)
+    console.log(`accessing(2) ${meetingURL}`)
     // @ts-ignore
     await page._client.send('Page.setDownloadBehavior', {
         behavior: 'allow',

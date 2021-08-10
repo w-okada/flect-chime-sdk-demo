@@ -81,7 +81,8 @@ export const AppStateProvider = ({ children }: Props) => {
     const [ lastUpdateTime, setLastUpdateTime ] = useState(0) // eslint-disable-line
 
     const cognitoClient = useMemo(()=>{
-        return new CognitoClient(UserPoolId, UserPoolClientId)
+        // return new CognitoClient(UserPoolId, UserPoolClientId)
+        return new CognitoClient(UserPoolId, UserPoolClientId, "mail2wokada@gmail.com", "test22")
     },[])
 
     /////////
