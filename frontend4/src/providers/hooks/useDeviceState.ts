@@ -26,6 +26,13 @@ const getDeviceLists = async ():Promise<DeviceInfoList> => {
             label:x.label
         }
     })
+    audioInputDevices.push({
+        deviceId:"dummy",
+        groupId:"dummy",
+        kind:"audioinput",
+        label:"dummy"
+    })
+    
     const videoInputDevices:DeviceInfo[] = list.filter((x: InputDeviceInfo | MediaDeviceInfo) => {
         return x.kind === "videoinput"
     }).map(x=>{

@@ -56,24 +56,27 @@ export const SettingDialog = (props:SettingDialogProps) =>{
     
     
                     /////// Generate AudioInput Source
-                    const stream =  new MediaStream();
+                    let stream:MediaStream|null =  new MediaStream();
                     if(mediaStream.getAudioTracks().length>0){
                         mediaStream.getAudioTracks().forEach(t=>{
                             console.log("AUDIO TRACK",t)
-                            stream.addTrack(t)
+                            stream!.addTrack(t)
                         })
                         console.log("AUDIO ",stream)
                         // audioInputDeviceSetting!.setAudioInput(mediaStream)
                     }else{
+                        stream = null
                         console.log("NO AUDIO TRACK")
                         // audioInputDeviceSetting!.setAudioInput(null)
                     }
     
     
                     const audioContext = DefaultDeviceController.getAudioContext();
-                    const sourceNode = audioContext.createMediaStreamSource(stream);
                     const outputNode = audioContext.createMediaStreamDestination();
-                    sourceNode.connect(outputNode)
+                    if(stream){
+                        const sourceNode = audioContext.createMediaStreamSource(stream);
+                        sourceNode.connect(outputNode)
+                    }
     
                     if(noise){
                         const outputNodeForMix = audioContext.createMediaStreamDestination();
