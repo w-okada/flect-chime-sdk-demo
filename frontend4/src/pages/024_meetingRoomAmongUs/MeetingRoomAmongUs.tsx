@@ -219,8 +219,8 @@ export const MeetingRoomAmongUs = () => {
                     }
                 })
             }else{ // SeparateView
-                chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, index)=>{
-                    const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
+                let index = 0
+                chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().forEach((x, i)=>{
                     // x.bindVideoElement(userViewComp)
         
                     if(amongusGameState && x.state().boundAttendeeId!.indexOf(amongusGameState.hmmAttendeeId) >=0){
@@ -229,6 +229,8 @@ export const MeetingRoomAmongUs = () => {
                         // x.pause()
                         // x.bindVideoElement(null)
                     }else{
+                        const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
+                        index += 1
                         console.log(`SeparateView Bind ${x.state().boundAttendeeId}, ${amongusGameState?.hmmAttendeeId}`)
                         chimeClient?.setPauseVideo(x.state().boundAttendeeId!, false)
                         // x.unpause()
@@ -257,34 +259,62 @@ export const MeetingRoomAmongUs = () => {
                     <video id="tileView"  style={{width:"97%", height:"100%", borderStyle:"solid",borderColor: blueGrey[900]}} />
                 )
             }else{
-                return(
+                const videoTileNum = chimeClient!.meetingSession?.audioVideo.getAllRemoteVideoTiles().filter(x=>{return x.state().isContent===false}).length!
+                const cols = Math.min(Math.ceil(Math.sqrt(videoTileNum)), 5)
+                const rows = Math.ceil(videoTileNum / cols)
+                console.log(`SEPARATE VIEW ${videoTileNum}, ${cols}, ${rows}`)
+                const row_cells = []
+                for(let i=0;i<rows;i++){
+                    const cells = []
+                    for(let j=0;j<cols;j++){
+                        const index = i*cols + j
+                        cells.push(
+                            <video id={`userView${index}`}  style={{width:`${100/cols - 2}%`,  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                        )
+                    }
+                    const row_cell = (
+                        <div style={{display:"flex", flexDirection:"row"}}>
+                            {cells}
+                        </div>
+                    )
+                    row_cells.push(row_cell)
+                    
+                }
+                return (
                     <div style={{height:"80%" }}>
-                        <div style={{display:"flex", flexDirection:"row"}}>
-                            <video id="userView0"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView1"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView2"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView3"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                        </div>
-                        <div style={{display:"flex", flexDirection:"row"}}>
-                            <video id="userView4"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView5"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView6"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView7"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                        </div>
-                        <div style={{display:"flex", flexDirection:"row"}}>
-                            <video id="userView8"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView9"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView10"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView11"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                        </div>
-                        <div style={{display:"flex", flexDirection:"row"}}>
-                            <video id="userView12"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView13"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView14"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                            <video id="userView15"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
-                        </div>
+                        {row_cells}
                     </div>
                 )
+
+                
+                // return(
+                //     <div style={{height:"80%" }}>
+                //         <div style={{display:"flex", flexDirection:"row"}}>
+                //             <video id="userView0"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView1"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView2"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView3"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //         </div>
+                //         <div style={{display:"flex", flexDirection:"row"}}>
+                //             <video id="userView4"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView5"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView6"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView7"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //         </div>
+                //         <div style={{display:"flex", flexDirection:"row"}}>
+                //             <video id="userView8"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView9"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView10"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView11"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //         </div>
+                //         <div style={{display:"flex", flexDirection:"row"}}>
+                //             <video id="userView12"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView13"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView14"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //             <video id="userView15"  style={{width:"23%",  borderStyle:"solid",borderColor: blueGrey[900]}} />
+                //         </div>
+                //     </div>
+                // )
             }
         }else{
             // show map
