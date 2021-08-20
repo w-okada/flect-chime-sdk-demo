@@ -1,0 +1,15 @@
+*~
+*#
+bin
+demo
+node_modules
+src
+.gitignore
+.npmignore
+createInvalidation.sh
+demo_url.txt
+sync.sh
+
+tsconfig.json
+webpack.config.js
+

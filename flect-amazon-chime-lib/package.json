@@ -1,0 +1,43 @@
+{
+  "name": "@dannadori/flect-amazon-chime-lib",
+  "version": "1.0.6",
+  "description": "",
+  "main": "dist/flect-amazon-chime-lib.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "webpack": "npx webpack --config webpack.config.js",
+    "clean": "rimraf dist/*",
+    "build": "node bin/importBackendSetting.js && npm-run-all clean webpack && sh copyResources.sh"
+  },
+  "keywords": [],
+  "author": "dannadori <wataru.okada@flect.co.jp> (https://zenn.dev/wok)",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/async-lock": "^1.1.3",
+    "@types/pako": "^1.0.2",
+    "@types/react": "^17.0.19",
+    "@types/uuid": "^8.3.1",
+    "npm-run-all": "^4.1.5",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "rimraf": "^3.0.2",
+    "ts-loader": "^9.2.5",
+    "tsconfig-paths": "^3.10.1",
+    "typescript": "^4.3.5",
+    "webpack": "^5.51.1",
+    "webpack-cli": "^4.8.0"
+  },
+  "dependencies": {
+    "@dannadori/bodypix-worker-js": "^1.0.33",
+    "@dannadori/googlemeet-segmentation-tflite-worker-js": "^1.0.19",
+    "@dannadori/googlemeet-segmentation-worker-js": "^1.0.15",
+    "@ffmpeg/core": "^0.10.0",
+    "@ffmpeg/ffmpeg": "^0.10.1",
+    "@material-ui/core": "^4.12.3",
+    "amazon-chime-sdk-js": "^2.15.0",
+    "amazon-cognito-identity-js": "^5.1.0",
+    "async-lock": "^1.3.0",
+    "pako": "^2.0.4",
+    "uuid": "^8.3.2"
+  }
+}
