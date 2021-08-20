@@ -54,7 +54,6 @@ const Router = () => {
                 return <MeetingManager />
             case "HEADLESS_MEETING_MANAGER":
                 return <HeadlessMeetingManager />
-                // return <HeadlessMeetingManager />
 
             default:
                 return <div>no view</div>

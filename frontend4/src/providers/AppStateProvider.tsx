@@ -6,13 +6,8 @@ import { RestAPIEndpoint, UserPoolClientId, UserPoolId, WebSocketEndpoint } from
 import { DeviceInfo, useDeviceState } from "./hooks/useDeviceState";
 import { useWindowSizeChangeListener } from "./hooks/useWindowSizeChange";
 import { VideoTileState } from "amazon-chime-sdk-js";
-import { CognitoClient } from "../common/cognito/CognitoClient";
-import { AttendeeState, FlectChimeClient } from "../common/chime/FlectChimeClient";
-import { DrawingData, WebSocketWhiteboardClient } from "../common/websocket/WebSocketWhiteboard/WebSocketWhiteboardClient";
-import { HMMStatus } from "../common/chime/realtime/RealtimeSubscribeHMMClient";
-import { RealtimeData } from "../common/chime/realtime/const";
-import { useAmongUsServer } from "../common/components/useAmongUsServer";
-import { GameState } from "../common/chime/realtime/hmmModules/RealtimeSubscribeHMMModuleAmongUsServer";
+import {AttendeeState, CognitoClient, DrawingData, FlectChimeClient, GameState, HMMStatus, RealtimeData, useAmongUsServer, WebSocketWhiteboardClient} from '@dannadori/flect-amazon-chime-lib'
+
 
 type Props = {
     children: ReactNode;
