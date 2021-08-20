@@ -1,5 +1,5 @@
+import { DrawableVideoTile } from "@dannadori/flect-amazon-chime-lib";
 import React, { useMemo } from "react";
-import { DrawableVideoTile } from "../../../../common/websocket/WebSocketWhiteboard/DrawableVideoTile";
 import { useAppState } from "../../../../providers/AppStateProvider";
 
 type Props = {

@@ -1,8 +1,9 @@
 import React, { useState }  from 'react';
 import { Button } from '@material-ui/core';
 import { useAppState } from '../../../../providers/AppStateProvider';
-import { useVideoComposeCanvas } from '../../../../common/components/useVideoComposeCanvas';
-import { useRecorder } from '../../../../common/recorder/useRecorder';
+import { useRecorder, useVideoComposeCanvas } from '@dannadori/flect-amazon-chime-lib';
+// import { useRecorder } from '../../../../common___/recorder/useRecorder';
+
 
 
 export const RecorderPanel = () => {

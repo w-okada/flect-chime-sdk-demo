@@ -1,7 +1,6 @@
+import { useRecorder, useVideoComposeCanvas } from '@dannadori/flect-amazon-chime-lib';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAppState } from '../../../providers/AppStateProvider';
-import { useVideoComposeCanvas } from '../../../common/components/useVideoComposeCanvas';
-import { useRecorder } from '../../../common/recorder/useRecorder';
 import { useStatusMonitor } from './hooks/useStatusMonitor';
 
 const sleep = async(ms:number)=>{

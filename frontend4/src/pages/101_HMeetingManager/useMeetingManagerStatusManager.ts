@@ -1,6 +1,6 @@
+import { RestApiClient } from "@dannadori/flect-amazon-chime-lib"
 import { useEffect, useState } from "react"
 import { RestAPIEndpoint } from "../../BackendConfig"
-import { RestApiClient } from "../../common/rest/RestApiClient"
 import { useAppState } from "../../providers/AppStateProvider"
 
 type InternalStage = "Initializing" | "SelectCode" | "WaitForEntering" | "InMeeting"

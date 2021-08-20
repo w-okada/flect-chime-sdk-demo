@@ -18,9 +18,7 @@ import { AudienceList } from "./components/AudienceList";
 import { CreditPanel } from "./components/CreditPanel";
 import { ChatArea } from "./components/ChatArea";
 import { useScheduler } from "../../providers/hooks/useScheduler";
-import { COLORS, COLORS_RGB, ICONS_ALIVE, ICONS_DEAD, REGIONS, STATES } from "../../common/chime/realtime/hmmModules/RealtimeSubscribeHMMModuleAmongUsServer";
-import { DrawableImageTile } from "../../common/websocket/WebSocketWhiteboard/DrawableImageTile";
-import { DrawingData } from "../../common/websocket/WebSocketWhiteboard/WebSocketWhiteboardClient";
+import { COLORS, COLORS_RGB, DrawableImageTile, DrawingData, ICONS_ALIVE, ICONS_DEAD, REGIONS, STATES } from '@dannadori/flect-amazon-chime-lib'
 
 type ChimeState = {
     name: string

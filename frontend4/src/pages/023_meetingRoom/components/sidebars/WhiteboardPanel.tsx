@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import {FiberManualRecord, RadioButtonUnchecked } from '@material-ui/icons'
 import { useAppState } from "../../../../providers/AppStateProvider";
 import { useStyles } from "./css";
-import { DrawingData } from "../../../../common/websocket/WebSocketWhiteboard/WebSocketWhiteboardClient";
+import { DrawingData } from "@dannadori/flect-amazon-chime-lib";
 
 const colors = [
     'red',
