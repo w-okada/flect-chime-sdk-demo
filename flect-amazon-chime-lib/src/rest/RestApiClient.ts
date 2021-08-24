@@ -86,8 +86,14 @@ type SinginWithOnetimeCodeResponse = {
 
 // (9)
 type StartManagerResponse = {
+    // userPoolId: string,
+    // userPoolClientId: string,    
     code: string, 
-    url:string
+    uuid: string,
+    meetingName: string,
+    attendeeId: string,
+    restAPIEndpoint:string,
+    url:string,
 }
 
 // (10)

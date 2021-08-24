@@ -1,3 +1,4 @@
+import { VideoTileState } from "amazon-chime-sdk-js"
 import { AttendeeState, FlectChimeClient } from "./chime/FlectChimeClient"
 import { VirtualBackgroundSegmentationType } from "./chime/frame/VirtualBackground"
 import { RealtimeData } from "./chime/realtime/const"
@@ -35,5 +36,6 @@ export {
     REGIONS, 
     STATES ,
     DrawableVideoTile,
-    DrawableImageTile,    
+    DrawableImageTile,
+    VideoTileState,
 }
