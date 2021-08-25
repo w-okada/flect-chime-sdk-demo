@@ -576,11 +576,14 @@ export const MeetingRoomAmongUs = () => {
     ///// (1-2-1) startClicked (for local debug) 
     const startHmmClientClicked = async () =>{
         const res = await chimeClient!.hmmClient!.startHMM()
+        console.log("start Res:", res)
         //// For local Debug
         const meetingRoomSuffix = res.url.substring(res.url.indexOf("/index.html"))
         const newMeetingURL = `https://192.168.0.4:3000/${meetingRoomSuffix}`
         const dockerCmd = `docker run -p 13000:3000 -v \`pwd\`:/work --env MEETING_URL="${newMeetingURL}"  --env BUCKET_ARN="xxx" dannadori/hmm`
         console.log(`[For Local Debug] docker command: ${dockerCmd}`)
+        const elecCmd = `docker run -e CODE=${res.code} -e UUID=${res.uuid} -e MEETING_NAME=${res.meetingName} -e ATTENDEE_ID=${res.attendeeId} -e RESTAPI_ENDPOINT=${res.restAPIEndpoint} -ti -p 3000:3000 -v \`pwd\`:/work dannadori/hmm`
+        console.log(`[For Local Debug2] docker command: ${elecCmd}`)
 
         setJustHMMStartClicked(true)
     }

@@ -300,6 +300,9 @@ export class BackendStack extends cdk.Stack {
             f.addEnvironment("SECURITY_GROUP_NAME", securityGroup.securityGroupName)
             f.addEnvironment("SECURITY_GROUP_ID", securityGroup.securityGroupId)
 
+            f.addEnvironment("USERPOOL_ID", userPool.userPoolId)
+            f.addEnvironment("USERPOOL_CLIENT_ID", userPoolClient.userPoolClientId)
+            // f.addEnvironment("RESTAPI_ENDPOINT", restApiUrl)    /// Exception(Circular dependency between resources) -> generate from request context in lambda.
 
             //// DEMO URL
             if (USE_CDN) {
@@ -307,10 +310,6 @@ export class BackendStack extends cdk.Stack {
             } else {
                 f.addEnvironment("DEMO_ENDPOINT", `https://${bucket.bucketDomainName}/index.html`)
             }
-
-
-
-
 
             f.addLayers(nodeModulesLayer)
         }
@@ -446,7 +445,6 @@ export class BackendStack extends cdk.Stack {
         ///////////////////////////////
         //// API Gateway
         ///////////////////////////////
-
         //// ( - ) Utility
         // https://github.com/aws/aws-cdk/issues/906
         const addCorsOptions = (apiResource: IResource) => {
@@ -488,13 +486,11 @@ export class BackendStack extends cdk.Stack {
                 }]
             })
         }
-
-
-
         //// ( - ) Rest API 
         const restApi: RestApi = new RestApi(this, "ChimeAPI", {
             restApiName: `${id}_restApi`,
         })
+        //lambdaFunctionPostAttendeeOperation.addEnvironment("RESTAPI_ENDPOINT", restApi.url) ///// Exception(Circular dependency between resources) -> generate from request context in lambda.
 
         //// ( - ) Authorizer
         //////// for V1 ...
@@ -604,7 +600,7 @@ export class BackendStack extends cdk.Stack {
                 authorizerId: authorizer.ref
             },
         })
-
+        // lambdaFunctionPostAttendeeOperation.addEnvironment("RESTAPI_ENDPOINT", restApi.url) ///// Exception(Circular dependency between resources) -> generate from request context in lambda.
 
 
         //// (5) Log

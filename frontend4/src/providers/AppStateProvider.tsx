@@ -5,8 +5,7 @@ import { STAGE, useStageManager } from "./hooks/useStageManager";
 import { RestAPIEndpoint, UserPoolClientId, UserPoolId, WebSocketEndpoint } from "../BackendConfig";
 import { DeviceInfo, useDeviceState } from "./hooks/useDeviceState";
 import { useWindowSizeChangeListener } from "./hooks/useWindowSizeChange";
-import { VideoTileState } from "amazon-chime-sdk-js";
-import {AttendeeState, CognitoClient, DrawingData, FlectChimeClient, GameState, HMMStatus, RealtimeData, useAmongUsServer, WebSocketWhiteboardClient} from '@dannadori/flect-amazon-chime-lib'
+import {AttendeeState, CognitoClient, DrawingData, FlectChimeClient, GameState, HMMStatus, RealtimeData, useAmongUsServer, VideoTileState, WebSocketWhiteboardClient} from '@dannadori/flect-amazon-chime-lib'
 
 
 type Props = {
@@ -76,7 +75,8 @@ export const AppStateProvider = ({ children }: Props) => {
     const [ lastUpdateTime, setLastUpdateTime ] = useState(0) // eslint-disable-line
 
     const cognitoClient = useMemo(()=>{
-        return new CognitoClient(UserPoolId, UserPoolClientId)
+//        return new CognitoClient(UserPoolId, UserPoolClientId)
+        return new CognitoClient(UserPoolId, UserPoolClientId, "mail2wokada@gmail.com", "test22")
     },[])
 
     /////////

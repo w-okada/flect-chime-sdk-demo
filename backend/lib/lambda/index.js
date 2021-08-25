@@ -181,6 +181,13 @@ exports.postAttendeeOperation = async (event, context, callback) => {
     console.log("headers:::", event.headers)
     const body = JSON.parse(event.body)
     console.log("body:::", body)
+    console.log("REQUEST CONTEXT NAME;;;;;;", event['requestContext'])
+    
+    const apiDomainName = event['requestContext']['domainName']
+    const apiStage      = event['requestContext']['stage']
+    const apiEndpoint   = `https://` + apiDomainName + `/` + apiStage + '/'
+    console.log("API ENDPOINT", apiEndpoint)
+
 
     const accessToken = event.headers["x-flect-access-token"]
     const meetingName = event.pathParameters.meetingName
@@ -192,7 +199,7 @@ exports.postAttendeeOperation = async (event, context, callback) => {
     const response = utils.getResponseTemplate()
 
     console.log("ATTENDEE OPERATION.....", event.headers)
-    const operationResult = await attendeeOperations.dispatchAttendeeOperation(operation, email, meetingName, attendeeId, event.headers, body)
+    const operationResult = await attendeeOperations.dispatchAttendeeOperation(operation, email, meetingName, attendeeId, apiEndpoint, event.headers, body)
     console.log("ATTENDEE OPERATION RESULT:", operationResult)
 
     response.body = JSON.stringify(operationResult)

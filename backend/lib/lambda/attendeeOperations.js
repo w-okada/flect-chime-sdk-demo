@@ -17,6 +17,10 @@ var bucketArn                = process.env.BUCKET_ARN
 var bucketName               = process.env.BUCKET_NAME
 var securityGroupId          = process.env.SECURITY_GROUP_ID
 
+var userPoolId               = process.env.USERPOOL_ID
+var userPoolClientId         = process.env.USERPOOL_CLIENT_ID
+
+
 //// AWS Clients setup
 var ddb = new AWS.DynamoDB();
 var meeting = require('./meeting');
@@ -50,12 +54,12 @@ Array.prototype.shuffle = function() {
  * @param {*} header 
  * @param {*} body 
  */
-exports.dispatchAttendeeOperation = async (operation, email, meetingName, attendeeId, header, body) => {
+exports.dispatchAttendeeOperation = async (operation, email, meetingName, attendeeId, apiEndpoint, header, body) => {
     switch(operation){
         case "generate-onetime-code":
             return generateOnetimeCode(meetingName, attendeeId, header, body)
         case "start-manager":
-            return startMeetingManager(email, meetingName, attendeeId, header, body)
+            return startMeetingManager(email, meetingName, attendeeId, apiEndpoint, header, body)
         case "get-manager-info":
             return getMeetingManagerInformation(email, meetingName, attendeeId, header, body)
         default:
@@ -136,7 +140,7 @@ const generateOnetimeCode = async (meetingName, attendeeId, headers, body) =>{
  * 
  * @email caller's email. if this email is not the meeting owner's one, invoke hmm failed.
  */
-const startMeetingManager = async (email, meetingName, attendeeId, headers, body) =>{
+const startMeetingManager = async (email, meetingName, attendeeId, apiEndpoint, headers, body) =>{
     console.log("startMeetingManager")
     //// (1) If there is no meeting, return fail
     let meetingInfo = await meeting.getMeetingInfo2(meetingName);
@@ -222,16 +226,32 @@ const startMeetingManager = async (email, meetingName, attendeeId, headers, body
             containerOverrides:[{
                 name: managerContainerName,
                 environment:[
+                    // {
+                    //     "name": "MEETING_URL",
+                    //     "value": meetingURL
+                    // },{
+                    //     "name":"BUCKET_ARN",
+                    //     "value":bucketArn
+                    // },{
+                    //     "name":"BUCKET_NAME",
+                    //     "value":bucketName
+                    // }
                     {
-                        "name": "MEETING_URL",
-                        "value": meetingURL
+                        "name": "CODE",
+                        "value": code
                     },{
-                        "name":"BUCKET_ARN",
-                        "value":bucketArn
+                        "name": "UUID",
+                        "value": uuid
                     },{
-                        "name":"BUCKET_NAME",
-                        "value":bucketName
-                    }
+                        "name": "MEETING_NAME",
+                        "value": meetingName
+                    },{
+                        "name": "ATTENDEE_ID",
+                        "value": attendeeId
+                    },{
+                        "name": "RESTAPI_ENDPOINT",
+                        "value": apiEndpoint
+                    },
                 ]
             }]
         }
@@ -264,7 +284,13 @@ const startMeetingManager = async (email, meetingName, attendeeId, headers, body
     }).promise();
 
     return {
-        code:    'Start Meeting',
+        // userPoolId:userPoolId,
+        // userPoolClientI:userPoolClientId,
+        code: code,
+        uuid: uuid,
+        meetingName:meetingName,
+        attendeeId:attendeeId,
+        restAPIEndpoint:apiEndpoint,
         url: meetingURL,
         taskArn: taskArn,
     }
