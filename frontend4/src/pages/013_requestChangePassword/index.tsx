@@ -25,7 +25,7 @@ export const RequestChangePassword  = () => {
             setMessage("Info", "Send Verification Code success ", [`Verification is accepted.`] )
             setIsLoading(false)
             setStage("NEW_PASSWORD")
-        }catch(e){
+        }catch(e:any){
             console.log(e)
             setMessage("Exception", "request change password error", [`${e.message}`, `(code: ${e.code})`] )
             setIsLoading(false)

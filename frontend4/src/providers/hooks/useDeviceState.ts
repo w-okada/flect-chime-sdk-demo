@@ -16,7 +16,7 @@ export type DeviceInfoList = {
 const getDeviceLists = async ():Promise<DeviceInfoList> => {
     const list = await navigator.mediaDevices.enumerateDevices()
 
-    const audioInputDevices:DeviceInfo[] = list.filter((x: InputDeviceInfo | MediaDeviceInfo) => {
+    const audioInputDevices:DeviceInfo[] = list.filter((x: MediaDeviceInfo) => {
         return x.kind === "audioinput"
     }).map(x=>{
         return {
@@ -33,7 +33,7 @@ const getDeviceLists = async ():Promise<DeviceInfoList> => {
         label:"dummy"
     })
     
-    const videoInputDevices:DeviceInfo[] = list.filter((x: InputDeviceInfo | MediaDeviceInfo) => {
+    const videoInputDevices:DeviceInfo[] = list.filter((x: MediaDeviceInfo) => {
         return x.kind === "videoinput"
     }).map(x=>{
         return {
@@ -43,7 +43,7 @@ const getDeviceLists = async ():Promise<DeviceInfoList> => {
             label:x.label
         }
     })
-    const audioOutputDevices:DeviceInfo[] = list.filter((x: InputDeviceInfo | MediaDeviceInfo) => {
+    const audioOutputDevices:DeviceInfo[] = list.filter((x: MediaDeviceInfo) => {
         return x.kind === "audiooutput"
     }).map(x=>{
         return {

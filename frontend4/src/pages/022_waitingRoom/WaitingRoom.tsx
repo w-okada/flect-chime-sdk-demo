@@ -41,7 +41,7 @@ export const WaitingRoom = () => {
             setIsLoading(false)
             chimeClient!.videoInputDeviceSetting!.startLocalVideoTile()
             setStage("MEETING_ROOM")
-        }catch(e){
+        }catch(e:any){
             setIsLoading(false)
             console.log(e)
         }

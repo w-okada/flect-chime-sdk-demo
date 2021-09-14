@@ -28,7 +28,7 @@ export const CreateMeetingRoom = () => {
             setMessage("Info", "Room created", [`room created, please join.`] )
             setIsLoading(false)
             setStage("ENTRANCE")
-        }catch(e){
+        }catch(e:any){
             console.log(e)
             setMessage("Exception", "Creating meeting room failed", [`room(${e.meetingName}) exist?: ${!e.created}`] )                
             setIsLoading(false)

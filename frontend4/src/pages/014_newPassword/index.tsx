@@ -25,7 +25,7 @@ export const NewPassword  = () => {
             console.log("change password")
             setIsLoading(false)
             setStage("SIGNIN")
-        }catch(e){
+        }catch(e:any){
             console.log(e)
             setMessage("Exception", "change password error", [`${e.message}`, `(code: ${e.code})`] )
             setIsLoading(false)

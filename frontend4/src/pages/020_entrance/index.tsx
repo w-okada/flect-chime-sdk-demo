@@ -23,7 +23,7 @@ export const Entrance  = () => {
             console.log("joined to meeting..")
             setIsLoading(false)
             setStage("WAITING_ROOM")
-        }catch(e){
+        }catch(e:any){
             console.log(e)
             setMessage("Exception", "Enter Room Failed", [`${e.message}`, `(code: ${e.code})`] )     
             setIsLoading(false)

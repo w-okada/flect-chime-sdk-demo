@@ -27,7 +27,7 @@ export const SignIn = () => {
             console.log("sign in!!!")
             setIsLoading(false)
             setStage("ENTRANCE")
-        }catch(e){
+        }catch(e:any){
             console.log("sign in error:::", e)
             setMessage("Exception", "Signin error", [`${e.message}`, `(code: ${e.code})`])
             setIsLoading(false)

@@ -24,7 +24,7 @@ export const SignUp = () => {
             setMessage("Info", "Signup success", [`User created.`, `Verification code is sent to your mail address. Please input into next form.`] )
             setIsLoading(false)
             setStage("VERIFY")
-        }catch(e){
+        }catch(e:any){
             console.log(e)
             setMessage("Exception", "Signup error", [`${e.message}`, `(code: ${e.code})`] )    
             setIsLoading(false)

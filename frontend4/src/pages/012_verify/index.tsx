@@ -23,7 +23,7 @@ export const Verify = () => {
             setMessage("Info", "Verification success ", [`Verification is accepted.`] )
             setIsLoading(false)
             setStage("SIGNIN")
-        }catch(e){
+        }catch(e:any){
             console.log(".....",e)
             setMessage("Exception", "Verification error", [`${e.message}`, `(code: ${e.code})`] )
             setIsLoading(false)
@@ -38,7 +38,7 @@ export const Verify = () => {
             console.log("resend")
             setMessage("Info", "Resend Verification ", [`Verification code is resent to your mail address. Please input into next form.`] )    
             setIsLoading(false)
-        }catch(e){
+        }catch(e:any){
             console.log("resend fail")
             setMessage("Exception", "Resend Verification error", [`${e.message}`, `(code: ${e.code})`] )            
             setIsLoading(false)
