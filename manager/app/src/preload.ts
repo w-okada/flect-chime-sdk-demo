@@ -6,9 +6,10 @@ contextBridge.exposeInMainWorld('myAPI', {
         const sources = await desktopCapturer.getSources({ types: ['window', 'screen'] })
         let targetId: string | null = null
         for (let source of sources) {
-            console.log(`name ${source.name}, ${source.display_id}, ${source.id}`);
+            console.log(`WINDOW NAME: name ${source.name}, ${source.display_id}, ${source.id}`);
             if (source.name === "Entire Screen" || source.name === "CHIME_MANAGER") {
-                targetId = source.id
+            // if (source.name === "CHIME_MANAGER") {
+                    targetId = source.id
             }
         }
         return targetId
@@ -25,5 +26,10 @@ contextBridge.exposeInMainWorld('myAPI', {
     },
     onAmongusUpdateMessage: (listener: (message: string) => void) =>{
         ipcRenderer.on('amongus-gamestate-updated', (ev: IpcRendererEvent, message: string) => listener(message))
+    },
+    recorderDataAvailable: (data:Uint8Array):void =>{
+        ipcRenderer.invoke('recorder-data-available', data)
     }
+    
+
 });

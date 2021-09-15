@@ -273,6 +273,19 @@ const createWindow = () => {
 		app.quit()
 	})
 
+    ipcMain.handle('recorder-data-available', (ev:Electron.IpcMainInvokeEvent, data:Uint8Array)=>{
+        console.log("RECORDER-DATA-AVAILABLE")
+        console.log(ev)
+        console.log(data)
+        fs.appendFile("/work/test.wbem", data, function (err) {
+            if (err) {
+                console.log(JSON.stringify(err))
+            } else {
+                console.log("succeed")
+            }
+        });
+
+    })
 
 	if (isDev) mainWindow.webContents.openDevTools({ mode: 'detach' });
 

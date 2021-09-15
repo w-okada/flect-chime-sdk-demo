@@ -21,7 +21,8 @@ pacmd set-default-sink v1  # Set the `v1` as the default sink device
 pacmd set-default-source v1.monitor  # Set the monitor of the v1 sink to be the default source
 
 # Start X11 virtual framebuffer so Firefox will have somewhere to draw
-Xvfb :${X_SERVER_NUM} -ac -screen 0 ${SCREEN_RESOLUTION}x${COLOR_DEPTH} > /dev/null 2>&1 &
+# Xvfb :${X_SERVER_NUM} -ac -screen 0 ${SCREEN_RESOLUTION}x${COLOR_DEPTH} > /dev/null 2>&1 &
+Xvfb :${X_SERVER_NUM} -ac -screen 0 ${SCREEN_RESOLUTION}x${COLOR_DEPTH} &
 sleep 0.5  # Ensure this has started before moving on
 
 export DISPLAY=:${X_SERVER_NUM}.0
@@ -33,7 +34,6 @@ export ATTENDEE_ID=${ATTENDEE_ID}
 export RESTAPI_ENDPOINT=${RESTAPI_ENDPOINT}
 
 electron app --no-sandbox
-
 
 #exec node /recording/dist/index.js ${MEETING_URL} ${BUCKET_NAME} ${SCREEN_WIDTH} ${SCREEN_HEIGHT}
 

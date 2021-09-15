@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { AttendeeState, CognitoClient, DrawingData, FlectChimeClient, GameState, HMMStatus, RealtimeData, RestApiClient, useAmongUsServer, VideoTileState, WebSocketWhiteboardClient } from '@dannadori/flect-amazon-chime-lib'
+import { AttendeeState, CognitoClient, DrawingData, FlectChimeClient, GameState, HMMStatus, RealtimeData, RestApiClient, useAmongUsServer, useRecorder, VideoTileState, WebSocketWhiteboardClient } from '@dannadori/flect-amazon-chime-lib'
 import { ipcRenderer } from 'electron'
 
 import './App.scss';
 import { useWindowSizeChangeListener } from './hooks/useWindowSizeChange';
+import { Recorder } from './Recorder';
 
 const { myAPI } = window;
 
@@ -37,10 +38,12 @@ export const App = (): JSX.Element => {
     const [ startShareTileviewRequestCounter, setStartShareTileviewRequestCounter ] = useState(0)
     const [ stopShareTileviewRequestCounter, setStopShareTileviewRequestCounter ] = useState(0)
     const [ terminateHMMRequestCounter, setTerminateHMMRequestCounter ] = useState(0)
+    const recorder = useMemo(()=>{
+        return new Recorder()
+    },[])
 
     const { updateGameState, setChimeClient:amongUsSetChimeClient } = useAmongUsServer()
     const { screenWidth, screenHeight } = useWindowSizeChangeListener()
-    
 
     //// (1-1) Initialize Chime Client
     useEffect(()=>{
@@ -83,10 +86,18 @@ export const App = (): JSX.Element => {
 
             chimeClient.setRealtimeSubscribeHMMClientListener({
                 startRecordRequestReceived: () => {
+                    console.log("!!!!!!!!! RECORDER START !!!!!!!!!!")
+                    recorder.startRecord()
                     setStartRecordRequestCounter(new Date().getTime())
                 },
                 stopRecordRequestReceived: () => {
-                    setStopRecordRequestCounter(new Date().getTime())
+                    console.log("!!!!!!!!! RECORDER END !!!!!!!!!!")
+                    
+                    recorder.stopRecord("AllTiles.mp4").then((data)=>{
+                        myAPI.recorderDataAvailable(data)
+                        setStopRecordRequestCounter(new Date().getTime())
+                    })
+
                  },
                 startShareTileviewRequestReceived: () => {
                     setStartShareTileviewRequestCounter(new Date().getTime())
@@ -111,13 +122,26 @@ export const App = (): JSX.Element => {
             
             chimeClient.joinMeeting(meetingName, userName).then(()=>{
                 console.log("[MANAGER] JOIN MEETING SUCCEEDED", userName)
-                chimeClient!.audioInputDeviceSetting?.setAudioInput("dummy").then(()=>{
-                    console.log("[MANAGER] DUMMY AUDIO SETTING DONE")
-                    chimeClient!.enterMeeting()
-                    setChimeClient(chimeClient)
+                chimeClient.meetingSession?.deviceController.listAudioOutputDevices().then((audioOuts)=>{
+                    console.log("[MANAGER] AUDIO OUTPUT", JSON.stringify(audioOuts))
 
+                    const p1 = chimeClient.audioOutputDeviceSetting?.setAudioOutput(audioOuts[0].deviceId)
+                    const audioElem = document.getElementById('audio-output') as HTMLAudioElement
+                    console.log("AUDIO ELEMENT", audioElem)
+                    const p2 = chimeClient.audioOutputDeviceSetting?.setOutputAudioElement(audioElem)
+
+                    const p3 = chimeClient!.audioInputDeviceSetting?.setAudioInput("dummy")
+
+                    Promise.all([p1, p2, p3]).then(()=>{
+                        console.log("[MANAGER] DUMMY AUDIO SETTING DONE")
+                        chimeClient!.enterMeeting()
+                        setChimeClient(chimeClient)
+                    })
                 })
             })
+
+            /// set Chime Client for Recorder
+            recorder.chimeClient = chimeClient
         })        
     },[])
 
@@ -137,6 +161,14 @@ export const App = (): JSX.Element => {
         myAPI.getWindowId().then((windowId)=>{
             console.log(`windowId: ${windowId}`)
             setWindowId(windowId)
+
+            if(windowId){
+                const c = createScreenCaptureDisplayMediaConstraints(windowId, 15)
+                navigator.mediaDevices.getUserMedia(c).then(s=>{
+                    console.log("------------------------------------ SET WINDOW TO RECORDER", s)
+                    recorder.sourceVideo = s
+                })            
+            }
         })
     },[])
 
@@ -219,8 +251,12 @@ export const App = (): JSX.Element => {
     },[terminateHMMRequestCounter])
 
     return (
-        <div className="container" style={{color:"black"}}>
+        <div className="container" style={{color:"black", cursor:"none"}}>
             {grid}
+            <div>
+                <audio id="audio-output" hidden />                
+
+            </div>
         </div>
     );
 };

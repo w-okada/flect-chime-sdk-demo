@@ -24,6 +24,7 @@ RUN npm install electron -g --unsafe-perm=true --allow-root
 COPY /run.sh /run.sh
 COPY /app /app
 
+
 ENTRYPOINT ["/run.sh"]
 
 
