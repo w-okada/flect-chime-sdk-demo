@@ -64,6 +64,8 @@ export class BackendStack extends cdk.Stack {
             'chime:DeleteAttendee',
             'chime:GetAttendee',
             'chime:ListAttendees',
+            'chime:StartMeetingTranscription',
+            'chime:StopMeetingTranscription',
 
             'execute-api:ManageConnections',
 
@@ -75,6 +77,7 @@ export class BackendStack extends cdk.Stack {
             `ec2:DescribeNetworkInterfaces`,
 
             'iam:PassRole',
+
         )
         statement.addResources(userPool.userPoolArn)
         statement.addResources("arn:*:chime::*:meeting/*")
@@ -275,7 +278,7 @@ export class BackendStack extends cdk.Stack {
         const nodeModulesLayer = new lambda.LayerVersion(this, 'NodeModulesLayer', {
             layerVersionName: `${id}_LambdaLayer`,
             code: lambda.AssetCode.fromAsset(`${__dirname}/layer`),
-            compatibleRuntimes: [lambda.Runtime.NODEJS_12_X]
+            compatibleRuntimes: [lambda.Runtime.NODEJS_14_X]
         });
 
         // ( - ) Utility
@@ -317,7 +320,7 @@ export class BackendStack extends cdk.Stack {
         //// (1) Root Function
         const lambdaFunctionGetRoot: lambda.Function = new lambda.Function(this, "funcHelloWorld", {
             functionName: `${id}_getRoot`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: "index.handler",
             memorySize: 256,
@@ -329,7 +332,7 @@ export class BackendStack extends cdk.Stack {
         //// (2-1) Get Meetings
         const lambdaFunctionGetMeetings: lambda.Function = new lambda.Function(this, "funcGetMeetings", {
             functionName: `${id}_getMeetings`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: "index.getMeetings",
             memorySize: 256,
@@ -341,7 +344,7 @@ export class BackendStack extends cdk.Stack {
         //// (2-2) Post Meeting
         const lambdaFunctionPostMeeting: lambda.Function = new lambda.Function(this, "funcPostMeeting", {
             functionName: `${id}_postMeeting`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: "index.postMeeting",
             memorySize: 256,
@@ -353,7 +356,7 @@ export class BackendStack extends cdk.Stack {
         //// (2-3) Delete Meeting
         const lambdaFunctionDeleteMeeting: lambda.Function = new lambda.Function(this, "funcDeleteMeeting", {
             functionName: `${id}_deleteMeeting`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: "index.deleteMeeting",
             memorySize: 256,
@@ -364,7 +367,7 @@ export class BackendStack extends cdk.Stack {
         //// (2-4) Get Meeting
         const lambdaFunctionGetMeeting: lambda.Function = new lambda.Function(this, "funcGetMeeting", {
             functionName: `${id}_getMeeting`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: "index.getMeeting",
             memorySize: 256,
@@ -377,7 +380,7 @@ export class BackendStack extends cdk.Stack {
         //// (3-1) Get Attendee
         const lambdaFunctionGetAttendee: lambda.Function = new lambda.Function(this, "funcGetAttendee", {
             functionName: `${id}_getAttendee`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: "index.getAttendee",
             memorySize: 256,
@@ -388,7 +391,7 @@ export class BackendStack extends cdk.Stack {
         //// (3-2) Post Attendee
         const lambdaFunctionPostAttendee: lambda.Function = new lambda.Function(this, "funcPostAttendee", {
             functionName: `${id}_postAttendee`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: "index.postAttendee",
             memorySize: 256,
@@ -399,7 +402,7 @@ export class BackendStack extends cdk.Stack {
         //// (3-3) list Attendees
         const lambdaFunctionGetAttendees: lambda.Function = new lambda.Function(this, "funcGetAttendees", {
             functionName: `${id}_getAttendees`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: "index.getAttendees",
             memorySize: 256,
@@ -411,7 +414,7 @@ export class BackendStack extends cdk.Stack {
         //// (4-1) Post Attendee Operation
         const lambdaFunctionPostAttendeeOperation: lambda.Function = new lambda.Function(this, "funcPostAttendeeOperation", {
             functionName: `${id}_postAttendeeOperation`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: "index.postAttendeeOperation",
             memorySize: 256,
@@ -423,7 +426,7 @@ export class BackendStack extends cdk.Stack {
         //// (5-1) Post Log
         const lambdaFunctionPostLog: lambda.Function = new lambda.Function(this, "funcPostLog", {
             functionName: `${id}_postLog`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: "index.postLog",
             memorySize: 256,
@@ -434,7 +437,7 @@ export class BackendStack extends cdk.Stack {
         //// (a-1) Post Onetime Code Signin Request
         const lambdaFunctionPostOperation: lambda.Function = new lambda.Function(this, "funcPostOperation", {
             functionName: `${id}_postOperation`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: "index.postOperation",
             memorySize: 256,
@@ -638,7 +641,7 @@ export class BackendStack extends cdk.Stack {
         const lambdaFuncMessageConnect = new lambda.Function(this, 'ChimeMessageAPIConnect', {
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: 'message.connect',
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             timeout: Duration.seconds(300),
             memorySize: 256,
         });
@@ -648,7 +651,7 @@ export class BackendStack extends cdk.Stack {
         const lambdaFuncMessageDisconnect = new lambda.Function(this, 'ChimeMessageAPIDisconnect', {
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: 'message.disconnect',
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             timeout: Duration.seconds(300),
             memorySize: 256,
         });
@@ -659,7 +662,7 @@ export class BackendStack extends cdk.Stack {
         const lambdaFuncMessageMessage = new lambda.Function(this, 'ChimeMessageAPIMessage', {
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: 'message.message',
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             timeout: Duration.seconds(300),
             memorySize: 256,
         });
@@ -670,7 +673,7 @@ export class BackendStack extends cdk.Stack {
         const lambdaFuncMessageAuth = new lambda.Function(this, 'ChimeMessageAPIAuth', {
             code: lambda.Code.asset(`${__dirname}/lambda`),
             handler: 'message.authorize',
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             timeout: Duration.seconds(300),
             memorySize: 256,
         });

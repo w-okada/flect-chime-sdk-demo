@@ -67,8 +67,12 @@ export const useStyles = makeStyles((theme: Theme) =>
         sendButton:{
             textAlign: 'right',
         },
-
-
+        //// for transcription
+        transcriptionArea:{
+            height: 280, 
+            width: "100%", 
+            overflow: 'auto'
+        },
         //// for whiteboard
 
         paper: {

@@ -18,6 +18,7 @@ type APP_MODE = "chime" | "amongus"
 interface AppStateValue {
     mode: APP_MODE,
     setLastUpdateTime: (t:number)=>void
+    lastUpdateTime: number,
     chimeClient: FlectChimeClient | null,
     /** Clients */
     cognitoClient: CognitoClient,
@@ -115,6 +116,11 @@ export const AppStateProvider = ({ children }: Props) => {
                     setLastUpdateTime(new Date().getTime())
                 }
             })
+            c.setRealtimeSubscribeTranscriptionClientListener({
+                transcriptionStatusUpdated:()=>{
+                    setLastUpdateTime(new Date().getTime())
+                }
+            })
 
             c.setRealtimeSubscribeHMMClientListener({
                 startRecordRequestReceived: () => {
@@ -208,6 +214,7 @@ export const AppStateProvider = ({ children }: Props) => {
     const providerValue = {
         mode,
         setLastUpdateTime,
+        lastUpdateTime,
         /** For Credential */
         cognitoClient,
         chimeClient,

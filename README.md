@@ -84,6 +84,14 @@ see [docker offical page](https://docs.docker.com/engine/install/)
 You can disable HMM, in backend config mentioned later.
 
 
+### (5) Create Service-Linked Role
+
+```
+aws iam create-service-linked-role --aws-service-name transcription.chime.amazonaws.com
+```
+
+detail is [https://docs.aws.amazon.com/chime/latest/ag/using-service-linked-roles-transcription.html](here)
+
 ## Build backend
 ### (1) define stack name
 Define the stack name for backend.

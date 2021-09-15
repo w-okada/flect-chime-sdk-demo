@@ -1,4 +1,4 @@
-import { ConsoleLogger, DefaultActiveSpeakerPolicy, DefaultDeviceController, DefaultMeetingSession, LogLevel, MeetingSessionConfiguration, VideoTileState } from "amazon-chime-sdk-js"
+import { ConsoleLogger, DefaultActiveSpeakerPolicy, DefaultDeviceController, DefaultMeetingSession, LogLevel, MeetingSessionConfiguration, Transcript, TranscriptEvent, TranscriptionStatus, TranscriptionStatusType, VideoTileState } from "amazon-chime-sdk-js"
 import { DeviceChangeObserverImpl } from "./observer/DeviceChangeObserverImpl"
 import AudioVideoObserverTemplate from "./observer/AudioVideoObserverTemplate"
 import { AudioInputDeviceSetting } from "./io/AudioInputDeviceSetting"
@@ -7,6 +7,7 @@ import { AudioOutputDeviceSetting } from "./io/AudioOutputDeviceSetting"
 import { RealtimeSubscribeChatClient, RealtimeSubscribeChatClientListener } from "./realtime/RealtimeSubscribeChatClient"
 import { RestApiClient } from "../rest/RestApiClient"
 import { RealtimeSubscribeHMMClient, RealtimeSubscribeHMMClientListener } from "./realtime/RealtimeSubscribeHMMClient"
+import { RealtimeSubscribeTranscriptionClient, RealtimeSubscribeTranscriptionClientListener } from "./realtime/RealtimeSubscribeTranscriptionClient"
 
 export type AttendeeState = {
     attendeeId: string
@@ -29,6 +30,7 @@ export interface FlectChimeClientListener {
     attendeesUpdated: (list: { [attendeeId: string]: AttendeeState }) => void
     videoTileStateUpdated: (list: { [attendeeId: string]: VideoTileState }) => void
 }
+
 
 export class FlectChimeClient {
     private _restApiClient: RestApiClient
@@ -111,6 +113,8 @@ export class FlectChimeClient {
         return this._audioOutputDeviceSetting
     }
 
+
+
     ///////////////////////////////////////////////////////////
     // Tools
     // Note: whiteboard is independent from ChimeClient (use websocket)
@@ -122,11 +126,17 @@ export class FlectChimeClient {
     // get chatData(): RealtimeData[] {
     //     return this._chatClient ? this._chatClient.chatData : []
     // }
-    get chatClient(): RealtimeSubscribeChatClient|null{
+    get chatClient(): RealtimeSubscribeChatClient | null {
         return this._chatClient
     }
+
+    private _transcriptionClient: RealtimeSubscribeTranscriptionClient | null = null
+    get transcriptionClient():RealtimeSubscribeTranscriptionClient | null{
+        return this._transcriptionClient
+    }
+
     private _hmmClient: RealtimeSubscribeHMMClient | null = null
-    get hmmClient():RealtimeSubscribeHMMClient|null{
+    get hmmClient(): RealtimeSubscribeHMMClient | null {
         return this._hmmClient
     }
 
@@ -134,22 +144,30 @@ export class FlectChimeClient {
     // Listener
     ///////////////////////////////////////////
     private _flectChimeClientListener: FlectChimeClientListener | null = null
-    setFlectChimeClientListener = (l:FlectChimeClientListener) => {
+    setFlectChimeClientListener = (l: FlectChimeClientListener) => {
         this._flectChimeClientListener = l
     }
 
     private _realtimeSubscribeChatClientListener: RealtimeSubscribeChatClientListener | null = null
-    setRealtimeSubscribeChatClientListener = (l:RealtimeSubscribeChatClientListener) => {
+    setRealtimeSubscribeChatClientListener = (l: RealtimeSubscribeChatClientListener) => {
         this._realtimeSubscribeChatClientListener = l
-        if(this._chatClient){
+        if (this._chatClient) {
             this._chatClient.setRealtimeSubscribeChatClientListener(l)
         }
     }
 
-    private _realtimeSubscribeHMMClientListener:RealtimeSubscribeHMMClientListener | null = null
-    setRealtimeSubscribeHMMClientListener = (hmmListener:RealtimeSubscribeHMMClientListener |null) => {
+    private _realtimeSubscribeTranscriptionClientListener: RealtimeSubscribeTranscriptionClientListener | null = null
+    setRealtimeSubscribeTranscriptionClientListener = (l:RealtimeSubscribeTranscriptionClientListener)=>{
+        this._realtimeSubscribeTranscriptionClientListener = l
+        if(this._transcriptionClient){
+            this._transcriptionClient.setRealtimeSubscribeTranscriptionClientListener(l)
+        }
+    }
+
+    private _realtimeSubscribeHMMClientListener: RealtimeSubscribeHMMClientListener | null = null
+    setRealtimeSubscribeHMMClientListener = (hmmListener: RealtimeSubscribeHMMClientListener | null) => {
         this._realtimeSubscribeHMMClientListener = hmmListener
-        if(this._hmmClient){
+        if (this._hmmClient) {
             this._hmmClient.setRealtimeSubscribeHMMClientListener(hmmListener)
         }
     }
@@ -283,7 +301,7 @@ export class FlectChimeClient {
                 if (attendeeId in this._attendees === false) {
                     let userName = ""
                     if (attendeeId.indexOf("#") > 0) {
-                        const strippedAttendeeId = attendeeId.substring(0,attendeeId.indexOf("#"))
+                        const strippedAttendeeId = attendeeId.substring(0, attendeeId.indexOf("#"))
                         const result = await this._restApiClient.getUserNameByAttendeeId(this._meetingName!, strippedAttendeeId)
                         userName = attendeeId
                         userName = result.result === "success" ? `Shared Contents[${result.name}]` : attendeeId
@@ -373,6 +391,66 @@ export class FlectChimeClient {
                 this._flectChimeClientListener?.attendeesUpdated(this._attendees)
             }, 5000)
 
+        // // (3-2) Transcription
+        // this.meetingSession.audioVideo.transcriptionController?.subscribeToTranscriptEvent((transcriptEvent: TranscriptEvent) => {
+        //     const LANGUAGES_NO_WORD_SEPARATOR = new Set([
+        //         'ja-JP',
+        //         'zh-CN',
+        //     ]);
+        //     console.log("[FlectChimeClient][TRANSCRIBE] Receive Event:", transcriptEvent)
+
+        //     if (transcriptEvent instanceof TranscriptionStatus) {
+        //         console.log(`[FlectChimeClient][TRANSCRIBE] Status, type: ${transcriptEvent.type}, time:${transcriptEvent.eventTimeMs}, message:${transcriptEvent.message}, region:${transcriptEvent.transcriptionRegion}`)
+        //         console.log(`[FlectChimeClient][TRANSCRIBE] Status, conf: ${transcriptEvent.transcriptionConfiguration}`)
+
+        //         if (transcriptEvent.type === TranscriptionStatusType.STARTED) {
+        //             console.log("[FlectChimeClient][TRANSCRIBE] Status: Started", transcriptEvent.transcriptionConfiguration)
+        //             const transcriptionConfiguration = JSON.parse(transcriptEvent.transcriptionConfiguration);
+        //             if (transcriptionConfiguration) {
+        //                 if (transcriptionConfiguration.EngineTranscribeSettings) {
+        //                     this._languageCode = transcriptionConfiguration.EngineTranscribeSettings.LanguageCode;
+        //                 } else if (transcriptionConfiguration.EngineTranscribeMedicalSettings) {
+        //                     this._languageCode = transcriptionConfiguration.EngineTranscribeMedicalSettings.languageCode;
+        //                 }
+        //             }
+
+        //             if (this._languageCode && LANGUAGES_NO_WORD_SEPARATOR.has(this._languageCode!)) {
+        //                 this._noWordSeparatorForTranscription = true
+        //             }else{
+        //                 this._noWordSeparatorForTranscription = false
+        //             }
+        //             console.log(`[FlectChimeClient][TRANSCRIBE] Lang:${this._languageCode} noSeparateor:${this._noWordSeparatorForTranscription}`)
+        //             this._isTranscriptionEnabled = true
+        //             this._flectChimeClientTranscriptionListener?.transcriptionStarted(this._languageCode||"")
+        //         } else if (transcriptEvent.type === TranscriptionStatusType.STOPPED) {
+        //             console.log("[FlectChimeClient][TRANSCRIBE] Status: Stopped")
+        //             this._isTranscriptionEnabled = false
+        //             this._flectChimeClientTranscriptionListener?.transcriptionStopped()
+        //         } else{
+        //             console.log("[FlectChimeClient][TRANSCRIBE] Status: other", transcriptEvent.type)
+        //         }
+
+        //     } else if (transcriptEvent instanceof Transcript) {
+        //         console.log("[FlectChimeClient][TRANSCRIBE] Scripts:", transcriptEvent.results)
+
+        //         for (const result of transcriptEvent.results) {
+        //             console.log(`[FlectChimeClient][TRANSCRIBE] result: id:${result.resultId} channel:${result.channelId} time(${result.startTimeMs}-${result.endTimeMs}) partial:${result.isPartial}`)
+
+        //             for(const alt of result.alternatives){
+        //                 console.log(`[FlectChimeClient][TRANSCRIBE] alt: ${alt.transcript}`)
+        //                 let userName = ""
+        //                 for(const item of alt.items){
+        //                     // console.log(`[FlectChimeClient][TRANSCRIBE] item: attendeeId:${item.attendee.attendeeId}, time:(${item.startTimeMs}-${item.endTimeMs}) type:${item.type}`)
+        //                     // console.log(`[FlectChimeClient][TRANSCRIBE] item: content:${item.content}`)
+        //                     userName = this.getUserNameByAttendeeIdFromList(item.attendee.attendeeId)
+        //                 }
+        //                 this._flectChimeClientTranscriptionListener?.scriptRecieved(result.startTimeMs, result.endTimeMs, userName, this._languageCode||"", alt.transcript, result.isPartial)
+        //             }
+        //         }
+        //     } else {
+        //         console.log("[TRANSCRIBE] unknown type", transcriptEvent)
+        //     }
+        // })
 
         // (4) start 
         this.meetingSession!.audioVideo.start()
@@ -383,6 +461,10 @@ export class FlectChimeClient {
         // (5) enable chat
         this._chatClient = new RealtimeSubscribeChatClient(this)
         this._chatClient.setRealtimeSubscribeChatClientListener(this._realtimeSubscribeChatClientListener)
+
+        // (5-2) enable transcription
+        this._transcriptionClient = new RealtimeSubscribeTranscriptionClient(this)
+        this._transcriptionClient.setRealtimeSubscribeTranscriptionClientListener(this._realtimeSubscribeTranscriptionClientListener)
 
         // (6) enable hmm
         this._hmmClient = new RealtimeSubscribeHMMClient(this, this._restApiClient)
@@ -424,6 +506,14 @@ export class FlectChimeClient {
         return this._restApiClient.generateOnetimeCode(this._meetingName!, this._attendeeId!)
     }
 
+    startTranscribe = async (lang:string) => {
+        return this._restApiClient.startTranscribe(this._meetingName!, this._attendeeId!, lang)
+    }
+
+    stopTranscribe = async () => {
+        return this._restApiClient.stopTranscribe(this._meetingName!, this._attendeeId!)
+    }
+
 
     ///////////////////////////////////////////
     // Utility
@@ -439,12 +529,13 @@ export class FlectChimeClient {
         }
     }
     getContentTilesExcludeMe = () => {
-        return Object.values(this._videoTileStates).filter(tile => { 
-            return tile.boundAttendeeId!.indexOf(this._attendeeId!) < 0 }
+        return Object.values(this._videoTileStates).filter(tile => {
+            return tile.boundAttendeeId!.indexOf(this._attendeeId!) < 0
+        }
         )
     }
 
-    getTilesWithFilter = (excludeSpeaker: boolean, excludeSharedContent: boolean, excludeLocal:boolean) => {
+    getTilesWithFilter = (excludeSpeaker: boolean, excludeSharedContent: boolean, excludeLocal: boolean) => {
         let targetTiles = Object.values(this._videoTileStates).filter(tile => {
             if (excludeSharedContent && tile.isContent === true) {
                 return false
@@ -452,7 +543,7 @@ export class FlectChimeClient {
             if (excludeSpeaker && tile.boundAttendeeId === this._activeSpeakerId) {
                 return false
             }
-            if (excludeLocal && tile.localTile){
+            if (excludeLocal && tile.localTile) {
                 return false
             }
 

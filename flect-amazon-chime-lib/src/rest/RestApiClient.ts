@@ -133,6 +133,21 @@ type GetManagerInfoRequest = {
     desiredStatus:string
 }
 
+//(12)
+type StartTranscribeRequest = {
+    lang: string
+}
+type StartTranscribeResponse = {
+    code: string, 
+}
+
+//(13)
+type StopTranscribeResponse = {
+    code: string, 
+}
+
+
+
 export class RestApiClient{
     private _baseUrl:string|null = null
     private _idToken:string|null = null
@@ -469,6 +484,76 @@ export class RestApiClient{
         console.log("[getManagerInfo]",data)
         return data;
     }
+
+
+
+
+    /**
+     * (12) startTranscribe
+     */
+    startTranscribe = async (meetingName: string, attendeeId: string, lang: string):Promise<StartTranscribeResponse> => {
+
+        const url = `${this._baseUrl}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}/operations/start-transcribe`
+
+        const request:StartTranscribeRequest = { 
+            lang: lang,
+        }
+
+        const requestBody = JSON.stringify(request)
+
+        const response = await fetch(url, {
+                method: 'POST',
+                body: requestBody,
+                headers: {
+                    "Authorization": this._idToken!,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    "X-Flect-Access-Token": this._accessToken!
+                }
+            }
+        );
+
+        const data = await response.json();
+        if (data === null) {
+            throw new Error(`Server error: startManager failed`);
+        }
+        console.log("start transcribe", data)
+        return data;
+    }
+
+
+    /**
+     * (13) stopTranscribe
+     */
+    stopTranscribe = async (meetingName: string, attendeeId: string):Promise<StartTranscribeResponse> => {
+
+        const url = `${this._baseUrl}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}/operations/stop-transcribe`
+
+        const request= { 
+        }
+
+        const requestBody = JSON.stringify(request)
+
+        const response = await fetch(url, {
+                method: 'POST',
+                body: requestBody,
+                headers: {
+                    "Authorization": this._idToken!,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    "X-Flect-Access-Token": this._accessToken!
+                }
+            }
+        );
+
+        const data = await response.json();
+        if (data === null) {
+            throw new Error(`Server error: startManager failed`);
+        }
+        console.log("stop transcribe", data)
+        return data;
+    }
+
 }
 
 

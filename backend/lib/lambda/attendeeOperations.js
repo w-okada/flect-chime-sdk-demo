@@ -27,7 +27,8 @@ var meeting = require('./meeting');
 var ecs = new AWS.ECS();
 var ec2 = new AWS.EC2();
 
-
+const chime = new AWS.Chime({ region: 'us-east-1' });
+chime.endpoint = new AWS.Endpoint('https://service.chime.aws.amazon.com/console');
 /**
  * helper function for shulle the onetime codes.
  */
@@ -62,6 +63,12 @@ exports.dispatchAttendeeOperation = async (operation, email, meetingName, attend
             return startMeetingManager(email, meetingName, attendeeId, apiEndpoint, header, body)
         case "get-manager-info":
             return getMeetingManagerInformation(email, meetingName, attendeeId, header, body)
+
+        case "start-transcribe":
+            return startTranscribe(email, meetingName, attendeeId, apiEndpoint, header, body)
+        case "stop-transcribe":
+            return stopTranscribe(email, meetingName, attendeeId, apiEndpoint, header, body)
+    
         default:
             return defaultResponse(operation)
     }
@@ -296,11 +303,6 @@ const startMeetingManager = async (email, meetingName, attendeeId, apiEndpoint, 
     }
 }
 
-
-
-
-
-
 /***
  * get Headless Meeting Manager information.
  * 
@@ -414,6 +416,99 @@ const getMeetingManagerInformation = async (email, meetingName, attendeeId, head
         desiredStatus: desiredStatus,
     }
 }
+
+
+/***
+ * start Transcribe.
+ * 
+ */
+const startTranscribe = async (email, meetingName, attendeeId, apiEndpoint, headers, body) =>{
+    console.log("startTranscribe")
+    console.log("SDK VERS:", AWS.VERSION)
+
+    //// (1) If there is no meeting, return fail
+    let meetingInfo = await meeting.getMeetingInfo2(meetingName);
+    if (meetingInfo === null) {
+        return {
+            code: 'MeetingNotFound',
+            message: 'No meeting is found. Please check meeting name.'
+        }
+    }
+    meetingInfo.Metadata
+
+    //// (2) check if owner calls or not. 
+    var meetingMetadata = meetingInfo.Metadata
+    var ownerId = meetingMetadata['OwnerId']
+    console.log("OWNERID", ownerId, "email", email)
+    if(ownerId != email){
+        return {
+            code: 'permission denyed',
+            message: 'Meeting owner id does not match email'
+        }
+    }
+
+    //// (3) start transcribe
+    const res = await chime.startMeetingTranscription({
+        MeetingId: meetingInfo.MeetingId,
+        TranscriptionConfiguration:{
+            EngineTranscribeSettings:{
+                LanguageCode: body.lang,
+                //VocabularyFilterMethod?: TranscribeVocabularyFilterMethod;
+                //VocabularyFilterName?: String;
+                //VocabularyName?: String;
+                //Region?: TranscribeRegion;
+            }
+        }
+    }).promise();
+    
+    console.log("start transcribe result", res)
+    return {
+        code: 'SUCCESS',
+    }
+}
+
+
+/***
+ * stop Transcribe.
+ * 
+ */
+const stopTranscribe = async (email, meetingName, attendeeId, apiEndpoint, headers, body) =>{
+    console.log("stopTranscribe")
+    console.log("SDK VERS:", AWS.VERSION)
+    //// (1) If there is no meeting, return fail
+    let meetingInfo = await meeting.getMeetingInfo2(meetingName);
+    if (meetingInfo === null) {
+        return {
+            code: 'MeetingNotFound',
+            message: 'No meeting is found. Please check meeting name.'
+        }
+    }
+    meetingInfo.Metadata
+
+    //// (2) check if owner calls or not. 
+    var meetingMetadata = meetingInfo.Metadata
+    var ownerId = meetingMetadata['OwnerId']
+    console.log("OWNERID", ownerId, "email", email)
+    if(ownerId != email){
+        return {
+            code: 'permission denyed',
+            message: 'Meeting owner id does not match email'
+        }
+    }
+
+    //// (3) stop transcribe
+    const res = await chime.stopMeetingTranscription({
+        MeetingId: meetingInfo.MeetingId,
+    }).promise();
+    console.log("stop transcribe result", res)
+    return {
+        code: 'SUCCESS',
+    }
+
+}
+
+
+
 
 
 /**

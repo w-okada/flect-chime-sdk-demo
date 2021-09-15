@@ -10,7 +10,8 @@ import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
   
 export const ManagerControllerPanel = () => {
     const classes = useStyles();
-    const { chimeClient, amongusGameState } = useAppState()
+    const { chimeClient, amongusGameState} = useAppState()
+
 
     const ownerStateComp = useMemo(()=>{
         return (
@@ -133,8 +134,6 @@ export const ManagerControllerPanel = () => {
                 <div>
                     { chimeClient?.hmmClient?.hmmPublicIp ? chimeClient?.hmmClient?.hmmPublicIp:"no ip"}
                 </div>
-
-
             </div>
 
     );

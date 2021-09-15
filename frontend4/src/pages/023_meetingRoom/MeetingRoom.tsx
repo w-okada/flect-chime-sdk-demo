@@ -23,6 +23,7 @@ import { GridView } from "./components/ScreenView/GridView";
 import { OnetimeCodePanel } from "./components/sidebars/OnetimeCodePanel";
 import { ManagerControllerPanel } from "./components/sidebars/ManagerControllerPanel";
 import { RecorderPanel } from "./components/sidebars/RecorderPanel";
+import { TranscriptionPanel } from "./components/sidebars/TranscriptionPanel";
 
 const toolbarHeight = 20
 const drawerWidth = 240;
@@ -101,7 +102,7 @@ export const MeetingRoom = () => {
                             <DeviceEnabler type="Speaker" enable={chimeClient!.audioOutputDeviceSetting!.audioOutputEnable} setEnable={setAudioOutputEnable}/>
                             <DialogOpener type="Setting" onClick={()=>setSettingDialogOpen(true)}/>
                             <span className={clsx(classes.menuSpacer)}>  </span>
-                            <FeatureEnabler type="ShareScreen" enable={chimeClient!.isShareContent} setEnable={(val:boolean)=>{enableShareScreen(val)}}/>
+                            <FeatureEnabler type="ShareScreen"   enable={chimeClient!.isShareContent} setEnable={(val:boolean)=>{enableShareScreen(val)}}/>
                             <span className={clsx(classes.menuSpacer)}>  </span>
                             <span className={clsx(classes.menuSpacer)}>  </span>
                             <SwitchButtons type="ScreenView" selected={screenType} onClick={(val)=>{setScreenType(val as ScreenType)}}/>
@@ -184,6 +185,10 @@ export const MeetingRoom = () => {
 
                         <CustomAccordion title="RecordMeeting (exp.)">
                             <RecorderPanel />
+                        </CustomAccordion>
+
+                        <CustomAccordion title="Transcription">
+                            <TranscriptionPanel  />
                         </CustomAccordion>
 
 
