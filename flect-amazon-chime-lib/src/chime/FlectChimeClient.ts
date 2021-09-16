@@ -531,10 +531,10 @@ export class FlectChimeClient {
     getContentTilesExcludeMe = () => {
         return Object.values(this._videoTileStates).filter(tile => {
             return tile.boundAttendeeId!.indexOf(this._attendeeId!) < 0
-        }
-        )
+        })
     }
 
+    //// deprecated
     getTilesWithFilter = (excludeSpeaker: boolean, excludeSharedContent: boolean, excludeLocal: boolean) => {
         let targetTiles = Object.values(this._videoTileStates).filter(tile => {
             if (excludeSharedContent && tile.isContent === true) {
@@ -555,6 +555,67 @@ export class FlectChimeClient {
         })
         return targetTiles
     }
+
+
+    ///// Improved version of getTilesWithFilters
+    private gatherTiles = (
+        remoteActiveSpeaker:boolean, remoteNonActiveSpeaker:boolean, remoteSharedContent:boolean,
+        localActiveSpeaker:boolean, localNonActiveSpeaker:boolean, localSharedContent:boolean,
+    )=>{
+
+        const targetTiles = Object.values(this._videoTileStates).filter(tile=>{
+            if(tile.localTile || tile.boundAttendeeId!.includes(this._attendeeId!)){                      ///(1) Local
+                if(tile.isContent){
+                    if(localSharedContent){
+                        return true                     /// (1-1) Local Shared Content
+                    }
+                }else if(tile.boundAttendeeId === this._activeSpeakerId){
+                    if(localActiveSpeaker){
+                        return true                     /// (1-2) Local Active Speaker
+                    }
+                }else{
+                    if(localNonActiveSpeaker){
+                        return true                     /// (1-3) Local Non Active Speaker
+                    }
+                }
+            }else{                                  ///(2) Remote
+                if(tile.isContent){
+                    if(remoteSharedContent){
+                        return true                     /// (2-1) Remote Shared Content
+                    }
+                }else if(tile.boundAttendeeId === this._activeSpeakerId){
+                    if(remoteActiveSpeaker){
+                        return true                     /// (2-2) Remote Active Speaker
+                    }
+                }else{
+                    if(remoteNonActiveSpeaker){
+                        return true                     /// (2-3) Remote Non Active Speaker
+                    }
+                }
+            }
+        })
+
+        const nonPausedTargetTiles = targetTiles.filter(tile=>{
+            if(this._attendees[tile.boundAttendeeId!]){
+                return this._attendees[tile.boundAttendeeId!].isVideoPaused === false
+            }else{
+                return false
+            }
+        })
+        return nonPausedTargetTiles
+    }
+
+    getTilesForRecorder = () => {
+        return this.gatherTiles(true, true, true, false, false, false)
+    }
+    getSharedContentTiles = (excludeLocal:boolean) =>{
+        if(excludeLocal){
+            return this.gatherTiles(false, false, true, false, false, false)
+        }else{
+            return this.gatherTiles(false, false, true, false, false, true)
+        }
+    }
+
 
     setPauseVideo = async (attendeeId: string, pause: boolean) => {
         if (this._attendees[attendeeId]) {

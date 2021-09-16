@@ -16,6 +16,23 @@ export class Recorder{
     private _sourceVideo : HTMLCanvasElement | HTMLVideoElement | MediaStream | null = null
     set sourceVideo(_sourceVideo:HTMLCanvasElement | HTMLVideoElement | MediaStream | null ){
         this._sourceVideo = _sourceVideo
+        // this._stream.getVideoTracks().forEach((x)=>{
+        //     this._stream.removeTrack(x)
+        // })
+        // if(this._sourceVideo instanceof HTMLCanvasElement || this._sourceVideo instanceof HTMLVideoElement){
+        //     // @ts-ignore
+        //     const videoStream = sourceVideo!.captureStream() as MediaStream
+        //     videoStream.getTracks().forEach(t => {
+        //         console.log("added tracks:", t)
+        //         this._stream.addTrack(t)
+        //     })
+        // }else if (this._sourceVideo instanceof MediaStream) {
+        //     this._sourceVideo.getTracks().forEach(t => {
+        //         console.log("added tracks:", t)
+        //         this._stream.addTrack(t)
+        //     })
+        // }
+
     }
 
     private _isRecording:boolean = false
@@ -24,6 +41,7 @@ export class Recorder{
     }
     private _mediaRecorder:MediaRecorder | null = null
     private _chunks:Blob[] = []
+    // private _stream = new MediaStream();
 
 
     startRecord = () =>{
@@ -32,7 +50,7 @@ export class Recorder{
         this._chunks = []
         if(this._sourceVideo instanceof HTMLCanvasElement || this._sourceVideo instanceof HTMLVideoElement){
             // @ts-ignore
-            const videoStream = sourceVideo!.captureStream() as MediaStream
+            const videoStream = this._sourceVideo!.captureStream() as MediaStream
             videoStream.getTracks().forEach(t => {
                 console.log("added tracks:", t)
                 stream.addTrack(t)
@@ -71,6 +89,7 @@ export class Recorder{
         [outputNode.stream].forEach(s=>{
             s?.getTracks().forEach(t=>{
                 console.log("added tracks:", t)
+                // this._stream.addTrack(t)
                 stream.addTrack(t)
             })
         });
@@ -79,6 +98,7 @@ export class Recorder{
             mimeType: 'video/webm;codecs=h264,opus'
         }
         console.log("create media recorder")
+        // this._mediaRecorder = new MediaRecorder(this._stream, options)
         this._mediaRecorder = new MediaRecorder(stream, options)
         this._mediaRecorder.ondataavailable = (e: BlobEvent) => {
             console.log(`ondataavailable datasize ${e.data.size}`)
@@ -89,37 +109,10 @@ export class Recorder{
         console.log("create media start")
     }
     
-    stopRecord = async (filename:string) =>{
+    stopRecord = async () =>{
         this._mediaRecorder?.stop()
         const data = await fetchFile(new Blob(this._chunks))
-
-        // let ffmpegWaitPromise
-        // if(this._ffmpeg.isLoaded() === false){
-        //     console.log("stop record 1")
-        //     await this._ffmpeg.load()
-        //     console.log("stop record 2")
-        //     this._ffmpeg.setProgress(({ ratio }) => {
-        //         console.log("progress:", ratio);
-        //     });
-        // }
-        // console.log("stop record 3")
-        // const wbemName = `${filename}_.wbem`
-        // this._ffmpeg.FS('writeFile', wbemName, await fetchFile(new Blob(this._chunks)));
-        // console.log("stop record 4")
-
-        // console.log("FFMPEG START!")
-        // await this._ffmpeg.run('-i', wbemName, '-c', 'copy', filename)
-        // console.log("stop record 5")
-
-        // const data = this._ffmpeg.FS('readFile', filename)
-        // console.log("stop record 6")
-
-        // const a = document.createElement("a")
-        // a.download = filename
-        // a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
-        // a.click()
-        // console.log("FFMPEG DONE!")
-
+        
         this._isRecording = false
         return data
     }

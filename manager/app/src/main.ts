@@ -273,18 +273,26 @@ const createWindow = () => {
 		app.quit()
 	})
 
-    ipcMain.handle('recorder-data-available', (ev:Electron.IpcMainInvokeEvent, data:Uint8Array)=>{
-        console.log("RECORDER-DATA-AVAILABLE")
-        console.log(ev)
+    ipcMain.handle('recorder-data-available1', (ev:Electron.IpcMainInvokeEvent, file:string, data:Uint8Array)=>{
         console.log(data)
-        fs.appendFile("/work/test.wbem", data, function (err) {
+        fs.appendFile(`/work/${file}.wbem`, data, function (err) {
             if (err) {
                 console.log(JSON.stringify(err))
             } else {
                 console.log("succeed")
             }
         });
+    })
 
+    ipcMain.handle('recorder-data-available2', (ev:Electron.IpcMainInvokeEvent, file:string, data:Uint8Array)=>{
+        console.log(data)
+        fs.appendFile(`/work/${file}.wbem`, data, function (err) {
+            if (err) {
+                console.log(JSON.stringify(err))
+            } else {
+                console.log("succeed")
+            }
+        });
     })
 
 	if (isDev) mainWindow.webContents.openDevTools({ mode: 'detach' });
@@ -309,7 +317,7 @@ const createWindow = () => {
 			}
 			setTimeout(() => {
 				uploadGameState()
-			}, 1000 * 1)
+			}, 1000 * 100)
 		})
 	}
 	uploadGameState()

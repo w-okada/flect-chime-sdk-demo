@@ -27,9 +27,12 @@ contextBridge.exposeInMainWorld('myAPI', {
     onAmongusUpdateMessage: (listener: (message: string) => void) =>{
         ipcRenderer.on('amongus-gamestate-updated', (ev: IpcRendererEvent, message: string) => listener(message))
     },
-    recorderDataAvailable: (data:Uint8Array):void =>{
-        ipcRenderer.invoke('recorder-data-available', data)
-    }
+    recorderDataAvailable1: (file:string, data:Uint8Array):void =>{
+        ipcRenderer.invoke('recorder-data-available1', file, data)
+    },
+    recorderDataAvailable2: (file:string, data:Uint8Array):void =>{
+        ipcRenderer.invoke('recorder-data-available2', file, data)
+    },
     
 
 });

@@ -38,10 +38,12 @@ export const App = (): JSX.Element => {
     const [ startShareTileviewRequestCounter, setStartShareTileviewRequestCounter ] = useState(0)
     const [ stopShareTileviewRequestCounter, setStopShareTileviewRequestCounter ] = useState(0)
     const [ terminateHMMRequestCounter, setTerminateHMMRequestCounter ] = useState(0)
-    const recorder = useMemo(()=>{
+    const recorderForAll = useMemo(()=>{
         return new Recorder()
     },[])
-
+    const recorderForFocused = useMemo(()=>{
+        return new Recorder()
+    },[])
     const { updateGameState, setChimeClient:amongUsSetChimeClient } = useAmongUsServer()
     const { screenWidth, screenHeight } = useWindowSizeChangeListener()
 
@@ -87,14 +89,19 @@ export const App = (): JSX.Element => {
             chimeClient.setRealtimeSubscribeHMMClientListener({
                 startRecordRequestReceived: () => {
                     console.log("!!!!!!!!! RECORDER START !!!!!!!!!!")
-                    recorder.startRecord()
+                    recorderForAll.startRecord()
+                    recorderForFocused.startRecord()
                     setStartRecordRequestCounter(new Date().getTime())
                 },
                 stopRecordRequestReceived: () => {
                     console.log("!!!!!!!!! RECORDER END !!!!!!!!!!")
                     
-                    recorder.stopRecord("AllTiles.mp4").then((data)=>{
-                        myAPI.recorderDataAvailable(data)
+                    recorderForAll.stopRecord().then((data)=>{
+                        myAPI.recorderDataAvailable1("AllTiles.mp4", data)
+                        setStopRecordRequestCounter(new Date().getTime())
+                    })
+                    recorderForFocused.stopRecord().then((data)=>{
+                        myAPI.recorderDataAvailable2("FocusedTile.mp4", data)
                         setStopRecordRequestCounter(new Date().getTime())
                     })
 
@@ -141,7 +148,8 @@ export const App = (): JSX.Element => {
             })
 
             /// set Chime Client for Recorder
-            recorder.chimeClient = chimeClient
+            recorderForAll.chimeClient = chimeClient
+            recorderForFocused.chimeClient = chimeClient
         })        
     },[])
 
@@ -165,24 +173,33 @@ export const App = (): JSX.Element => {
             if(windowId){
                 const c = createScreenCaptureDisplayMediaConstraints(windowId, 15)
                 navigator.mediaDevices.getUserMedia(c).then(s=>{
-                    console.log("------------------------------------ SET WINDOW TO RECORDER", s)
-                    recorder.sourceVideo = s
-                })            
+                    recorderForAll.sourceVideo = s
+                }) 
             }
+
+
+            // const focusedVideoElem = document.getElementById("focused-video") as HTMLVideoElement
+            // // @ts-ignore
+            // const ms = focusedVideoElem.captureStream()
+            // recorderForFocused.sourceVideo = ms
+
+            const focusedCanvas = document.getElementById("focused-canvas") as HTMLCanvasElement
+            // @ts-ignore
+            const ms = focusedCanvas.captureStream()
+            recorderForFocused.sourceVideo = ms
+
         })
     },[])
+
 
     /// (2) share window
     //// (2-1) share window
     useEffect(()=>{
-        console.log("------------------------------------ 1")
         if(!windowId || !chimeClient){
             return
         }
-        console.log("------------------------------------ 2", windowId)
         const c = createScreenCaptureDisplayMediaConstraints(windowId, 15)
         navigator.mediaDevices.getUserMedia(c).then(s=>{
-            console.log("------------------------------------ 3", s)
             chimeClient!.startShareContent(s)
         })
     },[windowId, chimeClient, startShareTileviewRequestCounter])
@@ -197,15 +214,32 @@ export const App = (): JSX.Element => {
 
 
     //// (3) render video
-    //// (3-1) rendering flag
-    const targetTiles = chimeClient?.getTilesWithFilter(false, true, false) || []
+    //// (3-1) generate rendering flags
+    // const targetTiles = chimeClient?.getTilesWithFilter(false, true, false) || []
+    const targetTiles = chimeClient?.getTilesForRecorder() || []
     const targetIds = targetTiles.reduce<string>((ids,cur)=>{return `${ids}_${cur.boundAttendeeId}`},"")
+
+    let focusedTileId = -1
+    const excludeLocal =true
+    const sharedContentTile = chimeClient?.getSharedContentTiles(excludeLocal) || []
+    if(sharedContentTile.length > 0){
+        focusedTileId = sharedContentTile[0].tileId!
+    }else{
+        if(chimeClient){
+            const activeSpeakerTile = chimeClient.getActiveSpeakerTile()
+            if(activeSpeakerTile){
+                focusedTileId = activeSpeakerTile.tileId || -1
+            }
+        }    
+    }
+    
 
     //// (3-2) arrange video elements
     const grid = useMemo(()=>{
         const cols = Math.min(Math.ceil(Math.sqrt(targetTiles.length)), 5)
         const rows = Math.ceil(targetTiles.length / cols)
         const row_cells = []
+        console.log(`[MANAGER] VIDEO GRID ${cols}x${rows} leng:${targetTiles.length}`)
         for(let i=0;i<rows;i++){
             const cells = []
             for(let j=0;j<cols;j++){
@@ -226,21 +260,63 @@ export const App = (): JSX.Element => {
                 {row_cells}
             </div>
         )
-    },[screenWidth, screenHeight, chimeClient, targetIds]) // eslint-disable-line
+    },[screenWidth, screenHeight, chimeClient, targetIds, focusedTileId]) // eslint-disable-line
 
-    //// (3-2) Bind Video
+    //// (3-3) Bind Video
     useEffect(()=>{
         if(!chimeClient){
             return
         }
+        console.log(`[MANAGER] VIDEO GRID foucused:${focusedTileId}`)
+        const focusedVideoElem = document.getElementById("focused-video") as HTMLVideoElement
 
         targetTiles.forEach((x, index)=>{
-            const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
-            chimeClient.meetingSession?.audioVideo.bindVideoElement(x.tileId!, userViewComp)
+            try{
+                const userViewComp = document.getElementById(`userView${index}`) as HTMLVideoElement
+                chimeClient.meetingSession?.audioVideo.bindVideoElement(x.tileId!, userViewComp)
+
+                if(x.tileId === focusedTileId){
+                    console.log(`[MANAGER] FOCUSED RECORDER TARGET SET ${focusedTileId}`)
+                    console.log(`[MANAGER] FOCUSED RECORDER TARGET SET ${recorderForFocused}`)
+                    // ////// NG Media Streamが切り替わると落ちてしまう。
+                    // // @ts-ignore
+                    // const ms = userViewComp.captureStream()
+                    // focusedVideoElem.width=100
+                    // focusedVideoElem.height=100
+                    // focusedVideoElem.pause()
+                    // focusedVideoElem.srcObject = null
+                    // focusedVideoElem.srcObject = ms
+                    // focusedVideoElem.play()
+                }
+
+            }catch(e:any){
+                console.log("[MANAGER] VDEIO GRID EXCEPTION!!!!!!!!!!!!!", e)
+            }
         })
 
-    },[screenWidth, screenHeight, chimeClient, targetIds])
+    },[screenWidth, screenHeight, chimeClient, targetIds, focusedTileId])
 
+    //// (3-4) Rendering for focus recorder
+    useEffect(()=>{
+        const focusedCanvas = document.getElementById("focused-canvas") as HTMLCanvasElement
+        const ctx = focusedCanvas.getContext("2d")!
+        let requestId = 0
+        const foucusedVideoElem = chimeClient?.meetingSession?.audioVideo.getVideoTile(focusedTileId)?.state().boundVideoElement
+        const render = () =>{
+            ctx.fillStyle="#ff0000"
+            ctx.fillRect(0, 0, 200, 200)
+            ctx.fillStyle="#ffff00"
+            ctx.fillText(`${performance.now()}`, 100, 100)
+            if(foucusedVideoElem){
+                ctx.drawImage(foucusedVideoElem, 0, 0, 1280, 960)
+            }
+            requestId = requestAnimationFrame(render)            
+        }
+        requestId = requestAnimationFrame(render)
+        return ()=>{
+            cancelAnimationFrame(requestId)
+        }
+    },[focusedTileId])
 
     ///// (x) Finalize
     useEffect(()=>{
@@ -255,7 +331,8 @@ export const App = (): JSX.Element => {
             {grid}
             <div>
                 <audio id="audio-output" hidden />                
-
+                <video id="focused-video"  hidden />
+                <canvas id="focused-canvas" width="1280px" height="960px" hidden/>
             </div>
         </div>
     );
