@@ -67,17 +67,13 @@ export class Recorder{
         const sourceRemoteAudioStream = this._chimeClient!.audioOutputDeviceSetting!.outputAudioElement!.captureStream()
 
         const audioContext = DefaultDeviceController.getAudioContext();
-        console.log("start record 2-1")
         const outputNode = audioContext.createMediaStreamDestination();
-        console.log("start record 2-2", audioContext, sourceRemoteAudioStream)
         let sourceNode1
         try{
             sourceNode1 = audioContext.createMediaStreamSource(sourceRemoteAudioStream);
         }catch(e){
             console.log(JSON.stringify(e))
         }
-
-        console.log("start record 2-3")
         if(sourceNode1){
             sourceNode1.connect(outputNode)
         }

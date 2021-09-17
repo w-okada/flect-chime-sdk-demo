@@ -304,8 +304,9 @@ export const App = (): JSX.Element => {
         const foucusedVideoElem = chimeClient?.meetingSession?.audioVideo.getVideoTile(focusedTileId)?.state().boundVideoElement
         const render = () =>{
             ctx.fillStyle="#ff0000"
-            ctx.fillRect(0, 0, 200, 200)
+            ctx.fillRect(0, 0, 800, 200)
             ctx.fillStyle="#ffff00"
+            ctx.font="small-caps bold 32px/1 sans-serif"
             ctx.fillText(`${performance.now()}`, 100, 100)
             if(foucusedVideoElem){
                 ctx.drawImage(foucusedVideoElem, 0, 0, 1280, 960)

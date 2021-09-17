@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import p from "child_process"
 
 import { BrowserWindow, app, session, ipcMain, dialog } from 'electron';
 import { searchDevtools } from 'electron-search-devtools';
@@ -7,6 +8,8 @@ import { searchDevtools } from 'electron-search-devtools';
 import http from 'http'
 import * as io from "socket.io";
 import AsyncLock from "async-lock"
+
+
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -273,26 +276,42 @@ const createWindow = () => {
 		app.quit()
 	})
 
+
+    const generateAndStoreRecord = (file:string, data:Uint8Array) =>{
+        const dstDir="/work/record"
+        const dstFileWbem=`${dstDir}/${file}.webm`
+        const dstFileMP4=`${dstDir}/${file}.mp4`
+        /// (1) create folder
+        if (!fs.existsSync(dstDir)) {
+            try{
+                fs.mkdirSync(dstDir);
+            }catch(e){
+                console.log(e)
+            }
+        }
+
+        /// (2) write wbem
+        fs.writeFileSync(dstFileWbem, data)
+
+        /// (3) mp4
+        // const stdout = p.execSync(`ffmpeg -y -i ${dstFileWbem} ${dstFileMP4}`);
+        // console.log(stdout)
+        p.execSync(`ffmpeg -y -i ${dstFileWbem} ${dstFileMP4}`);
+        
+        console.log("ffmpeg done")
+        /// (4) put to s3
+        var fileStream = fs.createReadStream(dstFileMP4);
+        console.log("done...............")
+    }
+
     ipcMain.handle('recorder-data-available1', (ev:Electron.IpcMainInvokeEvent, file:string, data:Uint8Array)=>{
         console.log(data)
-        fs.appendFile(`/work/${file}.wbem`, data, function (err) {
-            if (err) {
-                console.log(JSON.stringify(err))
-            } else {
-                console.log("succeed")
-            }
-        });
+        generateAndStoreRecord(file, data)
     })
 
     ipcMain.handle('recorder-data-available2', (ev:Electron.IpcMainInvokeEvent, file:string, data:Uint8Array)=>{
         console.log(data)
-        fs.appendFile(`/work/${file}.wbem`, data, function (err) {
-            if (err) {
-                console.log(JSON.stringify(err))
-            } else {
-                console.log("succeed")
-            }
-        });
+        generateAndStoreRecord(file, data)
     })
 
 	if (isDev) mainWindow.webContents.openDevTools({ mode: 'detach' });
