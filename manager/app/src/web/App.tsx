@@ -6,7 +6,14 @@ import './App.scss';
 import { useWindowSizeChangeListener } from './hooks/useWindowSizeChange';
 import { Recorder } from './Recorder';
 
+
 const { myAPI } = window;
+// import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg"
+// const ffmpeg = createFFmpeg({     
+//     corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
+//     log: true
+// }) 
+
 
 const createScreenCaptureDisplayMediaConstraints = (sourceId: string, frameRate: number): MediaStreamConstraints => {
     return {
@@ -95,16 +102,51 @@ export const App = (): JSX.Element => {
                 },
                 stopRecordRequestReceived: () => {
                     console.log("!!!!!!!!! RECORDER END !!!!!!!!!!")
-                    
-                    recorderForAll.stopRecord().then((data)=>{
+
+                    // const promise = new Promise<void>(async (resolve, reject)=>{
+                    //     if(ffmpeg.isLoaded() === false){
+                    //         await ffmpeg.load()
+                    //         ffmpeg.setProgress(({ ratio }) => {
+                    //             console.log("progress:", ratio);
+                    //         });
+                    //     }
+                    //     resolve()
+                    // })
+
+                    // promise.then(()=>{
+
+                    //     recorderForAll.stopRecord().then(async (data)=>{
+                    //         const webmName = "all.webm"
+                    //         const mp4Name = "all.mp4"
+                    //         ffmpeg.FS('writeFile', webmName, data);
+                    //         console.log("FFMPEG START!")
+                    //         await ffmpeg.run('-i', webmName, '-c', 'copy', mp4Name)
+                    //         const mp4 = ffmpeg.FS('readFile', mp4Name)
+
+                    //         myAPI.recorderDataAvailable1("AllTiles.mp4", mp4)
+                    //         setStopRecordRequestCounter(new Date().getTime())
+                    //     })
+                    //     recorderForFocused.stopRecord().then(async (data)=>{
+                    //         const webmName = "focused.webm"
+                    //         const mp4Name = "forcused.mp4"
+                    //         ffmpeg.FS('writeFile', webmName, data);
+                    //         console.log("FFMPEG START!")
+                    //         await ffmpeg.run('-i', webmName, '-c', 'copy', mp4Name)
+                    //         const mp4 = ffmpeg.FS('readFile', mp4Name)
+
+                    //         myAPI.recorderDataAvailable2("FocusedTile.mp4", mp4)
+                    //         setStopRecordRequestCounter(new Date().getTime())
+                    //     })
+                    // })
+
+                    recorderForAll.stopRecord().then(async (data)=>{
                         myAPI.recorderDataAvailable1("AllTiles.mp4", data)
                         setStopRecordRequestCounter(new Date().getTime())
                     })
-                    recorderForFocused.stopRecord().then((data)=>{
+                    recorderForFocused.stopRecord().then(async (data)=>{
                         myAPI.recorderDataAvailable2("FocusedTile.mp4", data)
                         setStopRecordRequestCounter(new Date().getTime())
                     })
-
                  },
                 startShareTileviewRequestReceived: () => {
                     setStartShareTileviewRequestCounter(new Date().getTime())
@@ -303,9 +345,9 @@ export const App = (): JSX.Element => {
         let requestId = 0
         const foucusedVideoElem = chimeClient?.meetingSession?.audioVideo.getVideoTile(focusedTileId)?.state().boundVideoElement
         const render = () =>{
-            ctx.fillStyle="#ff0000"
+            ctx.fillStyle="#ffffff"
             ctx.fillRect(0, 0, 800, 200)
-            ctx.fillStyle="#ffff00"
+            ctx.fillStyle="#000000"
             ctx.font="small-caps bold 32px/1 sans-serif"
             ctx.fillText(`${performance.now()}`, 100, 100)
             if(foucusedVideoElem){

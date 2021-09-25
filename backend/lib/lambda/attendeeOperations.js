@@ -219,6 +219,7 @@ const startMeetingManager = async (email, meetingName, attendeeId, apiEndpoint, 
     var meetingURL = `${demoEndpoint}?code=${code}&uuid=${uuid}&meetingName=${meetingName}&attendeeId=${attendeeId}&stage=HEADLESS_MEETING_MANAGER`
     var params = {
         cluster: clusterArn ,
+        // platformVersion: "1.3.0",
         count: 1,
         launchType: "FARGATE",
         taskDefinition: taskDefinitionArnManager,
@@ -233,16 +234,6 @@ const startMeetingManager = async (email, meetingName, attendeeId, apiEndpoint, 
             containerOverrides:[{
                 name: managerContainerName,
                 environment:[
-                    // {
-                    //     "name": "MEETING_URL",
-                    //     "value": meetingURL
-                    // },{
-                    //     "name":"BUCKET_ARN",
-                    //     "value":bucketArn
-                    // },{
-                    //     "name":"BUCKET_NAME",
-                    //     "value":bucketName
-                    // }
                     {
                         "name": "CODE",
                         "value": code
@@ -258,7 +249,13 @@ const startMeetingManager = async (email, meetingName, attendeeId, apiEndpoint, 
                     },{
                         "name": "RESTAPI_ENDPOINT",
                         "value": apiEndpoint
-                    },
+                    },{
+                        "name":"BUCKET_ARN",
+                        "value":bucketArn
+                    },{
+                        "name":"BUCKET_NAME",
+                        "value":bucketName
+                    }
                 ]
             }]
         }
@@ -300,6 +297,8 @@ const startMeetingManager = async (email, meetingName, attendeeId, apiEndpoint, 
         restAPIEndpoint:apiEndpoint,
         url: meetingURL,
         taskArn: taskArn,
+        bucketArn: bucketArn,
+        bucketName: bucketName,
     }
 }
 

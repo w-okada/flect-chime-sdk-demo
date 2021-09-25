@@ -21,6 +21,7 @@ RUN npm install -g n
 RUN n stable
 RUN apt-get purge -y nodejs npm
 RUN npm install electron -g --unsafe-perm=true --allow-root
+RUN npm install -g @ffmpeg/ffmpeg @ffmpeg/core
 
 COPY /run.sh /run.sh
 COPY /app /app

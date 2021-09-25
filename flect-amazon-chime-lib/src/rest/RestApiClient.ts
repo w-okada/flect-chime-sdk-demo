@@ -94,6 +94,8 @@ type StartManagerResponse = {
     attendeeId: string,
     restAPIEndpoint:string,
     url:string,
+    bucketArn: string,
+    bucketName: string,
 }
 
 // (10)
@@ -515,7 +517,7 @@ export class RestApiClient{
 
         const data = await response.json();
         if (data === null) {
-            throw new Error(`Server error: startManager failed`);
+            throw new Error(`Server error: startTranscribe failed`);
         }
         console.log("start transcribe", data)
         return data;
@@ -548,7 +550,7 @@ export class RestApiClient{
 
         const data = await response.json();
         if (data === null) {
-            throw new Error(`Server error: startManager failed`);
+            throw new Error(`Server error: stopTranscribe failed`);
         }
         console.log("stop transcribe", data)
         return data;

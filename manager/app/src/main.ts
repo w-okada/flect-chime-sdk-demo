@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import p from "child_process"
+import aws from "aws-sdk"
 
 import { BrowserWindow, app, session, ipcMain, dialog } from 'electron';
 import { searchDevtools } from 'electron-search-devtools';
@@ -9,7 +10,28 @@ import http from 'http'
 import * as io from "socket.io";
 import AsyncLock from "async-lock"
 
+// import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg"
+// import { createFFmpegCore } from "@ffmpeg/core"
+// // const { createFFmpeg, fetchFile } = require("./ffmpeg.min.js")
 
+// console.log("----------------- 111 1")
+// console.log(require.resolve("@ffmpeg/ffmpeg"))
+// console.log("----------------- 111 2")
+// console.log(require.resolve("@ffmpeg/core"))
+// console.log("----------------- 111 3")
+
+// const ffmpeg = createFFmpeg({     
+//     // corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
+//     // corePath: '/app/node_modules/@ffmpeg/core/dist/ffmpeg-core.js',
+//     // corePath: './ffmpeg-core.js',
+//     // corePath: 'ffmpeg-core.js',
+//     log: true
+// }) 
+
+
+const bucketName = process.env.BUCKET_NAME
+console.log(`BUCKET_NAME::::::::::::::::::::::::::::::::::${bucketName}`)
+var s3 = new aws.S3();
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -278,9 +300,13 @@ const createWindow = () => {
 
 
     const generateAndStoreRecord = (file:string, data:Uint8Array) =>{
-        const dstDir="/work/record"
-        const dstFileWbem=`${dstDir}/${file}.webm`
-        const dstFileMP4=`${dstDir}/${file}.mp4`
+        const dstDir="/tmp"
+        const dateString = getDateString()
+        // const dstDir="/work/tmp"
+        const dstFilenameWebm = `${dateString}_${file}.webm`
+        const dstFilenameMP4  = `${dateString}_${file}.mp4`
+        const dstPathWebm =`${dstDir}/${dstFilenameWebm}`
+        const dstPathMP4 =`${dstDir}/${dstFilenameMP4}`
         /// (1) create folder
         if (!fs.existsSync(dstDir)) {
             try{
@@ -291,17 +317,46 @@ const createWindow = () => {
         }
 
         /// (2) write wbem
-        fs.writeFileSync(dstFileWbem, data)
+        fs.writeFileSync(dstPathWebm, data)
 
-        /// (3) mp4
-        // const stdout = p.execSync(`ffmpeg -y -i ${dstFileWbem} ${dstFileMP4}`);
-        // console.log(stdout)
-        p.execSync(`ffmpeg -y -i ${dstFileWbem} ${dstFileMP4}`);
+        // /// (3) mp4
+        // // const stdout = p.execSync(`ffmpeg -y -i ${dstFileWbem} ${dstFileMP4}`);
+        // // console.log(stdout)
+        // try{
+        //     const stdout = p.execSync(`ffmpeg -y -i ${dstFileWebm} ${dstFileMP4}`);
+        //     console.log(stdout)
+        // }catch(e){
+        //     console.log(JSON.stringify(e))
+        // }
+
+        // // const name = 'record.webm'
+
+        // // ffmpeg.FS('writeFile', name, data);
+        // // console.log("FFMPEG START!")
+        // // ffmpeg.run('-i', name, '-c', 'copy', dstFileMP4).then(()=>{
+        // //     const stream = ffmpeg.FS('readFile', dstFileMP4)
+        // //     console.log("ffmpeg done")
+        // // })
+
         
-        console.log("ffmpeg done")
+
+
         /// (4) put to s3
-        var fileStream = fs.createReadStream(dstFileMP4);
-        console.log("done...............")
+        var fileStream = fs.createReadStream(dstPathWebm);
+        // var fileStream = fs.createReadStream(dstFileMP4);
+        const params = {
+            // Body: data,
+            Body: fileStream,
+            Bucket: bucketName!,
+            Key: `recording/${dstFilenameWebm}`
+        }
+        s3.putObject(params).promise().then(x=>{
+            console.log("S3 SUCCESS", JSON.stringify(x))
+        }).catch(e=>{
+            console.log("S3 ERROR", JSON.stringify(e))
+        })
+        
+
     }
 
     ipcMain.handle('recorder-data-available1', (ev:Electron.IpcMainInvokeEvent, file:string, data:Uint8Array)=>{
@@ -336,7 +391,7 @@ const createWindow = () => {
 			}
 			setTimeout(() => {
 				uploadGameState()
-			}, 1000 * 100)
+			}, 1000 * 1)
 		})
 	}
 	uploadGameState()
@@ -352,8 +407,30 @@ app.whenReady().then(async () => {
 		}
 	}
 
+
+    // await ffmpeg.load()
+    // ffmpeg.setProgress((ratio:any) => {
+    //     console.log("progress:", JSON.stringify(ratio));
+    // });
+
 	createWindow();
 });
+
+
+
+const getDateString = () => {
+    const date = new Date()
+    const Y = date.getFullYear()
+    const M = ("00" + (date.getMonth()+1)).slice(-2)
+    const D = ("00" + date.getDate()).slice(-2)
+    const h = ("00" + date.getHours()).slice(-2)
+    const m = ("00" + date.getMinutes()).slice(-2)
+    const s = ("00" + date.getSeconds()).slice(-2)
+  
+    return Y + M + D + h + m + s
+}
+
+
 
 app.once('window-all-closed', () => app.quit());
 
