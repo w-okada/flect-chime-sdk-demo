@@ -2,6 +2,7 @@ const path = require('path');
 
 const lib = {
     mode: 'production',
+    // mode: 'development',
     entry: './src/flect-amazon-chime-lib.ts',
     resolve: {
         extensions: [".tsx", ".ts", ".js"]

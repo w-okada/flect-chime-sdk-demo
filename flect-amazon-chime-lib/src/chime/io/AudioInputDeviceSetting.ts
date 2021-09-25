@@ -189,6 +189,7 @@ export class AudioInputDeviceSetting {
     }
     
     private supportChannelCountConstraint(): boolean {
+        // @ts-ignore
         return !!navigator.mediaDevices.getSupportedConstraints().channelCount;
     }
 

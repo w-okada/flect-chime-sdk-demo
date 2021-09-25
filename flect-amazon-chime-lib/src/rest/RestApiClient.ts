@@ -389,7 +389,7 @@ export class RestApiClient{
                 throw new Error(`Server error: Join Meeting Failed`);
             }
             return data;
-        }catch(exception){
+        }catch(exception:any){
             console.log("[onetimecode] exception:", exception.message)
             console.log("[onetimecode] exception: ", JSON.stringify(exception.message))
         }
