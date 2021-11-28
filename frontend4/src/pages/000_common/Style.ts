@@ -2,23 +2,23 @@ import { makeStyles } from "@material-ui/core";
 
 export const useStyles = makeStyles((theme) => ({
     root: {
-        background: 'white',
+        background: "white",
     },
-    title:{
-        color: 'black'
+    title: {
+        color: "black",
     },
     paper: {
         marginTop: theme.spacing(8),
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
     },
     avatar: {
         margin: theme.spacing(1),
         backgroundColor: theme.palette.primary.main,
     },
     form: {
-        width: '100%',
+        width: "100%",
         marginTop: theme.spacing(1),
     },
     submit: {
@@ -28,14 +28,14 @@ export const useStyles = makeStyles((theme) => ({
         margin: theme.spacing(1),
     },
     input: {
-        color: 'black',
+        color: "black",
     },
     formControl: {
         margin: theme.spacing(1),
         minWidth: 120,
     },
     cameraPreview: {
-        width: '50%'
+        width: "50%",
     },
     icon: {
         fill: "blue",
@@ -43,32 +43,30 @@ export const useStyles = makeStyles((theme) => ({
     label: {
         color: "blue",
         "&.Mui-focused": {
-          color: "blue",
+            color: "blue",
         },
-    }
-
+    },
 }));
-
 
 export const useAmongUsStyles = makeStyles((theme) => ({
     root: {
-        background: 'black'
+        background: "black",
     },
-    title:{
-        color: 'red'
+    title: {
+        color: "red",
     },
     paper: {
         marginTop: theme.spacing(8),
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
     },
     avatar: {
         margin: theme.spacing(1),
         backgroundColor: theme.palette.primary.main,
     },
     form: {
-        width: '100%',
+        width: "100%",
         marginTop: theme.spacing(1),
     },
     submit: {
@@ -78,24 +76,24 @@ export const useAmongUsStyles = makeStyles((theme) => ({
         margin: theme.spacing(1),
     },
     input: {
-        color: 'blue',
+        color: "blue",
     },
     formControl: {
         margin: theme.spacing(1),
         minWidth: 120,
     },
     cameraPreview: {
-        width: '50%'
+        width: "50%",
     },
     select: {
-        '&:before': {
+        "&:before": {
             borderColor: "blue",
-            color:"blue",
+            color: "blue",
         },
-        '&:after': {
+        "&:after": {
             borderColor: "blue",
-            color:"blue",
-        }
+            color: "blue",
+        },
     },
     icon: {
         fill: "blue",
@@ -103,7 +101,7 @@ export const useAmongUsStyles = makeStyles((theme) => ({
     label: {
         color: "blue",
         "&.Mui-focused": {
-          color: "blue",
+            color: "blue",
         },
     },
 }));

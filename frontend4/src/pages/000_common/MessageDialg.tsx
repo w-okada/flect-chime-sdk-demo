@@ -17,49 +17,36 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const MessageDialog = () => {
-    const { messageActive, messageType, messageTitle, messageDetail, resolveMessage } = useAppState()
+    const { messageActive, messageType, messageTitle, messageDetail, resolveMessage } = useAppState();
     const classes = useStyles();
     return (
         <>
             {messageActive && (
                 <>
                     <Dialog open={messageActive} onClose={resolveMessage}>
-                        {
-                            messageType === "Info" ?
-                                <Avatar className={classes.avatarForInformation}>
-                                    <Info />
-                                </Avatar>
-                                :
-                                <Avatar className={classes.avatarForException}>
-                                    <ErrorOutline />
-                                </Avatar>
-
-                        }
-                        <DialogTitle >
-
-                            {messageTitle}
-
-                        </DialogTitle>
+                        {messageType === "Info" ? (
+                            <Avatar className={classes.avatarForInformation}>
+                                <Info />
+                            </Avatar>
+                        ) : (
+                            <Avatar className={classes.avatarForException}>
+                                <ErrorOutline />
+                            </Avatar>
+                        )}
+                        <DialogTitle>{messageTitle}</DialogTitle>
                         <DialogContent>
-                            {
-                                messageDetail.map((d, i) => {
-                                    return (
-                                        <DialogContentText key={i}>
-                                            {d}
-                                        </DialogContentText>
-
-                                    )
-                                })}
+                            {messageDetail.map((d, i) => {
+                                return <DialogContentText key={i}>{d}</DialogContentText>;
+                            })}
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={resolveMessage} color="primary">
                                 OK
-                </Button>
+                            </Button>
                         </DialogActions>
                     </Dialog>
-
                 </>
             )}
         </>
-    )
-}
+    );
+};

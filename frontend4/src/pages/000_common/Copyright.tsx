@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Typography, Link } from '@material-ui/core'
+import { Typography, Link } from "@material-ui/core";
 export const Copyright = () => {
     const copyright = useMemo(() => {
         return (
@@ -7,11 +7,10 @@ export const Copyright = () => {
                 Copyright ©
                 <Link color="inherit" href="https://www.flect.co.jp/">
                     FLECT, Co., Ltd.
-        </Link>{' '}
+                </Link>
                 {new Date().getFullYear()}
             </Typography>
         );
-
-    }, [])
-    return <>{copyright}</>
-}
+    }, []);
+    return <>{copyright}</>;
+};

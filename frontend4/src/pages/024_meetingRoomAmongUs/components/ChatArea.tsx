@@ -1,102 +1,92 @@
-import React, { useMemo, useState } from 'react';
-import { Button, makeStyles, TextField, withStyles } from '@material-ui/core';
-import { useAppState } from '../../../providers/AppStateProvider';
-import { blueGrey } from '@material-ui/core/colors';
-
-
+import React, { useMemo, useState } from "react";
+import { Button, makeStyles, TextField, withStyles } from "@material-ui/core";
+import { useAppState } from "../../../providers/AppStateProvider";
+import { blueGrey } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
     input_amongus: {
         color: blueGrey[400],
     },
-    message:{
-        width: "100%", 
-        textAlign: 'left', 
-        wordWrap: "break-word", 
+    message: {
+        width: "100%",
+        textAlign: "left",
+        wordWrap: "break-word",
         whiteSpace: "normal",
-        color:blueGrey[100]
+        color: blueGrey[100],
     },
-    sendButton:{
-        textAlign: 'right',
+    sendButton: {
+        textAlign: "right",
     },
 }));
 
 const CustomTextField = withStyles({
     root: {
-        '& input:valid + fieldset': {
+        "& input:valid + fieldset": {
             borderColor: blueGrey[100],
             borderWidth: 1,
         },
-        '& input:invalid + fieldset': {
+        "& input:invalid + fieldset": {
             borderColor: blueGrey[100],
             borderWidth: 1,
         },
-        '& input:valid:focus + fieldset': {
+        "& input:valid:focus + fieldset": {
             borderColor: blueGrey[100],
             borderLeftWidth: 6,
-            // padding: '4px !important', 
+            // padding: '4px !important',
         },
-        '& input:valid:hover + fieldset': {
+        "& input:valid:hover + fieldset": {
             borderColor: blueGrey[100],
             borderLeftWidth: 6,
-            // padding: '4px !important', 
+            // padding: '4px !important',
         },
-        '& input:invalid:hover + fieldset': {
+        "& input:invalid:hover + fieldset": {
             borderColor: blueGrey[100],
             borderLeftWidth: 6,
-            color: blueGrey[300]
-            // padding: '4px !important', 
+            color: blueGrey[300],
+            // padding: '4px !important',
         },
-        '& label.Mui-focused': {
+        "& label.Mui-focused": {
             color: blueGrey[100],
         },
-        '& label.MuiInputLabel-root': {
+        "& label.MuiInputLabel-root": {
             color: blueGrey[100],
         },
     },
 })(TextField);
 
-
 export const ChatArea = () => {
-    const classes = useStyles()
-    const { chimeClient } = useAppState()
-    const [message, setMessage] = useState("")
+    const classes = useStyles();
+    const { chimeClient } = useAppState();
+    const [message, setMessage] = useState("");
 
     const sendMessage = () => {
-        setMessage("")
-        chimeClient!.sendMessage(message)
-    }
+        setMessage("");
+        chimeClient!.sendMessage(message);
+    };
 
-    const messageList = useMemo(()=>{
-        const messages = chimeClient!.chatClient?.chatData.slice(-8).map(x=>{
-            const name = chimeClient!.getUserNameByAttendeeIdFromList(x.senderId)
+    const messageList = useMemo(() => {
+        const messages = chimeClient!.chatClient?.chatData.slice(-8).map((x) => {
+            const name = chimeClient!.getUserNameByAttendeeIdFromList(x.senderId);
             // const date = new Date(x.createdDate).toLocaleTimeString()
-            const mess = (x.data as string).split("\n").map(l =>{return <>{l}</>})
-            return(
-                <div style={{display:"flex", flexDirection:"column"}}>
-                    <div style={{color:blueGrey[300]}}>
-                        {name}
-                    </div>
-                    <div className={classes.message} style={{marginLeft:"5px"}}>
+            const mess = (x.data as string).split("\n").map((l) => {
+                return <>{l}</>;
+            });
+            return (
+                <div key={`${x.uuid}`} style={{ display: "flex", flexDirection: "column" }}>
+                    <div style={{ color: blueGrey[300] }}>{name}</div>
+                    <div className={classes.message} style={{ marginLeft: "5px" }}>
                         {mess}
                     </div>
                 </div>
-            )
-        })
-        return(
-            <>
-                {messages}
-            </>
-        )
-    },[chimeClient!.chatClient?.chatData]) // eslint-disable-line
+            );
+        });
+        return <>{messages}</>;
+    }, [chimeClient!.chatClient?.chatData]); // eslint-disable-line
 
     return (
-        <> 
-            <div style={{color:"burlywood"}}>
-                Message...
-            </div>
-            <div style={{marginLeft:"15pt"}}>
-
+        <>
+            <div style={{ color: "burlywood" }}>Message...</div>
+            <div style={{ marginLeft: "15pt" }}>
                 <div>
                     {messageList}
                     <div>
@@ -113,9 +103,9 @@ export const ChatArea = () => {
                             InputProps={{
                                 className: classes.input_amongus,
                             }}
-                            onKeyPress={e => {
-                                if (e.key === 'Enter') {
-                                    sendMessage()
+                            onKeyPress={(e) => {
+                                if (e.key === "Enter") {
+                                    sendMessage();
                                 }
                             }}
                         />
@@ -128,6 +118,5 @@ export const ChatArea = () => {
                 </div>
             </div>
         </>
-
     );
-}
+};

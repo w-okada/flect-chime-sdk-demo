@@ -1,37 +1,35 @@
 import { Avatar, Box, Button, CircularProgress, Container, CssBaseline, Grid, Link, Typography } from "@material-ui/core";
 import React, { useState } from "react";
 import { Copyright } from "../000_common/Copyright";
-import { Lock } from '@material-ui/icons';
+import { Lock } from "@material-ui/icons";
 import { useAppState } from "../../providers/AppStateProvider";
 import { useAmongUsStyles, useStyles } from "../000_common/Style";
 import { CustomTextField } from "../000_common/CustomTextField";
 
+export const NewPassword = () => {
+    const { cognitoClient, setMessage, setStage, mode } = useAppState();
+    const [userId, setUserId] = useState(cognitoClient.userId || "");
+    const [verifyCode, setVerifyCode] = useState("");
+    const [password, setPassword] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
-export const NewPassword  = () => {
-    const { cognitoClient, setMessage, setStage, mode } = useAppState()
-    const [userId, setUserId] = useState(cognitoClient.userId || "")
-    const [verifyCode, setVerifyCode] = useState("")
-    const [password, setPassword] = useState("")
-    const [isLoading, setIsLoading] = useState(false)
+    const classes_normal = useStyles();
+    const classes_among = useAmongUsStyles();
+    const classes = mode === "amongus" ? classes_among : classes_normal;
 
-    const classes_normal = useStyles()
-    const classes_among = useAmongUsStyles()
-    const classes = mode === "amongus" ? classes_among : classes_normal
-
-    const onChangePasswordClicked = async() => {
-        setIsLoading(true)
-        try{
-            await cognitoClient.changePassword(userId, verifyCode, password)
-            console.log("change password")
-            setIsLoading(false)
-            setStage("SIGNIN")
-        }catch(e:any){
-            console.log(e)
-            setMessage("Exception", "change password error", [`${e.message}`, `(code: ${e.code})`] )
-            setIsLoading(false)
-
+    const onChangePasswordClicked = async () => {
+        setIsLoading(true);
+        try {
+            await cognitoClient.changePassword(userId, verifyCode, password);
+            console.log("change password");
+            setIsLoading(false);
+            setStage("SIGNIN");
+        } catch (e: any) {
+            console.log(e);
+            setMessage("Exception", "change password error", [`${e.message}`, `(code: ${e.code})`]);
+            setIsLoading(false);
         }
-    }
+    };
 
     return (
         <Container maxWidth="xs" className={classes.root}>
@@ -41,13 +39,11 @@ export const NewPassword  = () => {
                     <Lock />
                 </Avatar>
 
-                <Typography variant="h4" className={classes.title} >
+                <Typography variant="h4" className={classes.title}>
                     New Password
                 </Typography>
                 <form className={classes.form} noValidate>
-
-
-                    <CustomTextField   
+                    <CustomTextField
                         required
                         variant="outlined"
                         margin="normal"
@@ -79,7 +75,7 @@ export const NewPassword  = () => {
                         InputProps={{
                             className: classes.input,
                             type: "password",
-                            autoComplete: 'new-password'
+                            autoComplete: "new-password",
                         }}
                     />
 
@@ -99,25 +95,22 @@ export const NewPassword  = () => {
                             className: classes.input,
                         }}
                     />
-                    <Grid container direction="column" alignItems="center" >
-                    {
-                        isLoading ?
+                    <Grid container direction="column" alignItems="center">
+                        {isLoading ? (
                             <CircularProgress />
-                            :
-                            <Button
-                                fullWidth
-                                variant="contained"
-                                color="primary"
-                                className={classes.submit}
-                                onClick={onChangePasswordClicked}
-                            >
+                        ) : (
+                            <Button fullWidth variant="contained" color="primary" className={classes.submit} onClick={onChangePasswordClicked}>
                                 Change Password
                             </Button>
-                    }
+                        )}
                     </Grid>
-                    <Grid container direction="column" >
+                    <Grid container direction="column">
                         <Grid item xs>
-                            <Link onClick={(e: any) => { setStage("SIGNIN") }}>
+                            <Link
+                                onClick={(e: any) => {
+                                    setStage("SIGNIN");
+                                }}
+                            >
                                 return to home
                             </Link>
                         </Grid>
@@ -128,5 +121,5 @@ export const NewPassword  = () => {
                 </form>
             </div>
         </Container>
-    )
-}
+    );
+};

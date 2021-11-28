@@ -1,36 +1,39 @@
-import { Tooltip } from "@material-ui/core"
-import React, { useMemo } from "react"
-import { useAppState } from "../../../providers/AppStateProvider"
+import { Tooltip } from "@material-ui/core";
+import React, { useMemo } from "react";
+import { useAppState } from "../../../providers/AppStateProvider";
 
-
-type VideoState = "ENABLED" | "PAUSED" | "NOT_SHARE"
-
-
+type VideoState = "ENABLED" | "PAUSED" | "NOT_SHARE";
 
 export const AudienceList = () => {
-    const { chimeClient } = useAppState()
+    const { chimeClient } = useAppState();
 
-    const targetIds   = Object.values(chimeClient!.videoTileStates).reduce<string>((ids,cur)=>{return `${ids}_${cur.boundAttendeeId}`},"")
-    const targetNames = Object.values(chimeClient!.attendees).reduce<string>((names,cur)=>{return `${names}_${cur.name}`},"")
+    const targetIds = Object.values(chimeClient!.videoTileStates).reduce<string>((ids, cur) => {
+        return `${ids}_${cur.boundAttendeeId}`;
+    }, "");
+    const targetNames = Object.values(chimeClient!.attendees).reduce<string>((names, cur) => {
+        return `${names}_${cur.name}`;
+    }, "");
 
-    const sortedAudiences = Object.values(chimeClient!.attendees).sort((a,b)=>{
-        if(a.name===b.name){
-            return 0
+    const sortedAudiences = Object.values(chimeClient!.attendees).sort((a, b) => {
+        if (a.name === b.name) {
+            return 0;
         }
-        return (a.name > b.name) ? 1 : -1
-    })
+        return a.name > b.name ? 1 : -1;
+    });
 
-    const targetVideoStates:VideoState[] = Object.values(sortedAudiences).map(x=>{
-        if(!chimeClient!.videoTileStates[x.attendeeId]){
-            return "NOT_SHARE"
+    const targetVideoStates: VideoState[] = Object.values(sortedAudiences).map((x) => {
+        if (!chimeClient!.videoTileStates[x.attendeeId]) {
+            return "NOT_SHARE";
         }
-        if(x.isVideoPaused){
-            return "PAUSED"
-        }else{
-            return "ENABLED"
+        if (x.isVideoPaused) {
+            return "PAUSED";
+        } else {
+            return "ENABLED";
         }
-    })
-    const targetVideoStatesString = targetVideoStates.reduce<string>((states, cur)=>{return `${states}_${cur}`}, "")
+    });
+    const targetVideoStatesString = targetVideoStates.reduce<string>((states, cur) => {
+        return `${states}_${cur}`;
+    }, "");
 
     // const audienceList = useMemo(()=>{
     //     const l = Object.values(attendees).map((x)=>{
@@ -52,12 +55,12 @@ export const AudienceList = () => {
     //     )
     // },[attendees])
 
-    const audienceList = useMemo(()=>{        
-        const l = sortedAudiences.map((x, index)=>{
-            if(x.attendeeId.indexOf("#content")>0){
-                return <></>
+    const audienceList = useMemo(() => {
+        const l = sortedAudiences.map((x, index) => {
+            if (x.attendeeId.indexOf("#content") > 0) {
+                return <></>;
             }
-            // let videoStateComp 
+            // let videoStateComp
             // switch(targetVideoStates[index]){
             //     case "ENABLED":
             //         videoStateComp = (
@@ -82,38 +85,25 @@ export const AudienceList = () => {
             //         break
             // }
 
-        
-            return(
-                <div style={{display:"flex", flexDirection:"row"}} key={x.attendeeId} >
+            return (
+                <div style={{ display: "flex", flexDirection: "row" }} key={x.attendeeId}>
                     <Tooltip title={`${x.attendeeId}`}>
-                        <div>
-                            {x.name} 
-                        </div>
+                        <div>{x.name}</div>
                     </Tooltip>
-                        {/* <div>
+                    {/* <div>
                             {videoStateComp}
                         </div> */}
                 </div>
-            )
-        })
+            );
+        });
 
-        return(
-            <div style={{display:"flex", flexDirection:"column"}}>
-                {l}
-            </div>
-        )
-    },[targetIds, targetNames, targetVideoStatesString]) // eslint-disable-line
+        return <div style={{ display: "flex", flexDirection: "column" }}>{l}</div>;
+    }, [targetIds, targetNames, targetVideoStatesString]); // eslint-disable-line
 
-    
-    return(
-        <> 
-            <div style={{color:"burlywood"}}>
-                Spacemen
-            </div>
-            <div style={{marginLeft:"15pt"}}>
-                {audienceList}
-            </div>
+    return (
+        <>
+            <div style={{ color: "burlywood" }}>Spacemen</div>
+            <div style={{ marginLeft: "15pt" }}>{audienceList}</div>
         </>
-    )
-}
-
+    );
+};

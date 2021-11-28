@@ -1,28 +1,28 @@
-import { useState } from "react"
+import { useState } from "react";
 
-export type MessageType = "None" | "Info" | "Exception"
+export type MessageType = "None" | "Info" | "Exception";
 
 type MessageState = {
-    messageActive:  boolean,
-    messageType: MessageType,
-    messageTitle: string,
-    messageDetail: string[],
-}
+    messageActive: boolean;
+    messageType: MessageType;
+    messageTitle: string;
+    messageDetail: string[];
+};
 
-export const useMessageState = () =>{
+export const useMessageState = () => {
     const [state, setState] = useState<MessageState>({
-        messageActive:false, 
-        messageType:"None",
-        messageTitle:"",
-        messageDetail:[],
-    })
+        messageActive: false,
+        messageType: "None",
+        messageTitle: "",
+        messageDetail: [],
+    });
 
-    const resolveMessage = () =>{
-        setState({...state, messageActive:false, messageType:"None", messageTitle:"", messageDetail:[]})
-    }
-    const setMessage = (type:MessageType, title:string, detail:string[]) => {
-        setState({...state, messageActive:true, messageType:type, messageTitle:title, messageDetail:detail})
-    }
+    const resolveMessage = () => {
+        setState({ ...state, messageActive: false, messageType: "None", messageTitle: "", messageDetail: [] });
+    };
+    const setMessage = (type: MessageType, title: string, detail: string[]) => {
+        setState({ ...state, messageActive: true, messageType: type, messageTitle: title, messageDetail: detail });
+    };
 
-    return {...state, resolveMessage, setMessage}
-}
+    return { ...state, resolveMessage, setMessage };
+};

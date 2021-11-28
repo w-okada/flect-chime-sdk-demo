@@ -1,82 +1,76 @@
-import React, { useMemo } from 'react';
-import './App.css';
-import { AppStateProvider, useAppState } from './providers/AppStateProvider';
-import { MessageDialog } from './pages/000_common/MessageDialg';
-import { SignIn } from './pages/010_signin';
-import { SignUp } from './pages/011_signup';
-import { Verify } from './pages/012_verify';
-import { RequestChangePassword } from './pages/013_requestChangePassword';
-import { NewPassword } from './pages/014_newPassword';
-import { Entrance } from './pages/020_entrance';
-import { CreateMeetingRoom } from './pages/021_createMeetingRoom';
-import { WaitingRoomAmongUs } from './pages/022_waitingRoom/WaitingRoomAmongUs';
-import { WaitingRoom } from './pages/022_waitingRoom/WaitingRoom';
-import { MeetingRoom } from './pages/023_meetingRoom/MeetingRoom';
-import { MeetingManager } from './pages/100_MeetingManager/MeetingManager';
-import { MeetingRoomAmongUs } from './pages/024_meetingRoomAmongUs/MeetingRoomAmongUs';
-import { HeadlessMeetingManager } from './pages/101_HMeetingManager/HeadlessMeetingManager';
+import React, { useMemo } from "react";
+import "./App.css";
+import { AppStateProvider, useAppState } from "./providers/AppStateProvider";
+import { MessageDialog } from "./pages/000_common/MessageDialg";
+import { SignIn } from "./pages/010_signin";
+import { SignUp } from "./pages/011_signup";
+import { Verify } from "./pages/012_verify";
+import { RequestChangePassword } from "./pages/013_requestChangePassword";
+import { NewPassword } from "./pages/014_newPassword";
+import { Entrance } from "./pages/020_entrance";
+import { CreateMeetingRoom } from "./pages/021_createMeetingRoom";
+import { WaitingRoomAmongUs } from "./pages/022_waitingRoom/WaitingRoomAmongUs";
+import { WaitingRoom } from "./pages/022_waitingRoom/WaitingRoom";
+import { MeetingRoom } from "./pages/023_meetingRoom/MeetingRoom";
+import { MeetingManager } from "./pages/100_MeetingManager/MeetingManager";
+import { MeetingRoomAmongUs } from "./pages/024_meetingRoomAmongUs/MeetingRoomAmongUs";
+import { HeadlessMeetingManager } from "./pages/101_HMeetingManager/HeadlessMeetingManager";
 
 const Router = () => {
-    const { stage, mode } = useAppState()
+    const { stage, mode } = useAppState();
     // console.log(`[App] stage:${stage} mode:${mode}`)
 
-    const page = useMemo(()=>{
-        switch(stage){
+    const page = useMemo(() => {
+        switch (stage) {
             case "SIGNIN":
-                return <SignIn />
+                return <SignIn />;
             case "SIGNUP":
-                return <SignUp />
+                return <SignUp />;
             case "VERIFY":
-                return <Verify />
+                return <Verify />;
             case "REQUEST_NEW_PASSWORD":
-                return <RequestChangePassword />
+                return <RequestChangePassword />;
             case "NEW_PASSWORD":
-                return <NewPassword />
+                return <NewPassword />;
             case "ENTRANCE":
-                return <Entrance />
+                return <Entrance />;
             case "CREATE_MEETING_ROOM":
-                return <CreateMeetingRoom />
+                return <CreateMeetingRoom />;
             case "WAITING_ROOM":
-                if(mode === "amongus"){
-                    return <WaitingRoomAmongUs />
-                }else{
-                    return <WaitingRoom />
+                if (mode === "amongus") {
+                    return <WaitingRoomAmongUs />;
+                } else {
+                    return <WaitingRoom />;
                 }
             case "MEETING_ROOM":
-                if(mode === "amongus"){
-                    console.log("meeting room among")
-                    return <MeetingRoomAmongUs />
-                }else {
-                    console.log("meeting room ")
-                    return <MeetingRoom />
+                if (mode === "amongus") {
+                    console.log("meeting room among");
+                    return <MeetingRoomAmongUs />;
+                } else {
+                    console.log("meeting room ");
+                    return <MeetingRoom />;
                 }
             case "MEETING_MANAGER":
-                return <MeetingManager />
+                return <MeetingManager />;
             case "HEADLESS_MEETING_MANAGER":
-                return <HeadlessMeetingManager />
+                return <HeadlessMeetingManager />;
 
             default:
-                return <div>no view</div>
-
+                return <div>no view</div>;
         }
-    },[stage, mode])
-    return (
-        <div >
-          {page}
-        </div>
-    )
-}
-
+    }, [stage, mode]);
+    return <div>{page}</div>;
+};
 
 const App = () => {
     return (
-        <div >
+        <div>
             <AppStateProvider>
                 <Router />
                 <MessageDialog />
             </AppStateProvider>
         </div>
     );
-}
+};
 
 export default App;

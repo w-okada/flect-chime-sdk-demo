@@ -2,25 +2,26 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mate
 import React from "react";
 import { useAppState } from "../../../../providers/AppStateProvider";
 
-
-
-
 type LeaveMeetingDialogProps = {
-    open:boolean,
-    onClose:()=>void
-}
+    open: boolean;
+    onClose: () => void;
+};
 
-
-export const LeaveMeetingDialog = (props:LeaveMeetingDialogProps) =>{
-    const {setStage, chimeClient} = useAppState()
-    return(
-        <Dialog disableBackdropClick disableEscapeKeyDown open={props.open} onClose={props.onClose} >
+export const LeaveMeetingDialog = (props: LeaveMeetingDialogProps) => {
+    const { setStage, chimeClient } = useAppState();
+    return (
+        <Dialog disableBackdropClick disableEscapeKeyDown open={props.open} onClose={props.onClose}>
             <DialogTitle>Leave meeting</DialogTitle>
-            <DialogContent>
-                You are leaving meeting.
-            </DialogContent>
+            <DialogContent>You are leaving meeting.</DialogContent>
             <DialogActions>
-                <Button onClick={(e)=>{props.onClose();chimeClient!.leaveMeeting();setStage("SIGNIN")}} color="primary">
+                <Button
+                    onClick={(e) => {
+                        props.onClose();
+                        chimeClient!.leaveMeeting();
+                        setStage("SIGNIN");
+                    }}
+                    color="primary"
+                >
                     Ok
                 </Button>
                 <Button onClick={props.onClose} color="secondary">
@@ -28,5 +29,5 @@ export const LeaveMeetingDialog = (props:LeaveMeetingDialogProps) =>{
                 </Button>
             </DialogActions>
         </Dialog>
-    )    
-}
+    );
+};

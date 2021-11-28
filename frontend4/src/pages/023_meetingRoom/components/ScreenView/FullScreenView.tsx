@@ -5,46 +5,46 @@ import { VideoTileState } from "amazon-chime-sdk-js";
 import { DrawableVideoTile } from "@dannadori/flect-amazon-chime-lib";
 
 type FullScreenProps = {
-    pictureInPicture: PictureInPictureType
-    focusTarget: FocustTarget
-    width:number
-    height:number
+    pictureInPicture: PictureInPictureType;
+    focusTarget: FocustTarget;
+    width: number;
+    height: number;
 };
 
-export const FullScreenView = ({ pictureInPicture, focusTarget, width, height}: FullScreenProps) =>  {
-    const {chimeClient, whiteboardClient} = useAppState()
-    
-    const contentsTiles    = chimeClient!.getContentTiles()
-    const activeSpekerTile = chimeClient!.getActiveSpeakerTile()
+export const FullScreenView = ({ pictureInPicture, focusTarget, width, height }: FullScreenProps) => {
+    const { chimeClient, whiteboardClient } = useAppState();
 
-    let targetTiles:VideoTileState[] = []
+    const contentsTiles = chimeClient!.getContentTiles();
+    const activeSpekerTile = chimeClient!.getActiveSpeakerTile();
 
-    if(contentsTiles.length > 0){
-        targetTiles = targetTiles.concat(contentsTiles)
-    }else if(activeSpekerTile){
-        targetTiles.push(activeSpekerTile)
+    let targetTiles: VideoTileState[] = [];
+
+    if (contentsTiles.length > 0) {
+        targetTiles = targetTiles.concat(contentsTiles);
+    } else if (activeSpekerTile) {
+        targetTiles.push(activeSpekerTile);
     }
 
     // rendering flag
-    const targetIds = targetTiles.reduce<string>((ids,cur)=>{return `${ids}_${cur.boundAttendeeId}`},"")
+    const targetIds = targetTiles.reduce<string>((ids, cur) => {
+        return `${ids}_${cur.boundAttendeeId}`;
+    }, "");
 
-
-    const view = useMemo(()=>{
-        const contentWidth = width/targetTiles.length
-        console.log("[VideoTileFeatureView] render view")
-        return(
-            <div style={{display:"flex", flexWrap:"nowrap", width:`${width}px`, height:`${height}px`, objectFit:"contain", position:"absolute"}}>
-                {targetTiles.map((tile,index)=>{
-                    if(!tile){
-                        return <div key={index}>no share contets, no active speaker</div>
+    const view = useMemo(() => {
+        const contentWidth = width / targetTiles.length;
+        console.log("[VideoTileFeatureView] render view");
+        return (
+            <div style={{ display: "flex", flexWrap: "nowrap", width: `${width}px`, height: `${height}px`, objectFit: "contain", position: "absolute" }}>
+                {targetTiles.map((tile, index) => {
+                    if (!tile) {
+                        return <div key={index}>no share contets, no active speaker</div>;
                     }
-                    const idPrefix = `drawable-videotile-${tile.boundAttendeeId}`
-                    return <DrawableVideoTile chimeClient={chimeClient!} whiteboardClient={whiteboardClient!} key={idPrefix} idPrefix={idPrefix} tile={tile} width={contentWidth} height={height}/>
+                    const idPrefix = `drawable-videotile-${tile.boundAttendeeId}`;
+                    return <DrawableVideoTile chimeClient={chimeClient!} whiteboardClient={whiteboardClient!} key={idPrefix} idPrefix={idPrefix} tile={tile} width={contentWidth} height={height} />;
                 })}
             </div>
-        )
-    },[targetIds, width, height]) // eslint-disable-line
+        );
+    }, [targetIds, width, height]); // eslint-disable-line
 
-    return(<>{view}</>)
-
-}
+    return <>{view}</>;
+};
