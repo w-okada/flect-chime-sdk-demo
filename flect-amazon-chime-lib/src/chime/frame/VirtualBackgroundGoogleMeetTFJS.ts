@@ -12,7 +12,7 @@ export class VirtualBackgroundGoogleMeetTFJS {
     googlemeetConfig = (() => {
         const c = generateGoogleMeetSegmentationDefaultConfig();
         c.processOnLocal = true;
-        c.modelKey = Object.keys(this.googlemeetConfig.modelTFLites)[0];
+        c.modelKey = Object.keys(c.modelTFLites)[0];
         c.useTFJS = true;
         c.useSimd = true;
         return c;
@@ -42,10 +42,12 @@ export class VirtualBackgroundGoogleMeetTFJS {
 
     predict = async (frontCanvas: HTMLCanvasElement, backCanvas: HTMLCanvasElement, targetCanvas: HTMLCanvasElement, config: VirtualBackgroundConfig) => {
         const result = await this.googlemeetManager!.predict(frontCanvas, this.googlemeetParams!);
-        this.convert_googlemeet(frontCanvas, backCanvas, targetCanvas, result, config);
+        if (result) {
+            this.convert_googlemeet(frontCanvas, backCanvas, targetCanvas, result, config);
+        }
     };
 
-    convert_googlemeet = (foreground: HTMLCanvasElement, background: HTMLCanvasElement, targetCanvas: HTMLCanvasElement, segmentation: any, conf: VirtualBackgroundConfig) => {
+    convert_googlemeet = (foreground: HTMLCanvasElement, background: HTMLCanvasElement, targetCanvas: HTMLCanvasElement, segmentation: ImageData, conf: VirtualBackgroundConfig) => {
         // (1) resize output canvas and draw background
         if (conf.width <= 0 || conf.height <= 0) {
             conf.width = foreground.width > background.width ? foreground.width : background.width;
@@ -62,27 +64,9 @@ export class VirtualBackgroundGoogleMeetTFJS {
         }
 
         // (2) generate foreground transparent
-        const prediction = segmentation as number[][];
-        const res = new ImageData(prediction[0].length, prediction.length);
-        for (let rowIndex = 0; rowIndex < this.personMaskCanvas.height; rowIndex++) {
-            for (let colIndex = 0; colIndex < this.personMaskCanvas.width; colIndex++) {
-                const pix_offset = (rowIndex * this.personMaskCanvas.width + colIndex) * 4;
-                if (prediction[rowIndex][colIndex] >= 128) {
-                    res.data[pix_offset + 0] = 0;
-                    res.data[pix_offset + 1] = 0;
-                    res.data[pix_offset + 2] = 0;
-                    res.data[pix_offset + 3] = 0;
-                } else {
-                    res.data[pix_offset + 0] = 255;
-                    res.data[pix_offset + 1] = 255;
-                    res.data[pix_offset + 2] = 255;
-                    res.data[pix_offset + 3] = 255;
-                }
-            }
-        }
-        this.personMaskCanvas.width = prediction[0].length;
-        this.personMaskCanvas.height = prediction.length;
-        this.personMaskCanvas.getContext("2d")!.putImageData(res, 0, 0);
+        this.personMaskCanvas.width = segmentation.width;
+        this.personMaskCanvas.height = segmentation.height;
+        this.personMaskCanvas.getContext("2d")!.putImageData(segmentation, 0, 0);
 
         // (3) generarte Person Canvas
         this.personCanvas.width = conf.width;
