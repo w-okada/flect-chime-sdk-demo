@@ -12,7 +12,7 @@ class AudioVideoObserverTemplate implements AudioVideoObserver {
         console.log(`[FlectChimeClient][AudioVideoObserver] session connecting. reconnecting: ${reconnecting}`);
     }
     audioVideoDidStart(): void {
-        console.log('session started');
+        console.log("session started");
     }
     audioVideoDidStop(sessionStatus: MeetingSessionStatus): void {
         console.log(`[FlectChimeClient][AudioVideoObserver] session stopped from1 ${JSON.stringify(sessionStatus)}`);
@@ -31,7 +31,6 @@ class AudioVideoObserverTemplate implements AudioVideoObserver {
     videoTileDidUpdate(tileState: VideoTileState): void {
         // // console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! tile did update")
         // const videoTiles = this.audioVideo.getAllVideoTiles()
-
         // for(let i=0; i<videoTiles.length; i++){
         //     this.audioVideo.bindVideoElement(videoTiles[i].state().tileId!, this.videoElements[i])
         //     // console.log("video!!!!!!!!!!!!!!!!!", videoTiles[i].state().tileId!, this.videoElements[i])
@@ -42,7 +41,7 @@ class AudioVideoObserverTemplate implements AudioVideoObserver {
     }
 
     videoTileWasRemoved(tileId: number): void {
-        console.log("[FlectChimeClient][AudioVideoObserver] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! tile removed")
+        console.log("[FlectChimeClient][AudioVideoObserver] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! tile removed");
     }
     videoAvailabilityDidChange(availability: MeetingSessionVideoAvailability): void {
         //this.canStartLocalVideo = availability.canStartLocalVideo;
@@ -71,7 +70,6 @@ class AudioVideoObserverTemplate implements AudioVideoObserver {
         //     (document.getElementById('video-uplink-bandwidth') as HTMLSpanElement).innerHTML =
         //         'Available Uplink Bandwidth: Unknown';
         // }
-
         // if (typeof metricReport.availableReceiveBandwidth === 'number' && !isNaN(metricReport.availableReceiveBandwidth)) {
         //     (document.getElementById('video-downlink-bandwidth') as HTMLSpanElement).innerHTML =
         //         'Available Downlink Bandwidth: ' + String(metricReport.availableReceiveBandwidth / 1000) + ' Kbps';
@@ -86,14 +84,14 @@ class AudioVideoObserverTemplate implements AudioVideoObserver {
     ////// connectionHealthDidChange
 
     connectionDidBecomePoor(): void {
-        console.log('[FlectChimeClient][AudioVideoObserver] connection is poor');
+        console.log("[FlectChimeClient][AudioVideoObserver] connection is poor");
     }
     connectionDidSuggestStopVideo(): void {
-        console.log('[FlectChimeClient][AudioVideoObserver] suggest turning the video off');
+        console.log("[FlectChimeClient][AudioVideoObserver] suggest turning the video off");
     }
     videoSendDidBecomeUnavailable(): void {
-        console.log('[FlectChimeClient][AudioVideoObserver] sending video is not available');
+        console.log("[FlectChimeClient][AudioVideoObserver] sending video is not available");
     }
 }
 
-export default AudioVideoObserverTemplate
+export default AudioVideoObserverTemplate;
