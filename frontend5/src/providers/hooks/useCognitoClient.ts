@@ -11,6 +11,7 @@ export type UseCognitoClientProps = {
 export type CognitoClientState = {
     // cognitoClient: CognitoClient;
     userId: string | null;
+    password: string | null;
     idToken: string | null;
     accessToken: string | null;
     refreshToken: string | null;
@@ -63,6 +64,7 @@ export const useCognitoClient = (props: UseCognitoClientProps) => {
     const returnValue: CognitoClientState = {
         // cognitoClient,
         userId: cognitoClient.userId,
+        password: cognitoClient.password,
         idToken: cognitoClient.idToken,
         accessToken: cognitoClient.accessToken,
         refreshToken: cognitoClient.refreshToken,

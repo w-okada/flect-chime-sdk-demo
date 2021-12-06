@@ -10,8 +10,8 @@ import { useStyles } from "../000_common/Style";
 
 export const SignIn = () => {
     const { cognitoClientState, setMessage, setStage, chimeClientState, deviceState } = useAppState();
-    const [userId, setUserId] = useState(cognitoClient.userId || "");
-    const [password, setPassword] = useState(cognitoClient.password || "");
+    const [userId, setUserId] = useState(cognitoClientState.userId || "");
+    const [password, setPassword] = useState(cognitoClientState || "");
 
     const [isLoading, setIsLoading] = useState(false);
 

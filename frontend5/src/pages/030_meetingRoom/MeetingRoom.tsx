@@ -1,28 +1,12 @@
-import React, { useEffect, useMemo, useState } from "react";
-import clsx from "clsx";
-import { CssBaseline, AppBar, Drawer, Toolbar } from "@material-ui/core";
+import React, { useEffect } from "react";
+import { CssBaseline } from "@material-ui/core";
 import { createTheme, ThemeProvider } from "@material-ui/core/styles";
-import { DrawerOpener } from "./components0/appbars/DrawerOpener";
-import { Title } from "./components0/appbars/Title";
+
 import { useAppState } from "../../providers/AppStateProvider";
 import { useStyles } from "./css";
-import { DeviceEnabler } from "./components0/appbars/DeviceEnabler";
-import { DialogOpener } from "./components0/appbars/DialogOpener";
-import { FeatureEnabler } from "./components0/appbars/FeatureEnabler";
-import { ScreenType, SwitchButtons } from "./components0/appbars/SwitchButtons";
+
 import { LeaveMeetingDialog } from "./components/dialog/LeaveMeetingDialog";
-import { CustomAccordion } from "./components0/sidebars/CustomAccordion";
-import { AttendeesTable } from "./components0/sidebars/AttendeesTable";
-import { ChatArea } from "./components0/sidebars/ChatArea";
-import { WhiteboardPanel } from "./components0/sidebars/WhiteboardPanel";
-import { CreditPanel } from "./components0/sidebars/CreditPanel";
-import { FullScreenView } from "./components0/ScreenView/FullScreenView";
-import { FeatureView } from "./components0/ScreenView/FeatureView";
-import { GridView } from "./components0/ScreenView/GridView";
-import { OnetimeCodePanel } from "./components0/sidebars/OnetimeCodePanel";
-import { ManagerControllerPanel } from "./components0/sidebars/ManagerControllerPanel";
-import { RecorderPanel } from "./components0/sidebars/RecorderPanel";
-import { TranscriptionPanel } from "./components0/sidebars/TranscriptionPanel";
+
 import { useAppbar } from "./components/appbar/useAppbar";
 import { useMainView } from "./components/mainview/useMainView";
 import { ToolbarHeight } from "../../constants";

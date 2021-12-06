@@ -1,13 +1,7 @@
-import { AppBar, Toolbar } from "@material-ui/core";
-import React, { useEffect, useMemo, useState } from "react";
+import { AppBar, Toolbar, Typography } from "@material-ui/core";
+import React, { useMemo, useState } from "react";
 import { ToolbarHeight } from "../../../../constants";
 import { useAppState } from "../../../../providers/AppStateProvider";
-import { DeviceEnabler } from "../../components0/appbars/DeviceEnabler";
-import { DialogOpener } from "../../components0/appbars/DialogOpener";
-import { DrawerOpener } from "../../components0/appbars/DrawerOpener";
-import { FeatureEnabler } from "../../components0/appbars/FeatureEnabler";
-import { SwitchButtons } from "../../components0/appbars/SwitchButtons";
-import { Title } from "../../components0/appbars/Title";
 import { useStyles } from "../../css";
 import { useDeviceEnabler } from "./useDeviceEnabler";
 import { useDialogOpener } from "./useDialogOpener";
@@ -29,7 +23,9 @@ export const useAppbar = () => {
                 <Toolbar style={{ height: ToolbarHeight, display: "flex", justifyContent: "space-between" }}>
                     <div className={classes.toolbarInnnerBox}>{/* <DrawerOpener open={drawerOpen} setOpen={setDrawerOpen} /> */}</div>
                     <div className={classes.toolbarInnnerBox}>
-                        <Title title={`${chimeClientState.userName || ""}@${chimeClientState.meetingName || ""}`} />
+                        <Typography color="inherit" noWrap className={classes.title}>
+                            {`${chimeClientState.userName || ""}@${chimeClientState.meetingName || ""}`}
+                        </Typography>
                     </div>
                     <div className={classes.toolbarInnnerBox}>
                         <div className={classes.toolbarInnnerBox}>
