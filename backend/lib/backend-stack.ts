@@ -535,8 +535,8 @@ export class BackendStack extends cdk.Stack {
     const addCorsOptions = (apiResource: IResource) => {
       let origin;
       if (FRONTEND_LOCAL_DEV) {
-        // origin = "'https://localhost:3000'"
-        origin = "'https://192.168.0.4:3000'";
+        origin = "'https://localhost:3000'";
+        // origin = "'https://192.168.0.4:3000'";
       } else {
         if (USE_CDN) {
           origin = `'https://${cdn!.distributionDomainName}'`;
@@ -1048,7 +1048,7 @@ export class BackendStack extends cdk.Stack {
     if (USE_CDN) {
       new CfnOutput(this, "DemoEndpoint", {
         description: "DemoEndpoint",
-        value: `https://${cdn!.distributionDomainName}/index.html`,
+        value: `https://${cdn!.distributionDomainName}`,
       });
       new CfnOutput(this, "DistributionId", {
         description: "DistributionId",
@@ -1057,7 +1057,7 @@ export class BackendStack extends cdk.Stack {
     } else {
       new CfnOutput(this, "DemoEndpoint", {
         description: "DemoEndpoint",
-        value: `https://${bucket.bucketDomainName}/index.html`,
+        value: `https://${bucket.bucketDomainName}`,
       });
     }
 

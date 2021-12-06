@@ -171,7 +171,7 @@ export class RestApiClient {
         };
 
         const requestBody = JSON.stringify(request);
-
+        console.log("CREATE MEETING!!");
         const response = await fetch(url, {
             method: "POST",
             body: requestBody,
@@ -180,6 +180,7 @@ export class RestApiClient {
                 Accept: "application/json",
                 "Content-Type": "application/json",
                 "X-Flect-Access-Token": this._accessToken!,
+                // Token: this._accessToken!,
             },
         });
         const data = await response.json();

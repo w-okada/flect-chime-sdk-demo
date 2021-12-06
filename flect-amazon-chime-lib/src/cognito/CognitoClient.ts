@@ -63,6 +63,9 @@ export class CognitoClient {
                     this._idToken = result.getIdToken().getJwtToken();
                     this._refreshToken = result.getRefreshToken().getToken();
                     this._userId = userId;
+
+                    console.log(`idtoken`, this._idToken);
+                    console.log(`accesstoken`, this._accessToken);
                     resolve();
                 },
                 onFailure: (err) => {

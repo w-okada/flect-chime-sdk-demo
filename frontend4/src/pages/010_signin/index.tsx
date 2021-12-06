@@ -22,7 +22,7 @@ export const SignIn = () => {
         setIsLoading(true);
         try {
             await cognitoClient.signIn(userId, password);
-            console.log("sign in!!!");
+            console.log("sign in!!!2");
             setIsLoading(false);
             setStage("ENTRANCE");
         } catch (e: any) {

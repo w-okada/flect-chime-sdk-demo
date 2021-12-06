@@ -74,7 +74,6 @@ export const AppStateProvider = ({ children }: Props) => {
 
     const cognitoClient = useMemo(() => {
         return new CognitoClient(UserPoolId, UserPoolClientId);
-        // return new CognitoClient(UserPoolId, UserPoolClientId, "mail2wokada@gmail.com", "test22")
     }, []);
 
     /////////

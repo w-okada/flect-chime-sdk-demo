@@ -1,0 +1,7 @@
+node_modules
+
+src/BackendConfig.ts
+
+demo_url.txt
+sync.sh
+createInvalidation.sh
