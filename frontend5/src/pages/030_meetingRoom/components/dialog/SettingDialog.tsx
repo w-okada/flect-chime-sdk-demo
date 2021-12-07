@@ -1,10 +1,11 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, InputLabel, MenuItem, Select, Typography } from "@material-ui/core";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useAppState } from "../../../../providers/AppStateProvider";
 import { useStyles } from "../../css";
 import { DefaultDeviceController } from "amazon-chime-sdk-js";
 import { CustomSelect } from "../../../000_common/CustomSelect";
 import { VirtualBackgroundSegmentationType, NoiseSuppressionType } from "@dannadori/flect-amazon-chime-lib2";
+import { TranscribeLangs } from "../../../../providers/hooks/useChimeClient";
 
 export const SettingDialog = () => {
     // const classes = useStyles();
@@ -36,6 +37,17 @@ export const SettingDialog = () => {
         { label: "c20", value: "c20" },
         { label: "c10", value: "c10" },
     ];
+
+    const transcribeLangs = useMemo(() => {
+        const langs = [];
+        for (const lang of Object.values(TranscribeLangs)) {
+            langs.push({
+                label: lang,
+                value: lang,
+            });
+        }
+        return langs;
+    }, []);
 
     const speakers = deviceState.mediaDeviceList.audiooutput.map((x) => {
         return { label: x.label, value: x.deviceId };
@@ -234,6 +246,10 @@ export const SettingDialog = () => {
 
                     <div style={{ margin: 10 }}>
                         <CustomSelect onChange={setNoiseSuppressionType} label="noise suppression" height={16} fontsize={12} labelFontsize={16} items={noiseSuppressions} defaultValue={noiseSuppressionType} />
+                    </div>
+
+                    <div style={{ margin: 10 }}>
+                        <CustomSelect onChange={chimeClientState.setTranscribeLang} label="transcribe lang" height={16} fontsize={12} labelFontsize={16} items={transcribeLangs} defaultValue={chimeClientState.transcribeLang} />
                     </div>
 
                     <form noValidate>

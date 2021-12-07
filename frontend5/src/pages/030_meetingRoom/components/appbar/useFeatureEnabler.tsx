@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { IconButton, Tooltip } from "@material-ui/core";
-import { ScreenShare, StopScreenShare, Receipt } from "@material-ui/icons";
+import { ScreenShare, StopScreenShare, Receipt, Title } from "@material-ui/icons";
 import PeopleIcon from "@mui/icons-material/People";
 import { useAppState } from "../../../../providers/AppStateProvider";
 import { ToolbarHeight } from "../../../../constants";
@@ -8,6 +8,7 @@ const FeatureType = {
     ScreenShare: "ScreenShare",
     SideBar: "SideBar",
     AttendeesView: "AttendeesView",
+    Transcribe: "Transcribe",
 } as const;
 type FeatureType = typeof FeatureType[keyof typeof FeatureType];
 
@@ -36,6 +37,12 @@ const FeatureEnablerSettings: { [key in FeatureType]: FeatureEnablerSetting } = 
         offIcon: <PeopleIcon />,
         onTooltip: "close attendees view",
         offTooltip: "show attendees view",
+    },
+    Transcribe: {
+        onIcon: <Title style={{ color: "#ee7777" }} />,
+        offIcon: <Title />,
+        onTooltip: "stop transcribe",
+        offTooltip: "start transcribe",
     },
 };
 
@@ -86,6 +93,9 @@ export const useFeatureEnabler = () => {
     const attendeesViewButton = useMemo(() => {
         return generateButton(FeatureEnablerSettings.AttendeesView, frontendState.setAttendeesViewOpen, frontendState.attendeesViewOpen);
     }, [frontendState.attendeesViewOpen]);
+    const transcribeButton = useMemo(() => {
+        return generateButton(FeatureEnablerSettings.Transcribe, chimeClientState.setTranscribeEnable, chimeClientState.transcribeEnable);
+    }, [chimeClientState.transcribeEnable]);
 
-    return { screenShareButton, sideBarButton, attendeesViewButton };
+    return { screenShareButton, sideBarButton, attendeesViewButton, transcribeButton };
 };

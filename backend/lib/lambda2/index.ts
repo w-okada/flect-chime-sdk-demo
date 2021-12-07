@@ -1,6 +1,6 @@
 import { DynamoDB } from "aws-sdk";
-import { CreateMeetingRequest, JoinMeetingRequest, ResponseBody, JoinMeetingException, JoinMeetingExceptionType, GetAttendeeInfoException, GetAttendeeInfoExceptionType } from "./const";
-import { createMeeting, deleteMeeting, getAttendeeInfo, getMeetingInfo, joinMeeting } from "./meeting";
+import { CreateMeetingRequest, JoinMeetingRequest, ResponseBody, JoinMeetingException, JoinMeetingExceptionType, GetAttendeeInfoException, GetAttendeeInfoExceptionType, StartTranscribeRequest, StopTranscribeRequest } from "./const";
+import { createMeeting, deleteMeeting, getAttendeeInfo, getMeetingInfo, joinMeeting, startTranscribe, stopTranscribe } from "./meeting";
 import { generateResponse, getEmailFromAccessToken } from "./util";
 
 var meetingTableName = process.env.MEETING_TABLE_NAME!;
@@ -20,8 +20,15 @@ const Resources = {
     Meeting: "/meetings/{meetingName}",
     Attendees: "/meetings/{meetingName}/attendees",
     Attendee: "/meetings/{meetingName}/attendees/{attendeeId}",
+    Operation: "/meetings/{meetingName}/attendees/{attendeeId}/operations/{operation}",
 } as const;
 type Resources = typeof Resources[keyof typeof Resources];
+
+const Operations = {
+    StartTranscribe: "start-transcribe",
+    StopTranscribe: "stop-transcribe",
+} as const;
+type Operations = typeof Operations[keyof typeof Operations];
 
 const Codes = {
     SUCCESS: "SUCCESS",
@@ -65,34 +72,14 @@ export const handler = (event: any, context: any, callback: any) => {
         case Resources.Attendee:
             handleAttendee(accessToken, method, pathParams, body, callback);
             break;
+        case Resources.Operation:
+            handleOperation(accessToken, method, pathParams, body, callback);
+            break;
         default:
             console.log(`Unknwon resource name: ${resource}`);
             const response = generateResponse({ success: false, code: Codes.UNKNOWN_RESOURCE });
             callback(null, response);
     }
-
-    // const response = getResponseTemplate();
-    // const meetingName = "TEST";
-    // const result = await ddb
-    //     .getItem({
-    //         TableName: meetingTableName,
-    //         Key: {
-    //             MeetingName: {
-    //                 S: meetingName,
-    //             },
-    //         },
-    //     })
-    //     .promise();
-
-    // console.log("dynamo", result);
-    // //// (2) If no meeting in DB, return null
-    // if (!result.Item) {
-    //     response.body = JSON.stringify({ x: 5, y: 6 });
-    // } else {
-    //     const meetingInfo = result.Item;
-    //     const meetingData = JSON.parse(meetingInfo.Data.S!);
-    //     response.body = JSON.stringify(meetingData);
-    // }
 };
 
 // (0) Root
@@ -322,6 +309,82 @@ const handleGetAttendee = async (accessToken: string, pathParams: { [key: string
             };
         }
     }
+    const response = generateResponse(res);
+    callback(null, response);
+};
+
+// (5) Operation
+const handleOperation = (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+    console.log(`HANDLE operation: ${method} ${body}`);
+    const meetingName = pathParams["meetingName"];
+    const attendeeId = pathParams["attendeeId"];
+    const operation = pathParams["operation"];
+    switch (method) {
+        case Methods.POST:
+            if (operation === Operations.StartTranscribe) {
+                handlePostStartTranscribe(accessToken, pathParams, body, callback);
+            } else if (operation === Operations.StopTranscribe) {
+                handlePostStopTranscribe(accessToken, pathParams, body, callback);
+            }
+            break;
+        default:
+            console.log(`Unknwon method: ${method}`);
+            const response = generateResponse({ success: false, code: Codes.UNKNOWN_METHOD });
+            callback(null, response);
+            break;
+    }
+};
+//// (5-1) start transcribe
+const handlePostStartTranscribe = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+    let res: ResponseBody;
+    const params = JSON.parse(body) as StartTranscribeRequest;
+    const meetingName = pathParams["meetingName"];
+    const attendeeId = pathParams["attendeeId"];
+    //// (1) If there is no meeting, return fai
+    let email = "";
+    try {
+        email = (await getEmailFromAccessToken(accessToken)) || "";
+    } catch (e) {
+        res = {
+            success: false,
+            code: Codes.NO_SUCH_AN_ATTENDEE,
+        };
+        const response = generateResponse(res);
+        callback(null, response);
+    }
+    /// (2)
+    startTranscribe(email, meetingName, params.lang);
+    res = {
+        success: true,
+        code: Codes.SUCCESS,
+    };
+    const response = generateResponse(res);
+    callback(null, response);
+};
+//// (5-2) stop transcribe
+const handlePostStopTranscribe = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+    let res: ResponseBody;
+    const params = JSON.parse(body) as StopTranscribeRequest;
+    const meetingName = pathParams["meetingName"];
+    const attendeeId = pathParams["attendeeId"];
+    //// (1) If there is no meeting, return fai
+    let email = "";
+    try {
+        email = (await getEmailFromAccessToken(accessToken)) || "";
+    } catch (e) {
+        res = {
+            success: false,
+            code: Codes.NO_SUCH_AN_ATTENDEE,
+        };
+        const response = generateResponse(res);
+        callback(null, response);
+    }
+    /// (2)
+    stopTranscribe(email, meetingName);
+    res = {
+        success: true,
+        code: Codes.SUCCESS,
+    };
     const response = generateResponse(res);
     callback(null, response);
 };

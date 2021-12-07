@@ -1,5 +1,6 @@
 import { getAttendeeList, GetAttendeeListRequest, getUserNameByAttendeeId, GetUserNameByAttendeeIdRequest, joinMeeting, JoinMeetingRequest } from "./attendee";
 import { CreateMeetingRequest, createMeeting, endMeeting, EndMeetingRequest, GetMeetingInfoRequest, getMeetingInfo } from "./meeting";
+import { startTranscribe, StartTranscribeRequest, stopTranscribe, StopTranscribeRequest } from "./operations";
 
 // (6)
 type GenerateOnetimeCodeResponse = {
@@ -45,19 +46,6 @@ type GetManagerInfoRequest = {
     publicIp: string;
     lastStatus: string;
     desiredStatus: string;
-};
-
-//(12)
-type StartTranscribeRequest = {
-    lang: string;
-};
-type StartTranscribeResponse = {
-    code: string;
-};
-
-//(13)
-type StopTranscribeResponse = {
-    code: string;
 };
 
 export type RestApiClientContext = {
@@ -116,6 +104,17 @@ export class RestApiClient {
     ///// *** maybe return attendee history. not current attendee???***
     getAttendeeList = async (params: GetAttendeeListRequest) => {
         getAttendeeList(params, this.context!);
+    };
+
+    // (3) Operations
+    //// (3-1) Start Transcribe
+    startTranscribe = async (params: StartTranscribeRequest) => {
+        startTranscribe(params, this.context);
+    };
+
+    //// (3-2) Stop Transcribe
+    stopTranscribe = async (params: StopTranscribeRequest) => {
+        stopTranscribe(params, this.context);
     };
 
     // /**
@@ -270,66 +269,6 @@ export class RestApiClient {
 
     //     const data = await response.json();
     //     console.log("[getManagerInfo]", data);
-    //     return data;
-    // };
-
-    // /**
-    //  * (12) startTranscribe
-    //  */
-    // startTranscribe = async (meetingName: string, attendeeId: string, lang: string): Promise<StartTranscribeResponse> => {
-    //     const url = `${this._baseUrl}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}/operations/start-transcribe`;
-
-    //     const request: StartTranscribeRequest = {
-    //         lang: lang,
-    //     };
-
-    //     const requestBody = JSON.stringify(request);
-
-    //     const response = await fetch(url, {
-    //         method: "POST",
-    //         body: requestBody,
-    //         headers: {
-    //             Authorization: this._idToken!,
-    //             Accept: "application/json",
-    //             "Content-Type": "application/json",
-    //             "X-Flect-Access-Token": this._accessToken!,
-    //         },
-    //     });
-
-    //     const data = await response.json();
-    //     if (data === null) {
-    //         throw new Error(`Server error: startTranscribe failed`);
-    //     }
-    //     console.log("start transcribe", data);
-    //     return data;
-    // };
-
-    // /**
-    //  * (13) stopTranscribe
-    //  */
-    // stopTranscribe = async (meetingName: string, attendeeId: string): Promise<StartTranscribeResponse> => {
-    //     const url = `${this._baseUrl}meetings/${encodeURIComponent(meetingName)}/attendees/${encodeURIComponent(attendeeId)}/operations/stop-transcribe`;
-
-    //     const request = {};
-
-    //     const requestBody = JSON.stringify(request);
-
-    //     const response = await fetch(url, {
-    //         method: "POST",
-    //         body: requestBody,
-    //         headers: {
-    //             Authorization: this._idToken!,
-    //             Accept: "application/json",
-    //             "Content-Type": "application/json",
-    //             "X-Flect-Access-Token": this._accessToken!,
-    //         },
-    //     });
-
-    //     const data = await response.json();
-    //     if (data === null) {
-    //         throw new Error(`Server error: stopTranscribe failed`);
-    //     }
-    //     console.log("stop transcribe", data);
     //     return data;
     // };
 }

@@ -57,3 +57,27 @@ export declare type GetAttendeeInfoException = {
     code: GetAttendeeInfoExceptionType;
     exception: boolean;
 };
+export declare type StartTranscribeRequest = {
+    lang: string;
+};
+export declare type StartTranscribeResponse = {};
+export declare const StartTranscribeExceptionType: {
+    readonly NOT_OWNER: "NOT_OWNER";
+    readonly NO_MEETING_FOUND: "NO_MEETING_FOUND";
+};
+export declare type StartTranscribeExceptionType = typeof StartTranscribeExceptionType[keyof typeof StartTranscribeExceptionType];
+export declare type StartTranscribeException = {
+    code: StartTranscribeExceptionType;
+    exception: boolean;
+};
+export declare type StopTranscribeRequest = {};
+export declare type StopTranscribeResponse = {};
+export declare const StopTranscribeExceptionType: {
+    readonly NOT_OWNER: "NOT_OWNER";
+    readonly NO_MEETING_FOUND: "NO_MEETING_FOUND";
+};
+export declare type StopTranscribeExceptionType = typeof StopTranscribeExceptionType[keyof typeof StopTranscribeExceptionType];
+export declare type StopTranscribeException = {
+    code: StartTranscribeExceptionType;
+    exception: boolean;
+};

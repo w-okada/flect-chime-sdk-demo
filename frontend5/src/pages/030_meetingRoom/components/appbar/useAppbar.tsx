@@ -12,7 +12,7 @@ export const useAppbar = () => {
     const classes = useStyles();
 
     const { microphoneButton, cameraButton, speakerButton } = useDeviceEnabler();
-    const { screenShareButton, sideBarButton, attendeesViewButton } = useFeatureEnabler();
+    const { screenShareButton, sideBarButton, attendeesViewButton, transcribeButton } = useFeatureEnabler();
     const { featureViewButton, gridViewButton } = useScrenTypeSwitch();
     const { settingButton, leaveButton } = useDialogOpener();
     const [sec, setSec] = useState(0);
@@ -36,6 +36,7 @@ export const useAppbar = () => {
                             {sideBarButton}
                             {attendeesViewButton}
                             {screenShareButton}
+                            {transcribeButton}
                             <span style={{ height: ToolbarHeight, width: ToolbarHeight }}> </span>
                             {featureViewButton}
                             {gridViewButton}
@@ -48,7 +49,7 @@ export const useAppbar = () => {
                 </Toolbar>
             </AppBar>
         );
-    }, [microphoneButton, cameraButton, speakerButton, screenShareButton, sideBarButton, attendeesViewButton, featureViewButton, gridViewButton, settingButton, leaveButton]);
+    }, [microphoneButton, cameraButton, speakerButton, screenShareButton, transcribeButton, sideBarButton, attendeesViewButton, featureViewButton, gridViewButton, settingButton, leaveButton]);
 
     return { appBar };
 };

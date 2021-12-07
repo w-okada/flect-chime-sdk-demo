@@ -1,6 +1,6 @@
 import { DynamoDB, Chime, Endpoint } from "aws-sdk";
 import { v4 } from "uuid";
-import { CreateMeetingResponse, GetAttendeeInfoException, GetAttendeeInfoExceptionType, GetAttendeeInfoResponse, JoinMeetingException, JoinMeetingExceptionType, JoinMeetingResponse, MeetingInfo, Metadata } from "./const";
+import { CreateMeetingResponse, GetAttendeeInfoException, GetAttendeeInfoExceptionType, GetAttendeeInfoResponse, JoinMeetingException, JoinMeetingExceptionType, JoinMeetingResponse, MeetingInfo, Metadata, StartTranscribeException, StartTranscribeExceptionType, StartTranscribeResponse, StopTranscribeExceptionType } from "./const";
 import { getExpireDate } from "./util";
 var meetingTableName = process.env.MEETING_TABLE_NAME!;
 var attendeesTableName = process.env.ATTENDEE_TABLE_NAME!;
@@ -196,4 +196,80 @@ export const getAttendeeInfo = async (meetingName: string, attendeeId: string): 
         attendeeId: result.Item.AttendeeId.S!,
         attendeeName: result.Item.AttendeeName.S!,
     };
+};
+
+export const startTranscribe = async (email: string, meetingName: string, lang: string): Promise<StartTranscribeResponse | StartTranscribeException> => {
+    //// (1) check meeting exists
+    let meetingInfo = await getMeetingInfo(meetingName);
+    if (meetingInfo === null) {
+        return {
+            code: StartTranscribeExceptionType.NO_MEETING_FOUND,
+            exception: true,
+        };
+    }
+    //// (2) check if owner calls or not.
+    var meetingMetadata = meetingInfo.metadata;
+    var ownerId = meetingMetadata["OwnerId"];
+    console.log("OWNERID", ownerId, "email", email);
+    if (ownerId != email) {
+        return {
+            code: StartTranscribeExceptionType.NOT_OWNER,
+            exception: true,
+        };
+    }
+
+    //// (3) start transcribe
+    console.log(`Langage code :${lang}`);
+    const res = await chime
+        .startMeetingTranscription({
+            MeetingId: meetingInfo.meetingId,
+            TranscriptionConfiguration: {
+                EngineTranscribeSettings: {
+                    LanguageCode: lang,
+                    //VocabularyFilterMethod?: TranscribeVocabularyFilterMethod;
+                    //VocabularyFilterName?: String;
+                    //VocabularyName?: String;
+                    //Region?: TranscribeRegion;
+                },
+            },
+        })
+        .promise();
+
+    return {};
+};
+
+/***
+ * stop Transcribe.
+ *
+ */
+export const stopTranscribe = async (email: string, meetingName: string) => {
+    console.log("stopTranscribe");
+    //// (1) If there is no meeting, return fail
+    let meetingInfo = await getMeetingInfo(meetingName);
+    if (meetingInfo === null) {
+        return {
+            code: StopTranscribeExceptionType.NO_MEETING_FOUND,
+            exception: true,
+        };
+    }
+
+    //// (2) check if owner calls or not.
+    var meetingMetadata = meetingInfo.metadata;
+    var ownerId = meetingMetadata["OwnerId"];
+    console.log("OWNERID", ownerId, "email", email);
+    if (ownerId != email) {
+        return {
+            code: StopTranscribeExceptionType.NOT_OWNER,
+            exception: true,
+        };
+    }
+
+    //// (3) stop transcribe
+    const res = await chime
+        .stopMeetingTranscription({
+            MeetingId: meetingInfo.meetingId,
+        })
+        .promise();
+    console.log("stop transcribe result", res);
+    return {};
 };

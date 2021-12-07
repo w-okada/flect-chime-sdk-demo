@@ -83,10 +83,50 @@ export type ChimeClientState = {
     //////////////////////////////////////////
     sendChatData: (text: string) => void;
     chatData: RealtimeData[];
+    //////////////////////////////////////////
+    // transcribe
+    //////////////////////////////////////////
+    setTranscribeEnable: (val: boolean) => void;
+    setTranscribeLang: (val: TranscribeLangs) => Promise<void>;
+    transcribeEnable: boolean;
+    transcribeLang: TranscribeLangs;
 };
+
+export const TranscribeLangs = {
+    English_US: "en-US",
+    English_British: "en-GB",
+    English_Australian: "en-AU",
+    Spanish_US: "es-US",
+    French_Canadian: "fr-CA",
+    French: "fr-FR",
+    Italian: "it-IT",
+    German: "de-DE",
+    Portuguese_Brazilian: "pt-BR",
+    Japanese: "ja-JP",
+    Korean: "ko-KR",
+    Chinese_Mandarin: "zh-CN",
+} as const;
+export type TranscribeLangs = typeof TranscribeLangs[keyof typeof TranscribeLangs];
 
 export const useChimeClient = (props: UseChimeClientProps) => {
     const [_lastUpdateTime, setLastUpdateTime] = useState(0);
+    const [transcribeEnable, _setTranscribeEnable] = useState(false);
+    const [transcribeLang, _setTranscribeLang] = useState<TranscribeLangs>(TranscribeLangs.Japanese);
+    const setTranscribeEnable = async (val: boolean) => {
+        if (val) {
+            await chimeClient.startTranscribe(transcribeLang);
+        } else {
+            await chimeClient.stopTranscribe();
+        }
+        _setTranscribeEnable(val);
+    };
+    const setTranscribeLang = async (val: TranscribeLangs) => {
+        if (transcribeEnable) {
+            await chimeClient.stopTranscribe();
+            await chimeClient.startTranscribe(val);
+        }
+        _setTranscribeLang(val);
+    };
 
     const chimeClient = useMemo(() => {
         const c = new FlectChimeClient(props.RestAPIEndpoint);
@@ -378,6 +418,13 @@ export const useChimeClient = (props: UseChimeClientProps) => {
         //////////////////////////////////////////
         sendChatData,
         chatData: chimeClient.chatClient?.chatData || [],
+        //////////////////////////////////////////
+        // transcribe
+        //////////////////////////////////////////
+        setTranscribeEnable,
+        setTranscribeLang,
+        transcribeEnable,
+        transcribeLang,
     };
 
     return returnValue;

@@ -530,13 +530,20 @@ export class FlectChimeClient {
     //     return this._restApiClient.generateOnetimeCode(this._meetingName!, this._attendeeId!);
     // };
 
-    // startTranscribe = async (lang: string) => {
-    //     return this._restApiClient.startTranscribe(this._meetingName!, this._attendeeId!, lang);
-    // };
+    startTranscribe = async (lang: string) => {
+        return this._restApiClient.startTranscribe({
+            meetingName: this._meetingName!,
+            attendeeId: this._attendeeId!,
+            lang: lang,
+        });
+    };
 
-    // stopTranscribe = async () => {
-    //     return this._restApiClient.stopTranscribe(this._meetingName!, this._attendeeId!);
-    // };
+    stopTranscribe = async () => {
+        return this._restApiClient.stopTranscribe({
+            meetingName: this._meetingName!,
+            attendeeId: this._attendeeId!,
+        });
+    };
 
     ///////////////////////////////////////////
     // Utility
