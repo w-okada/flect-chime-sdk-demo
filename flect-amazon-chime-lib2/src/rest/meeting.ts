@@ -1,26 +1,17 @@
+import { CreateMeetingRequest, CreateMeetingResponse, ResponseBody } from "../backend_const";
 import { RestApiClientContext } from "./RestApiClient";
-
+export { CreateMeetingRequest, CreateMeetingResponse };
 /**
  * Create Meeting
  */
-export type CreateMeetingRequest = {
-    meetingName: string;
-    region: string;
-};
 
-export type CreateMeetingResponse = {
-    created: boolean;
-    meetingName: string;
-    meetingId: string;
-};
 export const createMeeting = async (params: CreateMeetingRequest, context: RestApiClientContext): Promise<CreateMeetingResponse> => {
     const url = `${context.baseUrl}meetings`;
-    const meetingName = params.meetingName;
     params.meetingName = encodeURIComponent(params.meetingName);
 
     const requestBody = JSON.stringify(params);
     console.log("CREATE MEETING!!");
-    const response = await fetch(url, {
+    const res = await fetch(url, {
         method: "POST",
         body: requestBody,
         headers: {
@@ -30,9 +21,13 @@ export const createMeeting = async (params: CreateMeetingRequest, context: RestA
             "X-Flect-Access-Token": context.accessToken!,
         },
     });
-    const data = await response.json();
-    const { created, meetingId } = data;
-    return { created, meetingId, meetingName };
+    const response = (await res.json()) as ResponseBody;
+    if (response.success === false) {
+        console.log(response.code);
+        throw response.code;
+    }
+    const data = response.data as CreateMeetingResponse;
+    return data;
 };
 
 /**
@@ -46,7 +41,7 @@ export const endMeeting = async (params: EndMeetingRequest, context: RestApiClie
 
     const url = `${context.baseUrl}meetings/${encodedMeetingName}`;
 
-    const response = await fetch(url, {
+    const res = await fetch(url, {
         method: "DELETE",
         headers: {
             Authorization: context.idToken!,
@@ -55,8 +50,10 @@ export const endMeeting = async (params: EndMeetingRequest, context: RestApiClie
             "X-Flect-Access-Token": context.accessToken!,
         },
     });
-    if (!response.ok) {
-        throw new Error("Server error ending meeting");
+    const response = (await res.json()) as ResponseBody;
+    if (response.success === false) {
+        console.log(response.code);
+        throw response.code;
     }
 };
 
@@ -96,7 +93,7 @@ export type GetMeetingInfoResponse = {
 export const getMeetingInfo = async (params: GetMeetingInfoRequest, context: RestApiClientContext): Promise<GetMeetingInfoResponse> => {
     const url = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}`;
 
-    const response = await fetch(url, {
+    const res = await fetch(url, {
         method: "GET",
         headers: {
             Authorization: context.idToken!,
@@ -105,9 +102,11 @@ export const getMeetingInfo = async (params: GetMeetingInfoRequest, context: Res
             "X-Flect-Access-Token": context.accessToken!,
         },
     });
-    const data = await response.json();
-    if (!data.success && data.success === false) {
-        throw new Error(`Server error: get meeting info failed, ${data.message}, ${data.code}`);
+    const response = (await res.json()) as ResponseBody;
+    if (response.success === false) {
+        console.log(response.code);
+        throw response.code;
     }
+    const data = response.data as GetMeetingInfoResponse;
     return data;
 };

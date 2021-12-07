@@ -1,43 +1,13 @@
 import { RestApiClientContext } from "./RestApiClient";
-
-/**
- * Join Meeting
- */
-export type JoinMeetingRequest = {
-    meetingName: string;
-    attendeeName: string;
-};
-export type JoinMeetingResponse = {
-    MeetingName: string;
-    Attendee: {
-        AttendeeId: string;
-        ExternalUserId: string;
-        JoinToken: string;
-    };
-    Meeting: {
-        ExternalMeetingId: string | null;
-        MediaPlacement: {
-            AudioFallbackUrl: string;
-            AudioHostUrl: string;
-            ScreenDataUrl: string;
-            ScreenSharingUrl: string;
-            ScreenViewingUrl: string;
-            SignalingUrl: string;
-            TurnControlUrl: string;
-        };
-        MediaRegion: string;
-        MeetingId: string;
-    };
-    code: string | null;
-};
-
+import { GetAttendeeInfoResponse, JoinMeetingRequest, JoinMeetingResponse, ResponseBody } from "../backend_const";
+export { JoinMeetingRequest };
 export const joinMeeting = async (params: JoinMeetingRequest, context: RestApiClientContext): Promise<JoinMeetingResponse> => {
     const url = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees`;
     params.meetingName = encodeURIComponent(params.meetingName);
     params.attendeeName = encodeURIComponent(params.attendeeName);
     const requestBody = JSON.stringify(params);
 
-    const response = await fetch(url, {
+    const res = await fetch(url, {
         method: "POST",
         body: requestBody,
         headers: {
@@ -48,10 +18,12 @@ export const joinMeeting = async (params: JoinMeetingRequest, context: RestApiCl
         },
     });
 
-    const data = await response.json();
-    if (data === null) {
-        throw new Error(`Server error: Join Meeting Failed`);
+    const response = (await res.json()) as ResponseBody;
+    if (response.success === false) {
+        console.log(response.code);
+        throw response.code;
     }
+    const data = response.data as JoinMeetingResponse;
     return data;
 };
 
@@ -63,11 +35,7 @@ export type GetUserNameByAttendeeIdRequest = {
     attendeeId: string;
 };
 
-export type GetUserNameByAttendeeIdResponse = {
-    name: string;
-    result: string;
-};
-export const getUserNameByAttendeeId = async (params: GetUserNameByAttendeeIdRequest, context: RestApiClientContext): Promise<GetUserNameByAttendeeIdResponse> => {
+export const getUserNameByAttendeeId = async (params: GetUserNameByAttendeeIdRequest, context: RestApiClientContext): Promise<GetAttendeeInfoResponse> => {
     const attendeeUrl = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees/${encodeURIComponent(params.attendeeId)}`;
     const res = await fetch(attendeeUrl, {
         method: "GET",
@@ -76,15 +44,13 @@ export const getUserNameByAttendeeId = async (params: GetUserNameByAttendeeIdReq
             "X-Flect-Access-Token": context.accessToken!,
         },
     });
-    if (!res.ok) {
-        throw new Error("Invalid server response");
+    const response = (await res.json()) as ResponseBody;
+    if (response.success === false) {
+        console.log(response.code);
+        throw response.code;
     }
-
-    const data = await res.json();
-    return {
-        name: decodeURIComponent(data.AttendeeName),
-        result: data.result,
-    };
+    const data = response.data as GetAttendeeInfoResponse;
+    return data;
 };
 
 /**

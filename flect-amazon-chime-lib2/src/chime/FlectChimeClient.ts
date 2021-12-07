@@ -231,19 +231,16 @@ export class FlectChimeClient {
         this._meetingName = meetingName;
         this._userName = userName;
 
-        const joinInfo = await this._restApiClient.joinMeeting({ meetingName, attendeeName: userName });
-        console.log("[FlectChimeClient][joinMeeting] JoinInfo:", joinInfo);
-        if (joinInfo["code"]) {
-            throw new Error("Failed to join");
-        }
-        const meetingInfo = joinInfo.Meeting;
-        const attendeeInfo = joinInfo.Attendee;
+        const joinMeetingResponse = await this._restApiClient.joinMeeting({ meetingName, attendeeName: userName });
+        console.log("[FlectChimeClient][joinMeeting] joinMeetingRespons:", JSON.stringify(joinMeetingResponse));
+        const meetingInfo = joinMeetingResponse.meeting;
+        const attendeeInfo = joinMeetingResponse.attendee;
         console.log("[FlectChimeClient][joinMeeting] ", meetingInfo, attendeeInfo);
         this._meetingName = meetingName;
-        this._meetingId = meetingInfo.MeetingId;
-        this._joinToken = attendeeInfo.JoinToken;
+        this._meetingId = meetingInfo.MeetingId!;
+        this._joinToken = attendeeInfo.JoinToken!;
         this._userName = userName;
-        this._attendeeId = attendeeInfo.AttendeeId;
+        this._attendeeId = attendeeInfo.AttendeeId!;
 
         // (1) creating meeting session
         //// (1-1) creating configuration
@@ -330,14 +327,19 @@ export class FlectChimeClient {
                     let userName = "";
                     if (attendeeId.indexOf("#") > 0) {
                         const strippedAttendeeId = attendeeId.substring(0, attendeeId.indexOf("#"));
-                        const result = await this._restApiClient.getUserNameByAttendeeId({ meetingName: this._meetingName!, attendeeId: strippedAttendeeId });
-                        userName = attendeeId;
-                        userName = result.result === "success" ? `Shared Contents[${result.name}]` : attendeeId;
+                        try {
+                            const result = await this._restApiClient.getUserNameByAttendeeId({ meetingName: this._meetingName!, attendeeId: strippedAttendeeId });
+                            userName = `Shared Contents[${result.attendeeName}]`;
+                        } catch (e) {
+                            console.log(`attendee is not found ${attendeeId}`, e);
+                            userName = `Shared Contents[${attendeeId}]`;
+                        }
                     } else {
                         try {
                             const result = await this._restApiClient.getUserNameByAttendeeId({ meetingName: this._meetingName!, attendeeId });
-                            userName = result.result === "success" ? result.name : attendeeId;
-                        } catch {
+                            userName = result.attendeeName;
+                        } catch (e) {
+                            console.log(`attendee is not found ${attendeeId}`, e);
                             userName = attendeeId;
                         }
                     }

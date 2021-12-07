@@ -1,7 +1,5 @@
 import { getAttendeeList, GetAttendeeListRequest, getUserNameByAttendeeId, GetUserNameByAttendeeIdRequest, joinMeeting, JoinMeetingRequest } from "./attendee";
-import { createMeeting, CreateMeetingRequest, endMeeting, EndMeetingRequest, getMeetingInfo, GetMeetingInfoRequest } from "./meeting";
-
-// (5)
+import { CreateMeetingRequest, createMeeting, endMeeting, EndMeetingRequest, GetMeetingInfoRequest, getMeetingInfo } from "./meeting";
 
 // (6)
 type GenerateOnetimeCodeResponse = {
