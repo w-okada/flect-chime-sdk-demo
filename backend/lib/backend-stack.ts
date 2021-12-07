@@ -340,147 +340,6 @@ export class BackendStack extends cdk.Stack {
         });
         addCommonSetting(lambdaFunctionForRestAPI);
 
-        // //// (1) Root Function
-        // const lambdaFunctionGetRoot: lambda.Function = new lambda.Function(this, "funcHelloWorld", {
-        //     functionName: `${id}_getRoot`,
-        //     runtime: lambda.Runtime.NODEJS_14_X,
-        //     code: lambda.Code.asset(`${__dirname}/lambda2`),
-        //     handler: "index.handler",
-        //     memorySize: 256,
-        //     timeout: cdk.Duration.seconds(10),
-        // });
-        // addCommonSetting(lambdaFunctionGetRoot);
-
-        // //// (2-1) Get Meetings
-        // const lambdaFunctionGetMeetings: lambda.Function = new lambda.Function(this, "funcGetMeetings", {
-        //     functionName: `${id}_getMeetings`,
-        //     runtime: lambda.Runtime.NODEJS_14_X,
-        //     // code: lambda.Code.asset(`${__dirname}/lambda`),
-        //     // handler: "index.getMeetings",
-        //     code: lambda.Code.fromAsset(`${__dirname}/lambda2`),
-        //     handler: "index.handler",
-        //     memorySize: 256,
-        //     timeout: Duration.seconds(10),
-        // });
-        // addCommonSetting(lambdaFunctionGetMeetings);
-
-        // //// (2-2) Post Meeting
-        // const lambdaFunctionPostMeeting: lambda.Function = new lambda.Function(this, "funcPostMeeting", {
-        //     functionName: `${id}_postMeeting`,
-        //     runtime: lambda.Runtime.NODEJS_14_X,
-        //     // code: lambda.Code.asset(`${__dirname}/lambda`),
-        //     // handler: "index.postMeeting",
-        //     code: lambda.Code.fromAsset(`${__dirname}/lambda2`),
-        //     handler: "index.handler",
-        //     memorySize: 256,
-        //     timeout: cdk.Duration.seconds(10),
-        // });
-        // addCommonSetting(lambdaFunctionPostMeeting);
-
-        // //// (2-3) Delete Meeting
-        // const lambdaFunctionDeleteMeeting: lambda.Function = new lambda.Function(this, "funcDeleteMeeting", {
-        //     functionName: `${id}_deleteMeeting`,
-        //     runtime: lambda.Runtime.NODEJS_14_X,
-        //     // code: lambda.Code.asset(`${__dirname}/lambda`),
-        //     // handler: "index.deleteMeeting",
-        //     code: lambda.Code.fromAsset(`${__dirname}/lambda2`),
-        //     handler: "index.handler",
-        //     memorySize: 256,
-        //     timeout: cdk.Duration.seconds(10),
-        // });
-        // addCommonSetting(lambdaFunctionDeleteMeeting);
-
-        // //// (2-4) Get Meeting
-        // const lambdaFunctionGetMeeting: lambda.Function = new lambda.Function(this, "funcGetMeeting", {
-        //     functionName: `${id}_getMeeting`,
-        //     runtime: lambda.Runtime.NODEJS_14_X,
-        //     // code: lambda.Code.asset(`${__dirname}/lambda`),
-        //     // handler: "index.getMeeting",
-        //     code: lambda.Code.fromAsset(`${__dirname}/lambda2`),
-        //     handler: "index.handler",
-        //     memorySize: 256,
-        //     timeout: Duration.seconds(10),
-        // });
-        // addCommonSetting(lambdaFunctionGetMeeting);
-
-        // //// (3-1) Get Attendee
-        // const lambdaFunctionGetAttendee: lambda.Function = new lambda.Function(this, "funcGetAttendee", {
-        //     functionName: `${id}_getAttendee`,
-        //     runtime: lambda.Runtime.NODEJS_14_X,
-        //     // code: lambda.Code.asset(`${__dirname}/lambda`),
-        //     // handler: "index.getAttendee",
-        //     code: lambda.Code.fromAsset(`${__dirname}/lambda2`),
-        //     handler: "index.handler",
-        //     memorySize: 256,
-        //     timeout: cdk.Duration.seconds(10),
-        // });
-        // addCommonSetting(lambdaFunctionGetAttendee);
-
-        // //// (3-2) Post Attendee
-        // const lambdaFunctionPostAttendee: lambda.Function = new lambda.Function(this, "funcPostAttendee", {
-        //     functionName: `${id}_postAttendee`,
-        //     runtime: lambda.Runtime.NODEJS_14_X,
-        //     // code: lambda.Code.asset(`${__dirname}/lambda`),
-        //     // handler: "index.postAttendee",
-        //     code: lambda.Code.fromAsset(`${__dirname}/lambda2`),
-        //     handler: "index.handler",
-        //     memorySize: 256,
-        //     timeout: cdk.Duration.seconds(10),
-        // });
-        // addCommonSetting(lambdaFunctionPostAttendee);
-
-        // //// (3-3) list Attendees
-        // const lambdaFunctionGetAttendees: lambda.Function = new lambda.Function(this, "funcGetAttendees", {
-        //     functionName: `${id}_getAttendees`,
-        //     runtime: lambda.Runtime.NODEJS_14_X,
-        //     // code: lambda.Code.asset(`${__dirname}/lambda`),
-        //     // handler: "index.getAttendees",
-        //     code: lambda.Code.fromAsset(`${__dirname}/lambda2`),
-        //     handler: "index.handler",
-        //     memorySize: 256,
-        //     timeout: cdk.Duration.seconds(10),
-        // });
-        // addCommonSetting(lambdaFunctionGetAttendees);
-
-        // //// (4-1) Post Attendee Operation
-        // const lambdaFunctionPostAttendeeOperation: lambda.Function = new lambda.Function(this, "funcPostAttendeeOperation", {
-        //     functionName: `${id}_postAttendeeOperation`,
-        //     runtime: lambda.Runtime.NODEJS_14_X,
-        //     // code: lambda.Code.asset(`${__dirname}/lambda`),
-        //     // handler: "index.postAttendeeOperation",
-        //     code: lambda.Code.fromAsset(`${__dirname}/lambda2`),
-        //     handler: "index.handler",
-        //     memorySize: 256,
-        //     timeout: cdk.Duration.seconds(10),
-        // });
-        // addCommonSetting(lambdaFunctionPostAttendeeOperation);
-
-        // //// (5-1) Post Log
-        // const lambdaFunctionPostLog: lambda.Function = new lambda.Function(this, "funcPostLog", {
-        //     functionName: `${id}_postLog`,
-        //     runtime: lambda.Runtime.NODEJS_14_X,
-        //     // code: lambda.Code.asset(`${__dirname}/lambda`),
-        //     // handler: "index.postLog",
-        //     code: lambda.Code.fromAsset(`${__dirname}/lambda2`),
-        //     handler: "index.handler",
-        //     memorySize: 256,
-        //     timeout: cdk.Duration.seconds(10),
-        // });
-        // addCommonSetting(lambdaFunctionPostLog);
-
-        // //// (a-1) Post Onetime Code Signin Request
-        // const lambdaFunctionPostOperation: lambda.Function = new lambda.Function(this, "funcPostOperation", {
-        //     functionName: `${id}_postOperation`,
-        //     runtime: lambda.Runtime.NODEJS_14_X,
-        //     // code: lambda.Code.asset(`${__dirname}/lambda`),
-        //     // handler: "index.postOperation",
-        //     code: lambda.Code.fromAsset(`${__dirname}/lambda2`),
-        //     handler: "index.handler",
-        //     memorySize: 256,
-        //     timeout: cdk.Duration.seconds(10),
-        // });
-        // addCommonSetting(lambdaFunctionPostOperation);
-
         ///////////////////////////////
         //// API Gateway
         ///////////////////////////////
@@ -539,15 +398,6 @@ export class BackendStack extends cdk.Stack {
         //lambdaFunctionPostAttendeeOperation.addEnvironment("RESTAPI_ENDPOINT", restApi.url) ///// Exception(Circular dependency between resources) -> generate from request context in lambda.
 
         //// ( - ) Authorizer
-        //////// for V1 ...
-        // const authorizer = new CfnAuthorizer(this, "cfnAuth", {
-        //   name: `${id}_authorizer`,
-        //   type: AuthorizationType.COGNITO,
-        //   identitySource: "method.request.header.Authorization",
-        //   restApiId: restApi.restApiId,
-        //   providerArns: [userPool.userPoolArn],
-        // });
-
         const authorizer2 = new CfnAuthorizer(this, "apiAuthorizerLambda", {
             name: `${id}_authorizerLamda`,
             type: "TOKEN",
@@ -583,10 +433,6 @@ export class BackendStack extends cdk.Stack {
             authorizer: {
                 authorizerId: authorizer2.ref,
             },
-            // authorizationType: AuthorizationType .COGNITO,
-            // authorizer: {
-            //   authorizerId: authorizer.ref,
-            // },
         });
 
         //// (2-2) Post Meeting
@@ -597,10 +443,6 @@ export class BackendStack extends cdk.Stack {
             authorizer: {
                 authorizerId: authorizer2.ref,
             },
-            // authorizationType: AuthorizationType.COGNITO,
-            // authorizer: {
-            //   authorizerId: authorizer.ref,
-            // },
         });
 
         //// (2-3) Delete Meeting
@@ -611,10 +453,6 @@ export class BackendStack extends cdk.Stack {
             authorizer: {
                 authorizerId: authorizer2.ref,
             },
-            // authorizationType: AuthorizationType.COGNITO,
-            // authorizer: {
-            //   authorizerId: authorizer.ref,
-            // },
         });
 
         //// (2-4) Get Meeting
@@ -625,10 +463,6 @@ export class BackendStack extends cdk.Stack {
             authorizer: {
                 authorizerId: authorizer2.ref,
             },
-            // authorizationType: AuthorizationType.COGNITO,
-            // authorizer: {
-            //   authorizerId: authorizer.ref,
-            // },
         });
 
         ///// (3) Attendee
@@ -645,10 +479,6 @@ export class BackendStack extends cdk.Stack {
             authorizer: {
                 authorizerId: authorizer2.ref,
             },
-            // authorizationType: AuthorizationType.COGNITO,
-            // authorizer: {
-            //   authorizerId: authorizer.ref,
-            // },
         });
 
         //// (3-2) Post Attendee
@@ -659,10 +489,6 @@ export class BackendStack extends cdk.Stack {
             authorizer: {
                 authorizerId: authorizer2.ref,
             },
-            // authorizationType: AuthorizationType.COGNITO,
-            // authorizer: {
-            //   authorizerId: authorizer.ref,
-            // },
         });
         //// (3-3) List Attendees
         // apiAttendees.addMethod("GET", new LambdaIntegration(lambdaFunctionGetAttendees), {
@@ -672,11 +498,6 @@ export class BackendStack extends cdk.Stack {
             authorizer: {
                 authorizerId: authorizer2.ref,
             },
-
-            // authorizationType: AuthorizationType.COGNITO,
-            // authorizer: {
-            //   authorizerId: authorizer.ref,
-            // },
         });
 
         ///// (4) Attendee Operations // Operation under Meeting
@@ -693,11 +514,6 @@ export class BackendStack extends cdk.Stack {
             authorizer: {
                 authorizerId: authorizer2.ref,
             },
-
-            // authorizationType: AuthorizationType.COGNITO,
-            // authorizer: {
-            //   authorizerId: authorizer.ref,
-            // },
         });
         // lambdaFunctionPostAttendeeOperation.addEnvironment("RESTAPI_ENDPOINT", restApi.url) ///// Exception(Circular dependency between resources) -> generate from request context in lambda.
 
