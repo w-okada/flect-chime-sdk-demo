@@ -6,4 +6,5 @@ src
 .npmignore
 tsconfig.json
 webpack.config.js
-
+.prettierrc
+.eslintrc.js
