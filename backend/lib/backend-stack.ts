@@ -311,8 +311,8 @@ export class BackendStack extends cdk.Stack {
 
         // ( - ) auth
         const lambdaFuncRestAPIAuth = new lambda.Function(this, "ChimeRESTAPIAuth", {
-            code: lambda.Code.asset(`${__dirname}/lambda`),
-            handler: "index.authorize",
+            code: lambda.Code.asset(`${__dirname}/lambda2`),
+            handler: "rest_auth.authorize",
             runtime: lambda.Runtime.NODEJS_14_X,
             timeout: Duration.seconds(300),
             memorySize: 256,

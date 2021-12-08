@@ -1,5 +1,5 @@
-import { ResponseBody } from "./const";
 import { CognitoIdentityServiceProvider } from "aws-sdk";
+import { HTTPResponseBody } from "./http_request";
 
 const provider = new CognitoIdentityServiceProvider();
 
@@ -21,7 +21,7 @@ export const getExpireDate = () => {
     return Math.floor(Date.now() / 1000) + 60 * 60 * 24;
 };
 
-export const generateResponse = (body: ResponseBody) => {
+export const generateResponse = (body: HTTPResponseBody) => {
     var response = {
         statusCode: 200,
         headers: {

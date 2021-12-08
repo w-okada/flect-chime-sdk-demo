@@ -1,5 +1,7 @@
 import { DynamoDB } from "aws-sdk";
-import { CreateMeetingRequest, JoinMeetingRequest, ResponseBody, JoinMeetingException, JoinMeetingExceptionType, GetAttendeeInfoException, GetAttendeeInfoExceptionType, StartTranscribeRequest, StopTranscribeRequest } from "./const";
+import { BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType } from "./backend_request";
+import { StartTranscribeRequest, StopTranscribeRequest } from "./const";
+import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "./http_request";
 import { createMeeting, deleteMeeting, getAttendeeInfo, getMeetingInfo, joinMeeting, startTranscribe, stopTranscribe } from "./meeting";
 import { generateResponse, getEmailFromAccessToken } from "./util";
 
@@ -114,20 +116,30 @@ const handleGetMeetings = (accessToken: string, pathParams: { [key: string]: str
 };
 //// (1-2) post meetings
 const handlePostMeetings = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
-    const params = JSON.parse(body) as CreateMeetingRequest;
+    const params = JSON.parse(body) as HTTPCreateMeetingRequest;
     let email;
     try {
         email = await getEmailFromAccessToken(accessToken);
     } catch (e) {
         console.log(e);
     }
-    let res: ResponseBody;
+    let res: HTTPResponseBody;
     if (email) {
-        const result = await createMeeting(email, params.meetingName, params.region);
+        const result = await createMeeting({
+            email,
+            meetingName: params.meetingName,
+            region: params.region,
+        });
+        const httpRes: HTTPCreateMeetingResponse = {
+            created: result.created,
+            meetingId: result.meetingId,
+            meetingName: result.meetingName,
+            ownerId: result.ownerId,
+        };
         res = {
             success: true,
             code: Codes.SUCCESS,
-            data: result,
+            data: httpRes,
         };
     } else {
         res = {
@@ -157,8 +169,19 @@ const handleMeeting = (accessToken: string, method: string, pathParams: { [key: 
 };
 //// (2-1) Get Meeting
 const handleGetMeeting = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
-    let res: ResponseBody;
+    let res: HTTPResponseBody;
     const meetingName = pathParams["meetingName"];
+    let email = "";
+    try {
+        email = (await getEmailFromAccessToken(accessToken)) || "";
+    } catch (e) {
+        res = {
+            success: false,
+            code: Codes.NO_SUCH_AN_ATTENDEE,
+        };
+        const response = generateResponse(res);
+        callback(null, response);
+    }
     if (!meetingName) {
         console.log(`parameter error: ${meetingName}`);
         res = {
@@ -166,13 +189,20 @@ const handleGetMeeting = async (accessToken: string, pathParams: { [key: string]
             code: Codes.PARAMETER_ERROR,
         };
     } else {
-        const result = await getMeetingInfo(meetingName);
+        const result = await getMeetingInfo({ email, meetingName });
         if (!result) {
             res = {
                 success: false,
                 code: Codes.NO_SUCH_A_MEETING_ROOM,
             };
         } else {
+            const httpRes: HTTPGetMeetingInfoResponse = {
+                meetingName: result.meetingName,
+                meetingId: result.meetingId,
+                meeting: result.meeting,
+                metadata: result.metadata,
+                hmmTaskArn: result.hmmTaskArn,
+            };
             res = {
                 success: true,
                 code: Codes.SUCCESS,
@@ -186,7 +216,7 @@ const handleGetMeeting = async (accessToken: string, pathParams: { [key: string]
 
 //// (2-2) Delete Meeting
 const handleDeleteMeeting = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
-    let res: ResponseBody;
+    let res: HTTPResponseBody;
     const meetingName = pathParams["meetingName"];
     if (!meetingName) {
         console.log(`parameter error: ${meetingName}`);
@@ -195,7 +225,7 @@ const handleDeleteMeeting = async (accessToken: string, pathParams: { [key: stri
             code: Codes.PARAMETER_ERROR,
         };
     } else {
-        await deleteMeeting(meetingName);
+        await deleteMeeting({ meetingName });
         res = {
             success: true,
             code: Codes.SUCCESS,
@@ -231,13 +261,16 @@ const handleGetAttendees = async (accessToken: string, pathParams: { [key: strin
 };
 //// (3-2) Post Attendees
 const handlePostAttendees = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
-    let res: ResponseBody;
-    const params = JSON.parse(body) as JoinMeetingRequest;
+    let res: HTTPResponseBody;
+    const params = JSON.parse(body) as HTTPJoinMeetingRequest;
 
-    const joinInfo = await joinMeeting(params.meetingName, params.attendeeName);
+    const joinInfo = await joinMeeting({
+        meetingName: params.meetingName,
+        attendeeName: params.attendeeName,
+    });
     if ("exception" in joinInfo) {
-        const exception = joinInfo as JoinMeetingException;
-        if (exception.code === JoinMeetingExceptionType.NO_MEETING_FOUND) {
+        const exception = joinInfo as BackendJoinMeetingException;
+        if (exception.code === BackendJoinMeetingExceptionType.NO_MEETING_FOUND) {
             res = {
                 success: false,
                 code: Codes.NO_SUCH_A_MEETING_ROOM,
@@ -249,10 +282,15 @@ const handlePostAttendees = async (accessToken: string, pathParams: { [key: stri
             };
         }
     } else {
+        const httpRes: HTTPJoinMeetingResponse = {
+            meetingName: joinInfo.meetingName,
+            meeting: joinInfo.meeting,
+            attendee: joinInfo.attendee,
+        };
         res = {
             success: true,
             code: Codes.SUCCESS,
-            data: joinInfo,
+            data: httpRes,
         };
     }
     const response = generateResponse(res);
@@ -276,7 +314,7 @@ const handleAttendee = (accessToken: string, method: string, pathParams: { [key:
 
 //// (4-1) Get Attendee
 const handleGetAttendee = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
-    let res: ResponseBody;
+    let res: HTTPResponseBody;
     const meetingName = pathParams["meetingName"];
     const attendeeId = pathParams["attendeeId"];
     if (!meetingName || !attendeeId) {
@@ -286,11 +324,11 @@ const handleGetAttendee = async (accessToken: string, pathParams: { [key: string
             code: Codes.PARAMETER_ERROR,
         };
     } else {
-        const attendeeInfo = await getAttendeeInfo(meetingName, attendeeId);
+        const attendeeInfo = await getAttendeeInfo({ meetingName, attendeeId });
 
         if ("exception" in attendeeInfo) {
-            const exception = attendeeInfo as GetAttendeeInfoException;
-            if (exception.code === GetAttendeeInfoExceptionType.NO_ATTENDEE_FOUND) {
+            const exception = attendeeInfo as BackendGetAttendeeInfoException;
+            if (exception.code === BackendGetAttendeeInfoExceptionType.NO_ATTENDEE_FOUND) {
                 res = {
                     success: false,
                     code: Codes.NO_SUCH_AN_ATTENDEE,
@@ -302,10 +340,14 @@ const handleGetAttendee = async (accessToken: string, pathParams: { [key: string
                 };
             }
         } else {
+            const httpRes: HTTPGetAttendeeInfoResponse = {
+                attendeeId: attendeeInfo.attendeeId,
+                attendeeName: attendeeInfo.attendeeName,
+            };
             res = {
                 success: true,
                 code: Codes.SUCCESS,
-                data: attendeeInfo,
+                data: httpRes,
             };
         }
     }
@@ -336,7 +378,7 @@ const handleOperation = (accessToken: string, method: string, pathParams: { [key
 };
 //// (5-1) start transcribe
 const handlePostStartTranscribe = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
-    let res: ResponseBody;
+    let res: HTTPResponseBody;
     const params = JSON.parse(body) as StartTranscribeRequest;
     const meetingName = pathParams["meetingName"];
     const attendeeId = pathParams["attendeeId"];
@@ -353,7 +395,11 @@ const handlePostStartTranscribe = async (accessToken: string, pathParams: { [key
         callback(null, response);
     }
     /// (2)
-    startTranscribe(email, meetingName, params.lang);
+    startTranscribe({
+        email,
+        meetingName,
+        lang: params.lang,
+    });
     res = {
         success: true,
         code: Codes.SUCCESS,
@@ -363,7 +409,7 @@ const handlePostStartTranscribe = async (accessToken: string, pathParams: { [key
 };
 //// (5-2) stop transcribe
 const handlePostStopTranscribe = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
-    let res: ResponseBody;
+    let res: HTTPResponseBody;
     const params = JSON.parse(body) as StopTranscribeRequest;
     const meetingName = pathParams["meetingName"];
     const attendeeId = pathParams["attendeeId"];
@@ -380,7 +426,10 @@ const handlePostStopTranscribe = async (accessToken: string, pathParams: { [key:
         callback(null, response);
     }
     /// (2)
-    stopTranscribe(email, meetingName);
+    stopTranscribe({
+        email,
+        meetingName,
+    });
     res = {
         success: true,
         code: Codes.SUCCESS,

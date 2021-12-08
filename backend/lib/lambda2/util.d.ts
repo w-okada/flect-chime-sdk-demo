@@ -1,4 +1,4 @@
-import { ResponseBody } from "./const";
+import { HTTPResponseBody } from "./http_request";
 export declare const getResponseTemplate: () => {
     statusCode: number;
     headers: {
@@ -10,7 +10,7 @@ export declare const getResponseTemplate: () => {
     isBase64Encoded: boolean;
 };
 export declare const getExpireDate: () => number;
-export declare const generateResponse: (body: ResponseBody) => {
+export declare const generateResponse: (body: HTTPResponseBody) => {
     statusCode: number;
     headers: {
         "Access-Control-Allow-Headers": string;
