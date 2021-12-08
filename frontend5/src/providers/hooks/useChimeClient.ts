@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FlectChimeClient, RealtimeData, VideoTileState, VirtualBackgroundSegmentationType, NoiseSuppressionType, AttendeeState } from "@dannadori/flect-amazon-chime-lib2";
+import { FlectChimeClient, RealtimeData, VideoTileState, VirtualBackgroundSegmentationType, NoiseSuppressionType, AttendeeState, TranscriptionScript } from "@dannadori/flect-amazon-chime-lib2";
 
 export type UseChimeClientProps = {
     RestAPIEndpoint: string;
@@ -7,8 +7,10 @@ export type UseChimeClientProps = {
 export type ChimeClientState = {
     // chimeClient: FlectChimeClient;
     meetingName: string | null;
+    meetingId: string | null;
     userName: string | null;
     attendeeId: string | null;
+    joinToken: string | null;
     attendees: { [attendeeId: string]: AttendeeState };
     initialize: (userId: string, idToken: string, accessToken: string, refreshToken: string) => void;
     initializeWithCode: (codeToAccess: string) => void;
@@ -90,6 +92,8 @@ export type ChimeClientState = {
     setTranscribeLang: (val: TranscribeLangs) => Promise<void>;
     transcribeEnable: boolean;
     transcribeLang: TranscribeLangs;
+    transcriptionScripts: TranscriptionScript[];
+    transcriptionPartialScript: TranscriptionScript | null;
 };
 
 export const TranscribeLangs = {
@@ -342,8 +346,10 @@ export const useChimeClient = (props: UseChimeClientProps) => {
     const returnValue: ChimeClientState = {
         // chimeClient,
         meetingName: chimeClient.meetingName,
+        meetingId: chimeClient.meetingId,
         userName: chimeClient.userName,
         attendeeId: chimeClient.meetingSession?.configuration.credentials?.attendeeId || null,
+        joinToken: chimeClient.joinToken,
         attendees: chimeClient.attendees,
         initialize,
         initializeWithCode,
@@ -425,6 +431,8 @@ export const useChimeClient = (props: UseChimeClientProps) => {
         setTranscribeLang,
         transcribeEnable,
         transcribeLang,
+        transcriptionScripts: chimeClient.transcriptionClient?.transcriptionScripts || [],
+        transcriptionPartialScript: chimeClient.transcriptionClient?.transcriptionPartialScript || null,
     };
 
     return returnValue;

@@ -9,6 +9,7 @@ import { AttendeeState, CognitoClient, DrawingData, FlectChimeClient, GameState,
 import { ChimeClientState, useChimeClient } from "./hooks/useChimeClient";
 import { CognitoClientState, useCognitoClient } from "./hooks/useCognitoClient";
 import { FrontendState, useFrontend } from "./hooks/useFrontend";
+import { useWhiteboardClient, WhiteboardClientState } from "./hooks/useWhiteBoardClient";
 
 type Props = {
     children: ReactNode;
@@ -27,7 +28,7 @@ interface AppStateValue {
     /** Clients */
     cognitoClientState: CognitoClientState;
     chimeClientState: ChimeClientState;
-
+    whiteboardClientState: WhiteboardClientState;
     /** For Device State */
     deviceState: DeviceState;
 
@@ -66,6 +67,11 @@ export const AppStateProvider = ({ children }: Props) => {
             chimeClientState.initialize(cognitoClientState.userId, cognitoClientState.idToken, cognitoClientState.accessToken, cognitoClientState.refreshToken);
         }
     }, [cognitoClientState.userId, cognitoClientState.idToken, cognitoClientState.accessToken, cognitoClientState.refreshToken]);
+    const whiteboardClientState = useWhiteboardClient({
+        joinToken: chimeClientState.joinToken || "",
+        meetingId: chimeClientState.meetingId || "",
+        attendeeId: chimeClientState.attendeeId || "",
+    });
 
     /** For Device State */
     const deviceState = useDeviceState();
@@ -94,7 +100,7 @@ export const AppStateProvider = ({ children }: Props) => {
         /** For Credential */
         cognitoClientState,
         chimeClientState,
-
+        whiteboardClientState,
         /** For Device State */
         deviceState,
 

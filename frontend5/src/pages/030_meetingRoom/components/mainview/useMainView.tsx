@@ -92,7 +92,11 @@ const GridView = () => {
 };
 
 export const useMainView = () => {
-    const { frontendState } = useAppState();
+    const { frontendState, chimeClientState } = useAppState();
+    const targetTilesForKey = chimeClientState.getAllTiles();
+    const targetTilesKey = targetTilesForKey.reduce((prev, cur) => {
+        return `${prev}_${cur.boundAttendeeId}[${cur.paused}]`;
+    }, "");
     const mainView = useMemo(() => {
         if (frontendState.screenType === ScreenType.FeatureView) {
             return <FeatureView />;
@@ -102,5 +106,5 @@ export const useMainView = () => {
             return <div>unknown view type</div>;
         }
     }, [frontendState.screenType]);
-    return { mainView };
+    return { mainView, targetTilesKey };
 };

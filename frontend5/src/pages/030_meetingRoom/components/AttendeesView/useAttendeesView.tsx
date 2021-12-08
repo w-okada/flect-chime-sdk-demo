@@ -14,7 +14,7 @@ export const useAttendeesView = () => {
 
     const targetTiles = tiles.slice(page * PicturesInPage, page * PicturesInPage + PicturesInPage);
     const targetTileKey = targetTiles.reduce((prev, cur) => {
-        return `${prev}_${cur.boundAttendeeId}`;
+        return `${prev}_${cur.boundAttendeeId}[${cur.paused}]`;
     }, "");
 
     const pics = useMemo(() => {
@@ -56,7 +56,7 @@ export const useAttendeesView = () => {
             }
         });
     }, [targetTileKey, frontendState.attendeesViewOpen]);
-    const attendeeLine = useMemo(() => {
+    const attendeeViews = useMemo(() => {
         if (frontendState.attendeesViewOpen === false) {
             return <></>;
         }
@@ -85,5 +85,5 @@ export const useAttendeesView = () => {
             </div>
         );
     }, [targetTileKey, pageNum, frontendState.attendeesViewOpen]);
-    return { attendeeLine };
+    return { attendeeViews };
 };
