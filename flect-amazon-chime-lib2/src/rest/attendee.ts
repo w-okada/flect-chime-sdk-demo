@@ -1,6 +1,8 @@
+import { HTTPGetAttendeeInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "../http_request";
 import { RestApiClientContext } from "./RestApiClient";
-import { GetAttendeeInfoResponse, JoinMeetingRequest, JoinMeetingResponse, ResponseBody } from "../backend_const";
-export { JoinMeetingRequest };
+
+export type JoinMeetingRequest = HTTPJoinMeetingRequest;
+export type JoinMeetingResponse = HTTPJoinMeetingResponse;
 export const joinMeeting = async (params: JoinMeetingRequest, context: RestApiClientContext): Promise<JoinMeetingResponse> => {
     const url = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees`;
     params.meetingName = encodeURIComponent(params.meetingName);
@@ -18,7 +20,7 @@ export const joinMeeting = async (params: JoinMeetingRequest, context: RestApiCl
         },
     });
 
-    const response = (await res.json()) as ResponseBody;
+    const response = (await res.json()) as HTTPResponseBody;
     if (response.success === false) {
         console.log(response.code);
         throw response.code;
@@ -34,8 +36,9 @@ export type GetUserNameByAttendeeIdRequest = {
     meetingName: string;
     attendeeId: string;
 };
+export type GetAttendeeInfoResponse = HTTPGetAttendeeInfoResponse;
 
-export const getUserNameByAttendeeId = async (params: GetUserNameByAttendeeIdRequest, context: RestApiClientContext): Promise<GetAttendeeInfoResponse> => {
+export const getUserNameByAttendeeId = async (params: GetUserNameByAttendeeIdRequest, context: RestApiClientContext): Promise<HTTPGetAttendeeInfoResponse> => {
     const attendeeUrl = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees/${encodeURIComponent(params.attendeeId)}`;
     const res = await fetch(attendeeUrl, {
         method: "GET",
@@ -44,7 +47,7 @@ export const getUserNameByAttendeeId = async (params: GetUserNameByAttendeeIdReq
             "X-Flect-Access-Token": context.accessToken!,
         },
     });
-    const response = (await res.json()) as ResponseBody;
+    const response = (await res.json()) as HTTPResponseBody;
     if (response.success === false) {
         console.log(response.code);
         throw response.code;

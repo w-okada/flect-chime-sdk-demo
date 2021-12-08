@@ -1,5 +1,5 @@
 import { getAttendeeList, GetAttendeeListRequest, getUserNameByAttendeeId, GetUserNameByAttendeeIdRequest, joinMeeting, JoinMeetingRequest } from "./attendee";
-import { CreateMeetingRequest, createMeeting, endMeeting, EndMeetingRequest, GetMeetingInfoRequest, getMeetingInfo } from "./meeting";
+import { createMeeting, endMeeting, EndMeetingRequest, GetMeetingInfoRequest, getMeetingInfo, CreateMeetingRequest } from "./meeting";
 import { startTranscribe, StartTranscribeRequest, stopTranscribe, StopTranscribeRequest } from "./operations";
 
 // (6)

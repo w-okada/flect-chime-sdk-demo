@@ -1,12 +1,12 @@
 {
     "name": "@dannadori/flect-amazon-chime-lib2",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "",
     "main": "dist/flect-amazon-chime-lib.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "webpack": "npx webpack --config webpack.config.js",
-        "copy:backend_types": "cp ../backend/lib/lambda2/const.ts src/backend_const.ts",
+        "copy:backend_types": "cp ../backend/lib/lambda2/http_request.ts src/http_request.ts",
         "clean": "rimraf dist/*",
         "build": "npm-run-all clean copy:backend_types webpack"
     },

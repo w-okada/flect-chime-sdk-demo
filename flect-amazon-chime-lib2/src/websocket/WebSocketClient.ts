@@ -1,4 +1,4 @@
-import { DefaultWebSocketAdapter, Logger, WebSocketAdapter, WebSocketReadyState } from "amazon-chime-sdk-js";
+import { ConsoleLogger, DefaultWebSocketAdapter, Logger, LogLevel, WebSocketAdapter, WebSocketReadyState } from "amazon-chime-sdk-js";
 
 export type WebSocketMessage = {
     action: string;
@@ -6,8 +6,17 @@ export type WebSocketMessage = {
     senderId: string;
     data: any;
 };
-const listener: { [topic: string]: ((wsMessages: WebSocketMessage[]) => void)[] } = {};
-const wsMessages: { [topic: string]: WebSocketMessage[] } = {};
+export type WebSocketMessages = {
+    [topic: string]: WebSocketMessage[];
+};
+export type WebSocketListener = (wsMessages: WebSocketMessage[]) => void;
+
+export type WebSocketListeners = {
+    [topic: string]: WebSocketListener[];
+};
+
+const listeners: WebSocketListeners = {};
+const wsMessages: WebSocketMessages = {};
 
 export class WebSocketClient {
     private attendeeId: string;
@@ -15,50 +24,48 @@ export class WebSocketClient {
     private logger: Logger;
     private websocketAdapter: WebSocketAdapter | null = null;
     private recreate: () => void;
-    constructor(attendeeId: string, messagingURLWithQuery: string, logger: Logger, recreate: () => void) {
+    constructor(attendeeId: string, messagingURLWithQuery: string, recreate?: () => void, logger?: Logger) {
         console.log("[FlectChimeClient][WebSocketClient] create new websocket client");
         this.attendeeId = attendeeId;
         this.messagingURLWithQuery = messagingURLWithQuery;
-        this.logger = logger;
-        this.recreate = recreate;
+        if (logger) {
+            this.logger = logger;
+        } else {
+            this.logger = new ConsoleLogger("MeetingLogs", LogLevel.INFO);
+        }
+        if (recreate) {
+            this.recreate = recreate;
+        } else {
+            this.recreate = this.connect;
+        }
     }
     connect = () => {
         this.websocketAdapter = new DefaultWebSocketAdapter(this.logger);
         this.websocketAdapter.create(this.messagingURLWithQuery, []);
         this.websocketAdapter.addEventListener("message", this.receiveMessage);
         this.websocketAdapter.addEventListener("close", this.reconnect);
-        // this.websocketAdapter.addEventListener('error', this.reconnect)
         console.log("[FlectChimeClient][WebSocketClient] created websocket client", this.websocketAdapter, new Date().toLocaleTimeString());
     };
 
-    addEventListener = (topic: string, f: (wsMessages: WebSocketMessage[]) => void) => {
-        if (!listener[topic]) {
-            listener[topic] = [];
+    addEventListener = (topic: string, f: WebSocketListener) => {
+        if (!listeners[topic]) {
+            listeners[topic] = [];
         }
-        listener[topic].push(f);
+        listeners[topic].push(f);
     };
     removeEventListener = (topic: string, f: (wsMessages: WebSocketMessage[]) => void) => {
-        if (listener[topic]) {
-            listener[topic] = listener[topic].filter((x) => x !== f);
+        if (listeners[topic]) {
+            listeners[topic] = listeners[topic].filter((x) => x !== f);
         }
     };
 
     reconnect = (e: Event) => {
-        // setTimeout(()=>{
         console.log(`[FlectChimeClient][WebSocketClient] reconnecting... JSON.stringify(e) ${new Date().toLocaleTimeString()}`);
         this.recreate();
-        // this.websocketAdapter =  new DefaultWebSocketAdapter(this.logger)
-        // this.websocketAdapter!.create(
-        //     this.messagingURLWithQuery,
-        //     []
-        // )
-        // this.websocketAdapter!.addEventListener('message', this.receiveMessage)
-        // this.websocketAdapter!.addEventListener('close', this.reconnect)
-        // },1*1000)
     };
 
     receiveMessage = (e: Event) => {
-        console.log("[FlectChimeClient][WebSocketClient] receive message", listener);
+        console.log("[FlectChimeClient][WebSocketClient] receive message", e);
         const event = e as MessageEvent;
         const message = JSON.parse(event.data) as WebSocketMessage;
 
@@ -74,9 +81,9 @@ export class WebSocketClient {
         }
         wsMessages[topic] = [...wsMessages[topic], wsMessage];
 
-        if (listener[topic]) {
-            listener[topic].forEach((messageReceived) => {
-                messageReceived(wsMessages[topic]);
+        if (listeners[topic]) {
+            listeners[topic].forEach((listener) => {
+                listener(wsMessages[topic]);
             });
         }
     };

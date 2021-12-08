@@ -1,7 +1,5 @@
 import { Logger } from "amazon-chime-sdk-js";
 import { WebSocketClient, WebSocketMessage } from "../WebSocketClient";
-//var AsyncLock = require('async-lock');
-//import { AsyncLock } from 'async-lock'
 import AsyncLock from "async-lock";
 
 export const DrawingCmd = {
@@ -11,6 +9,7 @@ export const DrawingCmd = {
     CLEAR: "CLEAR",
     SYNC_SCREEN: "SYNC_SCREEN",
 } as const;
+type DrawingCmd = typeof DrawingCmd[keyof typeof DrawingCmd];
 
 export const DrawingMode = {
     // for ClientState.
@@ -18,9 +17,12 @@ export const DrawingMode = {
     ERASE: "ERASE",
     DISABLE: "DISABLE",
 } as const;
+type DrawingMode = typeof DrawingMode[keyof typeof DrawingMode];
+
+type WhiteboardClientListener = (data: DrawingData[]) => void;
 
 export type DrawingData = {
-    drawingCmd: keyof typeof DrawingCmd;
+    drawingCmd: DrawingCmd;
     startXR: number;
     startYR: number;
     endXR: number;
@@ -37,50 +39,49 @@ const SEND_INTERVAL_NUM = 100;
 export class WebSocketWhiteboardClient {
     lineWidth = 3;
     drawingStroke = "#aaaaaaaa";
-    drawingMode: keyof typeof DrawingMode = DrawingMode.DISABLE;
+    drawingMode: DrawingMode = DrawingMode.DISABLE;
     drawingData: DrawingData[] = [];
+
+    private _whiteboardDataUpdateListeners: WhiteboardClientListener[] = [];
 
     lock = new AsyncLock();
 
     private drawingDataBuffer: DrawingData[] = []; // local buffer
     private wsClient: WebSocketClient;
 
-    constructor(attendeeId: string, messagingURLWithQuery: string, logger: Logger, recreate: () => void) {
-        console.log(`[FlectChimeClient][WebSocketWhiteboardClient] ${attendeeId}, ${messagingURLWithQuery}`);
-        this.wsClient = new WebSocketClient(attendeeId, messagingURLWithQuery, logger, recreate);
+    constructor(attendeeId: string, messagingURLWithQuery: string) {
+        console.log(`[FlectChimeClient][WebSocketWhiteboardClient] creating.. ${attendeeId}, ${messagingURLWithQuery}`);
+        this.wsClient = new WebSocketClient(attendeeId, messagingURLWithQuery);
         this.wsClient.connect();
         this.startMonitor();
 
         this.wsClient.addEventListener(TOPIC_NAME, (wsMessages: WebSocketMessage[]) => {
-            const newDrawingData = wsMessages.reduce<DrawingData[]>((sum: any[], cur: WebSocketMessage) => {
+            this.drawingData = wsMessages.reduce((sum: DrawingData[], cur: WebSocketMessage) => {
                 return [...sum, ...(cur.data as DrawingData[])];
             }, []);
-            this.drawingData = newDrawingData;
-            this._whiteboardDataUpdateListeners.forEach((x) => {
-                x(this.drawingData);
+            this._whiteboardDataUpdateListeners.forEach((listener) => {
+                listener(this.drawingData);
             });
         });
     }
 
-    private _whiteboardDataUpdateListeners = [(data: DrawingData[]) => {}];
-    addWhiteboardDataUpdateListener = (l: (data: DrawingData[]) => void) => {
+    addWhiteboardDataUpdateListener = (l: WhiteboardClientListener) => {
         this._whiteboardDataUpdateListeners.push(l);
     };
-    removeWhiteboardDataUpdateListener = (l: (data: DrawingData[]) => void) => {
+    removeWhiteboardDataUpdateListener = (l: WhiteboardClientListener) => {
         this._whiteboardDataUpdateListeners = this._whiteboardDataUpdateListeners.filter((x) => {
             return x !== l;
         });
     };
 
     addDrawingData = (data: DrawingData) => {
-        // loopback
+        // ローカルには即反映
         this.wsClient.loopbackMessage(TOPIC_NAME, [data]);
 
+        // リモートにはバッファリングして送信
         this.lock.acquire(
             "whiteboard",
             async () => {
-                // console.log(`[FlectChimeClient][WebSocketWhiteboardClient] addDrawingData`)
-
                 this.drawingDataBuffer.push(data);
                 if (this.drawingDataBuffer.length > SEND_INTERVAL_NUM) {
                     this.sendDrawingBuffer();

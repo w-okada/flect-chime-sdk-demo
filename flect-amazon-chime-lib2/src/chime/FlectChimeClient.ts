@@ -679,7 +679,7 @@ export class FlectChimeClient {
 
     updateMeetingInfo = async () => {
         const meetingInfo = await this._restApiClient.getMeetingInfo({ meetingName: this._meetingName! });
-        this._isOwner = meetingInfo.IsOwner;
+        this._isOwner = meetingInfo.isOwner || false;
         this._flectChimeClientListener?.meetingStateUpdated();
     };
 }

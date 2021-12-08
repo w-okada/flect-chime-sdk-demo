@@ -5,12 +5,12 @@ import { NoiseSuppressionType } from "./chime/io/AudioInputDeviceSetting";
 import { RealtimeData } from "./chime/realtime/const";
 import { COLORS, COLORS_RGB, GameState, ICONS_ALIVE, ICONS_DEAD, REGIONS, STATES } from "./chime/realtime/hmmModules/RealtimeSubscribeHMMModuleAmongUsServer";
 import { HMMStatus } from "./chime/realtime/RealtimeSubscribeHMMClient";
+import { TranscriptionScript } from "./chime/realtime/RealtimeSubscribeTranscriptionClient";
 import { CognitoClient } from "./cognito/CognitoClient";
 import { useAmongUsServer } from "./components/useAmongUsServer";
 import { useVideoComposeCanvas } from "./components/useVideoComposeCanvas";
 import { RestApiClient } from "./rest/RestApiClient";
-import { DrawableImageTile } from "./websocket/WebSocketWhiteboard/DrawableImageTile";
-import { DrawableVideoTile } from "./websocket/WebSocketWhiteboard/DrawableVideoTile";
+import { DrawingCanvas } from "./websocket/WebSocketWhiteboard/DrawingCanvas";
 import { WebSocketWhiteboardClient, DrawingCmd, DrawingMode, DrawingData } from "./websocket/WebSocketWhiteboard/WebSocketWhiteboardClient";
 
 export {
@@ -35,7 +35,7 @@ export {
     ICONS_DEAD,
     REGIONS,
     STATES,
-    DrawableVideoTile,
-    DrawableImageTile,
+    DrawingCanvas,
     VideoTileState,
+    TranscriptionScript,
 };

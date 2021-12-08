@@ -1,10 +1,11 @@
-import { CreateMeetingRequest, CreateMeetingResponse, ResponseBody } from "../backend_const";
+import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetMeetingInfoResponse, HTTPResponseBody } from "../http_request";
 import { RestApiClientContext } from "./RestApiClient";
-export { CreateMeetingRequest, CreateMeetingResponse };
 /**
  * Create Meeting
  */
 
+export type CreateMeetingRequest = HTTPCreateMeetingRequest;
+export type CreateMeetingResponse = HTTPCreateMeetingResponse;
 export const createMeeting = async (params: CreateMeetingRequest, context: RestApiClientContext): Promise<CreateMeetingResponse> => {
     const url = `${context.baseUrl}meetings`;
     params.meetingName = encodeURIComponent(params.meetingName);
@@ -21,7 +22,7 @@ export const createMeeting = async (params: CreateMeetingRequest, context: RestA
             "X-Flect-Access-Token": context.accessToken!,
         },
     });
-    const response = (await res.json()) as ResponseBody;
+    const response = (await res.json()) as HTTPResponseBody;
     if (response.success === false) {
         console.log(response.code);
         throw response.code;
@@ -50,7 +51,7 @@ export const endMeeting = async (params: EndMeetingRequest, context: RestApiClie
             "X-Flect-Access-Token": context.accessToken!,
         },
     });
-    const response = (await res.json()) as ResponseBody;
+    const response = (await res.json()) as HTTPResponseBody;
     if (response.success === false) {
         console.log(response.code);
         throw response.code;
@@ -63,33 +64,7 @@ export const endMeeting = async (params: EndMeetingRequest, context: RestApiClie
 export type GetMeetingInfoRequest = {
     meetingName: string;
 };
-export type GetMeetingInfoResponse = {
-    HmmTaskArn: string;
-    IsOwner: boolean;
-    MeetingId: string;
-    MeetingInfo: {
-        Meeting: {
-            ExternalMeetingId: string | null;
-            MediaPlacement: {
-                AudioHostUrl: string;
-                AudioFallbackUrl: string;
-                ScreenDataUrl: string;
-                ScreenSharingUrl: string;
-                ScreenViewingUrl: string;
-                SignalingUrl: string;
-                TurnControlUrl: string;
-            };
-            MediaRegion: string;
-            MeetingId: string;
-        };
-    };
-    MeetingName: string;
-    Metadata: {
-        OwnerId: string;
-        Region: string;
-        StartTime: number;
-    };
-};
+export type GetMeetingInfoResponse = HTTPGetMeetingInfoResponse;
 export const getMeetingInfo = async (params: GetMeetingInfoRequest, context: RestApiClientContext): Promise<GetMeetingInfoResponse> => {
     const url = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}`;
 
@@ -102,7 +77,7 @@ export const getMeetingInfo = async (params: GetMeetingInfoRequest, context: Res
             "X-Flect-Access-Token": context.accessToken!,
         },
     });
-    const response = (await res.json()) as ResponseBody;
+    const response = (await res.json()) as HTTPResponseBody;
     if (response.success === false) {
         console.log(response.code);
         throw response.code;

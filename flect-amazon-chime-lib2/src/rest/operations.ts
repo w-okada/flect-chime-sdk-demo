@@ -1,3 +1,4 @@
+import { HTTPResponseBody } from "../http_request";
 import { RestApiClientContext } from "./RestApiClient";
 
 /**
@@ -17,7 +18,7 @@ export const startTranscribe = async (params: StartTranscribeRequest, context: R
 
     const requestBody = JSON.stringify(request);
 
-    const response = await fetch(url, {
+    const res = await fetch(url, {
         method: "POST",
         body: requestBody,
         headers: {
@@ -28,12 +29,11 @@ export const startTranscribe = async (params: StartTranscribeRequest, context: R
         },
     });
 
-    const data = await response.json();
-    if (data === null) {
-        throw new Error(`Server error: startTranscribe failed`);
+    const response = (await res.json()) as HTTPResponseBody;
+    if (response.success === false) {
+        console.log(response.code);
+        throw response.code;
     }
-    console.log("start transcribe", data);
-    return data;
 };
 
 /**
@@ -50,7 +50,7 @@ export const stopTranscribe = async (params: StopTranscribeRequest, context: Res
 
     const requestBody = JSON.stringify(request);
 
-    const response = await fetch(url, {
+    const res = await fetch(url, {
         method: "POST",
         body: requestBody,
         headers: {
@@ -61,10 +61,9 @@ export const stopTranscribe = async (params: StopTranscribeRequest, context: Res
         },
     });
 
-    const data = await response.json();
-    if (data === null) {
-        throw new Error(`Server error: stopTranscribe failed`);
+    const response = (await res.json()) as HTTPResponseBody;
+    if (response.success === false) {
+        console.log(response.code);
+        throw response.code;
     }
-    console.log("stop transcribe", data);
-    return data;
 };
