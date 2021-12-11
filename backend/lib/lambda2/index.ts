@@ -206,7 +206,7 @@ const handleGetMeeting = async (accessToken: string, pathParams: { [key: string]
             res = {
                 success: true,
                 code: Codes.SUCCESS,
-                data: result,
+                data: httpRes,
             };
         }
     }
