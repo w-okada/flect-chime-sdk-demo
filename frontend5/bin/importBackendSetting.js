@@ -42,7 +42,7 @@ outputString += `aws cloudfront create-invalidation --distribution-id ${Distribu
 
 fs.writeFileSync("./createInvalidation.sh", outputString);
 
-//// copy backend const
-const src = "../backend/lib/lambda/const.js";
-const dest = "./src/backend_const.js";
-fs.copyFileSync(src, dest);
+// //// copy backend const
+// const src = "../backend/lib/lambda2/const.ts";
+// const dest = "./src/backend_const.ts";
+// fs.copyFileSync(src, dest);
