@@ -1,46 +1,47 @@
 {
-  "name": "backend",
-  "version": "0.1.0",
-  "bin": {
-    "backend": "bin/backend.js"
-  },
-  "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
-    "test": "jest",
-    "cdk": "cdk",
-    "// [Comment_01] //": "build_docker_script: transpile typescript to javascript",
-    "build_docker_script": "cd lib/manager/recording && npm run build && cd -",
-    "// [Comment_02] //": "build_docker: generate docker image with transpile script",
-    "build_docker": "npm run build_docker_script && cd lib/manager/&& docker build -t dannadori/hmm . && cd -",
-    "// [Comment_03] //": "push_docker_image: push image to dockerhub with generate docker image",
-    "push_docker_image": "npm run build_docker && docker push dannadori/hmm",
-    "build_all": "npm run build && cdk deploy --outputs-file cfn_outputs.json"
-  },
-  "devDependencies": {
-    "@types/jest": "^27.0.3",
-    "@types/node": "16.11.11",
-    "cdk-assets": "^2.0.0",
-    "fs-extra": "^10.0.0",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.2"
-  },
-  "dependencies": {
-    "@aws-cdk/assert": "^2.0.0",
-    "@aws-cdk/aws-apigateway": "^1.134.0",
-    "@aws-cdk/aws-apigatewayv2": "^1.134.0",
-    "@aws-cdk/aws-cognito": "^1.134.0",
-    "@aws-cdk/aws-dynamodb": "^1.134.0",
-    "@aws-cdk/aws-ecs": "^1.134.0",
-    "@aws-cdk/aws-lambda": "^1.134.0",
-    "@aws-cdk/core": "^1.134.0",
-    "@aws-cdk/yaml-cfn": "^1.105.0",
-    "@types/aws-lambda": "^8.10.86",
-    "@types/uuid": "^8.3.3",
-    "aws-cdk": "^2.0.0",
-    "aws-lambda": "^1.0.7",
-    "node-fetch": "^3.1.0",
-    "source-map-support": "^0.5.21",
-    "uuid": "^8.3.2"
-  }
+    "name": "backend",
+    "version": "0.1.0",
+    "bin": {
+        "backend": "bin/backend.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "build:lambda": "tsc -p tsconfig_lambda.json",
+        "watch": "tsc -w",
+        "test": "jest",
+        "cdk": "cdk",
+        "// [Comment_01] //": "build_docker_script: transpile typescript to javascript",
+        "build_docker_script": "cd lib/manager/recording && npm run build && cd -",
+        "// [Comment_02] //": "build_docker: generate docker image with transpile script",
+        "build_docker": "npm run build_docker_script && cd lib/manager/&& docker build -t dannadori/hmm . && cd -",
+        "// [Comment_03] //": "push_docker_image: push image to dockerhub with generate docker image",
+        "push_docker_image": "npm run build_docker && docker push dannadori/hmm",
+        "build_all": "npm run build && npm run build:lambda && cdk deploy --outputs-file cfn_outputs.json"
+    },
+    "devDependencies": {
+        "@types/jest": "^27.0.3",
+        "@types/node": "16.11.11",
+        "cdk-assets": "^2.0.0",
+        "fs-extra": "^10.0.0",
+        "ts-node": "^10.4.0",
+        "typescript": "^4.5.2"
+    },
+    "dependencies": {
+        "@aws-cdk/assert": "^2.0.0",
+        "@aws-cdk/aws-apigateway": "^1.134.0",
+        "@aws-cdk/aws-apigatewayv2": "^1.134.0",
+        "@aws-cdk/aws-cognito": "^1.134.0",
+        "@aws-cdk/aws-dynamodb": "^1.134.0",
+        "@aws-cdk/aws-ecs": "^1.134.0",
+        "@aws-cdk/aws-lambda": "^1.134.0",
+        "@aws-cdk/core": "^1.134.0",
+        "@aws-cdk/yaml-cfn": "^1.105.0",
+        "@types/aws-lambda": "^8.10.86",
+        "@types/uuid": "^8.3.3",
+        "aws-cdk": "^2.0.0",
+        "aws-lambda": "^1.0.7",
+        "node-fetch": "^3.1.0",
+        "source-map-support": "^0.5.21",
+        "uuid": "^8.3.2"
+    }
 }

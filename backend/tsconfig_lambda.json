@@ -3,7 +3,7 @@
         "target": "ES2018",
         "module": "commonjs",
         "lib": ["es2018"],
-        "declaration": true,
+        "outDir": "./lib/dist",
         "strict": true,
         "noImplicitAny": true,
         "strictNullChecks": true,
@@ -19,5 +19,5 @@
         "strictPropertyInitialization": false,
         "typeRoots": ["./node_modules/@types"]
     },
-    "exclude": ["cdk.out", "./lib/lambda2/*"]
+    "include": ["./lib/lambda2/*"]
 }

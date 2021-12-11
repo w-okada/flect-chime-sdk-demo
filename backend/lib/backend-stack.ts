@@ -311,7 +311,7 @@ export class BackendStack extends cdk.Stack {
 
         // ( - ) auth
         const lambdaFuncRestAPIAuth = new lambda.Function(this, "ChimeRESTAPIAuth", {
-            code: lambda.Code.asset(`${__dirname}/lambda2`),
+            code: lambda.Code.asset(`${__dirname}/dist`),
             handler: "rest_auth.authorize",
             runtime: lambda.Runtime.NODEJS_14_X,
             timeout: Duration.seconds(300),
@@ -333,7 +333,7 @@ export class BackendStack extends cdk.Stack {
         const lambdaFunctionForRestAPI: lambda.Function = new lambda.Function(this, "funcHelloWorld", {
             functionName: `${id}_getRoot`,
             runtime: lambda.Runtime.NODEJS_14_X,
-            code: lambda.Code.asset(`${__dirname}/lambda2`),
+            code: lambda.Code.asset(`${__dirname}/dist`),
             handler: "index.handler",
             memorySize: 256,
             timeout: cdk.Duration.seconds(10),
