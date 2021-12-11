@@ -13,10 +13,10 @@ export const joinMeeting = async (params: JoinMeetingRequest, context: RestApiCl
         method: "POST",
         body: requestBody,
         headers: {
-            Authorization: context.idToken!,
+            Authorization: context.idToken,
             Accept: "application/json",
             "Content-Type": "application/json",
-            "X-Flect-Access-Token": context.accessToken!,
+            "X-Flect-Access-Token": context.codeToAccess || context.accessToken,
         },
     });
 
@@ -43,8 +43,8 @@ export const getUserNameByAttendeeId = async (params: GetUserNameByAttendeeIdReq
     const res = await fetch(attendeeUrl, {
         method: "GET",
         headers: {
-            Authorization: context.idToken!,
-            "X-Flect-Access-Token": context.accessToken!,
+            Authorization: context.idToken,
+            "X-Flect-Access-Token": context.codeToAccess || context.accessToken,
         },
     });
     const response = (await res.json()) as HTTPResponseBody;
@@ -78,8 +78,8 @@ export const getAttendeeList = async (params: GetAttendeeListRequest, context: R
     const res = await fetch(attendeeUrl, {
         method: "GET",
         headers: {
-            Authorization: context.idToken!,
-            "X-Flect-Access-Token": context.accessToken!,
+            Authorization: context.idToken,
+            "X-Flect-Access-Token": context.codeToAccess || context.accessToken,
         },
     });
     if (!res.ok) {

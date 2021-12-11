@@ -16,10 +16,10 @@ export const createMeeting = async (params: CreateMeetingRequest, context: RestA
         method: "POST",
         body: requestBody,
         headers: {
-            Authorization: context.idToken!,
+            Authorization: context.idToken,
             Accept: "application/json",
             "Content-Type": "application/json",
-            "X-Flect-Access-Token": context.accessToken!,
+            "X-Flect-Access-Token": context.codeToAccess || context.accessToken,
         },
     });
     const response = (await res.json()) as HTTPResponseBody;
@@ -45,10 +45,10 @@ export const endMeeting = async (params: EndMeetingRequest, context: RestApiClie
     const res = await fetch(url, {
         method: "DELETE",
         headers: {
-            Authorization: context.idToken!,
+            Authorization: context.idToken,
             Accept: "application/json",
             "Content-Type": "application/json",
-            "X-Flect-Access-Token": context.accessToken!,
+            "X-Flect-Access-Token": context.codeToAccess || context.accessToken,
         },
     });
     const response = (await res.json()) as HTTPResponseBody;
@@ -71,10 +71,10 @@ export const getMeetingInfo = async (params: GetMeetingInfoRequest, context: Res
     const res = await fetch(url, {
         method: "GET",
         headers: {
-            Authorization: context.idToken!,
+            Authorization: context.idToken,
             Accept: "application/json",
             "Content-Type": "application/json",
-            "X-Flect-Access-Token": context.accessToken!,
+            "X-Flect-Access-Token": context.codeToAccess || context.accessToken,
         },
     });
     const response = (await res.json()) as HTTPResponseBody;

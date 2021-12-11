@@ -1,6 +1,6 @@
 {
     "name": "@dannadori/flect-amazon-chime-lib2",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "",
     "main": "dist/flect-amazon-chime-lib.js",
     "scripts": {

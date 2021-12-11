@@ -22,10 +22,10 @@ export const startTranscribe = async (params: StartTranscribeRequest, context: R
         method: "POST",
         body: requestBody,
         headers: {
-            Authorization: context.idToken!,
+            Authorization: context.idToken,
             Accept: "application/json",
             "Content-Type": "application/json",
-            "X-Flect-Access-Token": context.accessToken!,
+            "X-Flect-Access-Token": context.codeToAccess || context.accessToken,
         },
     });
 
@@ -54,10 +54,10 @@ export const stopTranscribe = async (params: StopTranscribeRequest, context: Res
         method: "POST",
         body: requestBody,
         headers: {
-            Authorization: context.idToken!,
+            Authorization: context.idToken,
             Accept: "application/json",
             "Content-Type": "application/json",
-            "X-Flect-Access-Token": context.accessToken!,
+            "X-Flect-Access-Token": context.codeToAccess || context.accessToken,
         },
     });
 
