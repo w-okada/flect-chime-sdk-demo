@@ -7,9 +7,6 @@ import { CustomTextField } from "../000_common/CustomTextField";
 import { Questionnaire } from "../000_common/Questionnaire";
 import { useStyles } from "../000_common/Style";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const c = require("../../backend_const");
-
 type EntranceProps = {
     asGuest?: boolean;
 };
@@ -31,7 +28,7 @@ export const Entrance = (props: EntranceProps) => {
             const meetingInfo = await chimeClientState.getMeetingInfo(meetingName, userName);
             console.log("MeetingInfo:", meetingInfo);
         } catch (e: any) {
-            setMessage("Exception", "Enter Room Failed", [`${e.message}\n, please create new room.`, `(code: ${e.code})`, c.MEETING_NOT_FOUND]);
+            setMessage("Exception", "Enter Room Failed", [`${e.message}\n, please create new room.`, `(code: ${e.code})`]);
             setStage(STAGE.CREATE_MEETING_ROOM);
             return;
         }
