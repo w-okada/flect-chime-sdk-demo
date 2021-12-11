@@ -2,6 +2,7 @@ import { Button, CircularProgress } from "@material-ui/core";
 import { Lock } from "@material-ui/icons";
 import React, { useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
+import { STAGE } from "../../providers/hooks/useStageManager";
 import { CustomTextField } from "../000_common/CustomTextField";
 import { Questionnaire } from "../000_common/Questionnaire";
 import { useStyles } from "../000_common/Style";
@@ -21,7 +22,7 @@ export const NewPassword = () => {
             await cognitoClientState.changePassword(userId, verifyCode, password);
             setMessage("Info", "password changed ", [`Verification is accepted. New password ready.`]);
             setIsLoading(false);
-            setStage("SIGNIN");
+            setStage(STAGE.SIGNIN);
         } catch (e: any) {
             console.log(e);
             setMessage("Exception", "change password error", [`${e.message}`, `(code: ${e.code})`]);
@@ -50,7 +51,7 @@ export const NewPassword = () => {
         {
             title: "return to home",
             onClick: () => {
-                setStage("SIGNIN");
+                setStage(STAGE.SIGNIN);
             },
         },
     ];

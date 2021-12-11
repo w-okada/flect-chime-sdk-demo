@@ -9,24 +9,13 @@ import { Entrance } from "./pages/020_entrance/21_Entrance";
 import { WaitingRoom } from "./pages/020_entrance/22_WaitingRoom";
 import { CreateMeetingRoom } from "./pages/020_entrance/23_CreateMeetingRoom";
 import { MeetingRoom } from "./pages/030_meetingRoom/MeetingRoom";
+import { SigninFromSlack } from "./pages/100_federattion/101_slack/101_SigninFromSlack";
 import { AppStateProvider, useAppState } from "./providers/AppStateProvider";
-// import { MessageDialog } from "./pages/000_common/MessageDialg";
-// import { SignIn } from "./pages/010_signin";
-// import { SignUp } from "./pages/011_signup";
-// import { Verify } from "./pages/012_verify";
-// import { RequestChangePassword } from "./pages/013_requestChangePassword";
-// import { NewPassword } from "./pages/014_newPassword";
-// import { Entrance } from "./pages/020_entrance";
-// import { CreateMeetingRoom } from "./pages/021_createMeetingRoom";
-// import { WaitingRoomAmongUs } from "./pages/022_waitingRoom/WaitingRoomAmongUs";
-// import { WaitingRoom } from "./pages/022_waitingRoom/WaitingRoom";
-// import { MeetingRoom } from "./pages/023_meetingRoom/MeetingRoom";
-// import { MeetingManager } from "./pages/100_MeetingManager/MeetingManager";
-// import { MeetingRoomAmongUs } from "./pages/024_meetingRoomAmongUs/MeetingRoomAmongUs";
-// import { HeadlessMeetingManager } from "./pages/101_HMeetingManager/HeadlessMeetingManager";
+import { FOR_FEDERATION, STAGE } from "./providers/hooks/useStageManager";
 
 const Router = () => {
     const { stage } = useAppState();
+    console.log("STAGE:::", stage);
     const page = useMemo(() => {
         switch (stage) {
             case "SIGNIN":
@@ -49,6 +38,9 @@ const Router = () => {
                 return <CreateMeetingRoom />;
             case "MEETING_ROOM":
                 return <MeetingRoom />;
+
+            case FOR_FEDERATION.SLACK_SIGNUP:
+                return <SigninFromSlack />;
             // case "MEETING_MANAGER":
             //     return <MeetingManager />;
             // case "HEADLESS_MEETING_MANAGER":

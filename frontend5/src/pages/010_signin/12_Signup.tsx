@@ -2,6 +2,7 @@ import { Button, CircularProgress } from "@material-ui/core";
 import { Lock } from "@material-ui/icons";
 import React, { useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
+import { STAGE } from "../../providers/hooks/useStageManager";
 import { CustomTextField } from "../000_common/CustomTextField";
 import { Questionnaire } from "../000_common/Questionnaire";
 import { useStyles } from "../000_common/Style";
@@ -21,7 +22,7 @@ export const SignUp = () => {
             await cognitoClientState.signUp(userId, password);
             setMessage("Info", "Signup success", [`User created.`, `Verification code is sent to your mail address. Please input into next form.`]);
             setIsLoading(false);
-            setStage("VERIFY");
+            setStage(STAGE.VERIFY);
         } catch (e: any) {
             console.log(e);
             setMessage("Exception", "Signup error", [`${e.message}`, `(code: ${e.code})`]);
@@ -49,7 +50,7 @@ export const SignUp = () => {
         {
             title: "return to home",
             onClick: () => {
-                setStage("SIGNIN");
+                setStage(STAGE.SIGNIN);
             },
         },
     ];

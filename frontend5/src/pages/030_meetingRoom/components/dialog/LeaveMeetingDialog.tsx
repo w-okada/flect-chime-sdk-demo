@@ -1,6 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@material-ui/core";
 import React from "react";
 import { useAppState } from "../../../../providers/AppStateProvider";
+import { STAGE } from "../../../../providers/hooks/useStageManager";
 
 export const LeaveMeetingDialog = () => {
     const { setStage, chimeClientState, frontendState } = useAppState();
@@ -20,7 +21,7 @@ export const LeaveMeetingDialog = () => {
                     onClick={(e) => {
                         chimeClientState.leaveMeeting();
                         frontendState.setLeaveDialogOpen(false);
-                        setStage("SIGNIN");
+                        setStage(STAGE.SIGNIN);
                     }}
                     color="primary"
                 >

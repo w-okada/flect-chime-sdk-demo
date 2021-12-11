@@ -3,6 +3,7 @@ import { MeetingRoom } from "@material-ui/icons";
 import React, { useState } from "react";
 import { AVAILABLE_AWS_REGIONS, DEFAULT_REGION } from "../../constants";
 import { useAppState } from "../../providers/AppStateProvider";
+import { STAGE } from "../../providers/hooks/useStageManager";
 import { CustomTextField } from "../000_common/CustomTextField";
 import { Questionnaire } from "../000_common/Questionnaire";
 import { useStyles } from "../000_common/Style";
@@ -21,7 +22,7 @@ export const CreateMeetingRoom = () => {
             await chimeClientState.createMeeting(meetingName, region);
             setMessage("Info", "Room created", [`room created, please join.`]);
             setIsLoading(false);
-            setStage("ENTRANCE");
+            setStage(STAGE.ENTRANCE);
         } catch (e: any) {
             console.log(e);
             setMessage("Exception", "Creating meeting room failed", [`room(${e.meetingName}) exist?: ${!e.created}`]);
@@ -65,13 +66,13 @@ export const CreateMeetingRoom = () => {
         {
             title: "Join Meeting",
             onClick: () => {
-                setStage("ENTRANCE");
+                setStage(STAGE.ENTRANCE);
             },
         },
         {
             title: "Sign out",
             onClick: () => {
-                setStage("SIGNIN");
+                setStage(STAGE.SIGNIN);
             },
         },
     ];

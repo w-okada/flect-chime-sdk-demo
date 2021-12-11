@@ -6,6 +6,7 @@ import { useStyles } from "../000_common/Style";
 import { VirtualBackgroundSegmentationType } from "@dannadori/flect-amazon-chime-lib2";
 import { Questionnaire } from "../000_common/Questionnaire";
 import { CustomSelect } from "../000_common/CustomSelect";
+import { STAGE } from "../../providers/hooks/useStageManager";
 
 export const WaitingRoom = () => {
     const { chimeClientState, deviceState, setStage } = useAppState();
@@ -30,7 +31,7 @@ export const WaitingRoom = () => {
             setIsLoading(false);
             chimeClientState.startLocalVideoTile();
 
-            setStage("MEETING_ROOM");
+            setStage(STAGE.MEETING_ROOM);
         } catch (e: any) {
             setIsLoading(false);
             console.log(e);
@@ -149,14 +150,14 @@ export const WaitingRoom = () => {
         {
             title: "Go Back",
             onClick: () => {
-                setStage("ENTRANCE");
+                setStage(STAGE.ENTRANCE);
             },
         },
         {
             title: "Sign out",
             onClick: () => {
                 chimeClientState.leaveMeeting();
-                setStage("SIGNIN");
+                setStage(STAGE.SIGNIN);
             },
         },
     ];

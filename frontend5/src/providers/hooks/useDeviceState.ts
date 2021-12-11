@@ -74,6 +74,7 @@ export const useDeviceState = () => {
         videoinput: [],
         audiooutput: [],
     });
+
     useEffect(() => {
         getDeviceLists().then((res) => {
             addDummyToMediaDeviceList(res.audioinput, MediaDeviceType.audioinput);
@@ -84,14 +85,13 @@ export const useDeviceState = () => {
         });
     }, []);
 
-    const reloadDevices = () => {
-        getDeviceLists().then((res) => {
-            addDummyToMediaDeviceList(res.audioinput, MediaDeviceType.audioinput);
-            addNoneToMediaDeviceList(res.audioinput, MediaDeviceType.audioinput);
-            addNoneToMediaDeviceList(res.videoinput, MediaDeviceType.videoinput);
-            addNoneToMediaDeviceList(res.audiooutput, MediaDeviceType.audiooutput);
-            setMediaDeviceList(res);
-        });
+    const reloadDevices = async () => {
+        const res = await getDeviceLists();
+        addDummyToMediaDeviceList(res.audioinput, MediaDeviceType.audioinput);
+        addNoneToMediaDeviceList(res.audioinput, MediaDeviceType.audioinput);
+        addNoneToMediaDeviceList(res.videoinput, MediaDeviceType.videoinput);
+        addNoneToMediaDeviceList(res.audiooutput, MediaDeviceType.audiooutput);
+        setMediaDeviceList(res);
     };
 
     ////////////////////////////
@@ -119,5 +119,6 @@ export const useDeviceState = () => {
         reloadDevices,
         getDefaultDeviceIds,
     };
+
     return returnValue;
 };

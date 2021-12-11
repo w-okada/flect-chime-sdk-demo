@@ -2,6 +2,7 @@ import { Button, Checkbox, CircularProgress } from "@material-ui/core";
 import { Favorite, FavoriteBorder, MeetingRoom } from "@material-ui/icons";
 import React, { useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
+import { STAGE } from "../../providers/hooks/useStageManager";
 import { CustomTextField } from "../000_common/CustomTextField";
 import { Questionnaire } from "../000_common/Questionnaire";
 import { useStyles } from "../000_common/Style";
@@ -31,7 +32,7 @@ export const Entrance = (props: EntranceProps) => {
             console.log("MeetingInfo:", meetingInfo);
         } catch (e: any) {
             setMessage("Exception", "Enter Room Failed", [`${e.message}\n, please create new room.`, `(code: ${e.code})`, c.MEETING_NOT_FOUND]);
-            setStage("CREATE_MEETING_ROOM");
+            setStage(STAGE.CREATE_MEETING_ROOM);
             return;
         }
         try {
@@ -63,14 +64,14 @@ export const Entrance = (props: EntranceProps) => {
                     await chimeClientState.enterMeeting();
                     setIsLoading(false);
                     chimeClientState.startLocalVideoTile();
-                    setStage("MEETING_ROOM");
+                    setStage(STAGE.MEETING_ROOM);
                 } catch (e: any) {
                     setIsLoading(false);
                     console.log(e);
                 }
             } else {
                 setIsLoading(false);
-                setStage("WAITING_ROOM");
+                setStage(STAGE.WAITING_ROOM);
             }
         } catch (e: any) {
             console.log(e);
@@ -123,7 +124,7 @@ export const Entrance = (props: EntranceProps) => {
             title: "Sign out",
             onClick: () => {
                 chimeClientState.leaveMeeting();
-                setStage("SIGNIN");
+                setStage(STAGE.SIGNIN);
             },
         },
     ];

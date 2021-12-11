@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { ReactNode } from "react";
 import { MessageState, MessageType, useMessageState } from "./hooks/useMessageState";
-import { STAGE, useStageManager } from "./hooks/useStageManager";
+import { STAGE, useStageManager, FOR_FEDERATION } from "./hooks/useStageManager";
 import { RestAPIEndpoint, UserPoolClientId, UserPoolId, WebSocketEndpoint } from "../BackendConfig";
 import { DeviceState, MediaDeviceInfoList, useDeviceState } from "./hooks/useDeviceState";
 import { useWindowSizeChangeListener, WindowSize } from "./hooks/useWindowSizeChange";
@@ -20,8 +20,8 @@ interface AppStateValue {
     /**** For WindowSizeChange */
     windowSize: WindowSize;
     /**** For StageManager */
-    stage: STAGE;
-    setStage: (stage: STAGE) => void;
+    stage: STAGE | FOR_FEDERATION;
+    setStage: (stage: STAGE | FOR_FEDERATION) => void;
     /**** Other GUI Props */
     frontendState: FrontendState;
 
@@ -36,6 +36,10 @@ interface AppStateValue {
     messageState: MessageState;
     setMessage: (type: MessageType, title: string, detail: string[]) => void;
     resolveMessage: () => void;
+
+    /** Federation */
+    slackRestApiBase: string | null;
+    slackToken: string | null;
 }
 
 const AppStateContext = React.createContext<AppStateValue | null>(null);
@@ -51,11 +55,18 @@ export const useAppState = (): AppStateValue => {
 const query = new URLSearchParams(window.location.search);
 
 export const AppStateProvider = ({ children }: Props) => {
+    const slackToken = useMemo(() => {
+        return query.get("slack_token") || null;
+    }, []);
+    const slackRestApiBase = useMemo(() => {
+        return query.get("restapi_endpoint_base") || null;
+    }, []);
+
     /** GUI Control*/
     /**** For WindowSizeChange */
     const { windowSize } = useWindowSizeChangeListener();
     /**** For StageManager */
-    const { stage, setStage } = useStageManager({ initialStage: query.get("stage") as STAGE | null });
+    const { stage, setStage } = useStageManager({ initialStage: (query.get("stage") as STAGE) ? (query.get("stage") as STAGE) : slackToken ? FOR_FEDERATION.SLACK_SIGNUP : null });
     /**** Other GUI Props */
     const frontendState = useFrontend();
 
@@ -66,7 +77,10 @@ export const AppStateProvider = ({ children }: Props) => {
         if (cognitoClientState.userId && cognitoClientState.idToken && cognitoClientState.accessToken && cognitoClientState.refreshToken) {
             chimeClientState.initialize(cognitoClientState.userId, cognitoClientState.idToken, cognitoClientState.accessToken, cognitoClientState.refreshToken);
         }
-    }, [cognitoClientState.userId, cognitoClientState.idToken, cognitoClientState.accessToken, cognitoClientState.refreshToken]);
+        if (slackToken) {
+            chimeClientState.initializeWithCode(`slack,${slackToken}`);
+        }
+    }, [cognitoClientState.userId, cognitoClientState.idToken, cognitoClientState.accessToken, cognitoClientState.refreshToken, slackToken]);
     const whiteboardClientState = useWhiteboardClient({
         joinToken: chimeClientState.joinToken || "",
         meetingId: chimeClientState.meetingId || "",
@@ -108,6 +122,10 @@ export const AppStateProvider = ({ children }: Props) => {
         messageState,
         setMessage,
         resolveMessage,
+
+        /** Federation */
+        slackRestApiBase,
+        slackToken,
     };
 
     return <AppStateContext.Provider value={providerValue}>{children}</AppStateContext.Provider>;

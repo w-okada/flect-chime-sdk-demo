@@ -2,6 +2,7 @@ import { Button, CircularProgress } from "@material-ui/core";
 import { Lock } from "@material-ui/icons";
 import React, { useState } from "react";
 import { useAppState } from "../../providers/AppStateProvider";
+import { STAGE } from "../../providers/hooks/useStageManager";
 import { CustomTextField } from "../000_common/CustomTextField";
 import { Questionnaire } from "../000_common/Questionnaire";
 import { useStyles } from "../000_common/Style";
@@ -20,7 +21,7 @@ export const RequestChangePassword = () => {
             console.log("send verify code fo changing password");
             setMessage("Info", "Send Verification Code success ", [`verift your code.`]);
             setIsLoading(false);
-            setStage("NEW_PASSWORD");
+            setStage(STAGE.NEW_PASSWORD);
         } catch (e: any) {
             console.log(e);
             setMessage("Exception", "request change password error", [`${e.message}`, `(code: ${e.code})`]);
@@ -47,7 +48,7 @@ export const RequestChangePassword = () => {
         {
             title: "return to home",
             onClick: () => {
-                setStage("SIGNIN");
+                setStage(STAGE.SIGNIN);
             },
         },
     ];

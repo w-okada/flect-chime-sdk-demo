@@ -3,6 +3,7 @@ import { Lock } from "@material-ui/icons";
 import React, { useState } from "react";
 import { DEFAULT_REGION } from "../../constants";
 import { useAppState } from "../../providers/AppStateProvider";
+import { STAGE } from "../../providers/hooks/useStageManager";
 // import { CustomSelect } from "../000_common/CustomSelect";
 import { CustomTextField } from "../000_common/CustomTextField";
 import { Questionnaire } from "../000_common/Questionnaire";
@@ -22,7 +23,7 @@ export const SignIn = () => {
         try {
             await cognitoClientState.signIn(userId, password);
             setIsLoading(false);
-            setStage("ENTRANCE");
+            setStage(STAGE.ENTRANCE);
         } catch (e: any) {
             console.log("sign in error:::", e);
             setMessage("Exception", "Signin error", [`${e.message}`, `(code: ${e.code})`]);
@@ -62,25 +63,25 @@ export const SignIn = () => {
         {
             title: "Enter as a guest",
             onClick: () => {
-                setStage("ENTRANCE_AS_GUEST");
+                setStage(STAGE.ENTRANCE_AS_GUEST);
             },
         },
         {
             title: "Sign up",
             onClick: () => {
-                setStage("SIGNUP");
+                setStage(STAGE.SIGNUP);
             },
         },
         {
             title: "Forgot or chnage password",
             onClick: () => {
-                setStage("REQUEST_NEW_PASSWORD");
+                setStage(STAGE.REQUEST_NEW_PASSWORD);
             },
         },
         {
             title: "Verify code",
             onClick: () => {
-                setStage("VERIFY");
+                setStage(STAGE.VERIFY);
             },
         },
     ];
@@ -114,7 +115,7 @@ export const SignIn = () => {
                             await chimeClientState.enterMeeting();
                             console.log("logined4");
                             chimeClientState.startLocalVideoTile();
-                            setStage("MEETING_ROOM");
+                            setStage(STAGE.MEETING_ROOM);
                         });
                     }}
                 >
