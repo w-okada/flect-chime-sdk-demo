@@ -311,7 +311,7 @@ export class BackendStack extends cdk.Stack {
 
         // ( - ) auth
         const lambdaFuncRestAPIAuth = new lambda.Function(this, "ChimeRESTAPIAuth", {
-            code: lambda.Code.asset(`${__dirname}/dist`),
+            code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "rest_auth.authorize",
             runtime: lambda.Runtime.NODEJS_14_X,
             timeout: Duration.seconds(300),
@@ -333,7 +333,7 @@ export class BackendStack extends cdk.Stack {
         const lambdaFunctionForRestAPI: lambda.Function = new lambda.Function(this, "funcHelloWorld", {
             functionName: `${id}_getRoot`,
             runtime: lambda.Runtime.NODEJS_14_X,
-            code: lambda.Code.asset(`${__dirname}/dist`),
+            code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "index.handler",
             memorySize: 256,
             timeout: cdk.Duration.seconds(10),
@@ -552,7 +552,7 @@ export class BackendStack extends cdk.Stack {
         //// Lambda Function
         // (1) connect
         const lambdaFuncMessageConnect = new lambda.Function(this, "ChimeMessageAPIConnect", {
-            code: lambda.Code.asset(`${__dirname}/lambda`),
+            code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "message.connect",
             runtime: lambda.Runtime.NODEJS_14_X,
             timeout: Duration.seconds(300),
@@ -562,7 +562,7 @@ export class BackendStack extends cdk.Stack {
 
         // (2) disconnect
         const lambdaFuncMessageDisconnect = new lambda.Function(this, "ChimeMessageAPIDisconnect", {
-            code: lambda.Code.asset(`${__dirname}/lambda`),
+            code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "message.disconnect",
             runtime: lambda.Runtime.NODEJS_14_X,
             timeout: Duration.seconds(300),
@@ -572,7 +572,7 @@ export class BackendStack extends cdk.Stack {
 
         // (3) message
         const lambdaFuncMessageMessage = new lambda.Function(this, "ChimeMessageAPIMessage", {
-            code: lambda.Code.asset(`${__dirname}/lambda`),
+            code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "message.message",
             runtime: lambda.Runtime.NODEJS_14_X,
             timeout: Duration.seconds(300),
@@ -582,7 +582,7 @@ export class BackendStack extends cdk.Stack {
 
         // (4) auth
         const lambdaFuncMessageAuth = new lambda.Function(this, "ChimeMessageAPIAuth", {
-            code: lambda.Code.asset(`${__dirname}/lambda`),
+            code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "message.authorize",
             runtime: lambda.Runtime.NODEJS_14_X,
             timeout: Duration.seconds(300),

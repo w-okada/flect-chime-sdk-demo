@@ -22,35 +22,6 @@ console.log(`PORT:::${port}`);
 // Among Us Section   ///
 /////////////////////////
 // const now = () => new Date().toISOString().substr(14, 9);
-// type PlayerState = {
-//     name: string
-//     isDead: boolean
-//     isDeadDiscovered: boolean
-//     disconnected: boolean
-//     color: number
-//     action: number
-//     attendeeId?: string
-//     chimeName?: string
-// }
-// type GameState = {
-//     hmmAttendeeId: string
-//     state: number
-//     lobbyCode: string
-//     gameRegion: number
-//     map: number
-//     connectCode: string
-//     players: PlayerState[]
-// }
-
-// const initialState: GameState = {
-//     hmmAttendeeId: "",
-//     state: 3,
-//     lobbyCode: "",
-//     gameRegion: 0,
-//     map: 0,
-//     connectCode: "",
-//     players: [],
-// }
 
 // let gameState: GameState = { ...initialState, players: [] }
 

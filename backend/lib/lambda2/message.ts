@@ -1,10 +1,7 @@
-//// Import
-var utils = require("./utils");
-var AWS = require("aws-sdk");
+import { Chime, DynamoDB, ApiGatewayManagementApi } from "aws-sdk";
 
-//// AWS Clients setup
-const chime = new AWS.Chime({ region: "us-east-1" });
-var ddb = new AWS.DynamoDB();
+const chime = new Chime({ region: "us-east-1" });
+const ddb = new DynamoDB();
 
 /**
  * generate policy. subfunction of authorizer.
@@ -13,22 +10,26 @@ var ddb = new AWS.DynamoDB();
  * @param {*} resource
  * @param {*} context
  */
-const generatePolicy = (principalId, effect, resource, context) => {
-    const authResponse = {};
-    authResponse.principalId = principalId;
+const generatePolicy = (principalId: string, effect: string, resource: string, context: any) => {
     if (effect && resource) {
-        const policyDocument = {};
-        policyDocument.Version = "2012-10-17";
-        policyDocument.Statement = [];
-        const statementOne = {};
-        statementOne.Action = "execute-api:Invoke";
-        statementOne.Effect = effect;
-        statementOne.Resource = resource;
-        policyDocument.Statement[0] = statementOne;
-        authResponse.policyDocument = policyDocument;
+        const policyDocument = {
+            Version: "2012-10-17",
+            Statement: [
+                {
+                    Action: "execute-api:Invoke",
+                    Effect: effect,
+                    Resource: resource,
+                },
+            ],
+        };
+        const authResponse = {
+            principalId: principalId,
+            policyDocument: policyDocument,
+            context: context,
+        };
+        return authResponse;
     }
-    authResponse.context = context;
-    return authResponse;
+    return {};
 };
 
 /**
@@ -41,7 +42,7 @@ const generatePolicy = (principalId, effect, resource, context) => {
  * @param {*} context
  * @param {*} callback
  */
-exports.authorize = async (event, context, callback) => {
+export const authorize = async (event: any, context: any, callback: any) => {
     console.log("authorize event:", JSON.stringify(event, null, 2));
     console.log("authorize event:", JSON.stringify(context, null, 2));
     let passedAuthCheck = false;
@@ -60,7 +61,7 @@ exports.authorize = async (event, context, callback) => {
     let attendeeInfo;
     try {
         console.log("auth attendeeId1: ", event.queryStringParameters.attendeeId);
-        const attendeeId = event.queryStringParameters.attendeeId.split("_")[0]; //// for extension, (currently no meeing)
+        const attendeeId = event.queryStringParameters.attendeeId.split("_")[0]; //// for extension, (currently no meeting)
         console.log("auth attendeeId2: ", attendeeId);
         attendeeInfo = await chime
             .getAttendee({
@@ -69,61 +70,18 @@ exports.authorize = async (event, context, callback) => {
             })
             .promise();
     } catch (e) {
-        console.error(`failed to authenticate with join token: ${e.message}`);
+        console.error(`failed to authenticate with join token: ${e}`);
         return generatePolicy("me", "Deny", event.methodArn, {});
     }
 
     //// (3) check joinToken
-    if (attendeeInfo.Attendee.JoinToken !== event.queryStringParameters.joinToken) {
-        console.error(`failed to authenticate with join token ${attendeeInfo.Attendee.JoinToken} - ${event.queryStringParameters.joinToken}`);
+    if (attendeeInfo.Attendee!.JoinToken !== event.queryStringParameters.joinToken) {
+        console.error(`failed to authenticate with join token ${attendeeInfo.Attendee!.JoinToken} - ${event.queryStringParameters.joinToken}`);
         return generatePolicy("me", "Deny", event.methodArn, {});
     }
 
     //// (4) return policy
     return generatePolicy("me", "Allow", event.methodArn, {
-        meetingId: event.queryStringParameters.meetingId,
-        attendeeId: event.queryStringParameters.attendeeId,
-    });
-};
-
-/**
- * Authorizer(To Be Deleted)
- * (1) check query parameter. meetingId, attendeeId, joinToken
- * (2)
- * @param {*} event
- * @param {*} context
- * @param {*} callback
- */
-exports.authorize_old = async (event, context, callback) => {
-    console.log("authorize event:", JSON.stringify(event, null, 2));
-    console.log("authorize event:", JSON.stringify(context, null, 2));
-    let passedAuthCheck = false;
-    if (!!event.queryStringParameters.meetingId && !!event.queryStringParameters.attendeeId && !!event.queryStringParameters.joinToken) {
-        console.log("meetingId:", event.queryStringParameters.meetingId);
-        console.log("attendeeId:", event.queryStringParameters.attendeeId);
-        console.log("joinToken:", event.queryStringParameters.joinToken);
-        try {
-            console.log("auth attendeeId1: ", event.queryStringParameters.attendeeId);
-            const attendeeId = event.queryStringParameters.attendeeId.split("_")[0]; //// for extension, (currently no meeing)
-            console.log("auth attendeeId2: ", attendeeId);
-            attendeeInfo = await chime
-                .getAttendee({
-                    MeetingId: event.queryStringParameters.meetingId,
-                    AttendeeId: attendeeId,
-                })
-                .promise();
-            if (attendeeInfo.Attendee.JoinToken === event.queryStringParameters.joinToken) {
-                passedAuthCheck = true;
-            } else {
-                console.error(`failed to authenticate with join token ${attendeeInfo.Attendee.JoinToken} - ${event.queryStringParameters.joinToken}`);
-            }
-        } catch (e) {
-            console.error(`failed to authenticate with join token: ${e.message}`);
-        }
-    } else {
-        console.error("missing MeetingId, AttendeeId, JoinToken parameters");
-    }
-    return generatePolicy("me", passedAuthCheck ? "Allow" : "Deny", event.methodArn, {
         meetingId: event.queryStringParameters.meetingId,
         attendeeId: event.queryStringParameters.attendeeId,
     });
@@ -136,7 +94,7 @@ exports.authorize_old = async (event, context, callback) => {
  * @param {*} context
  * @param {*} callback
  */
-exports.connect = async (event, context, callback) => {
+exports.connect = async (event: any, context: any, callback: any) => {
     console.log(event);
     console.log(context);
     console.log(callback);
@@ -149,7 +107,7 @@ exports.connect = async (event, context, callback) => {
         console.log("attendeeId", attendeeId);
         const res = await ddb
             .putItem({
-                TableName: process.env.CONNECTION_TABLE_NAME,
+                TableName: process.env.CONNECTION_TABLE_NAME!,
                 Item: {
                     MeetingId: { S: meetingId },
                     AttendeeId: { S: attendeeId },
@@ -158,9 +116,10 @@ exports.connect = async (event, context, callback) => {
                 },
             })
             .promise();
+
         console.log("update res", res);
     } catch (e) {
-        console.error(`error connecting: ${e.message}`);
+        console.error(`error connecting: ${e}`);
         return {
             statusCode: 500,
             body: `Failed to connect: ${JSON.stringify(e)}`,
@@ -176,7 +135,7 @@ exports.connect = async (event, context, callback) => {
  * @param {*} context
  * @param {*} callback
  */
-exports.disconnect = async (event, context, callback) => {
+exports.disconnect = async (event: any, context: any, callback: any) => {
     console.log(event);
     console.log(context);
     console.log(callback);
@@ -187,7 +146,7 @@ exports.disconnect = async (event, context, callback) => {
         //// (1) remove connection from DB
         await ddb
             .deleteItem({
-                TableName: process.env.CONNECTION_TABLE_NAME,
+                TableName: process.env.CONNECTION_TABLE_NAME!,
                 Key: {
                     MeetingId: { S: meetingId },
                     AttendeeId: { S: attendeeId },
@@ -195,7 +154,7 @@ exports.disconnect = async (event, context, callback) => {
             })
             .promise();
     } catch (err) {
-        console.error(`error : ${err.message}`);
+        console.error(`error : ${err}`);
         return {
             statusCode: 500,
             body: `Failed to disconnect: ${JSON.stringify(err)}`,
@@ -214,14 +173,14 @@ exports.disconnect = async (event, context, callback) => {
  * @param {*} context
  * @param {*} callback
  */
-exports.message = async (event, context, callback) => {
+exports.message = async (event: any, context: any, callback: any) => {
     console.log(event);
     console.log(context);
     console.log(callback);
     console.log("sendmessage event:", JSON.stringify(event, null, 2));
     console.log("meetingId", event.requestContext.authorizer.meetingId);
     //// (1) Gather the information of attendees in the same meeting
-    let attendees = {};
+    let attendees;
     try {
         attendees = await ddb
             .query({
@@ -230,16 +189,16 @@ exports.message = async (event, context, callback) => {
                 },
                 KeyConditionExpression: "MeetingId = :meetingId",
                 ProjectionExpression: "ConnectionId, AttendeeId",
-                TableName: process.env.CONNECTION_TABLE_NAME,
+                TableName: process.env.CONNECTION_TABLE_NAME!,
             })
             .promise();
     } catch (e) {
         console.log("Query error:", e);
-        return { statusCode: 500, body: e.stack };
+        return { statusCode: 500, body: JSON.stringify(e) };
     }
 
     //// (2) get endpoint of API GW
-    const apigwManagementApi = new AWS.ApiGatewayManagementApi({
+    const apigwManagementApi = new ApiGatewayManagementApi({
         apiVersion: "2018-11-29",
         endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`,
     });
@@ -249,16 +208,16 @@ exports.message = async (event, context, callback) => {
     console.log("Attendee!!!:", attendees);
     const body = JSON.parse(event.body);
     const targetId = body.targetId;
-    const private = body.private;
+    const privateMessage = body.private;
 
     console.log("targetId:", targetId);
-    console.log("private:", private);
+    console.log("private:", privateMessage);
 
     /// (4) send message
-    const postCalls = attendees.Items.map(async (connection) => {
+    const postCalls = attendees.Items!.map(async (connection: any) => {
         const connectionId = connection.ConnectionId.S;
         const attendeeId = connection.AttendeeId.S;
-        if (private !== true || attendeeId === targetId) {
+        if (privateMessage !== true || attendeeId === targetId) {
             try {
                 const res = await apigwManagementApi
                     .postToConnection({
@@ -270,11 +229,7 @@ exports.message = async (event, context, callback) => {
                 console.log("done sending!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!2", connectionId);
                 console.log("done sending!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!3", JSON.stringify(body));
             } catch (e) {
-                if (e.statusCode === 410) {
-                    console.log(`found stale connection, skipping ${connectionId}`);
-                } else {
-                    console.error(`error posting to connection ${connectionId}: ${e.message}`);
-                }
+                console.error(`error posting to connection ${connectionId}: ${JSON.stringify(e)}`);
             }
         }
     });
@@ -283,8 +238,8 @@ exports.message = async (event, context, callback) => {
         const res = await Promise.all(postCalls);
         console.log("RESPONSE!", res);
     } catch (e) {
-        console.error(`failed to post: ${e.message}`);
-        return { statusCode: 500, body: e.stack };
+        console.error(`failed to post: ${JSON.stringify(e)}`);
+        return { statusCode: 500, body: JSON.stringify(e) };
     }
 
     body.done = true;
