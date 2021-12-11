@@ -1,9 +1,13 @@
-import { Chime } from "aws-sdk";
+export declare const HTTPResponseCode: {
+    readonly SUCCESS: "SUCCESS";
+    readonly INVALID_TOKEN_EXCEPTION: "INVALID_TOKEN_EXCEPTION";
+};
 export declare type HTTPResponseBody = {
     success: boolean;
     code: string;
     data?: any;
 };
+import { Chime } from "aws-sdk";
 export declare type Metadata = {
     OwnerId: string;
     Region: string;
@@ -39,4 +43,20 @@ export declare type HTTPJoinMeetingResponse = {
 export declare type HTTPGetAttendeeInfoResponse = {
     attendeeId: string;
     attendeeName: string;
+};
+export declare type SlackHTTPGetUserInformationRequest = {
+    token: string;
+};
+export declare type SlackHTTPGetUserInformationResponse = {
+    roomKey: string;
+    roomName: string;
+    channelId: string;
+    channelName: string;
+    userId: string;
+    userName: string;
+    imageUrl: string;
+    chimeInfo: {
+        attendeeName: string;
+        useDefault: boolean;
+    };
 };

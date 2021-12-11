@@ -1,5 +1,6 @@
 import { CognitoIdentityServiceProvider } from "aws-sdk";
 import { HTTPResponseBody } from "./http_request";
+import { getUserInformation } from "./federation/rest";
 
 const provider = new CognitoIdentityServiceProvider();
 
@@ -36,32 +37,52 @@ export const generateResponse = (body: HTTPResponseBody) => {
 };
 
 export const getEmailFromAccessToken = async (accessToken: string) => {
-    const p = new Promise<CognitoIdentityServiceProvider.GetUserResponse>((resolve, reject) => {
-        provider.getUser({ AccessToken: accessToken }, (err, data) => {
-            console.log(err);
-            if (err) {
-                console.log("invalid accessToken");
-                reject("invalid accessToken");
-            }
-            console.log(data);
-            resolve(data);
+    const tokens = accessToken.split(",");
+    if (tokens.length === 1) {
+        const p = new Promise<CognitoIdentityServiceProvider.GetUserResponse>((resolve, reject) => {
+            provider.getUser({ AccessToken: tokens[0] }, (err, data) => {
+                // console.log(err);
+                if (err) {
+                    console.log("[getEmailFromAccessToken] token is not cognito accessToken");
+                    reject("[getEmailFromAccessToken] token is not cognito accessToken");
+                }
+                console.log(data);
+                resolve(data);
+            });
         });
-    });
-    const userData = await p;
-    let email;
-    let foundEmail = false;
-    for (let i = 0; i < userData.UserAttributes.length; i++) {
-        const att = userData.UserAttributes[i];
-        if (att["Name"] == "email") {
-            email = att["Value"];
-            foundEmail = true;
+        const userData = await p;
+        let email;
+        let foundEmail = false;
+        for (let i = 0; i < userData.UserAttributes.length; i++) {
+            const att = userData.UserAttributes[i];
+            if (att["Name"] == "email") {
+                email = att["Value"];
+                foundEmail = true;
+            }
         }
-    }
-
-    if (foundEmail) {
-        return email;
+        if (foundEmail) {
+            return email;
+        } else {
+            console.log("email not found");
+            throw "email not found";
+        }
+    } else if (tokens.length === 2) {
+        if (tokens[0] === "slack") {
+            const getUSerInformationResult = await getUserInformation({
+                restApiBaseURL: "https://slack-chime-connect.herokuapp.com/",
+                token: tokens[1],
+            });
+            if (getUSerInformationResult.isFailure()) {
+                throw "invalid token!! fail to fetch";
+            }
+            console.log(getUSerInformationResult.value);
+            return getUSerInformationResult.value.userId;
+        } else {
+            console.log(`unknown provider ${tokens[0]}`);
+            throw `unknown provider ${tokens[0]}`;
+        }
     } else {
-        console.log("email not found");
-        throw "email not found";
+        console.log("this token format is not supported");
+        throw "this token format is not supported";
     }
 };

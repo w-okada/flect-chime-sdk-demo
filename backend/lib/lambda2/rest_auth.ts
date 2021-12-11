@@ -1,5 +1,6 @@
 import { getEmailFromAccessToken } from "./util";
 import { IAM } from "aws-sdk";
+import { getUserInformation } from "./federation/rest";
 /**
  * generate policy. subfunction of authorizer.
  * @param {*} principalId
@@ -43,8 +44,13 @@ export const authorize = async (event: any, context: any, callback: any) => {
     console.log("authorize event:", JSON.stringify(event, null, 2));
     console.log("authorize event:", JSON.stringify(context, null, 2));
     console.log("token", event.authorizationToken);
-    const email = await getEmailFromAccessToken(event.authorizationToken);
-    console.log("email1", email);
+    const token = event.authorizationToken as string;
+    try {
+        const email = await getEmailFromAccessToken(token);
+        console.log("email1", email);
+    } catch (e) {
+        throw "invalid token!! unknwon federation code";
+    }
 
     return generatePolicy("me", "Allow", event.methodArn, {
         // meetingId: event.queryStringParameters.meetingId,
