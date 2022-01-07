@@ -63,8 +63,9 @@ export const WaitingRoom = () => {
         if (segmentationType === "None") {
             chimeClientState.setVirtualBackgroundSegmentationType("None");
         } else {
-            chimeClientState.setVirtualBackgroundSegmentationType(segmentationType).then(() => {
+            chimeClientState.setVirtualBackgroundSegmentationType(segmentationType).then(async () => {
                 console.log("SET VIRTUAL BACK!");
+                await chimeClientState.setBackgroundImagePath("/default/bg1.jpg");
             });
         }
     }, [segmentationType]); // eslint-disable-line

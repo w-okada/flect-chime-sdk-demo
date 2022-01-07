@@ -50,6 +50,7 @@ export const Entrance = (props: EntranceProps) => {
                     await chimeClientState.setVideoInputEnable(true);
                     await chimeClientState.setAudioOutput(defaultAudioOutputDeviceId);
                     await chimeClientState.setAudioOutputEnable(true);
+                    await chimeClientState.setBackgroundImagePath("/default/bg1.jpg");
 
                     // await new Promise<void>((resolve, reject) => {
                     //     setTimeout(() => {
