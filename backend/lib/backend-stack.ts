@@ -338,7 +338,7 @@ export class BackendStack extends cdk.Stack {
             code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "rest_auth.authorize",
             runtime: lambda.Runtime.NODEJS_14_X,
-            timeout: Duration.seconds(300),
+            timeout: Duration.seconds(5),
             memorySize: 256,
         });
         addCommonSetting(lambdaFuncRestAPIAuth);
@@ -360,7 +360,7 @@ export class BackendStack extends cdk.Stack {
             code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "index.handler",
             memorySize: 256,
-            timeout: cdk.Duration.seconds(10),
+            timeout: cdk.Duration.seconds(5),
         });
         addCommonSetting(lambdaFunctionForRestAPI);
 
@@ -371,7 +371,7 @@ export class BackendStack extends cdk.Stack {
             code: lambda.Code.fromAsset(`${__dirname}/dist/federation/slack`),
             handler: "slack.handler",
             memorySize: 256,
-            timeout: cdk.Duration.seconds(10),
+            timeout: cdk.Duration.seconds(3),
         });
         addCommonSetting(lambdaFunctionForSlackFederationRestAPI);
 
@@ -614,7 +614,7 @@ export class BackendStack extends cdk.Stack {
             code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "message.connect",
             runtime: lambda.Runtime.NODEJS_14_X,
-            timeout: Duration.seconds(300),
+            timeout: Duration.seconds(30),
             memorySize: 256,
         });
         addCommonSetting(lambdaFuncMessageConnect);
@@ -624,7 +624,7 @@ export class BackendStack extends cdk.Stack {
             code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "message.disconnect",
             runtime: lambda.Runtime.NODEJS_14_X,
-            timeout: Duration.seconds(300),
+            timeout: Duration.seconds(30),
             memorySize: 256,
         });
         addCommonSetting(lambdaFuncMessageDisconnect);
@@ -634,7 +634,7 @@ export class BackendStack extends cdk.Stack {
             code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "message.message",
             runtime: lambda.Runtime.NODEJS_14_X,
-            timeout: Duration.seconds(300),
+            timeout: Duration.seconds(30),
             memorySize: 256,
         });
         addCommonSetting(lambdaFuncMessageMessage);
@@ -644,7 +644,7 @@ export class BackendStack extends cdk.Stack {
             code: lambda.Code.fromAsset(`${__dirname}/dist`),
             handler: "message.authorize",
             runtime: lambda.Runtime.NODEJS_14_X,
-            timeout: Duration.seconds(300),
+            timeout: Duration.seconds(30),
             memorySize: 256,
         });
         addCommonSetting(lambdaFuncMessageAuth);
