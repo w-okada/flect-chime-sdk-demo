@@ -111,7 +111,7 @@ export const SignIn = () => {
                             await chimeClientState.setVideoInputEnable(true);
                             await chimeClientState.setAudioOutput(defaultAudioOutputDeviceId);
                             await chimeClientState.setAudioOutputEnable(true);
-
+                            await chimeClientState.setBackgroundImagePath("/default/bg1.jpg");
                             await chimeClientState.enterMeeting();
                             console.log("logined4");
                             chimeClientState.startLocalVideoTile();

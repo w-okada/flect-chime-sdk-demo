@@ -1,6 +1,7 @@
 import { Button, CircularProgress } from "@material-ui/core";
 import { Lock } from "@material-ui/icons";
 import React, { useState, useEffect } from "react";
+import { RestAPIEndpoint } from "../../../BackendConfig";
 import { DEFAULT_REGION } from "../../../constants";
 import { useAppState } from "../../../providers/AppStateProvider";
 import { STAGE } from "../../../providers/hooks/useStageManager";
@@ -13,17 +14,16 @@ import { getUserInformation } from "./rest";
 export const SigninFromSlack = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [fail, setFail] = useState(false);
-    const { cognitoClientState, setMessage, setStage, chimeClientState, deviceState, slackRestApiBase, slackToken } = useAppState();
+    const { cognitoClientState, setMessage, setStage, chimeClientState, deviceState, slackToken } = useAppState();
 
     const generateContext = () => {
         return {
-            restApiBaseURL: slackRestApiBase || "",
             token: slackToken || "",
         };
     };
 
     useEffect(() => {
-        console.log("REST ENDPOINT:", slackRestApiBase);
+        console.log("REST ENDPOINT:", RestAPIEndpoint);
         console.log("SLACK TOKEN:", slackToken);
         console.log("Device:::", deviceState);
         if (deviceState.mediaDeviceList.audioinput.length > 0) {
@@ -60,6 +60,7 @@ export const SigninFromSlack = () => {
                 await chimeClientState.setVideoInputEnable(true);
                 await chimeClientState.setAudioOutput(defaultAudioOutputDeviceId);
                 await chimeClientState.setAudioOutputEnable(true);
+                await chimeClientState.setBackgroundImagePath("/default/bg1.jpg");
 
                 await chimeClientState.enterMeeting();
                 console.log("slack login 4");

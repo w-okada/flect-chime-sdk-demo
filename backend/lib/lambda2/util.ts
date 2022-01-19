@@ -1,6 +1,7 @@
 import { CognitoIdentityServiceProvider } from "aws-sdk";
+import { UserInformation } from "./federation/slack/data/userInfo";
+import { Encrypter } from "./federation/slack/encrypter";
 import { HTTPResponseBody } from "./http_request";
-import { getUserInformation } from "./federation/rest";
 
 const provider = new CognitoIdentityServiceProvider();
 
@@ -68,15 +69,15 @@ export const getEmailFromAccessToken = async (accessToken: string) => {
         }
     } else if (tokens.length === 2) {
         if (tokens[0] === "slack") {
-            const getUSerInformationResult = await getUserInformation({
-                restApiBaseURL: "https://slack-chime-connect.herokuapp.com/",
-                token: tokens[1],
+            const urlEncrypter = new Encrypter<UserInformation>({
+                password: process.env.SLACK_APP_DB_PASSWORD || "pass",
+                salt: process.env.SLACK_APP_DB_SALT || "salt",
+                secret: process.env.SLACK_APP_DB_SECRET || "secret",
+                expireSec: 60 * 60, // 60min
             });
-            if (getUSerInformationResult.isFailure()) {
-                throw "invalid token!! fail to fetch";
-            }
-            console.log(getUSerInformationResult.value);
-            return getUSerInformationResult.value.userId;
+            const userInfo = urlEncrypter.decodeInformation(tokens[1]);
+            console.log(`Slack Federated Authentification userInfo: ${JSON.stringify(userInfo)}`);
+            return userInfo.userId;
         } else {
             console.log(`unknown provider ${tokens[0]}`);
             throw `unknown provider ${tokens[0]}`;

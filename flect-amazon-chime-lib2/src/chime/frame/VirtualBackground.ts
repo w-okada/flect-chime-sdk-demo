@@ -54,7 +54,7 @@ export class VirtualBackground implements VideoFrameProcessor {
     constructor() {
         console.log(`[VirtualBackground][constructor] initializing.`);
         const bg = new Image();
-        bg.src = "/bg1.jpg";
+        bg.src = "/default/bg1.jpg";
         bg.onload = () => {
             this.canvasBackground.getContext("2d")!.drawImage(bg, 0, 0, this.canvasBackground.width, this.canvasBackground.height);
         };

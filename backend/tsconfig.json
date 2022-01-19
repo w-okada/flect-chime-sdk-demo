@@ -19,5 +19,5 @@
         "strictPropertyInitialization": false,
         "typeRoots": ["./node_modules/@types"]
     },
-    "exclude": ["cdk.out", "./lib/lambda2/*"]
+    "exclude": ["cdk.out", "./lib/lambda2/*", "./lib/lambda2/federation/slack/*"]
 }

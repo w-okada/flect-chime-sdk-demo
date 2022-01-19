@@ -9,7 +9,7 @@ import { CfnOutput, Duration, ConcreteDependable } from "@aws-cdk/core";
 import * as s3 from "@aws-cdk/aws-s3";
 import { ManagedPolicy, Effect, PolicyStatement } from "@aws-cdk/aws-iam";
 import { Role, ServicePrincipal } from "@aws-cdk/aws-iam";
-import { FRONTEND_LOCAL_DEV, USE_DOCKER, USE_CDN } from "../bin/config";
+import { FRONTEND_LOCAL_DEV, USE_DOCKER, USE_CDN, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, SLACK_SIGNING_SECRET, SLACK_STATE_SECRET, SLACK_APP_DB_PASSWORD, SLACK_APP_DB_SALT, SLACK_APP_DB_SECRET } from "../bin/config";
 import * as ec2 from "@aws-cdk/aws-ec2";
 import * as ecs from "@aws-cdk/aws-ecs";
 import * as logs from "@aws-cdk/aws-logs";
@@ -203,6 +203,18 @@ export class BackendStack extends cdk.Stack {
             removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
         });
 
+        //// (x) SlackFederationAccounts Table
+        const slackFederationAuthsTable = new Table(this, "slackFederationAuthsTable", {
+            tableName: `${id}_SlackFederationAuthsTable`,
+            partitionKey: {
+                name: "TeamId",
+                type: AttributeType.STRING,
+            },
+            readCapacity: 2,
+            writeCapacity: 2,
+            removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
+        });
+
         /////////////////////
         /// Fargate
         /////////////////////
@@ -278,11 +290,14 @@ export class BackendStack extends cdk.Stack {
             meetingTable.grantFullAccess(f);
             attendeeTable.grantFullAccess(f);
             connectionTable.grantFullAccess(f);
+            slackFederationAuthsTable.grantFullAccess(f);
             f.addToRolePolicy(statement);
 
             f.addEnvironment("MEETING_TABLE_NAME", meetingTable.tableName);
             f.addEnvironment("ATTENDEE_TABLE_NAME", attendeeTable.tableName);
             f.addEnvironment("CONNECTION_TABLE_NAME", connectionTable.tableName);
+            f.addEnvironment("SLACK_FEDERATION_AUTHS_TABLE_NAME", slackFederationAuthsTable.tableName);
+
             f.addEnvironment("USER_POOL_ID", userPool.userPoolId);
             f.addEnvironment("VPC_ID", vpc.vpcId);
             f.addEnvironment("SUBNET_ID", vpc.publicSubnets[0].subnetId);
@@ -297,13 +312,22 @@ export class BackendStack extends cdk.Stack {
 
             f.addEnvironment("USERPOOL_ID", userPool.userPoolId);
             f.addEnvironment("USERPOOL_CLIENT_ID", userPoolClient.userPoolClientId);
-            // f.addEnvironment("RESTAPI_ENDPOINT", restApiUrl)    /// Exception(Circular dependency between resources) -> generate from request context in lambda.
+
+            // Slack-Chime Connector (slack access)
+            f.addEnvironment("SLACK_CLIENT_ID", SLACK_CLIENT_ID);
+            f.addEnvironment("SLACK_CLIENT_SECRET", SLACK_CLIENT_SECRET);
+            f.addEnvironment("SLACK_SIGNING_SECRET", SLACK_SIGNING_SECRET);
+            f.addEnvironment("SLACK_STATE_SECRET", SLACK_STATE_SECRET);
+            // Slack-Chime Connector (db access)
+            f.addEnvironment("SLACK_APP_DB_PASSWORD", SLACK_APP_DB_PASSWORD);
+            f.addEnvironment("SLACK_APP_DB_SALT", SLACK_APP_DB_SALT);
+            f.addEnvironment("SLACK_APP_DB_SECRET", SLACK_APP_DB_SECRET);
 
             //// DEMO URL
             if (USE_CDN) {
-                f.addEnvironment("DEMO_ENDPOINT", `https://${cdn!.distributionDomainName}/index.html`);
+                f.addEnvironment("DEMO_ENDPOINT", `https://${cdn!.distributionDomainName}`);
             } else {
-                f.addEnvironment("DEMO_ENDPOINT", `https://${bucket.bucketDomainName}/index.html`);
+                f.addEnvironment("DEMO_ENDPOINT", `https://${bucket.bucketDomainName}`);
             }
 
             f.addLayers(nodeModulesLayer);
@@ -339,6 +363,17 @@ export class BackendStack extends cdk.Stack {
             timeout: cdk.Duration.seconds(10),
         });
         addCommonSetting(lambdaFunctionForRestAPI);
+
+        //// (2) Function For SlackFederation API
+        const lambdaFunctionForSlackFederationRestAPI: lambda.Function = new lambda.Function(this, "funcSlackFederation", {
+            functionName: `${id}_slackFederationRoot`,
+            runtime: lambda.Runtime.NODEJS_14_X,
+            code: lambda.Code.fromAsset(`${__dirname}/dist/federation/slack`),
+            handler: "slack.handler",
+            memorySize: 256,
+            timeout: cdk.Duration.seconds(10),
+        });
+        addCommonSetting(lambdaFunctionForSlackFederationRestAPI);
 
         ///////////////////////////////
         //// API Gateway
@@ -537,6 +572,30 @@ export class BackendStack extends cdk.Stack {
             operationName: `${id}_postOperation`,
         });
 
+        ///// (b) slack federation
+        const apiSlack = restApi.root.addResource("slack");
+        const apiSlackOAuthRedirect = apiSlack.addResource("oauth_redirect");
+        const apiSlackInstall = apiSlack.addResource("install");
+        const apiSlackEvents = apiSlack.addResource("events");
+        const apiSlackApi = apiSlack.addResource("api");
+        const apiSlackOperation = apiSlackApi.addResource("{operation}");
+        addCorsOptions(apiSlackOAuthRedirect);
+        addCorsOptions(apiSlackInstall);
+        addCorsOptions(apiSlackEvents);
+        addCorsOptions(apiSlackOperation);
+        apiSlackOAuthRedirect.addMethod("GET", new LambdaIntegration(lambdaFunctionForSlackFederationRestAPI), {
+            operationName: `${id}_slackOAuthRedirect`,
+        });
+        apiSlackInstall.addMethod("GET", new LambdaIntegration(lambdaFunctionForSlackFederationRestAPI), {
+            operationName: `${id}_slackInstall`,
+        });
+        apiSlackEvents.addMethod("POST", new LambdaIntegration(lambdaFunctionForSlackFederationRestAPI), {
+            operationName: `${id}_slackEvents`,
+        });
+        apiSlackOperation.addMethod("POST", new LambdaIntegration(lambdaFunctionForSlackFederationRestAPI), {
+            operationName: `${id}_slackApi`,
+        });
+
         /////////
         // WebSocket
         // https://github.com/aws-samples/aws-cdk-examples/pull/325/files
@@ -682,6 +741,11 @@ export class BackendStack extends cdk.Stack {
         dependencies.add(disconnectRoute);
         dependencies.add(messageRoute);
         deployment.node.addDependency(dependencies);
+
+        /////////////////////////////////////////////
+        /// add env info after api gateway
+        ////////////////////////////////////////////
+        // lambdaFunctionForSlackFederationRestAPI.addEnvironment("RESTAPI_ENDPOINT", restApi.url); /// Exception(Circular dependency between resources) -> generate from request context in lambda.
 
         ///////////////////////////////
         //// Output

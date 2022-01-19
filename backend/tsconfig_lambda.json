@@ -2,11 +2,12 @@
     "compilerOptions": {
         "target": "ES2018",
         "module": "commonjs",
+        "esModuleInterop": true,
         "lib": ["es2018"],
         "outDir": "./lib/dist",
-        "strict": true,
+        // "strict": true,
+        // "strictNullChecks": true,
         "noImplicitAny": true,
-        "strictNullChecks": true,
         "noImplicitThis": true,
         "alwaysStrict": true,
         "noUnusedLocals": false,
@@ -19,5 +20,5 @@
         "strictPropertyInitialization": false,
         "typeRoots": ["./node_modules/@types"]
     },
-    "include": ["./lib/lambda2/*"]
+    "include": ["./lib/lambda2/*", "./lib/lambda2/federation/slack/*"]
 }

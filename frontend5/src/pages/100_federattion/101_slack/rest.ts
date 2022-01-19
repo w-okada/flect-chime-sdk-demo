@@ -1,14 +1,11 @@
+import { RestAPIEndpoint } from "../../../BackendConfig";
 import { Failure, Result, Success } from "../../../common/exception";
 import { SlackHTTPGetUserInformationResponse } from "./http_request";
 
 export type SlackRestApiContext = {
-    restApiBaseURL: string;
     token: string;
 };
 
-// export type SlackGetUserInformationRequest = {
-//     dummy:string
-// };
 export type SlackGetUserInformationResponse = {
     roomKey: string;
     roomName: string;
@@ -25,7 +22,7 @@ export type SlackGetUserInformationResponse = {
 
 // export const createMeeting = async (context: SlackRestApiContext): Promise<Result<SlackGetUserInformationResponse, Error>> => {
 export const getUserInformation = async (context: SlackRestApiContext): Promise<Result<SlackGetUserInformationResponse, Error>> => {
-    const url = `${context.restApiBaseURL}api/decodeInformation`;
+    const url = `${RestAPIEndpoint}slack/api/decodeInformation`;
     const httpRequest = {
         token: `${context.token}`,
     };

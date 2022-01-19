@@ -1,6 +1,4 @@
 import { getEmailFromAccessToken } from "./util";
-import { IAM } from "aws-sdk";
-import { getUserInformation } from "./federation/rest";
 /**
  * generate policy. subfunction of authorizer.
  * @param {*} principalId

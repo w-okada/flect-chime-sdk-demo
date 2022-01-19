@@ -38,7 +38,6 @@ interface AppStateValue {
     resolveMessage: () => void;
 
     /** Federation */
-    slackRestApiBase: string | null;
     slackToken: string | null;
 }
 
@@ -57,9 +56,6 @@ const query = new URLSearchParams(window.location.search);
 export const AppStateProvider = ({ children }: Props) => {
     const slackToken = useMemo(() => {
         return query.get("slack_token") || null;
-    }, []);
-    const slackRestApiBase = useMemo(() => {
-        return query.get("restapi_endpoint_base") || null;
     }, []);
 
     /** GUI Control*/
@@ -124,7 +120,6 @@ export const AppStateProvider = ({ children }: Props) => {
         resolveMessage,
 
         /** Federation */
-        slackRestApiBase,
         slackToken,
     };
 
