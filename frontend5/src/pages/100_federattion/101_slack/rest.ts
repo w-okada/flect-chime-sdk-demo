@@ -37,11 +37,13 @@ export const getUserInformation = async (context: SlackRestApiContext): Promise<
     });
     const response = await res.json();
     console.log(response);
-    if (response.success) {
+    if (response.success && response.data) {
+        // console.log(`getUserInformation success`);
         const httpResponse = response.data as SlackHTTPGetUserInformationResponse;
         const returnValue: SlackGetUserInformationResponse = { ...httpResponse };
         return new Success(returnValue);
     } else {
+        // console.log(`getUserInformation fail`);
         return new Failure(response);
     }
 };
