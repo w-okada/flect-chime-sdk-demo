@@ -119,7 +119,12 @@ export const SigninFromSlack = () => {
             console.log("setDevices....2");
             await chimeClientState.setAudioInputEnable(true);
             console.log("setDevices....3");
-            await chimeClientState.setVideoInput(defaultVideoInputDeviceId);
+            try {
+                await chimeClientState.setVideoInput(defaultVideoInputDeviceId);
+            } catch (e) {
+                setMessage("Exception", "Device Setting Exception", [`${e}`, `This may occur when other application use the device.`, `Video device is set to None.`]);
+                await chimeClientState.setVideoInput(null);
+            }
             console.log("setDevices....4");
             await chimeClientState.setVirtualBackgroundSegmentationType("GoogleMeetTFLite");
             console.log("setDevices....5");
