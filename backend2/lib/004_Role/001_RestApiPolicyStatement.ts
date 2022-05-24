@@ -2,7 +2,7 @@
 import { aws_cognito as cognito } from "aws-cdk-lib"
 import { aws_iam as iam } from "aws-cdk-lib"
 
-export const createRestApiPolicyStatement = (userPool: cognito.UserPool) => {
+export const createRestApiPolicyStatement = (userPoolArn: string) => {
     const restApiPolicyStatement = new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
@@ -33,7 +33,7 @@ export const createRestApiPolicyStatement = (userPool: cognito.UserPool) => {
             "iam:PassRole"
         ],
         resources: [
-            userPool.userPoolArn,
+            userPoolArn,
             "arn:*:chime::*:meeting/*",
             "arn:aws:execute-api:*:*:**/@connections/*",
             "arn:aws:ecs:*",

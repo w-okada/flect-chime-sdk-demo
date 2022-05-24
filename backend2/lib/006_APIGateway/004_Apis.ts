@@ -2,13 +2,13 @@ import { aws_apigateway as api } from "aws-cdk-lib"
 import { aws_lambda as lambda } from "aws-cdk-lib";
 import { addCorsOptions } from "./100_addCorsOptions";
 
-export const createApis = (id: string, restApi: api.RestApi, authorizer: api.CfnAuthorizer, lambdaFunctionForRestAPI: lambda.Function, corsOrigin: string) => {
+export const createApis = (id: string, restApi: api.RestApi, authorizerId: string, lambdaFunctionForRestAPI: lambda.Function, corsOrigin: string) => {
 
     // (1) basic parameters
     const basicParams = {
         authorizationType: api.AuthorizationType.CUSTOM,
         authorizer: {
-            authorizerId: authorizer.ref,
+            authorizerId: authorizerId,
         },
     }
 

@@ -1,7 +1,7 @@
 import { aws_lambda as lambda, Duration } from "aws-cdk-lib"
 import { Construct } from 'constructs';
 
-export const createLambdaForWebsocket = (scope: Construct, id: string) => {
+export const createLambdaForWebsocket = (scope: Construct) => {
     // (1) Base Parameters
     const baseParameters = {
         code: lambda.Code.fromAsset(`${__dirname}/../dist`),

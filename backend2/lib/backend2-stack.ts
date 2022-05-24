@@ -41,15 +41,15 @@ export class Backend2Stack extends Stack {
     const { slackFederationAuthsTable } = createSlackFederationAuthsTable(this, id)
 
     // (4) IAM
-    const { restApiPolicyStatement } = createRestApiPolicyStatement(userPool)
+    const { restApiPolicyStatement } = createRestApiPolicyStatement(userPool.userPoolArn)
 
     // (5) Lambda
     //// (5-1) Layer
     const { nodeModulesLayer } = createNodeModulesLayer(this, id)
     //// (5-2) Lambda
-    const { lambdaFuncRestAPIAuth, lambdaFunctionForRestAPI, lambdaFunctionForSlackFederationRestAPI } = createLambdas(this, id);
+    const { lambdaFuncRestAPIAuth, lambdaFunctionForRestAPI, lambdaFunctionForSlackFederationRestAPI } = createLambdas(this);
     //// (5-3) Lambda For Websocket
-    const { lambdaFuncMessageConnect, lambdaFuncMessageDisconnect, lambdaFuncMessageMessage, lambdaFuncMessageAuth } = createLambdaForWebsocket(this, id)
+    const { lambdaFuncMessageConnect, lambdaFuncMessageDisconnect, lambdaFuncMessageMessage, lambdaFuncMessageAuth } = createLambdaForWebsocket(this)
     //// (5-4) Configure
     const configureFunctions = (func: lambda.Function) => {
       // (a-1) Table Access
@@ -102,10 +102,10 @@ export class Backend2Stack extends Stack {
 
     // (6) API Gateway
     //// (6-1) APIs
-    const { roleForAPIAuthorizer } = createRoleForAPIAuthorizer(this, lambdaFuncRestAPIAuth)
+    const { roleForAPIAuthorizer } = createRoleForAPIAuthorizer(this, lambdaFuncRestAPIAuth.functionArn)
     const { restApi } = createRestApi(this, id)
     const authorizerUri = `arn:aws:apigateway:${this.region}:lambda:path/2015-03-31/functions/${lambdaFuncRestAPIAuth.functionArn}/invocations`
-    const { authorizer } = createAuthorizer(this, id, roleForAPIAuthorizer, restApi, authorizerUri)
+    const { authorizer } = createAuthorizer(this, id, roleForAPIAuthorizer.roleArn, restApi.restApiId, authorizerUri)
     let corsOrigin
     if (FRONTEND_LOCAL_DEV) {
       corsOrigin = "'https://localhost:3000'";
@@ -118,14 +118,14 @@ export class Backend2Stack extends Stack {
       }
     }
 
-    createApis(id, restApi, authorizer, lambdaFunctionForRestAPI, corsOrigin)
+    createApis(id, restApi, authorizer.ref, lambdaFunctionForRestAPI, corsOrigin)
     createApisForSlack(id, restApi, lambdaFunctionForSlackFederationRestAPI, corsOrigin)
     //// (6-2) Websocket
-    const { roleForWebsocketAuthorizer } = createRoleForWebsocketAuthorizer(this, lambdaFuncMessageAuth)
+    const { roleForWebsocketAuthorizer } = createRoleForWebsocketAuthorizer(this, lambdaFuncMessageAuth.functionArn)
     const { webSocketApi } = createWebsocket(this)
     const websocketAuthorizerUri = `arn:aws:apigateway:${this.region}:lambda:path/2015-03-31/functions/${lambdaFuncMessageAuth.functionArn}/invocations`
-    const { websocketAuthorizer } = createWebsocketAuthorizer(this, id, roleForWebsocketAuthorizer, webSocketApi, websocketAuthorizerUri)
-    createMessages(this, webSocketApi, roleForAPIAuthorizer, this.region, lambdaFuncMessageConnect.functionArn, lambdaFuncMessageDisconnect.functionArn, lambdaFuncMessageMessage.functionArn, websocketAuthorizer.ref)
+    const { websocketAuthorizer } = createWebsocketAuthorizer(this, id, roleForWebsocketAuthorizer.roleArn, webSocketApi.ref, websocketAuthorizerUri)
+    createMessages(this, webSocketApi.ref, roleForAPIAuthorizer.roleArn, this.region, lambdaFuncMessageConnect.functionArn, lambdaFuncMessageDisconnect.functionArn, lambdaFuncMessageMessage.functionArn, websocketAuthorizer.ref)
 
 
     ///////////////////////////////
