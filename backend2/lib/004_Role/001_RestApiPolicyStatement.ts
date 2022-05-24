@@ -1,5 +1,4 @@
 
-import { aws_cognito as cognito } from "aws-cdk-lib"
 import { aws_iam as iam } from "aws-cdk-lib"
 
 export const createRestApiPolicyStatement = (userPoolArn: string) => {

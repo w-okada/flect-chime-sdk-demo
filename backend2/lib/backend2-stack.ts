@@ -121,11 +121,11 @@ export class Backend2Stack extends Stack {
     createApis(id, restApi, authorizer.ref, lambdaFunctionForRestAPI, corsOrigin)
     createApisForSlack(id, restApi, lambdaFunctionForSlackFederationRestAPI, corsOrigin)
     //// (6-2) Websocket
-    const { roleForWebsocketAuthorizer } = createRoleForWebsocketAuthorizer(this, lambdaFuncMessageAuth.functionArn)
+    const { roleForWebsocketAuthorizer } = createRoleForWebsocketAuthorizer(this, lambdaFuncMessageAuth.functionArn, lambdaFuncMessageConnect.functionArn, lambdaFuncMessageDisconnect.functionArn, lambdaFuncMessageMessage.functionArn)
     const { webSocketApi } = createWebsocket(this)
     const websocketAuthorizerUri = `arn:aws:apigateway:${this.region}:lambda:path/2015-03-31/functions/${lambdaFuncMessageAuth.functionArn}/invocations`
     const { websocketAuthorizer } = createWebsocketAuthorizer(this, id, roleForWebsocketAuthorizer.roleArn, webSocketApi.ref, websocketAuthorizerUri)
-    createMessages(this, webSocketApi.ref, roleForAPIAuthorizer.roleArn, this.region, lambdaFuncMessageConnect.functionArn, lambdaFuncMessageDisconnect.functionArn, lambdaFuncMessageMessage.functionArn, websocketAuthorizer.ref)
+    createMessages(this, webSocketApi.ref, roleForWebsocketAuthorizer.roleArn, this.region, lambdaFuncMessageConnect.functionArn, lambdaFuncMessageDisconnect.functionArn, lambdaFuncMessageMessage.functionArn, websocketAuthorizer.ref)
 
 
     ///////////////////////////////
