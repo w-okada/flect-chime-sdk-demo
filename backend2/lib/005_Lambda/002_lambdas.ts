@@ -4,7 +4,7 @@ import { Construct } from 'constructs';
 export const createLambdas = (scope: Construct, id: string) => {
     // (1) Base Parameters
     const baseParameters = {
-        code: lambda.Code.fromAsset(`${__dirname}/dist`),
+        code: lambda.Code.fromAsset(`${__dirname}/../dist`),
         runtime: lambda.Runtime.NODEJS_14_X,
         timeout: Duration.seconds(5),
         memorySize: 256,

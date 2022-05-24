@@ -106,8 +106,20 @@ export class Backend2Stack extends Stack {
     const { restApi } = createRestApi(this, id)
     const authorizerUri = `arn:aws:apigateway:${this.region}:lambda:path/2015-03-31/functions/${lambdaFuncRestAPIAuth.functionArn}/invocations`
     const { authorizer } = createAuthorizer(this, id, roleForAPIAuthorizer, restApi, authorizerUri)
-    createApis(id, restApi, authorizer, lambdaFunctionForRestAPI)
-    createApisForSlack(id, restApi, lambdaFunctionForSlackFederationRestAPI)
+    let corsOrigin
+    if (FRONTEND_LOCAL_DEV) {
+      corsOrigin = "'https://localhost:3000'";
+      // origin = "'https://192.168.0.4:3000'";
+    } else {
+      if (USE_CDN) {
+        corsOrigin = `'https://${frontendCdn!.distributionDomainName}'`;
+      } else {
+        corsOrigin = `'https://${frontendBucket.bucketDomainName}'`;
+      }
+    }
+
+    createApis(id, restApi, authorizer, lambdaFunctionForRestAPI, corsOrigin)
+    createApisForSlack(id, restApi, lambdaFunctionForSlackFederationRestAPI, corsOrigin)
     //// (6-2) Websocket
     const { roleForWebsocketAuthorizer } = createRoleForWebsocketAuthorizer(this, lambdaFuncMessageAuth)
     const { webSocketApi } = createWebsocket(this)

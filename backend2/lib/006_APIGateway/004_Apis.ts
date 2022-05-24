@@ -1,7 +1,8 @@
 import { aws_apigateway as api } from "aws-cdk-lib"
 import { aws_lambda as lambda } from "aws-cdk-lib";
+import { addCorsOptions } from "./100_addCorsOptions";
 
-export const createApis = (id: string, restApi: api.RestApi, authorizer: api.CfnAuthorizer, lambdaFunctionForRestAPI: lambda.Function) => {
+export const createApis = (id: string, restApi: api.RestApi, authorizer: api.CfnAuthorizer, lambdaFunctionForRestAPI: lambda.Function, corsOrigin: string) => {
 
     // (1) basic parameters
     const basicParams = {
@@ -80,5 +81,21 @@ export const createApis = (id: string, restApi: api.RestApi, authorizer: api.Cfn
     apiOperation.addMethod("POST", new api.LambdaIntegration(lambdaFunctionForRestAPI), {
         operationName: `${id}_postOperation`,
     });
+
+
+
+    // (3) CORS Configuration
+    [root,
+        apiMeetings,
+        apiMeeting,
+        apiAttendees,
+        apiAttendee,
+        apiAttendeeOperations,
+        apiAttendeeOperation,
+        apiLogs,
+        apiOperations,
+        apiOperation,].forEach(func => {
+            addCorsOptions(func, corsOrigin)
+        })
 
 }

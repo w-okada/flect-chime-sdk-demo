@@ -1,7 +1,8 @@
 import { aws_apigateway as api } from "aws-cdk-lib"
 import { aws_lambda as lambda } from "aws-cdk-lib";
+import { addCorsOptions } from "./100_addCorsOptions";
 
-export const createApisForSlack = (id: string, restApi: api.RestApi, lambdaFunctionForSlackFederationRestAPI: lambda.Function) => {
+export const createApisForSlack = (id: string, restApi: api.RestApi, lambdaFunctionForSlackFederationRestAPI: lambda.Function, corsOrigin: string) => {
 
     // (2) APIs
     //// (2-1) Get Root
@@ -26,5 +27,8 @@ export const createApisForSlack = (id: string, restApi: api.RestApi, lambdaFunct
         operationName: `${id}_slackApi`,
     });
 
-
+    // (3) CORS Configuration
+    [apiSlackOAuthRedirect, apiSlackInstall, apiSlackEvents, apiSlackOperation].forEach(func => {
+        addCorsOptions(func, corsOrigin)
+    })
 }
