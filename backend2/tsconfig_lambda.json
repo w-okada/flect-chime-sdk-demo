@@ -2,11 +2,10 @@
     "compilerOptions": {
         "target": "ES2018",
         "module": "commonjs",
+        "esModuleInterop": true,
         "lib": ["es2018"],
-        "declaration": true,
-        "strict": true,
+        "outDir": "./lib/dist",
         "noImplicitAny": true,
-        "strictNullChecks": true,
         "noImplicitThis": true,
         "alwaysStrict": true,
         "noUnusedLocals": false,
@@ -17,9 +16,7 @@
         "inlineSources": true,
         "experimentalDecorators": true,
         "strictPropertyInitialization": false,
-        "typeRoots": ["./node_modules/@types"],
-        "outDir": "./dist"
+        "typeRoots": ["./node_modules/@types"]
     },
-    "include": ["./bin", "./lib", "./test"],
-    "exclude": ["node_modules", "cdk.out", "./lib/dist", "./lib/005_Lambda/layer", "./lib/lambda2"]
+    "include": ["./lib/lambda2/**/*.ts"]
 }
