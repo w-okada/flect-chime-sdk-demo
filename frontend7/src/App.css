@@ -1,0 +1,24 @@
+@import "./AppTailwind.css";
+@import url("https://fonts.googleapis.com/css2?family=Chicle&family=Poppins:ital,wght@0,200;0,400;0,600;1,200;1,400;1,600&display=swap");
+@import "./Dialog.css";
+
+:root {
+    --text-color: #333;
+    --company-color1: rgba(64, 119, 187, 1);
+    --company-color2: rgba(29, 47, 78, 1);
+    --company-color3: rgba(255, 255, 255, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+html {
+    font-size: 16px;
+}
+body {
+    color: var(--text-color);
+    background: linear-gradient(45deg, var(--company-color1) 0, 5%, var(--company-color2) 5% 10%, var(--company-color3) 10% 80%, var(--company-color1) 80% 85%, var(--company-color2) 85% 100%);
+}
