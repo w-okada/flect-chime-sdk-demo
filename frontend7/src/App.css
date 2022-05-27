@@ -1,6 +1,7 @@
-@import "./AppTailwind.css";
+@import "./000_css/AppTailwind.css";
 @import url("https://fonts.googleapis.com/css2?family=Chicle&family=Poppins:ital,wght@0,200;0,400;0,600;1,200;1,400;1,600&display=swap");
-@import "./Dialog.css";
+@import "./000_css/Dialog.css";
+@import "./000_css/Header.css";
 
 :root {
     --text-color: #333;
@@ -19,6 +20,8 @@ html {
     font-size: 16px;
 }
 body {
+    height: 100%;
+    width: 100%;
     color: var(--text-color);
     background: linear-gradient(45deg, var(--company-color1) 0, 5%, var(--company-color2) 5% 10%, var(--company-color3) 10% 80%, var(--company-color1) 80% 85%, var(--company-color2) 85% 100%);
 }

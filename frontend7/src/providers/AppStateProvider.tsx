@@ -1,36 +1,42 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { ReactNode } from "react";
 import { MessageState, MessageType, useMessageState } from "./hooks/useMessageState";
-import { STAGE, useStageManager, FOR_FEDERATION } from "./hooks/useStageManager";
 import { RestAPIEndpoint, UserPoolClientId, UserPoolId, WebSocketEndpoint } from "../BackendConfig";
-import { DeviceState, MediaDeviceInfoList, useDeviceState } from "./hooks/useDeviceState";
-import { useWindowSizeChangeListener, WindowSize } from "./hooks/useWindowSizeChange";
+
+import { useWindowSizeChangeListener, WindowSizeState } from "./hooks/011_useWindowSizeChange";
 // import { AttendeeState, CognitoClient, DrawingData, FlectChimeClient, GameState, RealtimeData, useAmongUsServer, VideoTileState, WebSocketWhiteboardClient } from "@dannadori/flect-amazon-chime-lib2";
 // import { ChimeClientState, useChimeClient } from "./hooks/useChimeClient";
-import { CognitoClientState, useCognitoClient } from "./hooks/useCognitoClient";
+import { CognitoClientState, useCognitoClient } from "./hooks/000_useCognitoClient";
 import { FrontendState, useFrontend } from "./hooks/useFrontend";
 import { useWhiteboardClient, WhiteboardClientState } from "./hooks/useWhiteBoardClient";
+import { DeviceInfoStateAndMethods, useDeviceState } from "./hooks/010_useDeviceState";
+import { SignInType, StageManagerStateAndMethods, useStageManager } from "./hooks/020_useStageManager";
 
 type Props = {
     children: ReactNode;
 };
 
 interface AppStateValue {
+    /** (000) Clients */
+    cognitoClientState: CognitoClientState;
+
+    /** (010) Environment State */
+    deviceState: DeviceInfoStateAndMethods;
+    windowSizeState: WindowSizeState;
+
+    /** (020) App State*/
+    stageState: StageManagerStateAndMethods;
+
     /** GUI Control*/
     /**** For WindowSizeChange */
-    windowSize: WindowSize;
-    /**** For StageManager */
-    stage: STAGE | FOR_FEDERATION;
-    setStage: (stage: STAGE | FOR_FEDERATION) => void;
     /**** Other GUI Props */
     frontendState: FrontendState;
 
     /** Clients */
-    cognitoClientState: CognitoClientState;
+
     // chimeClientState: ChimeClientState;
     // whiteboardClientState: WhiteboardClientState;
     /** For Device State */
-    deviceState: DeviceState;
 
     /** For Message*/
     messageState: MessageState;
@@ -54,21 +60,45 @@ export const useAppState = (): AppStateValue => {
 const query = new URLSearchParams(window.location.search);
 
 export const AppStateProvider = ({ children }: Props) => {
+    // (1) Generate State
+    /** (000) Clients */
+    //// (000) cognito
+    const cognitoClientState = useCognitoClient({ userPoolId: UserPoolId, userPoolClientId: UserPoolClientId });
+    //// (001) chime
+
+    /** (010) Environment State */
+    //// (010) device
+    const deviceState = useDeviceState();
+    //// (011) window size
+    const windowSizeState = useWindowSizeChangeListener();
+
+    /** (020) App State*/
+    //// (020) stage
     const slackToken = useMemo(() => {
         return query.get("slack_token") || null;
     }, []);
+    const stageState = useStageManager({
+        signInType: slackToken ? SignInType.slack : SignInType.normal,
+    });
+
+    // (2) useEffect
+    /** (000) Clients */
+    /** (010) Environment State */
+    //// (010) device
+    useEffect(() => {
+        if (stageState.signInComplete) {
+            deviceState.reloadRealDevices();
+        }
+    }, [stageState.signInComplete]);
 
     /** GUI Control*/
     /**** For WindowSizeChange */
-    const { windowSize } = useWindowSizeChangeListener();
     /**** For StageManager */
-    const { stage, setStage } = useStageManager({ initialStage: (query.get("stage") as STAGE) ? (query.get("stage") as STAGE) : slackToken ? FOR_FEDERATION.SLACK_SIGNUP : null });
     /**** Other GUI Props */
     const frontendState = useFrontend();
 
     /** Clients */
     // const chimeClientState = useChimeClient({ RestAPIEndpoint: RestAPIEndpoint });
-    const cognitoClientState = useCognitoClient({ userPoolId: UserPoolId, userPoolClientId: UserPoolClientId });
     // useEffect(() => {
     //     if (cognitoClientState.userId && cognitoClientState.idToken && cognitoClientState.accessToken && cognitoClientState.refreshToken) {
     //         chimeClientState.initialize(cognitoClientState.userId, cognitoClientState.idToken, cognitoClientState.accessToken, cognitoClientState.refreshToken);
@@ -84,7 +114,6 @@ export const AppStateProvider = ({ children }: Props) => {
     // });
 
     /** For Device State */
-    const deviceState = useDeviceState();
 
     /** For Message*/
     const { messageState, setMessage, resolveMessage } = useMessageState();
@@ -98,21 +127,17 @@ export const AppStateProvider = ({ children }: Props) => {
     // };
 
     const providerValue = {
-        /** GUI Control*/
-        /**** For WindowSizeChange */
-        windowSize,
-        /**** For StageManager */
-        stage,
-        setStage,
-        /**** Other GUI Props */
-        frontendState,
-
-        /** For Credential */
+        /** (000) Clients */
         cognitoClientState,
-        // chimeClientState,
-        // whiteboardClientState,
-        /** For Device State */
+
+        /** (010) Environment State */
         deviceState,
+        windowSizeState,
+
+        /** (020) App State*/
+        stageState,
+
+        frontendState,
 
         /** For Message*/
         messageState,

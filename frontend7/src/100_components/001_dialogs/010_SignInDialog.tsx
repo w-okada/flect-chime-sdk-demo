@@ -96,6 +96,10 @@ export const SignInDialog = (props: SignInDialogProps) => {
                         case "UserNotFoundException":
                             console.warn("未登録のユーザ");
                             break;
+                        case "InvalidParameterException":
+                            console.warn("不正なパラメータ");
+                            break;
+
                         default:
                             console.error("Unknown Exception");
                     }

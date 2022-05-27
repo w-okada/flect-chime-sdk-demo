@@ -1,0 +1,56 @@
+:root {
+    --header-background-color: var(--company-color1);
+    --header-border-color: var(--company-color2);
+    --header-item-background-color: var(--company-color2);
+}
+.header-container {
+    height: 1.8rem;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background: var(--header-background-color);
+    border-bottom: 2px solid var(--header-border-color);
+    display: flex;
+    justify-content: space-between;
+    .header-container-left {
+        height: 100%;
+        display: flex;
+        margin-left: 0px;
+        flex-grow: 0;
+    }
+    .header-container-center {
+        flex-grow: 1;
+        display: flex;
+        justify-content: flex-start;
+    }
+    .header-container-right {
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+    }
+}
+
+.header-item-container {
+    height: 100%;
+    margin-left: 3px;
+    margin-right: 3px;
+    display: flex;
+    align-cntent: center;
+    .header-item-application-title {
+        height: 100%;
+        /* font-family: "Chicle", cursive; */
+        font-size: 1rem;
+        top: 2px;
+        font-weight: 600;
+    }
+    .header-item {
+        height: 100%;
+    }
+}
+.header-item-selectable-icon-active {
+    background: #ffff00;
+    color: #ff0000;
+}
+.header-item-selectable-icon {
+    background: #ffffff;
+    color: #ffff00;
+}

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 
 import "./App.css";
 
@@ -20,12 +20,12 @@ library.add(fas, far, fab);
 // import { MeetingRoom } from "./pages/030_meetingRoom/MeetingRoom";
 // import { SigninFromSlack } from "./pages/100_federattion/101_slack/101_SigninFromSlack";
 import { AppStateProvider, useAppState } from "./providers/AppStateProvider";
-import { FOR_FEDERATION, STAGE } from "./providers/hooks/useStageManager";
 import { SignInDialog, SignInDialogProps } from "./100_components/001_dialogs/010_SignInDialog";
+import { Header } from "./100_components/002_header/010_Header";
 
 const Router = () => {
-    const { stage, cognitoClientState } = useAppState();
-    console.log("STAGE:::", stage);
+    const { stageState, cognitoClientState } = useAppState();
+    console.log("STAGE:::", stageState);
     // const page = useMemo(() => {
     //     switch (stage) {
     //         case "SIGNIN":
@@ -72,12 +72,13 @@ const Router = () => {
         changePassword: cognitoClientState.changePassword,
 
         signInSucceeded: () => {
+            stageState.setSignInComplete(true);
             console.log("sign in succeeded!!");
         },
     };
     return (
         <>
-            <div>Flect Co., Ltd.</div>
+            <Header></Header>
             <SignInDialog {...singInProps}></SignInDialog>
         </>
     );
