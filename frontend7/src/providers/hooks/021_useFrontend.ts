@@ -7,6 +7,10 @@ export const ScreenType = {
 export type ScreenType = typeof ScreenType[keyof typeof ScreenType];
 
 export type FrontendState = {
+    // (1) User Information
+    username: string
+    setUserName: (name: string) => void
+    // (2) GUI Control
     screenType: ScreenType;
     setScreenType: (v: ScreenType) => void;
     sideBarOpen: boolean;
@@ -21,6 +25,11 @@ export type FrontendState = {
 };
 
 export const useFrontend = () => {
+    // (1) User Information
+    const [username, setUserName] = useState<string>("")
+
+
+    // (2) GUI Control
     const [screenType, setScreenType] = useState<ScreenType>(ScreenType.FeatureView);
     const [settingDialogOpen, setSettingDialogOpen] = useState(false);
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
@@ -28,6 +37,11 @@ export const useFrontend = () => {
     const [attendeesViewOpen, setAttendeesViewOpen] = useState(false);
 
     const returnValue: FrontendState = {
+        // (1) User Information
+        username,
+        setUserName,
+
+        // (2) GUI Control
         screenType,
         setScreenType,
         sideBarOpen,

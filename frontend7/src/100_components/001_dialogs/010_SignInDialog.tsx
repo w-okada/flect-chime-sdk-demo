@@ -10,10 +10,12 @@ export type SignInDialogProps = {
     resendVerification: (userId: string) => Promise<void>;
     sendVerificationCodeForChangePassword: (userId: string) => Promise<void>;
     changePassword: (userId: string, verifycode: string, password: string) => Promise<void>;
-    signInSucceeded: () => void;
+    signInSucceeded: (username: string) => void;
 };
 
 export const SignInDialog = (props: SignInDialogProps) => {
+    // (1) Control
+    //// (1-1) Tab control
     const SignInDialogStates = {
         signIn: "signIn",
         signUp: "signUp",
@@ -24,11 +26,12 @@ export const SignInDialog = (props: SignInDialogProps) => {
 
     const [state, setState] = useState<SignInDialogStates>(SignInDialogStates.signIn);
 
-    // () Request to send verify code
+    // (2) Action
+    // (2-1) Request to send verify code
     const requestVerifyCode = async () => {
         const email = (document.getElementById("signin-dialog-email") as HTMLInputElement).value;
         switch (state) {
-            // () Resend for first verification
+            // (2-1-1) Resend for first verification
             case SignInDialogStates.verify:
                 try {
                     await props.resendVerification(email);
@@ -50,7 +53,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
                 }
 
                 break;
-            // () Send for Change Password
+            // (2-1-2) Send for Change Password
             case SignInDialogStates.forgot:
                 try {
                     await props.sendVerificationCodeForChangePassword(email);
@@ -76,17 +79,18 @@ export const SignInDialog = (props: SignInDialogProps) => {
         }
     };
 
-    // () Operations
+    //// (2-2) Main Operation
     const onSubmit = async () => {
         const email = (document.getElementById("signin-dialog-email") as HTMLInputElement).value;
         const password = (document.getElementById("signin-dialog-password") as HTMLInputElement).value;
         const code = (document.getElementById("signin-dialog-verify-code") as HTMLInputElement).value;
+        const username = (document.getElementById("signin-dialog-username") as HTMLInputElement).value;
         switch (state) {
             // () Sign In
             case SignInDialogStates.signIn:
                 try {
                     await props.signIn(email, password);
-                    props.signInSucceeded();
+                    props.signInSucceeded(username);
                 } catch (exception: any) {
                     console.warn("Sign In Exception", JSON.stringify(exception));
                     switch (exception.code) {
@@ -252,6 +256,11 @@ export const SignInDialog = (props: SignInDialogProps) => {
                     <div className={([SignInDialogStates.signIn, SignInDialogStates.signUp, SignInDialogStates.forgot] as string[]).includes(state) ? `dialog-input-controls` : `dialog-input-controls hide`}>
                         <input type="password" id="signin-dialog-password" className="input-text" name="password" placeholder="password" autoComplete={state == SignInDialogStates.signIn ? "current-password" : "new-password"} />
                         <label htmlFor="password">{state == SignInDialogStates.signIn ? "Password" : "New Passowrd"}</label>
+                    </div>
+
+                    <div className={([SignInDialogStates.signIn] as string[]).includes(state) ? `dialog-input-controls` : `dialog-input-controls hide`}>
+                        <input type="text" id="signin-dialog-username" className="input-text" name="username" placeholder="username" autoComplete="username" />
+                        <label htmlFor="username">username(displayed in meeting)</label>
                     </div>
 
                     <div className="dialog-input-controls align-center">

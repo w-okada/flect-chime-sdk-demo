@@ -7,7 +7,7 @@ import { useWindowSizeChangeListener, WindowSizeState } from "./hooks/011_useWin
 // import { AttendeeState, CognitoClient, DrawingData, FlectChimeClient, GameState, RealtimeData, useAmongUsServer, VideoTileState, WebSocketWhiteboardClient } from "@dannadori/flect-amazon-chime-lib2";
 // import { ChimeClientState, useChimeClient } from "./hooks/useChimeClient";
 import { CognitoClientState, useCognitoClient } from "./hooks/000_useCognitoClient";
-import { FrontendState, useFrontend } from "./hooks/useFrontend";
+import { FrontendState, useFrontend } from "./hooks/021_useFrontend";
 import { useWhiteboardClient, WhiteboardClientState } from "./hooks/useWhiteBoardClient";
 import { DeviceInfoStateAndMethods, useDeviceState } from "./hooks/010_useDeviceState";
 import { SignInType, StageManagerStateAndMethods, useStageManager } from "./hooks/020_useStageManager";
@@ -26,11 +26,11 @@ interface AppStateValue {
 
     /** (020) App State*/
     stageState: StageManagerStateAndMethods;
+    frontendState: FrontendState;
 
     /** GUI Control*/
     /**** For WindowSizeChange */
     /**** Other GUI Props */
-    frontendState: FrontendState;
 
     /** Clients */
 

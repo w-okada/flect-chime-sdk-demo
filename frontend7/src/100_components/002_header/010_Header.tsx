@@ -3,9 +3,13 @@ import { TriggerIcon, TriggerIconProps } from "./001_TriggerIcon";
 import { ToggleIcon, ToggleIconProps } from "./002_ToggleIcon";
 import { SelectableIcon, SelectableIconProps } from "./003_SelectableIcon";
 
+export type HeaderProps = {
+    userName: string;
+};
+
 //@ts-ignore
-import logo from "../../../public/images/flect.png";
-export const Header = () => {
+import logo from "../../../resources/icons/flect.png";
+export const Header = (props: HeaderProps) => {
     const settingIconProps: TriggerIconProps = {
         id: "header-setting-dialog-icon",
         iconProp: ["fas", "gear"],
@@ -95,7 +99,7 @@ export const Header = () => {
                     <div className="header-item-application-title">Flect Amazon Chime Demo</div>
                 </div>
             </div>
-            <div className="header-container-center">TITLE:STATES(TOBE)</div>
+            <div className="header-container-center">{props.userName}TITLE:STATES(TOBE)</div>
             <div className="header-container-right">
                 <div className="header-item-container">
                     <ToggleIcon {...micToggleIconProps}></ToggleIcon>
