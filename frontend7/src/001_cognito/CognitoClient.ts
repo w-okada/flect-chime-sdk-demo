@@ -42,6 +42,12 @@ export class CognitoClient {
         this._refreshToken = val;
     }
 
+    /// (1-7) signin status
+    private _signInCompleted: boolean = false;
+    get signInCompleted(): boolean {
+        return this._signInCompleted;
+    }
+
     // (2) Constructor
     constructor(userPoolId: string, clientId: string, defaultUserId: string | null = null, defaultPassword: string | null = null) {
         this._userPool = new CognitoUserPool({
@@ -71,6 +77,7 @@ export class CognitoClient {
                     this._idToken = result.getIdToken().getJwtToken();
                     this._refreshToken = result.getRefreshToken().getToken();
                     this._userId = userId;
+                    this._signInCompleted = true
                     resolve();
                 },
                 onFailure: (err) => {
@@ -196,5 +203,12 @@ export class CognitoClient {
             Pool: this._userPool,
         });
         cognitoUser.signOut();
+
+        this._accessToken = null;
+        this._idToken = null;
+        this._refreshToken = null;
+        this._userId = null;
+        this._signInCompleted = false;
+
     };
 }

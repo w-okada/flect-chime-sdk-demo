@@ -62,7 +62,7 @@
     width: 170px;
     background-color: #000;
     background-color: hsla(0, 0%, 20%, 0.9);
-    /* text-align: center; */
+    text-align: center;
     color: #fff;
     content: attr(data-tooltip);
     font-size: 14px;
@@ -167,9 +167,12 @@
 }
 
 /* Right */
-.tooltip-right:before,
-.tooltip-right:after {
+.tooltip-right:before {
     bottom: 50%;
+    left: 100%;
+}
+.tooltip-right:after {
+    bottom: 0%;
     left: 100%;
 }
 
@@ -188,6 +191,11 @@
     -webkit-transform: translateX(12px);
     -moz-transform: translateX(12px);
     transform: translateX(12px);
+}
+
+.tooltip-right:hover:after,
+.tooltip-right:focus:after {
+    transform: translate(12px, -16px);
 }
 
 /* Move directional arrows down a bit for left/right tooltips */

@@ -1,8 +1,10 @@
 @import "./000_css/AppTailwind.css";
 @import url("https://fonts.googleapis.com/css2?family=Chicle&family=Poppins:ital,wght@0,200;0,400;0,600;1,200;1,400;1,600&display=swap");
-@import "./000_css/Dialog.css";
-@import "./000_css/Header.css";
+/* @import "./000_css/Dialog.css"; */
+/* @import "./000_css/Header.css"; */
 
+@import "./000_css/100_Frame.css";
+@import "./000_css/101_Dialog.css";
 @import "./000_css/900_tooltips.css";
 
 :root {
@@ -24,6 +26,14 @@
     --sidebar-width: 15rem;
     --right-sidebar-width: 20rem;
     --bottom-nav-height: 11rem;
+
+    --dialog-border-color: rgba(100, 100, 100, 1);
+    --dialog-shadow-color: rgba(0, 0, 0, 0.3);
+    --dialog-background-color: rgba(255, 255, 255, 1);
+    --dialog-primary-color: rgba(19, 70, 209, 1);
+    --dialog-active-color: rgba(255, 70, 209, 1);
+    --dialog-input-border-color: rgba(200, 200, 200, 1);
+    --dialog-submit-button-color: rgba(180, 190, 230, 1);
 }
 
 * {
@@ -49,293 +59,70 @@ body {
     width: 100%;
 }
 
-/* (1) Lyaer 1 */
-/** (1-1) Header **/
-.header {
-    position: fixed;
-    height: var(--header-height);
-    width: 100%;
-    background: var(--company-color1);
-    box-shadow: 2px 2px 2px var(--global-shadow-color);
-    display: flex;
-    z-index: 99;
-
-    .sidebar-button-area {
-        flex-grow: 0;
-        height: 100%;
-        width: 100%;
-        display: flex;
-    }
-    .status-area {
-        flex-grow: 1;
-        height: 100%;
-        width: 100%;
-        display: flex;
-    }
-    .menu-item-area {
-        flex-grow: 1;
-        height: 100%;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        .group {
-            display: flex;
-            .spacer {
-                margin-left: 1rem;
-            }
-        }
-    }
-}
-
-/** (1-2) sidebar, main-area, right-sidebar **/
-/*** (1-2-1) initialize ***/
-.sidebar {
-    position: fixed;
-    top: var(--header-height);
-    height: calc(100vh - var(--header-height));
-    width: var(--sidebar-width);
-    background: linear-gradient(10deg, var(--company-color1) 0, 5%, var(--company-color2) 5% 10%, var(--company-color3) 10% 80%, var(--company-color1) 80% 85%, var(--company-color2) 85% 100%);
-}
-.sidebar:before {
-    content: "";
-    position: absolute;
-    height: calc(100vh - var(--header-height));
-    width: var(--sidebar-width);
-    background: var(--company-color1-alpha);
-}
-.sidebar:after {
-    content: "";
-    position: absolute;
-    height: calc(100vh - var(--header-height));
-    width: var(--sidebar-width);
-    background: var(--company-color2-alpha);
-    clip-path: ellipse(98% 71% at 20% 30%);
-}
-
-.main-area {
-    position: fixed;
-    top: var(--header-height);
-    height: calc(100vh - var(--header-height));
-    widht: 100vw;
-    z-index: 51;
-}
-
-.right-sidebar {
-    position: fixed;
-    top: var(--header-height);
-    height: calc(100vh - var(--header-height));
-    width: var(--right-sidebar-width);
-    background: var(--company-color3);
-    z-index: 50;
-}
-
-.right-sidebar:before {
-    content: "";
-    position: absolute;
-    height: calc(100vh - var(--header-height));
-    width: var(--right-sidebar-width);
-    background: var(--company-color2-alpha);
-    /* clip-path: ellipse(98% 30% at 91% 90%); */
-    z-index: 3;
-}
-.right-sidebar:after {
-    content: "";
-    position: absolute;
-    height: calc(100vh - var(--header-height));
-    width: var(--right-sidebar-width);
-    background: var(--company-color1-alpha);
-    clip-path: ellipse(158% 41% at 60% 30%);
-
-    z-index: 100;
-}
-
-/*** (1-2-2) action ***/
-/*** (A) sidebar ***/
-.open-sidebar-checkbox {
+.setting-checkbox,
+.leave-checkbox,
+.create-meeting-checkbox,
+.sign-in-checkbox {
     display: none;
-    &:checked ~ .sidebar {
-        left: 0;
-        transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
-    }
-    & ~ .sidebar {
-        left: calc(-1 * var(--sidebar-width));
-        transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
-    }
-}
-
-/*** (B) right-sidebar ***/
-.open-right-sidebar-checkbox {
-    display: none;
-    &:checked ~ .right-sidebar {
-        right: 0;
-        transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
-    }
-    & ~ .right-sidebar {
-        right: calc(-1 * var(--right-sidebar-width));
-        transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
-    }
-}
-
-/*** (C) main-area ***/
-.open-sidebar-checkbox:checked + .open-right-sidebar-checkbox:checked {
-    ~ .main-area {
-        margin-right: 0rem;
-        left: var(--sidebar-width);
-        right: var(--right-sidebar-width);
-        width: calc(calc(100vw - var(--sidebar-width)) - var(--right-sidebar-width));
-        transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
-    }
-}
-.open-sidebar-checkbox:checked + .open-right-sidebar-checkbox:not(checked) {
-    ~ .main-area {
-        margin-right: 0rem;
-        left: var(--sidebar-width);
-        right: 0rem;
-        width: calc(100vw - var(--sidebar-width));
-        transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
-    }
-}
-.open-sidebar-checkbox:not(checked) + .open-right-sidebar-checkbox:checked {
-    ~ .main-area {
-        margin-right: 0rem;
-        left: 0rem;
-        right: var(--right-sidebar-width);
-        width: calc(100vw - var(--right-sidebar-width));
-        transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
-    }
-}
-.open-sidebar-checkbox:not(checked) + .open-right-sidebar-checkbox:not(checked) {
-    ~ .main-area {
-        margin-right: 0rem;
-        left: 0rem;
-        right: 0rem;
+    &:checked ~ .dialog-container {
+        display: block;
+        position: absolute;
+        top: 0px;
+        left: 0px;
         width: 100vw;
-        transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
+        height: 100vh;
+        background: rgba(200, 200, 200, 0.4);
+
+        animation-name: dialog-show;
+        animation-duration: 0.4s;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+        animation-direction: normal;
+    }
+    & ~ .dialog-container {
+        display: block;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(100, 100, 100, 0.4);
+
+        animation-name: dialog-hide;
+        animation-duration: 0.4s;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+        animation-direction: normal;
     }
 }
 
-/* (2) Lyaer 2 (In main-area)*/
-/* In MainArea, focused video area vs bottom-bar*/
-/** (2-1) main-video-area, bottom-nav **/
-/*** (2-1-1) initialize***/
-.main-video-area {
-    overflow: hidden;
-    background: #000000;
-    width: 100%;
-    height: 100%;
-    z-index: 100;
-}
-.bottom-nav {
-    overflow: hidden;
-    position: absolute;
-    width: 100%;
-
-    height: var(--bottom-nav-height);
-    /* width: calc(calc(100vw - 15rem) - 15rem); */
-    /* display: grid; */
-    z-index: 100;
-    background: linear-gradient(var(--company-color1-alpha) 0, 15%, var(--company-color2) 5% 10%, var(--company-color2-alpha) 10% 80%, var(--company-color1) 80% 85%, var(--company-color2) 85% 100%);
-}
-
-/*** (2-1-2) action***/
-/*** (A) bottom nav ***/
-.open-bottom-nav-checkbox {
-    display: none;
-    &:checked ~ .bottom-nav {
-        bottom: 0;
-        transition: all var(--bottom-nav-transition-time) var(--bottom-nav-transition-animation);
+@keyframes dialog-hide {
+    from {
+        opacity: 1;
+        z-index: 200;
     }
-    & ~ .bottom-nav {
-        bottom: calc(-1 * var(--bottom-nav-height));
-        transition: all var(--bottom-nav-transition-time) var(--bottom-nav-transition-animation);
+    90% {
+        opacity: 0;
     }
-}
-
-/*** (B) main-video-area ***/
-.open-bottom-nav-checkbox {
-    display: none;
-    &:checked ~ .main-video-area {
-        height: calc(100% - var(--bottom-nav-height));
-        transition: all var(--bottom-nav-transition-time) var(--bottom-nav-transition-animation);
-    }
-    & ~ .main-video-area {
-        height: 100%;
-        transition: all var(--bottom-nav-transition-time) var(--bottom-nav-transition-animation);
-    }
-}
-
-.rotate-button-container {
-    height: var(--header-height);
-    width: var(--header-height);
-    position: relative;
-    .rotate-button {
+    to {
+        opacity: 0;
+        z-index: -1;
         display: none;
-        & ~ .rotate-lable {
-            padding: 2px;
-            position: absolute;
-            transition: all 0.3s;
-            cursor: pointer;
-            z-index: 99;
-            height: var(--header-height);
-            width: var(--header-height);
-            .spinner,
-            .colored {
-                width: 100%;
-                height: 100%;
-                float: left;
-                transition: all 0.5s;
-                background: var(--company-color1);
-                .spin-on {
-                    width: 100%;
-                    height: 100%;
-                    display: none;
-                }
-                .spin-off {
-                    width: 100%;
-                    height: 100%;
-                    display: blcok;
-                }
-            }
-            .colored {
-                background: rgba(200, 200, 200, 0.4);
-                transition: all 0.5s;
-                .spin-on {
-                    color: rgba(240, 240, 240, 0.8);
-                    display: none;
-                }
-                .spin-off {
-                    color: rgba(240, 240, 240, 0.8);
-                    display: block;
-                }
-            }
-        }
-        &:checked ~ .rotate-lable {
-            .spinner {
-                width: 100%;
-                height: 100%;
-                transform: rotate(-180deg);
-                transition: all 0.5s;
-                box-sizing: border-box;
-                .spin-on {
-                    display: block;
-                }
-                .spin-off {
-                    display: none;
-                }
-            }
-            .colored {
-                background: rgba(20, 80, 20, 0.8);
-                transition: all 0.5s;
-                .spin-on {
-                    color: #00ff00;
-                    display: block;
-                }
-                .spin-off {
-                    color: #00ff00;
-                    display: none;
-                }
-            }
-        }
+    }
+}
+
+@keyframes dialog-show {
+    from {
+        opacity: 0;
+        z-index: -1;
+    }
+    10% {
+        display: blcok;
+        z-index: 200;
+    }
+    to {
+        opacity: 1;
+        z-index: 200;
     }
 }
 

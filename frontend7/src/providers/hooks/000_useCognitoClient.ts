@@ -15,6 +15,7 @@ export type CognitoClientState = {
     idToken: string | null;
     accessToken: string | null;
     refreshToken: string | null;
+    signInCompleted: boolean
 
     signIn: (userId: string, password: string) => Promise<void>;
     signUp: (userId: string, password: string) => Promise<void>;
@@ -68,6 +69,7 @@ export const useCognitoClient = (props: UseCognitoClientProps): CognitoClientSta
         idToken: cognitoClient.idToken,
         accessToken: cognitoClient.accessToken,
         refreshToken: cognitoClient.refreshToken,
+        signInCompleted: cognitoClient.signInCompleted,
         signIn,
         signUp,
         verify,
