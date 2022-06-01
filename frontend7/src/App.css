@@ -34,6 +34,7 @@
     --dialog-active-color: rgba(255, 70, 209, 1);
     --dialog-input-border-color: rgba(200, 200, 200, 1);
     --dialog-submit-button-color: rgba(180, 190, 230, 1);
+    --dialog-cancel-button-color: rgba(235, 80, 80, 1);
 }
 
 * {
@@ -59,13 +60,12 @@ body {
     width: 100%;
 }
 
-.setting-checkbox,
-.leave-checkbox,
-.create-meeting-checkbox,
-.sign-in-checkbox {
+.state-control-checkbox {
     display: none;
     &:checked ~ .dialog-container {
-        display: block;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         position: absolute;
         top: 0px;
         left: 0px;
@@ -80,7 +80,9 @@ body {
         animation-direction: normal;
     }
     & ~ .dialog-container {
-        display: block;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         position: absolute;
         top: 0px;
         left: 0px;
@@ -103,11 +105,12 @@ body {
     }
     90% {
         opacity: 0;
+        z-index: -1;
     }
     to {
         opacity: 0;
         z-index: -1;
-        display: none;
+        /* display: none; */
     }
 }
 
@@ -117,7 +120,7 @@ body {
         z-index: -1;
     }
     10% {
-        display: blcok;
+        display: flex;
         z-index: 200;
     }
     to {

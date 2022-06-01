@@ -7,7 +7,7 @@ export type StateControlCheckbox = {
 };
 
 export const useStateControlCheckbox = (className: string): StateControlCheckbox => {
-    const trigger = <input type="checkbox" className={`${className} rotate-button`} id={`${className}`} />;
+    const trigger = <input type="checkbox" className={`${className} state-control-checkbox rotate-button`} id={`${className}`} />;
 
     useEffect(() => {
         const checkboxes = document.querySelectorAll(`.${className}`);
@@ -21,8 +21,10 @@ export const useStateControlCheckbox = (className: string): StateControlCheckbox
         const createMeetingDialogRemovers = document.querySelectorAll(`.${className}-remover`);
         createMeetingDialogRemovers.forEach((x) => {
             // @ts-ignore
-            x.onclick = () => {
-                updateState(false);
+            x.onclick = (ev) => {
+                if (ev.target.className.indexOf(`${className}-remover`) > 0) {
+                    updateState(false);
+                }
             };
         });
     }, []);

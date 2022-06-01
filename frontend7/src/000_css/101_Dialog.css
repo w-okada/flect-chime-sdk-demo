@@ -1,11 +1,9 @@
 .dialog-container {
     .dialog-frame-warpper {
-        position: relative;
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 100vw;
-        height: 100vh;
+        display: flex;
         .dialog-frame {
             width: 40rem;
             border: 2px solid var(--dialog-border-color);
@@ -107,6 +105,8 @@
 
     .dialog-input-controls {
         text-align: left;
+        /* display: flex; */
+        /* justify-content: center; */
         position: relative;
         margin-left: 30px;
         margin-right: 30px;
@@ -114,7 +114,8 @@
         margin-bottom: 15px;
         transition: all 1.3s;
 
-        .input-text {
+        .input-text,
+        .select {
             padding: 0.5rem;
             font-size: 1rem;
             border: 2px solid var(--dialog-primary-color);
@@ -122,7 +123,7 @@
             /* margin-bottom: 18px; */
             font-size: 1rem;
             font-weight: 600;
-            border-radius: 2px;
+            border-radius: 4px;
             transition: all 0.3s;
             &:hover,
             &:focus {
@@ -153,6 +154,28 @@
                 transition: top 0.15s;
                 user-select: none;
                 border-radius: 10px;
+            }
+        }
+        .checkbox {
+            border: 2px solid var(--dialog-primary-color);
+            border-radius: 4px;
+            transition: all 0.3s;
+            &:hover,
+            &:focus {
+                border: 2px solid var(--dialog-primary-color);
+                outline: 2px solid var(--dialog-primary-color);
+            }
+            + label {
+                position: absolute;
+                text-align: center;
+                color: #000;
+                font-size: 1rem;
+                padding-left: 1rem;
+                font-weight: 400;
+                color: #000;
+                background-color: rgba(255, 255, 255, 1);
+                transition: top 0.15s;
+                user-select: none;
             }
         }
         .submit-button {
@@ -211,12 +234,62 @@
                 border-color: var(--dialog-primary-color);
             }
         }
+        ,
+        .cancel-button {
+            color: var(--dialog-cancel-button-color);
+            cursor: pointer;
+            user-select: none;
+            background: transparent;
+            border-width: 2px;
+            position: relative;
 
-        &.align-center {
+            border-style: solid;
+            border-color: var(--dialog-cancel-button-color);
+
+            margin: 1em;
+            display: inline-block;
+            padding: 0.5em 1em;
+            transition: all 0.3s ease-in-out;
             text-align: center;
-        }
-        &.hide {
-            display: none;
+            font-family: comfortaa;
+            font-weight: bold;
+            &.hide {
+                display: none;
+            }
+            &:before,
+            &:after {
+                content: "";
+                display: block;
+                position: absolute;
+                border-color: var(--dialog-cancel-button-color);
+                box-sizing: border-box;
+                border-style: solid;
+                width: 1rem;
+                height: 1rem;
+                transition: all 0.3s ease-in-out;
+            }
+            &:before {
+                top: -6px;
+                left: -6px;
+                border-width: 2px 0 0 2px;
+                z-index: 5;
+            }
+            &:after {
+                bottom: -6px;
+                right: -6px;
+                border-width: 0 2px 2px 0;
+            }
+            &:hover:before,
+            &:hover:after {
+                width: calc(100% + 12px);
+                height: calc(100% + 12px);
+                border-color: var(--dialog-cancel-button-color);
+            }
+            &:hover {
+                color: #ffffff;
+                background-color: var(--dialog-cancel-button-color);
+                border-color: var(--dialog-cancel-button-color);
+            }
         }
     }
 }

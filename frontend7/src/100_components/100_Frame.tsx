@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SignInDialog, SignInDialogProps } from "./101-1_SignInDialog";
 import { Sidebar, SidebarProps } from "./102_Sidebar";
 import { useStateControlCheckbox } from "./hooks/useStateControlCheckbox";
+import { CreateRoomDialog, CreateRoomDialogProps } from "./101-2_CreateRoomDialog";
 
 export type FrameProps = {
     signInCompleted: boolean;
@@ -22,7 +23,7 @@ export const Frame = (props: FrameProps) => {
     const leaveCheckbox = useStateControlCheckbox("leave-checkbox");
 
     const signInCheckbox = useStateControlCheckbox("sign-in-checkbox");
-    const createMeetingCheckbox = useStateControlCheckbox("create-meeting-checkbox");
+    const createRoomCheckbox = useStateControlCheckbox("create-room-checkbox");
     /**
      * components
      */
@@ -204,7 +205,7 @@ export const Frame = (props: FrameProps) => {
     // (3) sidebar
     const sidebarProps: SidebarProps = {
         newRoomClicked: () => {
-            createMeetingCheckbox.updateState(true);
+            createRoomCheckbox.updateState(true);
             console.log("new room");
         },
         reloadRoomClicked: () => {},
@@ -271,6 +272,13 @@ export const Frame = (props: FrameProps) => {
 
     //// Dialog
 
+    const createRoomDialogProps: CreateRoomDialogProps = {
+        meetingCreated: () => {},
+        cancel: () => {
+            createRoomCheckbox.updateState(false);
+        },
+    };
+
     return (
         <>
             {header}
@@ -279,18 +287,21 @@ export const Frame = (props: FrameProps) => {
             {mainArea}
             <div>
                 <input type="checkbox" className="setting-checkbox" id="setting-checkbox-secondary" />
+                {settingCheckbox.trigger}
                 <div className="dialog-container setting-checkbox-remover"></div>
             </div>
 
             <div>
                 <input type="checkbox" className="leave-checkbox" id="leave-checkbox-secondary" />
+                {leaveCheckbox.trigger}
                 <div className="dialog-container leave-checkbox-remover"></div>
             </div>
 
             <div>
-                {/* <input type="checkbox" className="create-meeting-checkbox" id="create-meeting-checkbox-secondary" /> */}
-                {createMeetingCheckbox.trigger}
-                <div className="dialog-container create-meeting-checkbox-remover"></div>
+                {createRoomCheckbox.trigger}
+                <div className="dialog-container create-room-checkbox-remover">
+                    <CreateRoomDialog {...createRoomDialogProps}></CreateRoomDialog>
+                </div>
             </div>
 
             <div>
