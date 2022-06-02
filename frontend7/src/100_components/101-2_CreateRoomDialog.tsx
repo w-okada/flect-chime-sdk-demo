@@ -93,7 +93,7 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
         const hidden = useCode ? "" : "hidden";
         return (
             <div className={`dialog-input-controls ${hidden}`}>
-                <input type="text" id="create-room-dialog-code " className="input-text" name="code" placeholder="code" autoComplete="none" />
+                <input type="text" id="create-room-dialog-code" className="input-text" name="code" placeholder="code" autoComplete="none" />
                 <label htmlFor="code">code</label>
             </div>
         );
