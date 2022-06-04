@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useAppState } from "../providers/AppStateProvider";
 
 export type SignInDialogProps = {
-    signIn: (email: string, password: string) => Promise<void>;
-    signUp: (userId: string, password: string) => Promise<void>;
-    verify: (userId: string, verifyCode: string) => Promise<void>;
-    resendVerification: (userId: string) => Promise<void>;
-    sendVerificationCodeForChangePassword: (userId: string) => Promise<void>;
-    changePassword: (userId: string, verifycode: string, password: string) => Promise<void>;
     signInSucceeded: (username: string) => void;
+    defaultEmail?: string;
+    defaultPassword?: string;
+    defaultUsername?: string;
 };
 
 export const SignInDialog = (props: SignInDialogProps) => {
+    const { cognitoClientState } = useAppState();
+
     // (1) States
     const TabItems = {
         signin: "signin",
@@ -31,7 +31,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
             // (2-1-1) Resend for first verification
             case "verify":
                 try {
-                    await props.resendVerification(email);
+                    await cognitoClientState.resendVerification(email);
                 } catch (exception: any) {
                     console.warn("Request code for signup exception", JSON.stringify(exception));
                     switch (exception.code) {
@@ -53,7 +53,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
             // (2-1-2) Send for Change Password
             case "forgot":
                 try {
-                    await props.sendVerificationCodeForChangePassword(email);
+                    await cognitoClientState.sendVerificationCodeForChangePassword(email);
                 } catch (exception: any) {
                     console.warn("Request code for change password exception", JSON.stringify(exception));
                     switch (exception.code) {
@@ -91,7 +91,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
                         console.warn("ユーザネームが入ってない。");
                         throw "no user name";
                     }
-                    await props.signIn(email, password);
+                    await cognitoClientState.signIn(email, password);
                     props.signInSucceeded(username);
                 } catch (exception: any) {
                     console.warn("Sign In Exception", JSON.stringify(exception));
@@ -114,7 +114,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
             // (B) Sign Up
             case "signup":
                 try {
-                    await props.signUp(email, newPassword);
+                    await cognitoClientState.signUp(email, newPassword);
                     setTab("verify");
                 } catch (exception: any) {
                     console.warn("Sign Up Exception", JSON.stringify(exception));
@@ -133,7 +133,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
             // (C) Verify
             case "verify":
                 try {
-                    await props.verify(email, code);
+                    await cognitoClientState.verify(email, code);
                     setTab("signin");
                 } catch (exception: any) {
                     console.warn("Verification Exception", JSON.stringify(exception));
@@ -155,7 +155,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
             // (D) Change password
             case "forgot":
                 try {
-                    await props.changePassword(email, code, newPassword);
+                    await cognitoClientState.changePassword(email, code, newPassword);
                     setTab("signin");
                 } catch (exception: any) {
                     console.warn("Verification Exception", JSON.stringify(exception));
@@ -286,7 +286,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
     const emailField = useMemo(() => {
         return (
             <div className="dialog-input-controls">
-                <input type="text" id="signin-dialog-email" className="input-text" name="email" placeholder="email" autoComplete="email" />
+                <input type="text" id="signin-dialog-email" className="input-text" name="email" placeholder="email" autoComplete="email" defaultValue={props.defaultEmail ? props.defaultEmail : ""} />
                 <label htmlFor="email">Email</label>
             </div>
         );
@@ -295,7 +295,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
         const hidden = tab !== "signin" ? "hidden" : "";
         return (
             <div className={`dialog-input-controls ${hidden}`}>
-                <input type="password" id="signin-dialog-password" className="input-text" name="password" placeholder="password" autoComplete="current-password" />
+                <input type="password" id="signin-dialog-password" className="input-text" name="password" placeholder="password" autoComplete="current-password" defaultValue={props.defaultPassword ? props.defaultPassword : ""} />
                 <label htmlFor="password">Password</label>
             </div>
         );
@@ -305,7 +305,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
         const hidden = tab !== "signin" ? "hidden" : "";
         return (
             <div className={`dialog-input-controls ${hidden}`}>
-                <input type="text" id="signin-dialog-username" className="input-text" name="username" placeholder="username" autoComplete="username" />
+                <input type="text" id="signin-dialog-username" className="input-text" name="username" placeholder="username" autoComplete="username" defaultValue={props.defaultUsername ? props.defaultUsername : ""} />
                 <label htmlFor="username">username(displayed in meeting)</label>
             </div>
         );

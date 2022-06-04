@@ -2,41 +2,62 @@ import React, { useState } from "react";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AVAILABLE_AWS_REGIONS, DEFAULT_REGION } from "../const";
+import { useAppState } from "../providers/AppStateProvider";
+import { ChimeDemoException } from "../000_exception/Exception";
+import { Processing } from "./parts/001_processing";
 
 export type CreateRoomDialogProps = {
-    // signIn: (email: string, password: string) => Promise<void>;
-    // signUp: (userId: string, password: string) => Promise<void>;
-    // verify: (userId: string, verifyCode: string) => Promise<void>;
-    // resendVerification: (userId: string) => Promise<void>;
-    // sendVerificationCodeForChangePassword: (userId: string) => Promise<void>;
-    // changePassword: (userId: string, verifycode: string, password: string) => Promise<void>;
-    // signInSucceeded: (username: string) => void;
     meetingCreated: () => void;
-    cancel: () => void;
+    close: () => void;
 };
 
 export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
+    const { chimeClientState, reloadRoomList } = useAppState();
     const [useCode, setUseCode] = useState<boolean>(false);
+    const [message, setMessage] = useState<string | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     // (2) Action
+    const initializeState = () => {
+        (document.getElementById("create-room-dialog-room-name") as HTMLInputElement).value = "";
+        (document.getElementById("create-room-dialog-code") as HTMLInputElement).value = "";
+        setIsProcessing(false);
+        setMessage(null);
+    };
     const onSubmit = async () => {
         const roomName = (document.getElementById("create-room-dialog-room-name") as HTMLInputElement).value;
         const region = (document.getElementById("create-room-dialog-region") as HTMLSelectElement).value;
         const secret = (document.getElementById("create-room-dialog-secret") as HTMLInputElement).checked;
         const useCode = (document.getElementById("create-room-dialog-use-code") as HTMLInputElement).checked;
         const code = (document.getElementById("create-room-dialog-code") as HTMLInputElement).value;
-
-        console.log(roomName, region, secret, useCode, code);
+        try {
+            setIsProcessing(true);
+            await chimeClientState.createMeeting(roomName, region, secret, useCode, code);
+            await reloadRoomList();
+            initializeState();
+            props.close();
+        } catch (ex) {
+            // @ts-ignore
+            if (ex.message === ChimeDemoException.NoMeetingRoomCreated) {
+                setMessage("Failed to create meeting room. maybe same name room exists.");
+            } else {
+                console.error(ex);
+                // @ts-ignore
+                setMessage(`Failed to create meeting room. Unknown error. ${ex.message}`);
+            }
+            setIsProcessing(false);
+        }
     };
     const cancel = () => {
-        props.cancel();
+        props.close();
+        initializeState();
     };
 
     ////////////////////////////
     //  Conponents
     ////////////////////////////
 
-    const description = "aaa";
+    const description = "fill in the fields below.";
 
     const roomNameField = useMemo(() => {
         return (
@@ -64,17 +85,11 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
         );
     }, []);
 
-    const secretToggle = useMemo(() => {
+    const useCodeToggle = useMemo(() => {
         return (
             <div className="dialog-input-controls">
                 <input className="checkbox" type="checkbox" id="create-room-dialog-secret" />
                 <label htmlFor="secret">secret</label>
-            </div>
-        );
-    }, []);
-    const useCodeToggle = useMemo(() => {
-        return (
-            <div className="dialog-input-controls">
                 <input
                     className="checkbox"
                     type="checkbox"
@@ -98,9 +113,19 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
             </div>
         );
     }, [useCode]);
-    const submitButton = useMemo(() => {
+
+    const messageArea = useMemo(() => {
         return (
-            <div className="dialog-input-controls align-center">
+            <div className="dialog-input-controls">
+                <div className="dialog-message">{message}</div>
+                {/* <div className="dialog-message">aaa a aaaaa aaa aaa</div> */}
+            </div>
+        );
+    }, [message]);
+
+    const buttons = useMemo(() => {
+        return (
+            <div className="dialog-input-controls">
                 <div id="cancel" className="cancel-button" onClick={cancel}>
                     cancel
                 </div>
@@ -109,26 +134,35 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
                 </div>
             </div>
         );
-    }, []);
+    }, [onSubmit]);
+    const processing = useMemo(() => {
+        return (
+            <div className="dialog-input-controls">
+                <div className="dialog-processing">{isProcessing ? <Processing /> : <></>}</div>
+            </div>
+        );
+    }, [isProcessing]);
     const form = useMemo(() => {
         return (
             <>
                 {roomNameField}
                 {regionField}
-                {secretToggle}
                 {useCodeToggle}
                 {codeField}
-                {submitButton}
+                {messageArea}
+                {buttons}
+                {processing}
             </>
         );
-    }, [useCode]);
+    }, [useCode, buttons, messageArea, processing]);
 
     return (
         <div className="dialog-frame-warpper">
             <div className="dialog-frame">
-                <div className="dialog-title">Sign in</div>
+                <div className="dialog-title">Create New Room</div>
+
                 <div className="dialog-content">
-                    <div className={"dialog-application-title"}>Flect Amazon Chime Demo</div>
+                    <div className="dialog-application-title"></div>
                     <div className="dialog-description">{description}</div>
                     <form>
                         <div className="dialog-input-container">{form}</div>

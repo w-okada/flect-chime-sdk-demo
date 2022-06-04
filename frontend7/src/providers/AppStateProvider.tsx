@@ -11,6 +11,8 @@ import { FrontendState, useFrontend } from "./hooks/021_useFrontend";
 import { useWhiteboardClient, WhiteboardClientState } from "./hooks/useWhiteBoardClient";
 import { DeviceInfoStateAndMethods, useDeviceState } from "./hooks/010_useDeviceState";
 import { SignInType, StageManagerStateAndMethods, useStageManager } from "./hooks/020_useStageManager";
+import { ChimeClientState, useChimeClient } from "./hooks/001_useChimeClient";
+import { MeetingInfo } from "../002_chime/FlectChimeClient";
 
 type Props = {
     children: ReactNode;
@@ -19,6 +21,7 @@ type Props = {
 interface AppStateValue {
     /** (000) Clients */
     cognitoClientState: CognitoClientState;
+    chimeClientState: ChimeClientState;
 
     /** (010) Environment State */
     deviceState: DeviceInfoStateAndMethods;
@@ -45,6 +48,10 @@ interface AppStateValue {
 
     /** Federation */
     slackToken: string | null;
+
+    // (X) Misc
+    rooms: MeetingInfo[];
+    reloadRoomList: () => Promise<void>;
 }
 
 const AppStateContext = React.createContext<AppStateValue | null>(null);
@@ -65,6 +72,12 @@ export const AppStateProvider = ({ children }: Props) => {
     //// (000) cognito
     const cognitoClientState = useCognitoClient({ userPoolId: UserPoolId, userPoolClientId: UserPoolClientId });
     //// (001) chime
+    const chimeClientState = useChimeClient({
+        RestAPIEndpoint,
+        idToken: cognitoClientState.idToken,
+        accessToken: cognitoClientState.accessToken,
+        refreshToken: cognitoClientState.refreshToken,
+    });
 
     /** (010) Environment State */
     //// (010) device
@@ -126,10 +139,25 @@ export const AppStateProvider = ({ children }: Props) => {
     //     setRecreateWebSocketWhiteboardClientCount(recreateWebSocketWhiteboardClientCount + 1);
     // };
 
+    // (x) Misc
+    //// (x-1)
+    const [rooms, setRooms] = useState<MeetingInfo[]>([]);
+    const reloadRoomList = async () => {
+        const rooms = await chimeClientState.listMeetings();
+        if (!rooms) {
+            return;
+        }
+        setRooms(rooms);
+    };
+
+    useEffect(() => {
+        reloadRoomList();
+    }, [chimeClientState.chimeClient]);
+
     const providerValue = {
         /** (000) Clients */
         cognitoClientState,
-
+        chimeClientState,
         /** (010) Environment State */
         deviceState,
         windowSizeState,
@@ -146,6 +174,10 @@ export const AppStateProvider = ({ children }: Props) => {
 
         /** Federation */
         slackToken,
+
+        // (x) Misc
+        rooms,
+        reloadRoomList,
     };
 
     return <AppStateContext.Provider value={providerValue}>{children}</AppStateContext.Provider>;

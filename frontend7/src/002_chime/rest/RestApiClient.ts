@@ -1,6 +1,10 @@
-import { createMeeting, CreateMeetingRequest, endMeeting, EndMeetingRequest, getMeetingInfo, GetMeetingInfoRequest } from "./meeting";
+import { HTTPCreateMeetingRequest, HTTPJoinMeetingRequest, HTTPListMeetingsRequest } from "../../http_request";
+import { createMeeting, listMeetings } from "./001_meetings";
+import { endMeeting, EndMeetingRequest, getMeetingInfo, GetMeetingInfoRequest } from "./002_meeting";
+import { joinMeeting } from "./003_attendees";
+
 export { createMeeting, endMeeting, getMeetingInfo };
-export type { CreateMeetingRequest, EndMeetingRequest, GetMeetingInfoRequest };
+export type { HTTPCreateMeetingRequest, HTTPListMeetingsRequest, EndMeetingRequest, GetMeetingInfoRequest };
 
 
 export type RestApiClientContext = {
@@ -19,28 +23,32 @@ export class RestApiClient {
         this.context = _context;
     }
 
-    // (1) Meeting Management
-    //// (1-1) Create Meeting
-    createMeeting = async (params: CreateMeetingRequest) => {
+    // (1) Meetings
+    //// (1-1) List Meetings
+    listMeetings = async (params: HTTPListMeetingsRequest) => {
+        return listMeetings(params, this.context!)
+    }
+    //// (1-2) Create Meeting
+    createMeeting = async (params: HTTPCreateMeetingRequest) => {
         return createMeeting(params, this.context!);
     };
 
-    //// (1-2) End Meeting
+    // (2) Meeting
+    //// (2-1) End Meeting
     endMeeting = async (params: EndMeetingRequest) => {
         return endMeeting(params, this.context!);
     };
 
-    //// (1-3) Get Meeting Info
+    //// (2-2) Get Meeting Info
     getMeetingInfo = async (params: GetMeetingInfoRequest) => {
         return getMeetingInfo(params, this.context!);
     };
 
-    // // (2) Attendee Management
-
-    // //// (2-1) Join meeting
-    // joinMeeting = async (params: JoinMeetingRequest) => {
-    //     return joinMeeting(params, this.context!);
-    // };
+    // (3) Attendees
+    //// (3-1) join meeting
+    joinMeeting = async (params: HTTPJoinMeetingRequest) => {
+        return joinMeeting(params, this.context!);
+    };
 
     // //// (2-2) Leave meeting
     // //// not needed for Chime Server.

@@ -24,6 +24,8 @@
             }
             /****** (b) content */
             .dialog-content {
+                width: 100%;
+
                 /****** (b-1) Application Title */
                 .dialog-application-title {
                     font-family: "Chicle", cursive;
@@ -83,6 +85,7 @@
                         }
                     }
                 }
+
                 /****** (b-3) Dialog description */
                 .dialog-description {
                     margin: 10px;
@@ -102,11 +105,13 @@
     margin: 10px;
     padding-left: 20px;
     padding-right: 20px;
-
+    .dialog-input-controls.hidden {
+        display: none;
+    }
     .dialog-input-controls {
         text-align: left;
-        /* display: flex; */
-        /* justify-content: center; */
+        display: flex;
+        justify-content: center;
         position: relative;
         margin-left: 30px;
         margin-right: 30px;
@@ -160,13 +165,15 @@
             border: 2px solid var(--dialog-primary-color);
             border-radius: 4px;
             transition: all 0.3s;
+            margin-left: 3rem;
+            padding-left: 1rem;
             &:hover,
             &:focus {
                 border: 2px solid var(--dialog-primary-color);
                 outline: 2px solid var(--dialog-primary-color);
             }
             + label {
-                position: absolute;
+                /* position: absolute; */
                 text-align: center;
                 color: #000;
                 font-size: 1rem;
@@ -290,6 +297,23 @@
                 background-color: var(--dialog-cancel-button-color);
                 border-color: var(--dialog-cancel-button-color);
             }
+        }
+
+        .dialog-message {
+            color: #f00;
+            width: 50%;
+            margin: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .dialog-processing {
+            display: flex;
+            justify-content: center;
+            height: 2rem;
+            width: 20rem;
+            padding-left: 20px;
+            padding-right: 20px;
         }
     }
 }

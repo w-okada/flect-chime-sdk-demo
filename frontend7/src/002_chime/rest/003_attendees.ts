@@ -1,9 +1,9 @@
-import { HTTPGetAttendeeInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "../http_request";
+import { HTTPGetAttendeeInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "../../http_request";
 import { RestApiClientContext } from "./RestApiClient";
 
-export type JoinMeetingRequest = HTTPJoinMeetingRequest;
-export type JoinMeetingResponse = HTTPJoinMeetingResponse;
-export const joinMeeting = async (params: JoinMeetingRequest, context: RestApiClientContext): Promise<JoinMeetingResponse> => {
+// (1) Join Meeting (POST)
+
+export const joinMeeting = async (params: HTTPJoinMeetingRequest, context: RestApiClientContext): Promise<HTTPJoinMeetingResponse> => {
     const url = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees`;
     params.meetingName = encodeURIComponent(params.meetingName);
     params.attendeeName = encodeURIComponent(params.attendeeName);
@@ -25,40 +25,11 @@ export const joinMeeting = async (params: JoinMeetingRequest, context: RestApiCl
         console.log(response.code);
         throw response.code;
     }
-    const data = response.data as JoinMeetingResponse;
+    const data = response.data as HTTPJoinMeetingResponse;
     return data;
 };
 
-/**
- * get attendee name
- */
-export type GetUserNameByAttendeeIdRequest = {
-    meetingName: string;
-    attendeeId: string;
-};
-export type GetAttendeeInfoResponse = HTTPGetAttendeeInfoResponse;
-
-export const getUserNameByAttendeeId = async (params: GetUserNameByAttendeeIdRequest, context: RestApiClientContext): Promise<HTTPGetAttendeeInfoResponse> => {
-    const attendeeUrl = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees/${encodeURIComponent(params.attendeeId)}`;
-    const res = await fetch(attendeeUrl, {
-        method: "GET",
-        headers: {
-            Authorization: context.idToken,
-            "X-Flect-Access-Token": context.codeToAccess || context.accessToken,
-        },
-    });
-    const response = (await res.json()) as HTTPResponseBody;
-    if (response.success === false) {
-        console.log(response.code);
-        throw response.code;
-    }
-    const data = response.data as GetAttendeeInfoResponse;
-    return data;
-};
-
-/**
- * List attendees *** maybe return attendee history. not current attendee???***
- */
+// (2) List Attendees (GET)
 export type GetAttendeeListRequest = {
     meetingName: string;
 };

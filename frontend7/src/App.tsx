@@ -142,20 +142,16 @@ const Router = () => {
 };
 
 const App = () => {
-    const { stageState, cognitoClientState, frontendState } = useAppState();
+    const { stageState, cognitoClientState, chimeClientState, frontendState } = useAppState();
     const singInProps: SignInDialogProps = {
-        signIn: cognitoClientState.signIn,
-        signUp: cognitoClientState.signUp,
-        verify: cognitoClientState.verify,
-        resendVerification: cognitoClientState.resendVerification,
-        sendVerificationCodeForChangePassword: cognitoClientState.sendVerificationCodeForChangePassword,
-        changePassword: cognitoClientState.changePassword,
-
         signInSucceeded: (username: string) => {
             stageState.setSignInComplete(true);
             frontendState.setUserName(username);
             console.log("sign in succeeded!!");
         },
+        defaultEmail: "mail2wokada@gmail.com",
+        defaultPassword: "test22",
+        defaultUsername: "wo",
     };
     const frameProps: FrameProps = {
         signInCompleted: cognitoClientState.signInCompleted,

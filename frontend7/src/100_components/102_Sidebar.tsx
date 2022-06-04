@@ -1,15 +1,30 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useStateControlCheckbox } from "./hooks/useStateControlCheckbox";
+import { useAppState } from "../providers/AppStateProvider";
+import { MeetingInfo } from "../002_chime/FlectChimeClient";
 
 export type SidebarProps = {
     newRoomClicked: () => void;
-    reloadRoomClicked: () => void;
+    joinRoomClicked: (meetingName: string, useCode: boolean) => void;
 };
 
 export const Sidebar = (props: SidebarProps) => {
+    const { chimeClientState, frontendState, rooms, reloadRoomList } = useAppState();
     const sidebarAccordionMeetingCheckbox = useStateControlCheckbox("sidebar-accordion-meeting-checkbox");
     const sidebarAccordionChatCheckbox = useStateControlCheckbox("sidebar-accordion-chat-checkbox");
+
+    /**
+     * (1) Operation
+     */
+    //// (1-1) reload meetings
+    const reloadRoomClicked = async () => {
+        reloadRoomList();
+    };
+    const joinMeetingClicked = async (meetingName: string, useCode: boolean) => {
+        props.joinRoomClicked(meetingName, useCode);
+    };
+
     /**
      * (1) action linking
      */
@@ -42,6 +57,26 @@ export const Sidebar = (props: SidebarProps) => {
             </div>
         );
     }, []);
+
+    //// () generate Room list
+    const roomItems = useMemo(() => {
+        return rooms.map((x, index) => {
+            const key = x.meetingId === "---secret---" ? `---secret---${index}` : x.meetingId;
+            return (
+                <div key={key} className="sidebar-room-item">
+                    <div className="sidebar-room-name">{decodeURIComponent(x.meetingName)}</div>
+                    <div
+                        className="sidebar-room-join"
+                        onClick={() => {
+                            joinMeetingClicked(x.meetingName, x.useCode);
+                        }}
+                    >
+                        Join <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
+                    </div>
+                </div>
+            );
+        });
+    }, [rooms]);
 
     // /**
     //  * (2)action linking
@@ -90,233 +125,14 @@ export const Sidebar = (props: SidebarProps) => {
                         <div className="sidebar-create-room" onClick={props.newRoomClicked}>
                             + new room
                         </div>
-                        <div className="sidebar-room-list">
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join tooltip-right" data-tooltip="join meeting">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                                <div className="sidebar-room-join">
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} data-tooltip="join meeting" />
-                                </div>
-                            </div>
-
-                            <div className="sidebar-room-item">
-                                <div className="sidebar-room-name tooltip-bottom" data-tooltip="join meeting">
-                                    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-                                </div>
-                                <div className="sidebar-room-join tooltip-bottom" data-tooltip="join meeting" style={{ zIndex: 1000 }}>
-                                    <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-bottom" data-tooltip="join meeting" />
-                                </div>
-                            </div>
+                        <div className="sidebar-create-room" onClick={reloadRoomClicked}>
+                            + reload list
                         </div>
+                        <div className="sidebar-create-room" onClick={props.newRoomClicked}>
+                            + join secret room
+                        </div>
+
+                        <div className="sidebar-room-list">{roomItems}</div>
                     </div>
                 </div>
 

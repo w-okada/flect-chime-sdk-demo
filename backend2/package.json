@@ -14,13 +14,14 @@
         "build:lambda": "run-s clean:lambda tsc:lambda",
         "deploy": "cdk deploy --outputs-file cfn_outputs.json",
         "destroy": "cdk destroy",
+        "synth": "rimraf tmp_out/* && cdk synth -o tmp_out",
         "build_all": "run-s build build:lambda deploy"
     },
     "devDependencies": {
         "@types/aws-lambda": "^8.10.97",
         "@types/aws-serverless-express": "^3.3.5",
         "@types/jest": "^27.5.1",
-        "@types/node": "17.0.35",
+        "@types/node": "^17.0.35",
         "@types/prettier": "2.6.1",
         "@types/uuid": "^8.3.4",
         "aws-cdk": "^2.25.0",

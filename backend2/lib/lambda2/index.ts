@@ -1,8 +1,8 @@
 import { DynamoDB } from "aws-sdk";
-import { BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType } from "./backend_request";
+import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest } from "./backend_request";
 import { StartTranscribeRequest, StopTranscribeRequest } from "./const";
-import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "./http_request";
-import { createMeeting, deleteMeeting, getAttendeeInfo, getMeetingInfo, joinMeeting, startTranscribe, stopTranscribe } from "./meeting";
+import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPResponseBody } from "./http_request";
+import { createMeeting, deleteMeeting, getAttendeeInfo, getMeetingInfoFromDB, joinMeeting, listMeetings, startTranscribe, stopTranscribe } from "./meeting";
 import { generateResponse, getEmailFromAccessToken } from "./util";
 
 var meetingTableName = process.env.MEETING_TABLE_NAME!;
@@ -32,21 +32,23 @@ const Operations = {
 } as const;
 type Operations = typeof Operations[keyof typeof Operations];
 
-const Codes = {
-    SUCCESS: "SUCCESS",
-    UNKNOWN_RESOURCE: "UNKNOWN_RESOURCE",
-    UNKNOWN_METHOD: "UNKNOWN_METHOD",
-    TOKEN_ERROR: "TOKEN_ERROR",
-    PARAMETER_ERROR: "PARAMETER_ERROR",
-    NO_SUCH_A_MEETING_ROOM: "NO_SUCH_A_MEETING_ROOM",
-    NO_SUCH_AN_ATTENDEE: "NO_SUCH_AN_ATTENDEE",
-} as const;
-type Code = typeof Codes[keyof typeof Codes];
 
+
+
+/**
+ * ■ ざっくり処理の流れ
+ * このハンドラーでは、resource(path)でサブハンドラーに振り分けを行う。
+ * サブハンドラーでは、methodで実処理用パラメータ作成処理に振り分けを行う。
+ * 実処理用パラメータ作成処理では、パラメータを作成して実処理を実行する。
+ * 　実処理は別ファイルとなっている場合がある。
+ * ■ ログ
+ * 共通のログはこのハンドラーで行う。
+ * 対象はresource, pathParameters, method, body
+ */
 export const handler = (event: any, context: any, callback: any) => {
     console.log(event);
     console.log("resource:", event.resource);
-    console.log("pathPArameters:", event.pathParameters);
+    console.log("pathParameters:", event.pathParameters);
     console.log("method", event.httpMethod);
     console.log("body", event.body);
 
@@ -108,15 +110,9 @@ const handleMeetings = (accessToken: string, method: string, pathParams: { [key:
             break;
     }
 };
-//// (1-1) get meetings
-const handleGetMeetings = (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
-    ////// Not implemented
-    const response = generateResponse({ success: true, code: Codes.SUCCESS });
-    callback(null, response);
-};
-//// (1-2) post meetings
-const handlePostMeetings = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
-    const params = JSON.parse(body) as HTTPCreateMeetingRequest;
+//// (1-1) list meetings
+const handleGetMeetings = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+    const params = JSON.parse(body) as HTTPListMeetingsRequest;
     let email;
     try {
         email = await getEmailFromAccessToken(accessToken);
@@ -125,17 +121,12 @@ const handlePostMeetings = async (accessToken: string, pathParams: { [key: strin
     }
     let res: HTTPResponseBody;
     if (email) {
-        const result = await createMeeting({
-            email,
-            meetingName: params.meetingName,
-            region: params.region,
-        });
-        const httpRes: HTTPCreateMeetingResponse = {
-            created: result.created,
-            meetingId: result.meetingId,
-            meetingName: result.meetingName,
-            ownerId: result.ownerId,
-        };
+        const backendParams: BackendListMeetingsRequest = {
+            email: email,
+            ...params
+        }
+        const result = await listMeetings(backendParams);
+        const httpRes: HTTPListMeetingsResponse = result;
         res = {
             success: true,
             code: Codes.SUCCESS,
@@ -150,7 +141,40 @@ const handlePostMeetings = async (accessToken: string, pathParams: { [key: strin
     const response = generateResponse(res);
     callback(null, response);
 };
-// (2) meetings
+//// (1-2) post meetings
+const handlePostMeetings = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+    const params = JSON.parse(body) as HTTPCreateMeetingRequest;
+    let email;
+    try {
+        email = await getEmailFromAccessToken(accessToken);
+    } catch (e) {
+        console.log(e);
+    }
+    let res: HTTPResponseBody;
+    if (email) {
+        const backendParams: BackendCreateMeetingRequest = {
+            email: email,
+            ...params
+        }
+        const result = await createMeeting(backendParams);
+        const httpRes: HTTPCreateMeetingResponse = result;
+        res = {
+            success: true,
+            code: Codes.SUCCESS,
+            data: httpRes,
+        };
+    } else {
+        res = {
+            success: false,
+            code: Codes.TOKEN_ERROR,
+        };
+    }
+    const response = generateResponse(res);
+    callback(null, response);
+};
+
+
+// (2) meeting
 const handleMeeting = (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
     console.log(`HANDLE Meeting: ${method} ${body}`);
     switch (method) {
@@ -189,7 +213,7 @@ const handleGetMeeting = async (accessToken: string, pathParams: { [key: string]
             code: Codes.PARAMETER_ERROR,
         };
     } else {
-        const result = await getMeetingInfo({ email, meetingName });
+        const result = await getMeetingInfoFromDB({ email, meetingName });
         if (!result) {
             res = {
                 success: false,
@@ -263,17 +287,23 @@ const handleGetAttendees = async (accessToken: string, pathParams: { [key: strin
 const handlePostAttendees = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
     let res: HTTPResponseBody;
     const params = JSON.parse(body) as HTTPJoinMeetingRequest;
-
-    const joinInfo = await joinMeeting({
+    const backendParams: BackendJoinMeetingRequest = {
         meetingName: params.meetingName,
         attendeeName: params.attendeeName,
-    });
+        code: params.code
+    }
+    const joinInfo = await joinMeeting(backendParams);
     if ("exception" in joinInfo) {
         const exception = joinInfo as BackendJoinMeetingException;
         if (exception.code === BackendJoinMeetingExceptionType.NO_MEETING_FOUND) {
             res = {
                 success: false,
                 code: Codes.NO_SUCH_A_MEETING_ROOM,
+            };
+        } else if (exception.code === BackendJoinMeetingExceptionType.INVALID_CODE) {
+            res = {
+                success: false,
+                code: Codes.INVALID_CODE,
             };
         } else {
             res = {
@@ -297,7 +327,7 @@ const handlePostAttendees = async (accessToken: string, pathParams: { [key: stri
     callback(null, response);
 };
 
-// (4) attendees
+// (4) attendee
 const handleAttendee = (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
     console.log(`HANDLE attendee: ${method} ${body}`);
     switch (method) {

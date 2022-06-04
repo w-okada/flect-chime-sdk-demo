@@ -16,7 +16,6 @@ export const Codes = {
     PARAMETER_ERROR: "PARAMETER_ERROR",
     NO_SUCH_A_MEETING_ROOM: "NO_SUCH_A_MEETING_ROOM",
     NO_SUCH_AN_ATTENDEE: "NO_SUCH_AN_ATTENDEE",
-    INVALID_CODE: "INVALID_CODE"
 } as const;
 type Code = typeof Codes[keyof typeof Codes];
 

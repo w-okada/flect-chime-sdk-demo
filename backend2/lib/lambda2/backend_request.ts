@@ -1,19 +1,35 @@
+/**
+ * Frontendと共用するため、http_request.tsをベースにbackend_requestを作成する。
+ */
+
 import { Chime } from "aws-sdk";
-import { Metadata } from "./http_request";
+import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, Metadata } from "./http_request";
+
+// (1) Meetings 
+// (1-1) List Meetings
+export type BackendListMeetingsRequest = HTTPListMeetingsRequest & {
+    email: string
+}
+export type BackendListMeetingsResponse = HTTPListMeetingsResponse
+
+// (1-2) Create Meeting
+export type BackendCreateMeetingRequest = HTTPCreateMeetingRequest & {
+    email: string
+}
+export type BackendCreateMeetingResponse = HTTPCreateMeetingResponse;
+
 
 // Get Meeting Info
-export type BackendGetMeetingInfoRequest = {
+export type BackendGetMeetingInfoRequest = HTTPGetMeetingInfoRequest & {
     meetingName: string;
     email?: string;
+    deleteCode: boolean;
+}
+
+export type BackendGetMeetingInfoResponse = HTTPGetMeetingInfoResponse & {
+    code?: string;
 };
-export type BackendGetMeetingInfoResponse = {
-    meetingName: string;
-    meetingId: string;
-    meeting: Chime.Meeting;
-    metadata: Metadata;
-    hmmTaskArn: string;
-    isOwner?: boolean;
-};
+
 
 // Delete Meeting
 
@@ -21,34 +37,16 @@ export type BackendDeleteMeetingRequest = {
     meetingName: string;
 };
 
-// Create Meeting
-export type BackendCreateMeetingRequest = {
-    email: string;
-    meetingName: string;
-    region: string;
-};
-
-export type BackendCreateMeetingResponse = {
-    created: boolean;
-    meetingId: string;
-    meetingName: string;
-    ownerId: string;
-};
 
 // Join Meeting
-export type BackendJoinMeetingRequest = {
-    meetingName: string;
-    attendeeName: string;
-};
+export type BackendJoinMeetingRequest = HTTPJoinMeetingRequest
+export type BackendJoinMeetingResponse = HTTPJoinMeetingResponse
 
-export type BackendJoinMeetingResponse = {
-    meetingName: string;
-    meeting: Chime.Meeting;
-    attendee: Chime.Attendee;
-};
+
 export const BackendJoinMeetingExceptionType = {
     NO_MEETING_FOUND: "NO_MEETING_FOUND",
     PARAMETER_ERROR: "PARAMETER_ERROR",
+    INVALID_CODE: "INVALID_CODE"
 } as const;
 export type BackendJoinMeetingExceptionType = typeof BackendJoinMeetingExceptionType[keyof typeof BackendJoinMeetingExceptionType];
 export type BackendJoinMeetingException = {

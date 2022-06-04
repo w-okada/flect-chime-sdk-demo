@@ -92,7 +92,7 @@
             }
             .sidebar-room-list {
                 width: 100%;
-                height: calc(100% - 2rem);
+                height: calc(100% - 6rem);
                 overflow-y: scroll;
                 overflow-x: hidden;
                 &::-webkit-scrollbar {
@@ -111,17 +111,21 @@
                 .sidebar-room-item {
                     width: 100%;
                     display: flex;
+                    justify-content: space-between;
                     margin-top: 0.2rem;
 
                     .sidebar-room-name {
-                        max-width: calc(100% - 3rem);
+                        padding-left: 1rem;
+                        max-width: calc(100% - 6rem);
                         overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
                     }
                     .sidebar-room-join {
-                        max-width: 3rem;
+                        cursor: pointer;
+                        max-width: 5rem;
                         font-size: 1rem;
+                        padding-right: 1rem;
                     }
                 }
             }

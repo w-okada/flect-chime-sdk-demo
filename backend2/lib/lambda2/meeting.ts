@@ -14,6 +14,8 @@ import {
     BackendJoinMeetingExceptionType,
     BackendJoinMeetingRequest,
     BackendJoinMeetingResponse,
+    BackendListMeetingsRequest,
+    BackendListMeetingsResponse,
     BackendStartTranscribeException,
     BackendStartTranscribeExceptionType,
     BackendStartTranscribeRequest,
@@ -21,21 +23,87 @@ import {
     BackendStopTranscribeExceptionType,
     BackendStopTranscribeRequest,
 } from "./backend_request";
-import { Metadata } from "./http_request";
+import { MeetingListItem, Metadata } from "./http_request";
 import { getExpireDate } from "./util";
 var meetingTableName = process.env.MEETING_TABLE_NAME!;
 var attendeesTableName = process.env.ATTENDEE_TABLE_NAME!;
 var ddb = new DynamoDB();
 const chime = new Chime({ region: "us-east-1" });
 chime.endpoint = new Endpoint("https://service.chime.aws.amazon.com/console");
-/**
- * get meeting info
- * (1) retrieve meeting info from DB
- * (2) If there is no meeting in DB, return null
- * (3) If there is no meeting in Amazon Chime, delete from DB and return null.
- * @param {*} meetingName
- */
-export const getMeetingInfo = async (req: BackendGetMeetingInfoRequest): Promise<BackendGetMeetingInfoResponse | null> => {
+
+
+type MetaddataDB = Metadata & {
+    Code: string
+}
+
+
+////////////////////////////////
+// (A) Common Functions。index.tsから直接コールされない。
+////////////////////////////////
+
+// (A-1) ミーティングをDBから列挙。
+// Chimeのバックエンドと同期して返す(syncMeetingWithChimeBackendをコール)。
+// ※ codeはmetadataから削除する。とる場合はgetMeetingInfoFromDBを使用する。
+export const listMeetingsFromDB = async (req: BackendListMeetingsRequest): Promise<BackendListMeetingsResponse> => {
+    console.log("dynamo: list all meetings");
+    const result = await ddb.scan({
+        TableName: meetingTableName,
+        Limit: 100,
+    }).promise();
+    console.log("dynamo: list all meetings result:", result);
+
+    const meetingInfos = result.Items;
+    const meetings: MeetingListItem[] = meetingInfos.map(x => {
+        const info = JSON.parse(x.Meeting.S!)
+        const id = x.MeetingId.S!
+        const name = x.MeetingName.S!
+        const metadata = JSON.parse(x.Metadata.S!)
+
+        delete metadata["Code"]
+        return {
+            meetingName: name,
+            meetingId: id,
+            meeting: info,
+            metadata: metadata,
+            isOwner: req.email === metadata.OwnerId,
+            secret: metadata.Secret
+        }
+    })
+    const aliveMeetingIds = await syncMeetingWithChimeBackend(meetings)
+    const aliveMeetings = meetings.filter(x => {
+        return aliveMeetingIds.includes(x.meetingId);
+    })
+    const res = { meetings: aliveMeetings }
+    return res
+}
+
+// (A-2) Chimeのバックエンドと同期。
+// バックエンドに存在しないミーティングはDBから削除する。
+// 存在していたミーティングのIDだけを返す。
+const syncMeetingWithChimeBackend = async (meetings: MeetingListItem[]): Promise<string[]> => {
+    const aliveMeetingId: string[] = []
+    for (let meeting of meetings) {
+        try {
+            const mid = await chime.getMeeting({ MeetingId: meeting.meetingId }).promise();
+            console.log("chime meeting info:", mid);
+            aliveMeetingId.push(meeting.meetingId)
+        } catch (err: any) {
+            if (err.code == "NotFound") {
+                console.log("chime meeting exception, but this maybe happen when the meeting doesn't exist.");
+            } else {
+                console.log("chime meeting exception:", err);
+            }
+            await deleteMeeting({ meetingName: meeting.meetingName });
+        }
+    }
+    return aliveMeetingId;
+}
+
+// (A-3) DBからミーティングの情報を取得する。
+// DBに存在しない場合はnullを返す。
+// DBに存在して、Chimeのバックエンドに存在しない場合はDBから削除したうえで、nullを返す。
+// 
+export const getMeetingInfoFromDB = async (req: BackendGetMeetingInfoRequest): Promise<BackendGetMeetingInfoResponse | null> => {
     //// (1) retrieve info
     console.log("dynamo1", req.meetingName);
     const result = await ddb.getItem({ TableName: meetingTableName, Key: { MeetingName: { S: req.meetingName } } }).promise();
@@ -45,39 +113,47 @@ export const getMeetingInfo = async (req: BackendGetMeetingInfoRequest): Promise
     if (!result.Item) {
         return null;
     }
-
     //// (3) If no meeting in Chime, delete meeting from DB and return null
     const meetingInfo = result.Item!;
-    console.log("READ PROPR1");
-    const meetingData = JSON.parse(meetingInfo.Meeting.S!);
-    console.log("READ PROPR2");
+    const meetingName = meetingInfo.MeetingName.S!
+    const meetingId = meetingInfo.MeetingId.S!
+    const meeting = JSON.parse(meetingInfo.Meeting.S!);
+    const metadata = JSON.parse(meetingInfo.Metadata.S!)
+    const hmmTaskArn = meetingInfo.HmmTaskArn ? meetingInfo.HmmTaskArn.S! : "-"
+    const isOwner = req.email === JSON.parse(meetingInfo.Metadata.S!).OwnerId
+    const code = metadata["Code"]
+
     try {
         // Check Exist?
-        const mid = await chime.getMeeting({ MeetingId: meetingData.MeetingId }).promise();
+        const mid = await chime.getMeeting({ MeetingId: meeting.MeetingId }).promise();
         console.log("chime meeting info:", mid);
-    } catch (err) {
-        console.log("chime meeting exception:", err);
+    } catch (err: any) {
+        if (err.code == "NotFound") {
+            console.log("chime meeting exception, but this maybe happen when the meeting doesn't exist.");
+        } else {
+            console.log("chime meeting exception:", err);
+        }
         await deleteMeeting({ meetingName: req.meetingName });
         return null;
     }
-    console.log("READ PROPR3");
 
     //// (4) return meeting info
+
+
     return {
-        meetingName: meetingInfo.MeetingName.S!,
-        meetingId: meetingInfo.MeetingId.S!,
-        meeting: JSON.parse(meetingInfo.Meeting.S!),
-        metadata: JSON.parse(meetingInfo.Metadata.S!),
-        hmmTaskArn: meetingInfo.HmmTaskArn ? meetingInfo.HmmTaskArn.S! : "-",
-        isOwner: req.email === JSON.parse(meetingInfo.Metadata.S!).OwnerId,
+        meetingName: meetingName,
+        meetingId: meetingId,
+        meeting: meeting,
+        metadata: metadata,
+        hmmTaskArn: hmmTaskArn,
+        isOwner: isOwner,
+        code: code
     };
 };
 
-/**
- * Delete meeting from DB
- * @param {*} meetingName
- */
+// (A-4) DBからミーティングを削除する
 export const deleteMeeting = async (req: BackendDeleteMeetingRequest) => {
+    console.log(`Delete meeting from DB ${req.meetingName}`)
     await ddb
         .deleteItem({
             TableName: meetingTableName,
@@ -88,9 +164,22 @@ export const deleteMeeting = async (req: BackendDeleteMeetingRequest) => {
         .promise();
 };
 
+
+
+
+////////////////////////////////
+// (B) 具体的な機能。index.tsから直接コールされる。
+////////////////////////////////
+// (1) Meetings
+// (1-1) List Meetings 
+export const listMeetings = async (req: BackendListMeetingsRequest): Promise<BackendListMeetingsResponse> => {
+    return listMeetingsFromDB(req)
+}
+
+// (1-2) Create Meeting
 export const createMeeting = async (req: BackendCreateMeetingRequest): Promise<BackendCreateMeetingResponse> => {
     //// (1) check meeting name exist
-    const meetingInfo = await getMeetingInfo({ meetingName: req.meetingName });
+    const meetingInfo = await getMeetingInfoFromDB({ meetingName: req.meetingName, deleteCode: true });
     if (meetingInfo !== null) {
         return {
             created: false,
@@ -110,9 +199,12 @@ export const createMeeting = async (req: BackendCreateMeetingRequest): Promise<B
     //// (3) register meeting info in DB
     const date = new Date();
     const now = date.getTime();
-    const metadata: Metadata = {
+    const metadata: MetaddataDB = {
         OwnerId: req.email,
         Region: req.region,
+        Secret: req.secret,
+        UseCode: req.useCode,
+        Code: req.code,
         StartTime: now,
     };
     const item = {
@@ -139,9 +231,13 @@ export const createMeeting = async (req: BackendCreateMeetingRequest): Promise<B
     };
 };
 
+// (2) Meeting
+
+// (3) attendees
+//// Join
 export const joinMeeting = async (req: BackendJoinMeetingRequest): Promise<BackendJoinMeetingResponse | BackendJoinMeetingException> => {
     //// (1) check meeting exists
-    let meetingInfo = await getMeetingInfo({ meetingName: req.meetingName });
+    let meetingInfo = await getMeetingInfoFromDB({ meetingName: req.meetingName, deleteCode: false });
     if (meetingInfo === null) {
         return {
             code: BackendJoinMeetingExceptionType.NO_MEETING_FOUND,
@@ -153,6 +249,13 @@ export const joinMeeting = async (req: BackendJoinMeetingRequest): Promise<Backe
     if (req.attendeeName === "") {
         return {
             code: BackendJoinMeetingExceptionType.PARAMETER_ERROR,
+            exception: true,
+        };
+    }
+
+    if (meetingInfo.metadata["UseCode"]) {
+        return {
+            code: BackendJoinMeetingExceptionType.INVALID_CODE,
             exception: true,
         };
     }
@@ -222,7 +325,7 @@ export const getAttendeeInfo = async (req: BackendGetAttendeeInfoRequest): Promi
 
 export const startTranscribe = async (req: BackendStartTranscribeRequest): Promise<BackendStartTranscribeResponse | BackendStartTranscribeException> => {
     //// (1) check meeting exists
-    let meetingInfo = await getMeetingInfo({ meetingName: req.meetingName });
+    let meetingInfo = await getMeetingInfoFromDB({ meetingName: req.meetingName, deleteCode: true });
     if (meetingInfo === null) {
         return {
             code: BackendStartTranscribeExceptionType.NO_MEETING_FOUND,
@@ -267,7 +370,7 @@ export const startTranscribe = async (req: BackendStartTranscribeRequest): Promi
 export const stopTranscribe = async (req: BackendStopTranscribeRequest) => {
     console.log("stopTranscribe");
     //// (1) If there is no meeting, return fail
-    let meetingInfo = await getMeetingInfo({ meetingName: req.meetingName });
+    let meetingInfo = await getMeetingInfoFromDB({ meetingName: req.meetingName, deleteCode: true });
     if (meetingInfo === null) {
         return {
             code: BackendStopTranscribeExceptionType.NO_MEETING_FOUND,
