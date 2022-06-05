@@ -1,9 +1,10 @@
-import { HTTPGetAttendeeInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "../../http_request";
+import { HTTPGetAttendeeInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "../http_request";
 import { RestApiClientContext } from "./RestApiClient";
 
 // (1) Join Meeting (POST)
-
-export const joinMeeting = async (params: HTTPJoinMeetingRequest, context: RestApiClientContext): Promise<HTTPJoinMeetingResponse> => {
+export type RestJoinMeetingRequest = HTTPJoinMeetingRequest
+export type RestJoinMeetingResponse = HTTPJoinMeetingResponse
+export const joinMeeting = async (params: RestJoinMeetingRequest, context: RestApiClientContext): Promise<RestJoinMeetingResponse> => {
     const url = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees`;
     params.meetingName = encodeURIComponent(params.meetingName);
     params.attendeeName = encodeURIComponent(params.attendeeName);
@@ -25,11 +26,12 @@ export const joinMeeting = async (params: HTTPJoinMeetingRequest, context: RestA
         console.log(response.code);
         throw response.code;
     }
-    const data = response.data as HTTPJoinMeetingResponse;
+    const data = response.data as RestJoinMeetingResponse;
     return data;
 };
 
 // (2) List Attendees (GET)
+//// TODO: APIを作成してI/Fを合わせる
 export type GetAttendeeListRequest = {
     meetingName: string;
 };
@@ -63,3 +65,9 @@ export const getAttendeeList = async (params: GetAttendeeListRequest, context: R
         result: data.result,
     };
 };
+
+
+
+// (3)  (PUT) -> no support
+// (4)  (DELETE) -> no support
+

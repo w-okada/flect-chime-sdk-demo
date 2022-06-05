@@ -40,7 +40,21 @@ export type Metadata = {
 };
 
 // (1) Meetings 
-// (1-1) List Meetings
+//// (1-1) Create Meeting (POST)
+export type HTTPCreateMeetingRequest = {
+    meetingName: string;
+    region: string;
+    secret: boolean;
+    useCode: boolean;
+    code: string;
+}
+export type HTTPCreateMeetingResponse = {
+    created: boolean;
+    meetingId: string;
+    meetingName: string;
+    ownerId: string;
+}
+//// (1-2) List Meetings (GET)
 export type MeetingListItem = {
     meetingName: string;
     meetingId: string;
@@ -53,24 +67,12 @@ export type HTTPListMeetingsRequest = {}
 export type HTTPListMeetingsResponse = {
     meetings: MeetingListItem[]
 }
-// (1-2) Create Meeting
-export type HTTPCreateMeetingRequest = {
-    meetingName: string;
-    region: string;
-    secret: boolean;
-    useCode: boolean;
-    code: string;
-}
+//// (1-3) Update Meetings (PUT) -> no support
+//// (1-4) Delete Meetings (DELETE) -> no support
 
-
-export type HTTPCreateMeetingResponse = {
-    created: boolean;
-    meetingId: string;
-    meetingName: string;
-    ownerId: string;
-}
-
-// Get Meeting Info
+// (2) Meeting
+//// (2-1) Create (POST) -> no support
+//// (2-2) Get Meeting Info (GET)
 export type HTTPGetMeetingInfoRequest = {}
 export type HTTPGetMeetingInfoResponse = {
     meetingName: string;
@@ -80,26 +82,59 @@ export type HTTPGetMeetingInfoResponse = {
     hmmTaskArn: string;
     isOwner?: boolean;
 };
-// Delete Meeting
 
-// Join Meeting
+//// (2-3) Update Meeting  -> no support
+//// (2-4) Delete Meeting
+export type HTTPDeleteMeetingRequest = {}
+export type HTTPDeleteMeetingResponse = {}
+// (3) Attendees
+//// (3-1) Join Meeting (POST)
 export type HTTPJoinMeetingRequest = {
     meetingName: string;
     attendeeName: string;
     code: string;
 };
-
 export type HTTPJoinMeetingResponse = {
     meetingName: string;
     meeting: Chime.Meeting;
     attendee: Chime.Attendee;
 };
+//// (3-2) Get Attendees List (GET)
+export type HTTPGetAttendeesListRequest = {}
+export type HTTPGetAttendeesListResponse = {
+    attendees: [
+        {
+            ExternalUserId: string;
+            AttendeeId: string;
+            JoinToken: string;
+        }
+    ];
+    result: string;
+}
 
-// Get Attendee Info
+//// (3-3) Update Attendees (PUT) -> no support
+//// (3-4) Delete Attendees (DELETE) -> no support
+
+// (4) Attendee
+//// (4-1) Create (POST) -> no support
+//// (4-2) Get Attendee Info
+export type HTTPGetAttendeeInfoRequest = {};
 export type HTTPGetAttendeeInfoResponse = {
     attendeeId: string;
     attendeeName: string;
 };
+
+//// (4-3) Update Attendee Info -> no support
+//// (4-4) Delete Attendee 
+// TODO: Implement Delete Attendee
+
+///// Operation...
+export type StartTranscribeRequest = {
+    lang: string;
+};
+
+export type StopTranscribeRequest = {};
+
 
 ///////////////////////////
 // Federation

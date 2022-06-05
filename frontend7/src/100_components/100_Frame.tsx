@@ -6,6 +6,8 @@ import { useStateControlCheckbox } from "./hooks/useStateControlCheckbox";
 import { CreateRoomDialog, CreateRoomDialogProps } from "./101-2_CreateRoomDialog";
 import { useAppState } from "../providers/AppStateProvider";
 import { JoinRoomDialog, JoinRoomDialogProps } from "./101-3_JoinRoomDialog";
+import { SettingDialog } from "./101-5_SettingDialog";
+import { Chime } from "aws-sdk";
 
 export type FrameProps = {
     signInCompleted: boolean;
@@ -14,7 +16,11 @@ export type FrameProps = {
 
 export const Frame = (props: FrameProps) => {
     const { frontendState, chimeClientState } = useAppState();
-    const [joinProps, setJoinProps] = useState<JoinRoomDialogProps>();
+    const [joinRoomProps, setJoinRoomProps] = useState<JoinRoomDialogProps>({
+        meetingName: "",
+        useCode: false,
+        close: () => {},
+    });
     const openSidebarCheckbox = useStateControlCheckbox("open-sidebar-checkbox");
     const micEnableCheckbox = useStateControlCheckbox("mic-enable-checkbox");
     const cameraEnableCheckbox = useStateControlCheckbox("camera-enable-checkbox");
@@ -29,6 +35,7 @@ export const Frame = (props: FrameProps) => {
     const signInCheckbox = useStateControlCheckbox("sign-in-checkbox");
     const createRoomCheckbox = useStateControlCheckbox("create-room-checkbox");
     const joinRoomCheckbox = useStateControlCheckbox("join-room-checkbox");
+    const joinSecretRoomCheckbox = useStateControlCheckbox("join-secret-room-checkbox");
     /**
      * components
      */
@@ -213,17 +220,24 @@ export const Frame = (props: FrameProps) => {
             createRoomCheckbox.updateState(true);
         },
         joinRoomClicked: (roomName: string, useCode: boolean) => {
-            joinRoomCheckbox.updateState(true);
-            setJoinProps({
+            setJoinRoomProps({
                 meetingName: roomName,
                 useCode: useCode,
-                joinMeeting: (meetingName: string, useCode: boolean, code: string) => {
-                    chimeClientState.joinMeeting(meetingName, frontendState.username, code);
-                },
                 close: () => {
                     joinRoomCheckbox.updateState(false);
                 },
             });
+            joinRoomCheckbox.updateState(true);
+        },
+        joinSecretRoomClicked: () => {
+            setJoinRoomProps({
+                meetingName: "",
+                useCode: true,
+                close: () => {
+                    joinRoomCheckbox.updateState(false);
+                },
+            });
+            joinRoomCheckbox.updateState(true);
         },
     };
     const sidebar = <Sidebar {...sidebarProps}></Sidebar>;
@@ -295,14 +309,6 @@ export const Frame = (props: FrameProps) => {
         },
     };
 
-    ////// join
-    const joinDialog = useMemo(() => {
-        if (!joinProps) {
-            return <></>;
-        }
-        return <JoinRoomDialog {...joinProps} />;
-    }, [joinProps]);
-
     return (
         <>
             {header}
@@ -312,7 +318,9 @@ export const Frame = (props: FrameProps) => {
             <div>
                 <input type="checkbox" className="setting-checkbox" id="setting-checkbox-secondary" />
                 {settingCheckbox.trigger}
-                <div className="dialog-container setting-checkbox-remover"></div>
+                <div className="dialog-container">
+                    <SettingDialog></SettingDialog>
+                </div>
             </div>
 
             <div>
@@ -330,7 +338,9 @@ export const Frame = (props: FrameProps) => {
 
             <div>
                 {joinRoomCheckbox.trigger}
-                <div className="dialog-container join-room-checkbox-remover">{joinDialog}</div>
+                <div className="dialog-container join-room-checkbox-remover">
+                    <JoinRoomDialog {...joinRoomProps} />
+                </div>
             </div>
 
             <div>

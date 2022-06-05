@@ -1,68 +1,33 @@
+import { Chime } from "aws-sdk";
 import { useMemo, useState } from "react";
-import { FlectChimeClient, MeetingInfo } from "../../002_chime/FlectChimeClient";
-import { HTTPListMeetingsResponse } from "../../http_request";
+import { FlectChimeClient, MeetingInfo } from "../../003_chime/FlectChimeClient";
 
 
 export type UseChimeClientProps = {
-    RestAPIEndpoint: string;
-
-    idToken: string | null;
-    accessToken: string | null;
-    refreshToken: string | null;
 };
 
 export type ChimeClientState = {
     chimeClient: FlectChimeClient | null
     // getMeetingInfo: (meetingName: string, userName?: string | null) => Promise<void>;
-    // (1) Meetings    
-    listMeetings: () => Promise<MeetingInfo[] | undefined>
-    createMeeting: (meetingName: string, region: string, secret: boolean, useCode: boolean, code: string) => Promise<void>;
 
     // (3)
-    joinMeeting: (meetingName: string, attendeeName: string, code: string) => Promise<void>
+    joinMeeting: (meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => Promise<void>
 
 }
 
 export const useChimeClient = (props: UseChimeClientProps): ChimeClientState => {
     const chimeClient = useMemo(() => {
-        if (props.idToken && props.accessToken && props.refreshToken) {
-            const client = new FlectChimeClient(props.RestAPIEndpoint, props.idToken, props.accessToken, props.refreshToken);
-            return client
-        } else {
-            return null
-        }
-    }, [props.idToken, props.accessToken, props.refreshToken]);
-
-    // (1) Meetings
-    //// (1-1) List Meetings
-    const listMeetings = useMemo(() => {
-        return async () => {
-            if (!chimeClient) {
-                console.warn("chime client is not initialized.")
-                return
-            }
-            return chimeClient.listMeetings()
-        }
-    }, [chimeClient])
-    //// (1-2) Create Meeting
-    const createMeeting = useMemo(() => {
-        return async (meetingName: string, region: string, secret: boolean, useCode: boolean, code: string) => {
-            if (!chimeClient) {
-                console.warn("chime client is not initialized.")
-                return
-            }
-            await chimeClient.createMeeting(meetingName, region, secret, useCode, code)
-        }
-    }, [chimeClient])
+        return new FlectChimeClient()
+    }, [])
 
     //// (3) Create Meeting
     const joinMeeting = useMemo(() => {
-        return async (meetingName: string, attendeeName: string, code: string) => {
+        return async (meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => {
             if (!chimeClient) {
                 console.warn("chime client is not initialized.")
                 return
             }
-            await chimeClient.joinMeeting(meetingName, attendeeName, code);
+            await chimeClient.joinMeeting(meetingName, meetingInfo, attendeeInfo);
         }
     }, [chimeClient])
 
@@ -70,8 +35,6 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientState => 
     const returnValue: ChimeClientState = {
         chimeClient,
         // (1) Meetings   
-        listMeetings,
-        createMeeting,
 
         joinMeeting
     }

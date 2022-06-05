@@ -1,11 +1,17 @@
 import { DynamoDB } from "aws-sdk";
+// import { deleteMeeting, getMeetingInfoFromDB } from "./001_meeting_common";
+import { createMeeting, listMeetings } from "./002_meetings";
+import { deleteMeeting, getMeetingInfo } from "./003_meeting";
+import { joinMeeting } from "./004_attendees";
+import { getAttendeeInfo } from "./005_attendee";
+import { startTranscribe, stopTranscribe } from "./006_misc";
 import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest } from "./backend_request";
-import { StartTranscribeRequest, StopTranscribeRequest } from "./const";
-import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPResponseBody } from "./http_request";
-import { createMeeting, deleteMeeting, getAttendeeInfo, getMeetingInfoFromDB, joinMeeting, listMeetings, startTranscribe, stopTranscribe } from "./meeting";
-import { generateResponse, getEmailFromAccessToken } from "./util";
+import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
 
+import { generateResponse, getEmailFromAccessToken } from "./util";
+// @ts-ignore
 var meetingTableName = process.env.MEETING_TABLE_NAME!;
+// @ts-ignore
 var attendeesTableName = process.env.ATTENDEE_TABLE_NAME!;
 var ddb = new DynamoDB();
 
@@ -213,7 +219,7 @@ const handleGetMeeting = async (accessToken: string, pathParams: { [key: string]
             code: Codes.PARAMETER_ERROR,
         };
     } else {
-        const result = await getMeetingInfoFromDB({ email, meetingName });
+        const result = await getMeetingInfo({ email, meetingName, deleteCode: true });
         if (!result) {
             res = {
                 success: false,

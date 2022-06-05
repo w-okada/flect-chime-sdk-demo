@@ -2,24 +2,33 @@ import React, { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useStateControlCheckbox } from "./hooks/useStateControlCheckbox";
 import { useAppState } from "../providers/AppStateProvider";
-import { MeetingInfo } from "../002_chime/FlectChimeClient";
+import { MeetingInfo } from "../003_chime/FlectChimeClient";
 
 export type SidebarProps = {
     newRoomClicked: () => void;
     joinRoomClicked: (meetingName: string, useCode: boolean) => void;
+    joinSecretRoomClicked: () => void;
 };
 
 export const Sidebar = (props: SidebarProps) => {
-    const { chimeClientState, frontendState, rooms, reloadRoomList } = useAppState();
+    const { chimeBackendState } = useAppState();
     const sidebarAccordionMeetingCheckbox = useStateControlCheckbox("sidebar-accordion-meeting-checkbox");
     const sidebarAccordionChatCheckbox = useStateControlCheckbox("sidebar-accordion-chat-checkbox");
 
     /**
      * (1) Operation
      */
-    //// (1-1) reload meetings
+    //// (1-1) new meeting room
+    const newRoomClicked = async () => {
+        props.newRoomClicked();
+    };
+    //// (1-2) reload meetings
     const reloadRoomClicked = async () => {
-        reloadRoomList();
+        chimeBackendState.reloadMeetingList({});
+    };
+    ///// (1-3)
+    const joinSecretRoomClicked = async () => {
+        props.joinSecretRoomClicked();
     };
     const joinMeetingClicked = async (meetingName: string, useCode: boolean) => {
         props.joinRoomClicked(meetingName, useCode);
@@ -60,7 +69,7 @@ export const Sidebar = (props: SidebarProps) => {
 
     //// () generate Room list
     const roomItems = useMemo(() => {
-        return rooms.map((x, index) => {
+        return chimeBackendState.meetings.map((x, index) => {
             const key = x.meetingId === "---secret---" ? `---secret---${index}` : x.meetingId;
             return (
                 <div key={key} className="sidebar-room-item">
@@ -68,7 +77,7 @@ export const Sidebar = (props: SidebarProps) => {
                     <div
                         className="sidebar-room-join"
                         onClick={() => {
-                            joinMeetingClicked(x.meetingName, x.useCode);
+                            joinMeetingClicked(x.meetingName, x.metadata["UseCode"]);
                         }}
                     >
                         Join <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />
@@ -76,7 +85,7 @@ export const Sidebar = (props: SidebarProps) => {
                 </div>
             );
         });
-    }, [rooms]);
+    }, [chimeBackendState.meetings]);
 
     // /**
     //  * (2)action linking
@@ -122,13 +131,13 @@ export const Sidebar = (props: SidebarProps) => {
                         <div className="caret"> {accodionButtonForMeeting}</div>
                     </div>
                     <div className="sidebar-content">
-                        <div className="sidebar-create-room" onClick={props.newRoomClicked}>
+                        <div className="sidebar-create-room" onClick={newRoomClicked}>
                             + new room
                         </div>
                         <div className="sidebar-create-room" onClick={reloadRoomClicked}>
                             + reload list
                         </div>
-                        <div className="sidebar-create-room" onClick={props.newRoomClicked}>
+                        <div className="sidebar-create-room" onClick={joinSecretRoomClicked}>
                             + join secret room
                         </div>
 

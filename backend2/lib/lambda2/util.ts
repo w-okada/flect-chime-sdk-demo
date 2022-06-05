@@ -70,8 +70,11 @@ export const getEmailFromAccessToken = async (accessToken: string) => {
     } else if (tokens.length === 2) {
         if (tokens[0] === "slack") {
             const urlEncrypter = new Encrypter<UserInformation>({
+                //@ts-ignore
                 password: process.env.SLACK_APP_DB_PASSWORD || "pass",
+                //@ts-ignore
                 salt: process.env.SLACK_APP_DB_SALT || "salt",
+                //@ts-ignore
                 secret: process.env.SLACK_APP_DB_SECRET || "secret",
                 expireSec: 60 * 60, // 60min
             });

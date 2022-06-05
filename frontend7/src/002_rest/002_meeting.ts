@@ -1,28 +1,20 @@
 import { RestApiClientContext } from "./RestApiClient";
-import { Chime } from "aws-sdk";
 import { HTTPResponseBody } from "./common";
-import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse } from "../../http_request";
+import { HTTPDeleteMeetingRequest, HTTPDeleteMeetingResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse } from "../http_request";
 
-
-// (1) Get Meeting Info (GET)
-
+// (1) (POST) -> no support
+// (2) Get Meeting Info (GET)
 export type Metadata = {
     OwnerId: string;
     Region: string;
     StartTime: number;
 };
-export type GetMeetingInfoRequest = {
+export type RestGetMeetingInfoRequest = HTTPGetMeetingInfoRequest & {
     meetingName: string;
 };
-export type GetMeetingInfoResponse = {
-    meetingName: string;
-    meetingId: string;
-    meeting: Chime.Meeting;
-    metadata: Metadata;
-    hmmTaskArn: string;
-    isOwner?: boolean;
-};
-export const getMeetingInfo = async (params: GetMeetingInfoRequest, context: RestApiClientContext): Promise<GetMeetingInfoResponse> => {
+export type RestGetMeetingInfoResponse = HTTPGetMeetingInfoResponse;
+
+export const getMeetingInfo = async (params: RestGetMeetingInfoRequest, context: RestApiClientContext): Promise<RestGetMeetingInfoResponse> => {
     const url = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}`;
 
     const res = await fetch(url, {
@@ -39,16 +31,18 @@ export const getMeetingInfo = async (params: GetMeetingInfoRequest, context: Res
         console.log(response.code);
         throw response.code;
     }
-    const data = response.data as GetMeetingInfoResponse;
+    const data = response.data as RestGetMeetingInfoResponse;
     return data;
 };
 
-
-// (2) Delete Meeting  (DELETE)
-export type EndMeetingRequest = {
+// (3) (PUT) -> no support
+// (4) Delete Meeting  (DELETE)
+export type RestEndMeetingRequest = HTTPDeleteMeetingRequest & {
     meetingName: string;
 };
-export const endMeeting = async (params: EndMeetingRequest, context: RestApiClientContext) => {
+export type RestEndMeetingResponse = HTTPDeleteMeetingResponse
+
+export const endMeeting = async (params: RestEndMeetingRequest, context: RestApiClientContext) => {
     const encodedMeetingName = encodeURIComponent(params.meetingName);
 
     const url = `${context.baseUrl}meetings/${encodedMeetingName}`;
@@ -67,4 +61,5 @@ export const endMeeting = async (params: EndMeetingRequest, context: RestApiClie
         console.log(response.code);
         throw response.code;
     }
+    return {} as RestEndMeetingResponse
 };

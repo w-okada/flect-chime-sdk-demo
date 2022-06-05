@@ -3,45 +3,46 @@
  */
 
 import { Chime } from "aws-sdk";
-import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, Metadata } from "./http_request";
+import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPDeleteMeetingRequest, HTTPDeleteMeetingResponse, HTTPGetAttendeeInfoRequest, HTTPGetAttendeeInfoResponse, HTTPGetAttendeesListRequest, HTTPGetAttendeesListResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, Metadata } from "./http_request";
+
 
 // (1) Meetings 
-// (1-1) List Meetings
-export type BackendListMeetingsRequest = HTTPListMeetingsRequest & {
-    email: string
-}
-export type BackendListMeetingsResponse = HTTPListMeetingsResponse
-
-// (1-2) Create Meeting
+//// (1-1) Create Meeting (POST)
 export type BackendCreateMeetingRequest = HTTPCreateMeetingRequest & {
     email: string
 }
 export type BackendCreateMeetingResponse = HTTPCreateMeetingResponse;
+//// (1-2) List Meetings (GET)
+export type BackendListMeetingsRequest = HTTPListMeetingsRequest & {
+    email: string
+}
+export type BackendListMeetingsResponse = HTTPListMeetingsResponse
+//// (1-3) Update Meetings (PUT) -> no support
+//// (1-4) Delete Meetings (DELETE) -> no support
 
-
-// Get Meeting Info
+// (2) Meeting
+//// (2-1) Create (POST) -> no support
+//// (2-2) Get Meeting Info (GET)
 export type BackendGetMeetingInfoRequest = HTTPGetMeetingInfoRequest & {
     meetingName: string;
     email?: string;
     deleteCode: boolean;
 }
-
 export type BackendGetMeetingInfoResponse = HTTPGetMeetingInfoResponse & {
     code?: string;
 };
 
-
-// Delete Meeting
-
-export type BackendDeleteMeetingRequest = {
+//// (2-3) Update Meeting  -> no support
+//// (2-4) Delete Meeting
+export type BackendDeleteMeetingRequest = HTTPDeleteMeetingRequest & {
     meetingName: string;
 };
+export type BackendDeleteMeetingResponse = HTTPDeleteMeetingResponse
 
-
-// Join Meeting
+// (3) Attendees
+//// (3-1) Join Meeting (POST)
 export type BackendJoinMeetingRequest = HTTPJoinMeetingRequest
 export type BackendJoinMeetingResponse = HTTPJoinMeetingResponse
-
 
 export const BackendJoinMeetingExceptionType = {
     NO_MEETING_FOUND: "NO_MEETING_FOUND",
@@ -54,16 +55,21 @@ export type BackendJoinMeetingException = {
     exception: boolean;
 };
 
-// Get Attendee
-export type BackendGetAttendeeInfoRequest = {
+//// (3-2) Get Attendees List (GET)
+export type BackendGetAttendeesListRequest = HTTPGetAttendeesListRequest
+export type BackendGetAttendeesListResponse = HTTPGetAttendeesListResponse
+//// (3-3) Update Attendees (PUT) -> no support
+//// (3-4) Delete Attendees (DELETE) -> no support
+
+// (4) Attendee
+//// (4-1) Create (POST) -> no support
+//// (4-2) Get Attendee Info
+export type BackendGetAttendeeInfoRequest = HTTPGetAttendeeInfoRequest & {
     meetingName: string;
     attendeeId: string;
 };
 
-export type BackendGetAttendeeInfoResponse = {
-    attendeeId: string;
-    attendeeName: string;
-};
+export type BackendGetAttendeeInfoResponse = HTTPGetAttendeeInfoResponse
 export const BackendGetAttendeeInfoExceptionType = {
     NO_ATTENDEE_FOUND: "NO_MEETING_FOUND",
     PARAMETER_ERROR: "PARAMETER_ERROR",
@@ -73,6 +79,13 @@ export type BackendGetAttendeeInfoException = {
     code: BackendGetAttendeeInfoExceptionType;
     exception: boolean;
 };
+
+//// (4-3) Update Attendee Info -> no support
+//// (4-4) Delete Attendee 
+// TODO: Implement Delete Attendee
+
+
+
 
 // start transcribe
 export type BackendStartTranscribeRequest = {

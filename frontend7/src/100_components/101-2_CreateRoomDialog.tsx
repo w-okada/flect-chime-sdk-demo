@@ -12,7 +12,7 @@ export type CreateRoomDialogProps = {
 };
 
 export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
-    const { chimeClientState, reloadRoomList } = useAppState();
+    const { chimeBackendState } = useAppState();
     const [useCode, setUseCode] = useState<boolean>(false);
     const [message, setMessage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -32,8 +32,14 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
         const code = (document.getElementById("create-room-dialog-code") as HTMLInputElement).value;
         try {
             setIsProcessing(true);
-            await chimeClientState.createMeeting(roomName, region, secret, useCode, code);
-            await reloadRoomList();
+            await chimeBackendState.createMeeting({
+                meetingName: roomName,
+                region: region,
+                secret: secret,
+                useCode: useCode,
+                code: code,
+            });
+            await chimeBackendState.reloadMeetingList({});
             initializeState();
             props.close();
         } catch (ex) {

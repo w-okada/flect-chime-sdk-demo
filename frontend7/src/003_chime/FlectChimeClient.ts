@@ -1,7 +1,8 @@
-import { HTTPJoinMeetingRequest } from "../http_request";
-import { HTTPCreateMeetingRequest, HTTPListMeetingsRequest, RestApiClient, GetMeetingInfoRequest, RestApiClientContext } from "./rest/RestApiClient";
+
+import { HTTPCreateMeetingRequest, HTTPListMeetingsRequest, RestApiClient, RestApiClientContext } from "../002_rest/RestApiClient";
 import {
     ConsoleLogger,
+    DefaultActiveSpeakerPolicy,
     DefaultDeviceController,
     DefaultMeetingSession,
     LogLevel,
@@ -14,6 +15,8 @@ import { AudioInputDeviceSetting } from "./io/AudioInputDeviceSetting";
 import { VideoInputDeviceSetting } from "./io/VideoInputDeviceSetting";
 import { AudioOutputDeviceSetting } from "./io/AudioOutputDeviceSetting";
 import { ChimeDemoException } from "../000_exception/Exception";
+import { RestJoinMeetingRequest } from "../002_rest/003_attendees";
+import { Chime } from "aws-sdk";
 
 export type MeetingInfo = {
     meetingName: string;
@@ -46,16 +49,7 @@ export interface FlectChimeClientListener {
 
 
 export class FlectChimeClient {
-    private _restApiClient: RestApiClient;
-    constructor(restEndPoint: string, idToken: string, accessToken: string, refreshToken: string) {
-        const restApiContext: RestApiClientContext = {
-            baseUrl: restEndPoint,
-            idToken: idToken,
-            accessToken: accessToken,
-            refreshToken: refreshToken
-        }
-        this._restApiClient = new RestApiClient(restApiContext);
-    }
+    constructor() { }
 
     /**
      * meeting infos
@@ -135,73 +129,15 @@ export class FlectChimeClient {
     ///////////////////////////////////////////
     // Meeting Management
     ///////////////////////////////////////////
-    // (1) Meetings
-    //// (1-1) list meetings
-    listMeetings = async () => {
-        const props: HTTPListMeetingsRequest = {}
-        const res = await this._restApiClient.listMeetings(props)
-        const meetings: MeetingInfo[] = res.meetings.map(x => {
-            return {
-                meetingName: x.meetingName,
-                meetingId: x.meetingId,
-                isOwner: x.isOwner,
-                useCode: x.metadata["UseCode"]
-            }
-        })
-        return meetings
-
-    }
-    //// (1-2) create meeting
-    createMeeting = async (meetingName: string, region: string, secret: boolean, useCode: boolean, code: string) => {
-        const props: HTTPCreateMeetingRequest = {
-            meetingName, region, secret, useCode, code
-        }
-        const res = await this._restApiClient.createMeeting(props);
-        if (!res.created) {
-            console.log("[FlectChimeClient][createMeeting] meeting create failed", res);
-            throw new Error(ChimeDemoException.NoMeetingRoomCreated);
-        }
-        return res;
-    };
-
-    // (2) Meeting
-    //// (2-1) getMeetingInfo
-    getMeetingInfo = async (meetingName: string, userName: string | null = null) => {
-        // this._meetingName = meetingName;
-        // this._userName = userName;
-        const props: GetMeetingInfoRequest = {
-            meetingName
-        }
-        const res = await this._restApiClient.getMeetingInfo(props);
-        console.log(res);
-        return res;
-    };
-
-    // (3) attendees
-    //// (3-1) join meeting
-    joinMeeting = async (meetingName: string, attendeeName: string, code: string) => {
+    //// (1) join meeting
+    joinMeeting = async (meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => {
         if (meetingName === "") {
             throw new Error("Meeting name is invalid");
         }
-        if (attendeeName === "") {
-            throw new Error("Username is invalid");
-        }
         this._meetingName = meetingName;
-        this._attendeeName = attendeeName;
-
-        const props: HTTPJoinMeetingRequest = { meetingName, attendeeName, code }
-        console.log("Code2:", props);
-
-        const joinMeetingResponse = await this._restApiClient.joinMeeting(props);
-
-        console.log("[FlectChimeClient][joinMeeting] joinMeetingRespons:", JSON.stringify(joinMeetingResponse));
-        const meetingInfo = joinMeetingResponse.meeting;
-        const attendeeInfo = joinMeetingResponse.attendee;
-        console.log("[FlectChimeClient][joinMeeting] ", meetingInfo, attendeeInfo);
         this._meetingName = meetingName;
         this._meetingId = meetingInfo.MeetingId!;
         this._joinToken = attendeeInfo.JoinToken!;
-        this._attendeeName = attendeeName;
         this._attendeeId = attendeeInfo.AttendeeId!;
 
         // (1) creating meeting session
@@ -265,7 +201,144 @@ export class FlectChimeClient {
         await this.meetingSession?.audioVideo.listAudioInputDevices();
         await this.meetingSession?.audioVideo.listVideoInputDevices();
         await this.meetingSession?.audioVideo.listAudioOutputDevices();
-
-
     }
+
+
+
+
+
+    /**
+     * (C) Enter Meeting Room
+     */
+    enterMeeting = async () => {
+        if (!this.meetingSession) {
+            console.log("[FlectChimeClient][enterMeeting] meetingsession is null?", this.meetingSession);
+            throw new Error("meetingsession is null?");
+        }
+
+        // (1) prepair
+        //// https://github.com/aws/amazon-chime-sdk-js/issues/502#issuecomment-652665492
+        //// When stop preview, camera stream is terminated!!? So when enter meeting I rechoose Devices as workaround. (2)
+        this.videoInputDeviceSetting?.stopPreview();
+
+        // (2) subscribe AtttendeeId presence
+        this.meetingSession.audioVideo.realtimeSubscribeToAttendeeIdPresence(async (attendeeId: string, present: boolean) => {
+            console.log(`[FlectChimeClient][AttendeeIdPresenceSubscriber] ${attendeeId} present = ${present}`);
+            if (present) {
+                if (attendeeId in this._attendees === false) {
+                    let userName = "";
+                    if (attendeeId.indexOf("#") > 0) {
+                        const strippedAttendeeId = attendeeId.substring(0, attendeeId.indexOf("#"));
+                        try {
+                            const result = await this._restApiClient.getUserNameByAttendeeId({ meetingName: this._meetingName!, attendeeId: strippedAttendeeId });
+                            userName = `Shared Contents[${result.attendeeName}]`;
+                        } catch (e) {
+                            console.log(`attendee is not found ${attendeeId}`, e);
+                            userName = `Shared Contents[${attendeeId}]`;
+                        }
+                    } else {
+                        try {
+                            const result = await this._restApiClient.getUserNameByAttendeeId({ meetingName: this._meetingName!, attendeeId });
+                            userName = result.attendeeName;
+                        } catch (e) {
+                            console.log(`attendee is not found ${attendeeId}`, e);
+                            userName = attendeeId;
+                        }
+                    }
+                    // Add to Attendee List
+                    const new_attendee: AttendeeState = {
+                        attendeeId: attendeeId,
+                        name: userName,
+                        active: false,
+                        score: 0,
+                        volume: 0,
+                        muted: false,
+                        cameraOn: this._videoTileStates[attendeeId] ? true : false,
+                        signalStrength: 0,
+                        isSharedContent: false,
+                        ownerId: "",
+                        isVideoPaused: false,
+                    };
+                    if (attendeeId.split("#").length === 2) {
+                        new_attendee.isSharedContent = true;
+                        new_attendee.ownerId = attendeeId.split("#")[0];
+                    }
+                    this._attendees[attendeeId] = new_attendee;
+
+                    // Add Subscribe volume Indicator
+                    this.meetingSession!.audioVideo.realtimeSubscribeToVolumeIndicator(attendeeId, async (attendeeId: string, volume: number | null, muted: boolean | null, signalStrength: number | null) => {
+                        this._attendees[attendeeId].volume = volume || 0;
+                        this._attendees[attendeeId].muted = muted || false;
+                        this._attendees[attendeeId].signalStrength = signalStrength || 0;
+                        this._flectChimeClientListener?.attendeesUpdated(this._attendees);
+                    });
+                    this._flectChimeClientListener?.attendeesUpdated(this._attendees);
+                } else {
+                    console.log(`[FlectChimeClient][AttendeeIdPresenceSubscriber]  ${attendeeId} is already in attendees`);
+                }
+                return;
+            } else {
+                // Delete Subscribe volume Indicator
+                this.meetingSession!.audioVideo.realtimeUnsubscribeFromVolumeIndicator(attendeeId);
+                delete this._attendees[attendeeId];
+                this._flectChimeClientListener?.attendeesUpdated(this._attendees);
+                return;
+            }
+        });
+
+        // (3) subscribe ActiveSpeakerDetector
+        this.meetingSession.audioVideo.subscribeToActiveSpeakerDetector(
+            new DefaultActiveSpeakerPolicy(),
+            (activeSpeakers: string[]) => {
+                console.log("[FlectChimeClient][AttendeeIdPresenceSubscriber] Active Speaker::::::::::::::::::::", activeSpeakers);
+                let activeSpeakerId: string | null = null;
+                for (const attendeeId in this._attendees) {
+                    this._attendees[attendeeId].active = false;
+                }
+                for (const attendeeId of activeSpeakers) {
+                    if (this._attendees[attendeeId]) {
+                        this._attendees[attendeeId].active = true;
+                        activeSpeakerId = attendeeId;
+                        break;
+                    }
+                }
+                // if (this._activeSpeakerId !== activeSpeakerId) {
+                //     this._activeSpeakerId = activeSpeakerId;
+                //     this._flectChimeClientListener?.activeSpekaerUpdated(this._activeSpeakerId);
+                // }
+            },
+            (scores: { [attendeeId: string]: number }) => {
+                for (const attendeeId in scores) {
+                    if (this._attendees[attendeeId]) {
+                        this._attendees[attendeeId].score = scores[attendeeId];
+                    }
+                }
+                this._flectChimeClientListener?.attendeesUpdated(this._attendees);
+            },
+            5000
+        );
+
+
+        // (4) start
+        this.meetingSession!.audioVideo.start();
+        await this.videoInputDeviceSetting!.setVideoInputEnable(true);
+        await this.audioInputDeviceSetting!.setAudioInputEnable(true);
+        await this.audioOutputDeviceSetting!.setAudioOutputEnable(true);
+
+        // // (5) enable chat
+        // this._chatClient = new RealtimeSubscribeChatClient(this);
+        // this._chatClient.setRealtimeSubscribeChatClientListener(this._realtimeSubscribeChatClientListener);
+
+        // // (5-2) enable transcription
+        // this._transcriptionClient = new RealtimeSubscribeTranscriptionClient(this);
+        // this._transcriptionClient.setRealtimeSubscribeTranscriptionClientListener(this._realtimeSubscribeTranscriptionClientListener);
+
+        // // (6) enable hmm
+        // this._hmmClient = new RealtimeSubscribeHMMClient(this, this._restApiClient);
+        // this._hmmClient.setRealtimeSubscribeHMMClientListener(this._realtimeSubscribeHMMClientListener);
+
+        // (7) update
+        // this.updateMeetingInfo();
+    };
+
 }

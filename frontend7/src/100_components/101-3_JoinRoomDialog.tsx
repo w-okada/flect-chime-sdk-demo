@@ -9,26 +9,44 @@ import { Processing } from "./parts/001_processing";
 export type JoinRoomDialogProps = {
     meetingName: string;
     useCode: boolean;
-    joinMeeting: (meetingName: string, useCode: boolean, code: string) => void;
     close: () => void;
 };
 
 export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
     const [message, setMessage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const { chimeBackendState, chimeClientState, frontendState } = useAppState();
 
     // (2) Action
     const initializeState = () => {
+        (document.getElementById("join-room-dialog-room-name") as HTMLInputElement).value = "";
         (document.getElementById("join-room-dialog-code") as HTMLInputElement).value = "";
         setIsProcessing(false);
         setMessage(null);
     };
     const onSubmit = async () => {
+        const meetingName = (document.getElementById("join-room-dialog-room-name") as HTMLInputElement).value;
         const code = (document.getElementById("join-room-dialog-code") as HTMLInputElement).value;
-        console.log("codearea", document.getElementById("join-room-dialog-code"));
         try {
-            console.log("Code1", code);
-            props.joinMeeting(props.meetingName, props.useCode, code);
+            // (1) get meeting token from backend
+            setMessage("try to get meeting token....");
+            const joinTokenResult = await chimeBackendState.joinMeeting({
+                meetingName: props.meetingName.length > 0 ? props.meetingName : meetingName,
+                attendeeName: frontendState.username,
+                code: code,
+            });
+            setMessage("try to get meeting token.... done.");
+            if (!joinTokenResult) {
+                throw new Error(ChimeDemoException.RestClientNotInitilized);
+            }
+
+            // (2) join with token
+            setMessage("join meeting.... ");
+            const meetingInfo = joinTokenResult.meeting;
+            const attendeeInfo = joinTokenResult.attendee;
+            chimeClientState.joinMeeting(props.meetingName, meetingInfo, attendeeInfo);
+
+            setMessage("join meeting.... done.");
             setIsProcessing(true);
             initializeState();
             props.close();
@@ -36,6 +54,9 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
             // @ts-ignore
             if (ex.message === ChimeDemoException.NoMeetingRoomCreated) {
                 setMessage("Failed to create meeting room. maybe same name room exists.");
+                // @ts-ignore
+            } else if (ex.message === ChimeDemoException.RestClientNotInitilized) {
+                setMessage("Failed to create meeting room. maybe rest api client is not initilized.");
             } else {
                 console.error(ex);
                 // @ts-ignore
@@ -54,6 +75,16 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
     ////////////////////////////
 
     const description = `Join the room: ${decodeURIComponent(props.meetingName)}`;
+
+    const roomNameField = useMemo(() => {
+        const hidden = props.meetingName.length > 0 ? "hidden" : "";
+        return (
+            <div className={`dialog-input-controls ${hidden}`}>
+                <input type="text" id="join-room-dialog-room-name" className="input-text" name="room-name" placeholder="roomName" autoComplete="none" />
+                <label htmlFor="room-name">room name</label>
+            </div>
+        );
+    }, [props.meetingName]);
 
     const codeField = useMemo(() => {
         const hidden = props.useCode ? "" : "hidden";
@@ -95,13 +126,14 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
     const form = useMemo(() => {
         return (
             <>
+                {roomNameField}
                 {codeField}
                 {messageArea}
                 {buttons}
                 {processing}
             </>
         );
-    }, [codeField, messageArea, buttons, processing]);
+    }, [roomNameField, codeField, messageArea, buttons, processing]);
 
     return (
         <div className="dialog-frame-warpper">

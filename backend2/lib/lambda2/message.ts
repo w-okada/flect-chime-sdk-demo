@@ -107,6 +107,7 @@ exports.connect = async (event: any, context: any, callback: any) => {
         console.log("attendeeId", attendeeId);
         const res = await ddb
             .putItem({
+                //@ts-ignore
                 TableName: process.env.CONNECTION_TABLE_NAME!,
                 Item: {
                     MeetingId: { S: meetingId },
@@ -146,6 +147,7 @@ exports.disconnect = async (event: any, context: any, callback: any) => {
         //// (1) remove connection from DB
         await ddb
             .deleteItem({
+                //@ts-ignore
                 TableName: process.env.CONNECTION_TABLE_NAME!,
                 Key: {
                     MeetingId: { S: meetingId },
@@ -189,6 +191,7 @@ exports.message = async (event: any, context: any, callback: any) => {
                 },
                 KeyConditionExpression: "MeetingId = :meetingId",
                 ProjectionExpression: "ConnectionId, AttendeeId",
+                //@ts-ignore
                 TableName: process.env.CONNECTION_TABLE_NAME!,
             })
             .promise();
