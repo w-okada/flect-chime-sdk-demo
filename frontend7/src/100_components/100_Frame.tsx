@@ -318,7 +318,7 @@ export const Frame = (props: FrameProps) => {
             <div>
                 <input type="checkbox" className="setting-checkbox" id="setting-checkbox-secondary" />
                 {settingCheckbox.trigger}
-                <div className="dialog-container">
+                <div className="dialog-container setting-checkbox-remover">
                     <SettingDialog></SettingDialog>
                 </div>
             </div>
@@ -331,7 +331,7 @@ export const Frame = (props: FrameProps) => {
 
             <div>
                 {createRoomCheckbox.trigger}
-                <div className="dialog-container">
+                <div className="dialog-container create-room-checkbox-remover">
                     <CreateRoomDialog {...createRoomDialogProps}></CreateRoomDialog>
                 </div>
             </div>
