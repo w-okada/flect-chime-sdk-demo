@@ -10,7 +10,7 @@ export { NoiseSuppressionTypeList, VirtualBackgroundTypeList, NoiseSuppressionTy
 // Types
 //////////////////////////////
 export type ChimeAudioInputDevice = string | MediaStream | VoiceFocusTransformDevice | null;
-export type ChimeVoiceInputDevice = string | DefaultVideoTransformDevice | MediaStream | null;
+export type ChimeVideoInputDevice = string | DefaultVideoTransformDevice | MediaStream | null;
 export type ChimeAudioOutputDevice = string | null;
 export type ChimeAudioOutputElement = HTMLAudioElement | null;
 
@@ -28,7 +28,7 @@ export type DeviceInfoState = {
     virtualBackgroundType: VirtualBackgroundTypes;
     virtualBackgroundImageDataURL: string | null;
     videoDataURL: string | null;
-    chimeVideoInputDevice: ChimeVoiceInputDevice;
+    chimeVideoInputDevice: ChimeVideoInputDevice;
     // audio output
     audioOutput: string | AudioOutputCustomDevices;
     chimeAudioOutputDevice: ChimeAudioOutputDevice;

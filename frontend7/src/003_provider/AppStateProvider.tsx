@@ -1,12 +1,10 @@
 import React, { useContext, useEffect, useMemo } from "react";
 import { ReactNode } from "react";
 import { MessageState, MessageType, useMessageState } from "../providers/hooks/useMessageState";
-import { RestAPIEndpoint, UserPoolClientId, UserPoolId } from "../BackendConfig";
+import { UserPoolClientId, UserPoolId } from "../BackendConfig";
 
 import { useWindowSizeChangeListener, WindowSizeState } from "../providers/hooks/011_useWindowSizeChange";
-// import { AttendeeState, CognitoClient, DrawingData, FlectChimeClient, GameState, RealtimeData, useAmongUsServer, VideoTileState, WebSocketWhiteboardClient } from "@dannadori/flect-amazon-chime-lib2";
-// import { ChimeClientState, useChimeClient } from "./hooks/useChimeClient";
-import { CognitoClientState, CognitoClientStateAndMethods, useCognitoClient } from "../002_hooks/001_useCognitoClient";
+import { CognitoClientStateAndMethods, useCognitoClient } from "../002_hooks/001_useCognitoClient";
 import { FrontendState, useFrontend } from "../providers/hooks/021_useFrontend";
 import { DeviceInfoStateAndMethods, useDeviceState } from "../002_hooks/004_useDeviceState";
 import { SignInType, StageManagerStateAndMethods, useStageManager } from "../providers/hooks/020_useStageManager";
@@ -140,6 +138,16 @@ export const AppStateProvider = ({ children }: Props) => {
     //     console.log("whiteboard client recreate requested...");
     //     setRecreateWebSocketWhiteboardClientCount(recreateWebSocketWhiteboardClientCount + 1);
     // };
+
+    useEffect(() => {
+        chimeClientState.setAudioInput(deviceState.chimeAudioInputDevice);
+    }, [deviceState.chimeAudioInputDevice]);
+    useEffect(() => {
+        chimeClientState.setVideoInput(deviceState.chimeVideoInputDevice);
+    }, [deviceState.chimeVideoInputDevice]);
+    useEffect(() => {
+        chimeClientState.setAudioOutput(deviceState.chimeAudioOutputDevice);
+    }, [deviceState.chimeAudioOutputDevice]);
 
     const providerValue = {
         /** (000) Clients */

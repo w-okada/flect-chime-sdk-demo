@@ -14,7 +14,7 @@ import AudioVideoObserverTemplate from "./observer/AudioVideoObserverTemplate";
 import { ChimeDemoException } from "../../000_exception/Exception";
 import { RestJoinMeetingRequest } from "../002_rest/013_attendees";
 import { Chime } from "aws-sdk";
-import { ChimeAudioInputDevice, ChimeAudioOutputDevice, ChimeAudioOutputElement, ChimeVoiceInputDevice } from "../../002_hooks/004_useDeviceState";
+import { ChimeAudioInputDevice, ChimeAudioOutputDevice, ChimeAudioOutputElement, ChimeVideoInputDevice } from "../../002_hooks/004_useDeviceState";
 
 export type MeetingInfo = {
     meetingName: string;
@@ -68,6 +68,7 @@ export class FlectChimeClient {
         this._flectChimeClientListener = l;
     };
 
+    // (X) Meeing Setup Process
     // (1) join and creating meeting session
     joinMeeting = async (meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => {
         console.log("join meeting!!!!!!!!!!")
@@ -83,10 +84,16 @@ export class FlectChimeClient {
         deviceController.addDeviceChangeObserver(deviceChangeObserver);
         //// (1-4) create meeting session
         this._meetingSession = new DefaultMeetingSession(configuration, logger, deviceController);
+
+
+        //// 一度リストアップしないと使えないバグ(?)がaudio outputのみに残っている。
+        // await this._meetingSession.audioVideo.listAudioInputDevices()
+        // await this._meetingSession.audioVideo.listVideoInputDevices()
+        await this._meetingSession.audioVideo.listAudioOutputDevices()
     }
 
     // (2) enter meeting
-    enterMeeting = async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVoiceInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
+    enterMeeting = async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVideoInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
         if (!this._meetingSession) {
             return
         }
@@ -97,7 +104,7 @@ export class FlectChimeClient {
         await p1
         this._meetingSession.audioVideo.start();
     }
-    private setDeivces = async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVoiceInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
+    private setDeivces = async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVideoInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
         let p1
         if (audioInput) {
             p1 = this._meetingSession!.audioVideo.startAudioInput(audioInput)
@@ -237,150 +244,24 @@ export class FlectChimeClient {
         );
     }
 
-    //     // (2) DeviceSetting
-    //     this._audioInputDeviceSetting = new AudioInputDeviceSetting(this._meetingSession);
-    //     this._videoInputDeviceSetting = new VideoInputDeviceSetting(this._meetingSession);
-    //     this._audioOutputDeviceSetting = new AudioOutputDeviceSetting(this._meetingSession);
-
-    //     // (3) List devices
-    //     //// chooseAudioOutputDevice uses the internal cache
-    //     //// so beforehand, we must get thses information. (auidoinput, videoinput are maybe optional)
-    //     await this.meetingSession?.audioVideo.listAudioInputDevices();
-    //     await this.meetingSession?.audioVideo.listVideoInputDevices();
-    //     await this.meetingSession?.audioVideo.listAudioOutputDevices();
-    // }
-
-
-    // /**
-    //  * meeting infos
-    //  */
-    // private _meetingName: string | null = null;
-    // get meetingName(): string | null {
-    //     return this._meetingName;
-    // }
-    // private _meetingId: string | null = null;
-    // get meetingId(): string | null {
-    //     return this._meetingId;
-    // }
-    // private _joinToken: string | null = null;
-    // get joinToken(): string | null {
-    //     return this._joinToken;
-    // }
-    // private _attendeeName: string | null = null;
-    // get attendeeName(): string | null {
-    //     return this._attendeeName;
-    // }
-    // private _attendeeId: string | null = null;
-    // get attendeeId(): string | null {
-    //     return this._attendeeId;
-    // }
-
-    // //  private _isShareContent: boolean = false;
-    // //  get isShareContent(): boolean {
-    // //      return this._isShareContent;
-    // //  }
-    // //  private _activeSpeakerId: string | null = null;
-    // //  get activeSpeakerId(): string | null {
-    // //      return this._activeSpeakerId;
-    // //  }
-    // //  private _isOwner: boolean = false;
-    // //  get isOwner(): boolean {
-    // //      return this._isOwner;
-    // //  }
-
-
-    // //// I/O
-    // private _audioInputDeviceSetting: AudioInputDeviceSetting | null = null;
-    // private _videoInputDeviceSetting: VideoInputDeviceSetting | null = null;
-    // private _audioOutputDeviceSetting: AudioOutputDeviceSetting | null = null;
-    // get audioInputDeviceSetting(): AudioInputDeviceSetting | null {
-    //     return this._audioInputDeviceSetting;
-    // }
-    // get videoInputDeviceSetting(): VideoInputDeviceSetting | null {
-    //     return this._videoInputDeviceSetting;
-    // }
-    // get audioOutputDeviceSetting(): AudioOutputDeviceSetting | null {
-    //     return this._audioOutputDeviceSetting;
-    // }
-
-
-
-
-
-
-
-    // ///////////////////////////////////////////
-    // // Meeting Management
-    // ///////////////////////////////////////////
-    // //// (1) join meeting
-    // joinMeeting = async (meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => {
-    //     if (meetingName === "") {
-    //         throw new Error("Meeting name is invalid");
-    //     }
-    //     this._meetingName = meetingName;
-    //     this._meetingName = meetingName;
-    //     this._meetingId = meetingInfo.MeetingId!;
-    //     this._joinToken = attendeeInfo.JoinToken!;
-    //     this._attendeeId = attendeeInfo.AttendeeId!;
-
-
-    //     // (2) DeviceSetting
-    //     this._audioInputDeviceSetting = new AudioInputDeviceSetting(this._meetingSession);
-    //     this._videoInputDeviceSetting = new VideoInputDeviceSetting(this._meetingSession);
-    //     this._audioOutputDeviceSetting = new AudioOutputDeviceSetting(this._meetingSession);
-
-    //     // (3) List devices
-    //     //// chooseAudioOutputDevice uses the internal cache
-    //     //// so beforehand, we must get thses information. (auidoinput, videoinput are maybe optional)
-    //     await this.meetingSession?.audioVideo.listAudioInputDevices();
-    //     await this.meetingSession?.audioVideo.listVideoInputDevices();
-    //     await this.meetingSession?.audioVideo.listAudioOutputDevices();
-    // }
-
-
-
-
-
-    // /**
-    //  * (C) Enter Meeting Room
-    //  */
-    // enterMeeting = async () => {
-    //     if (!this.meetingSession) {
-    //         console.log("[FlectChimeClient][enterMeeting] meetingsession is null?", this.meetingSession);
-    //         throw new Error("meetingsession is null?");
-    //     }
-
-    //     // (1) prepair
-    //     //// https://github.com/aws/amazon-chime-sdk-js/issues/502#issuecomment-652665492
-    //     //// When stop preview, camera stream is terminated!!? So when enter meeting I rechoose Devices as workaround. (2)
-    //     this.videoInputDeviceSetting?.stopPreview();
-
-    //     // (2) subscribe AtttendeeId presence
-
-    //     // (3) subscribe ActiveSpeakerDetector
-
-
-
-    //     // (4) start
-    //     this.meetingSession!.audioVideo.start();
-    //     await this.videoInputDeviceSetting!.setVideoInputEnable(true);
-    //     await this.audioInputDeviceSetting!.setAudioInputEnable(true);
-    //     await this.audioOutputDeviceSetting!.setAudioOutputEnable(true);
-
-    //     // // (5) enable chat
-    //     // this._chatClient = new RealtimeSubscribeChatClient(this);
-    //     // this._chatClient.setRealtimeSubscribeChatClientListener(this._realtimeSubscribeChatClientListener);
-
-    //     // // (5-2) enable transcription
-    //     // this._transcriptionClient = new RealtimeSubscribeTranscriptionClient(this);
-    //     // this._transcriptionClient.setRealtimeSubscribeTranscriptionClientListener(this._realtimeSubscribeTranscriptionClientListener);
-
-    //     // // (6) enable hmm
-    //     // this._hmmClient = new RealtimeSubscribeHMMClient(this, this._restApiClient);
-    //     // this._hmmClient.setRealtimeSubscribeHMMClientListener(this._realtimeSubscribeHMMClientListener);
-
-    //     // (7) update
-    //     // this.updateMeetingInfo();
-    // };
+    // (X) Configuration
+    //// 
+    setAudioInputDevice = async (audioInput: ChimeAudioInputDevice) => {
+        await this._meetingSession?.audioVideo.stopAudioInput()
+        if (audioInput) {
+            await this._meetingSession?.audioVideo.startAudioInput(audioInput)
+        }
+    }
+    setVideoInputDevice = async (videoInput: ChimeVideoInputDevice) => {
+        await this._meetingSession?.audioVideo.stopVideoInput()
+        if (videoInput) {
+            await this._meetingSession?.audioVideo.startVideoInput(videoInput)
+        }
+    }
+    setAudioOutputDevoce = async (audioOutput: ChimeAudioOutputDevice) => {
+        if (this._meetingSession) {
+            await this._meetingSession.audioVideo.chooseAudioOutput(audioOutput)
+        }
+    }
 
 }

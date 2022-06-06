@@ -1,7 +1,7 @@
 import { Chime } from "aws-sdk";
 import { useMemo, useState } from "react";
 import { FlectChimeClient, MeetingInfo } from "../001_clients_and_managers/003_chime/FlectChimeClient";
-import { ChimeAudioInputDevice, ChimeAudioOutputDevice, ChimeAudioOutputElement, ChimeVoiceInputDevice } from "./004_useDeviceState";
+import { ChimeAudioInputDevice, ChimeAudioOutputDevice, ChimeAudioOutputElement, ChimeVideoInputDevice } from "./004_useDeviceState";
 
 
 export type UseChimeClientProps = {
@@ -12,12 +12,21 @@ export type ChimeClientState = {
     // getMeetingInfo: (meetingName: string, userName?: string | null) => Promise<void>;
 
     // (3)
+
+
+}
+export type ChimeClientStateAndMethods = ChimeClientState & {
     joinMeeting: (meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => Promise<void>
-    enterMeeting: (audioInput: ChimeAudioInputDevice, videoInput: ChimeVoiceInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => Promise<void>
+    enterMeeting: (audioInput: ChimeAudioInputDevice, videoInput: ChimeVideoInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => Promise<void>
+
+    setAudioInput: (audioInput: ChimeAudioInputDevice) => Promise<void>
+    setVideoInput: (videoInput: ChimeVideoInputDevice) => Promise<void>
+    setAudioOutput: (audioOutput: ChimeAudioOutputDevice) => Promise<void>
 
 }
 
-export const useChimeClient = (props: UseChimeClientProps): ChimeClientState => {
+
+export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndMethods => {
     const chimeClient = useMemo(() => {
         return new FlectChimeClient()
     }, [])
@@ -34,7 +43,7 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientState => 
     }, [chimeClient])
 
     const enterMeeting = useMemo(() => {
-        return async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVoiceInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
+        return async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVideoInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
             if (!chimeClient) {
                 console.warn("chime client is not initialized.")
                 return
@@ -44,11 +53,24 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientState => 
     }, [chimeClient])
 
 
-    const returnValue: ChimeClientState = {
+    const setAudioInput = async (audioInput: ChimeAudioInputDevice) => {
+        await chimeClient.setAudioInputDevice(audioInput)
+    }
+    const setVideoInput = async (videoInput: ChimeVideoInputDevice) => {
+        await chimeClient.setVideoInputDevice(videoInput)
+    }
+    const setAudioOutput = async (audioOutput: ChimeAudioOutputDevice) => {
+        await chimeClient.setAudioOutputDevoce(audioOutput)
+    }
+
+    const returnValue: ChimeClientStateAndMethods = {
         chimeClient,
         // (1) Meetings
         joinMeeting,
-        enterMeeting
+        enterMeeting,
+        setAudioInput,
+        setVideoInput,
+        setAudioOutput,
     }
     return returnValue
 }
