@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useAppState } from "../providers/AppStateProvider";
+import { useAppState } from "../003_provider/AppStateProvider";
 
 export type SignInDialogProps = {
     signInSucceeded: (username: string) => void;
@@ -341,9 +341,11 @@ export const SignInDialog = (props: SignInDialogProps) => {
     const submitButton = useMemo(() => {
         return (
             <div className="dialog-input-controls align-center">
-                {tab === "verify" || tab === "forgot" ? requestCodeButton : <></>}
-                <div id="submit" className="submit-button" onClick={onSubmit}>
-                    submit
+                <div>
+                    {tab === "verify" || tab === "forgot" ? requestCodeButton : <></>}
+                    <div id="submit" className="submit-button" onClick={onSubmit}>
+                        submit
+                    </div>
                 </div>
             </div>
         );

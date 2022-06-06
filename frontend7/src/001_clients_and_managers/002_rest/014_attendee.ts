@@ -1,5 +1,5 @@
-import { HTTPGetAttendeeInfoRequest, HTTPGetAttendeeInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "../http_request";
-import { RestApiClientContext } from "./RestApiClient";
+import { HTTPGetAttendeeInfoRequest, HTTPGetAttendeeInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "../../http_request";
+import { InternalRestApiClientContext, RestApiClientContext } from "./001_RestApiClient";
 
 
 // (1) (POST) -> no support
@@ -10,7 +10,7 @@ export type RestGetAttendeeInfoRequest = HTTPGetAttendeeInfoRequest & {
 }
 export type RestGetAttendeeInfoResponse = HTTPGetAttendeeInfoResponse
 
-export const geAttendeeInfo = async (params: RestGetAttendeeInfoRequest, context: RestApiClientContext): Promise<RestGetAttendeeInfoResponse> => {
+export const geAttendeeInfo = async (params: RestGetAttendeeInfoRequest, context: InternalRestApiClientContext): Promise<RestGetAttendeeInfoResponse> => {
     const attendeeUrl = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees/${encodeURIComponent(params.attendeeId)}`;
     const res = await fetch(attendeeUrl, {
         method: "GET",

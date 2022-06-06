@@ -4,7 +4,7 @@ import { SignInDialog, SignInDialogProps } from "./101-1_SignInDialog";
 import { Sidebar, SidebarProps } from "./102_Sidebar";
 import { useStateControlCheckbox } from "./hooks/useStateControlCheckbox";
 import { CreateRoomDialog, CreateRoomDialogProps } from "./101-2_CreateRoomDialog";
-import { useAppState } from "../providers/AppStateProvider";
+import { useAppState } from "../003_provider/AppStateProvider";
 import { JoinRoomDialog, JoinRoomDialogProps } from "./101-3_JoinRoomDialog";
 import { SettingDialog } from "./101-5_SettingDialog";
 import { Chime } from "aws-sdk";
@@ -17,7 +17,7 @@ export type FrameProps = {
 export const Frame = (props: FrameProps) => {
     const { frontendState, chimeClientState } = useAppState();
     const [joinRoomProps, setJoinRoomProps] = useState<JoinRoomDialogProps>({
-        meetingName: "",
+        decodedMeetingName: "",
         useCode: false,
         close: () => {},
     });
@@ -35,7 +35,7 @@ export const Frame = (props: FrameProps) => {
     const signInCheckbox = useStateControlCheckbox("sign-in-checkbox");
     const createRoomCheckbox = useStateControlCheckbox("create-room-checkbox");
     const joinRoomCheckbox = useStateControlCheckbox("join-room-checkbox");
-    const joinSecretRoomCheckbox = useStateControlCheckbox("join-secret-room-checkbox");
+
     /**
      * components
      */
@@ -219,9 +219,9 @@ export const Frame = (props: FrameProps) => {
         newRoomClicked: () => {
             createRoomCheckbox.updateState(true);
         },
-        joinRoomClicked: (roomName: string, useCode: boolean) => {
+        joinRoomClicked: (decodedMeetingName: string, useCode: boolean) => {
             setJoinRoomProps({
-                meetingName: roomName,
+                decodedMeetingName: decodedMeetingName,
                 useCode: useCode,
                 close: () => {
                     joinRoomCheckbox.updateState(false);
@@ -231,7 +231,7 @@ export const Frame = (props: FrameProps) => {
         },
         joinSecretRoomClicked: () => {
             setJoinRoomProps({
-                meetingName: "",
+                decodedMeetingName: "",
                 useCode: true,
                 close: () => {
                     joinRoomCheckbox.updateState(false);
@@ -239,6 +239,7 @@ export const Frame = (props: FrameProps) => {
             });
             joinRoomCheckbox.updateState(true);
         },
+        sidebarTrigger: openSidebarCheckbox.trigger,
     };
     const sidebar = <Sidebar {...sidebarProps}></Sidebar>;
     // (4) right sidebar
@@ -316,7 +317,7 @@ export const Frame = (props: FrameProps) => {
             {rightSidebar}
             {mainArea}
             <div>
-                <input type="checkbox" className="setting-checkbox" id="setting-checkbox-secondary" />
+                {/* <input type="checkbox" className="setting-checkbox" id="setting-checkbox-secondary" /> */}
                 {settingCheckbox.trigger}
                 <div className="dialog-container setting-checkbox-remover">
                     <SettingDialog></SettingDialog>
@@ -324,7 +325,7 @@ export const Frame = (props: FrameProps) => {
             </div>
 
             <div>
-                <input type="checkbox" className="leave-checkbox" id="leave-checkbox-secondary" />
+                {/* <input type="checkbox" className="leave-checkbox" id="leave-checkbox-secondary" /> */}
                 {leaveCheckbox.trigger}
                 <div className="dialog-container leave-checkbox-remover"></div>
             </div>
@@ -348,6 +349,10 @@ export const Frame = (props: FrameProps) => {
                 <div className="dialog-container">
                     <SignInDialog {...props.signInDialogProps}></SignInDialog>
                 </div>
+            </div>
+
+            <div>
+                <audio id="chime-audio-output-element" />
             </div>
         </>
     );

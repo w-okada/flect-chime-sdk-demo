@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useAppState } from "../providers/AppStateProvider";
+import { useAppState } from "../003_provider/AppStateProvider";
 
 export type SignInDialogProps = {
     signInSucceeded: (username: string) => void;

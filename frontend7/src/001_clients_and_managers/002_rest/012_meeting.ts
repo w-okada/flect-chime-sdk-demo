@@ -1,6 +1,6 @@
-import { RestApiClientContext } from "./RestApiClient";
-import { HTTPResponseBody } from "./common";
-import { HTTPDeleteMeetingRequest, HTTPDeleteMeetingResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse } from "../http_request";
+import { InternalRestApiClientContext, RestApiClientContext } from "./001_RestApiClient";
+import { HTTPResponseBody } from "./010_common";
+import { HTTPDeleteMeetingRequest, HTTPDeleteMeetingResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse } from "../../http_request";
 
 // (1) (POST) -> no support
 // (2) Get Meeting Info (GET)
@@ -14,7 +14,7 @@ export type RestGetMeetingInfoRequest = HTTPGetMeetingInfoRequest & {
 };
 export type RestGetMeetingInfoResponse = HTTPGetMeetingInfoResponse;
 
-export const getMeetingInfo = async (params: RestGetMeetingInfoRequest, context: RestApiClientContext): Promise<RestGetMeetingInfoResponse> => {
+export const getMeetingInfo = async (params: RestGetMeetingInfoRequest, context: InternalRestApiClientContext): Promise<RestGetMeetingInfoResponse> => {
     const url = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}`;
 
     const res = await fetch(url, {
@@ -42,7 +42,7 @@ export type RestEndMeetingRequest = HTTPDeleteMeetingRequest & {
 };
 export type RestEndMeetingResponse = HTTPDeleteMeetingResponse
 
-export const endMeeting = async (params: RestEndMeetingRequest, context: RestApiClientContext) => {
+export const endMeeting = async (params: RestEndMeetingRequest, context: InternalRestApiClientContext) => {
     const encodedMeetingName = encodeURIComponent(params.meetingName);
 
     const url = `${context.baseUrl}meetings/${encodedMeetingName}`;

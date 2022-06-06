@@ -6,18 +6,51 @@ export type StateControlCheckbox = {
     updateState: (newVal: boolean) => void;
 };
 
+// 画面アクション用チェックボックス
+// (1) 入力されたclassNameを持つエレメント(チェックボックスを想定)のon/offを同期
+// (2) <入力されたclassName>-removerを持つエレメントがクリックされたときにclassNameのエレメントを全offに変更
+// (3) 入力されたclassNameを持つエレメントの状態を変更するメソッド
+// (4) 入力されたclassNameを持つチェックボックス. このチェックボックスに反応するエレメントの兄弟エレメントにすることで動作をトリガーする。
+//    (4-1) classNameに反応させる。（例）open-sidebar-checkboxというclassNameの場合。
+// .open-sidebar-checkbox {
+//     display: none;
+//     &:checked ~ .sidebar {
+//         ...
+//     }
+//     & ~ .sidebar {
+//         ...
+//     }
+// }
+//    (4-2) 汎用className(state-control-checkbox)に反応させる。(例)
+// .state-control-checkbox {
+//     display: none;
+//     &:checked ~ .dialog-container {
+//         ...
+//     }
+//     & ~ .dialog-container {
+//         ...
+//     }
+// }
+//
+// 備考１：基本的にはReactのレンダリングフェーズに入らず画面遷移できるので、
+//       軽量化に役立つと考えているが、副作用があるかもしれず、まだ実験段階。
+// 備考２：(4-2) のやり方に統一したほうが良い気がする。
+// 備考３： rotate-buttonも汎用className。
+
 export const useStateControlCheckbox = (className: string): StateControlCheckbox => {
+    // (4) トリガチェックボックス
     const trigger = <input type="checkbox" className={`${className} state-control-checkbox rotate-button`} id={`${className}`} />;
 
     useEffect(() => {
         const checkboxes = document.querySelectorAll(`.${className}`);
+        // (1) On/Off同期
         checkboxes.forEach((x) => {
             // @ts-ignore
             x.onchange = (ev) => {
                 updateState(ev.target.checked);
             };
         });
-
+        // (2) 全エレメントoff
         const createMeetingDialogRemovers = document.querySelectorAll(`.${className}-remover`);
         createMeetingDialogRemovers.forEach((x) => {
             // @ts-ignore
@@ -29,6 +62,7 @@ export const useStateControlCheckbox = (className: string): StateControlCheckbox
         });
     }, []);
 
+    // (3) ステート変更
     const updateState = (newVal: boolean) => {
         const currentCheckboxes = document.querySelectorAll(`.${className}`);
         currentCheckboxes.forEach((y) => {

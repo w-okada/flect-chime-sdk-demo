@@ -1,11 +1,11 @@
-import { RestApiClientContext } from "./RestApiClient";
-import { HTTPResponseBody } from "./common";
-import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse } from "../http_request";
+import { InternalRestApiClientContext, RestApiClientContext } from "./001_RestApiClient";
+import { HTTPResponseBody } from "./010_common";
+import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse } from "../../http_request";
 
 // (1) Create Meeting (POST)
 export type RestCreateMeetingRequest = HTTPCreateMeetingRequest
 export type RestCreateMeetingResponse = HTTPCreateMeetingResponse
-export const createMeeting = async (params: RestCreateMeetingRequest, context: RestApiClientContext): Promise<RestCreateMeetingResponse> => {
+export const createMeeting = async (params: RestCreateMeetingRequest, context: InternalRestApiClientContext): Promise<RestCreateMeetingResponse> => {
     const url = `${context.baseUrl}meetings`;
     params.meetingName = encodeURIComponent(params.meetingName);
 
@@ -35,7 +35,7 @@ export const createMeeting = async (params: RestCreateMeetingRequest, context: R
 // (2) List Meetings (GET)
 export type RestListMeetingsRequest = HTTPListMeetingsRequest
 export type RestListMeetingsResponse = HTTPListMeetingsResponse
-export const listMeetings = async (params: RestListMeetingsRequest, context: RestApiClientContext): Promise<RestListMeetingsResponse> => {
+export const listMeetings = async (params: RestListMeetingsRequest, context: InternalRestApiClientContext): Promise<RestListMeetingsResponse> => {
     const url = `${context.baseUrl}meetings`;
     const res = await fetch(url, {
         method: "GET",

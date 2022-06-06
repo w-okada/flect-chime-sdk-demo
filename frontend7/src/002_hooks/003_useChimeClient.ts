@@ -1,17 +1,19 @@
 import { Chime } from "aws-sdk";
 import { useMemo, useState } from "react";
-import { FlectChimeClient, MeetingInfo } from "../../003_chime/FlectChimeClient";
+import { FlectChimeClient, MeetingInfo } from "../001_clients_and_managers/003_chime/FlectChimeClient";
+import { ChimeAudioInputDevice, ChimeAudioOutputDevice, ChimeAudioOutputElement, ChimeVoiceInputDevice } from "./004_useDeviceState";
 
 
 export type UseChimeClientProps = {
 };
 
 export type ChimeClientState = {
-    chimeClient: FlectChimeClient | null
+    chimeClient: FlectChimeClient
     // getMeetingInfo: (meetingName: string, userName?: string | null) => Promise<void>;
 
     // (3)
     joinMeeting: (meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => Promise<void>
+    enterMeeting: (audioInput: ChimeAudioInputDevice, videoInput: ChimeVoiceInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => Promise<void>
 
 }
 
@@ -27,16 +29,26 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientState => 
                 console.warn("chime client is not initialized.")
                 return
             }
-            await chimeClient.joinMeeting(meetingName, meetingInfo, attendeeInfo);
+            await chimeClient.joinMeeting(meetingInfo, attendeeInfo);
+        }
+    }, [chimeClient])
+
+    const enterMeeting = useMemo(() => {
+        return async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVoiceInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
+            if (!chimeClient) {
+                console.warn("chime client is not initialized.")
+                return
+            }
+            await chimeClient.enterMeeting(audioInput, videoInput, audioOutput, audioOutputElement);
         }
     }, [chimeClient])
 
 
     const returnValue: ChimeClientState = {
         chimeClient,
-        // (1) Meetings   
-
-        joinMeeting
+        // (1) Meetings
+        joinMeeting,
+        enterMeeting
     }
     return returnValue
 }

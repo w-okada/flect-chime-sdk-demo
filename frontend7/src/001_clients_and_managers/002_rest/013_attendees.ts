@@ -1,10 +1,10 @@
-import { HTTPGetAttendeeInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "../http_request";
-import { RestApiClientContext } from "./RestApiClient";
+import { HTTPGetAttendeeInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "../../http_request";
+import { InternalRestApiClientContext, RestApiClientContext } from "./001_RestApiClient";
 
 // (1) Join Meeting (POST)
 export type RestJoinMeetingRequest = HTTPJoinMeetingRequest
 export type RestJoinMeetingResponse = HTTPJoinMeetingResponse
-export const joinMeeting = async (params: RestJoinMeetingRequest, context: RestApiClientContext): Promise<RestJoinMeetingResponse> => {
+export const joinMeeting = async (params: RestJoinMeetingRequest, context: InternalRestApiClientContext): Promise<RestJoinMeetingResponse> => {
     const url = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees`;
     params.meetingName = encodeURIComponent(params.meetingName);
     params.attendeeName = encodeURIComponent(params.attendeeName);
@@ -46,7 +46,7 @@ export type GetAttendeeListResponse = {
     result: string;
 };
 
-export const getAttendeeList = async (params: GetAttendeeListRequest, context: RestApiClientContext): Promise<GetAttendeeListResponse> => {
+export const getAttendeeList = async (params: GetAttendeeListRequest, context: InternalRestApiClientContext): Promise<GetAttendeeListResponse> => {
     const attendeeUrl = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees`;
     const res = await fetch(attendeeUrl, {
         method: "GET",

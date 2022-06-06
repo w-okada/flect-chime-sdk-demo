@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { RestCreateMeetingRequest, RestCreateMeetingResponse, RestListMeetingsRequest, RestListMeetingsResponse } from "../../002_rest/001_meetings";
-import { RestEndMeetingRequest, RestEndMeetingResponse, RestGetMeetingInfoRequest, RestGetMeetingInfoResponse } from "../../002_rest/002_meeting";
-import { RestJoinMeetingRequest, RestJoinMeetingResponse } from "../../002_rest/003_attendees";
-import { RestGetAttendeeInfoRequest, RestGetAttendeeInfoResponse } from "../../002_rest/004_attendee";
-import { RestApiClient, RestApiClientContext } from "../../002_rest/RestApiClient";
-import { MeetingListItem } from "../../http_request";
+import { RestCreateMeetingRequest, RestCreateMeetingResponse, RestListMeetingsRequest, RestListMeetingsResponse } from "../001_clients_and_managers/002_rest/011_meetings";
+import { RestEndMeetingRequest, RestEndMeetingResponse, RestGetMeetingInfoRequest, RestGetMeetingInfoResponse } from "../001_clients_and_managers/002_rest/012_meeting";
+import { RestJoinMeetingRequest, RestJoinMeetingResponse } from "../001_clients_and_managers/002_rest/013_attendees";
+import { RestGetAttendeeInfoRequest, RestGetAttendeeInfoResponse } from "../001_clients_and_managers/002_rest/014_attendee";
+import { RestApiClient, RestApiClientContext } from "../001_clients_and_managers/002_rest/001_RestApiClient";
+import { MeetingListItem } from "../http_request";
+import { CognitoClient } from "../001_clients_and_managers/001_cognito/CognitoClient";
 
-export type UseRestClientProps = {
-    RestAPIEndpoint: string;
+export type UseBackendManagerProps = {
     idToken: string | null;
     accessToken: string | null;
     refreshToken: string | null;
@@ -26,10 +26,10 @@ export type JoinMeetingResponse = RestJoinMeetingResponse
 export type GetAttendeeInfoRequest = RestGetAttendeeInfoRequest
 export type GetAttendeeInfoResponse = RestGetAttendeeInfoResponse
 
-export type ChimeBackendState = {
+export type BackendManagerState = {
     meetings: MeetingListItem[]
 }
-export type ChimeBackendStateAndMethod = ChimeBackendState & {
+export type BackendManagerStateAndMethod = BackendManagerState & {
     createMeeting: (params: CreateMeetingParams) => Promise<CreateMeetingResponse | null>
     reloadMeetingList: (params: ListMeetingsRequest) => Promise<ListMeetingsResponse | null>
     getMeetingInfo: (params: GetMeetingInfoResponse) => Promise<GetMeetingInfoResponse | null>
@@ -37,38 +37,28 @@ export type ChimeBackendStateAndMethod = ChimeBackendState & {
     joinMeeting: (params: JoinMeetingRequest) => Promise<JoinMeetingResponse | null>
     getAttendeeInfo: (params: GetAttendeeInfoRequest) => Promise<GetAttendeeInfoResponse | null>
 }
-export const useChimeBackend = (props: UseRestClientProps): ChimeBackendStateAndMethod => {
-    const [state, setState] = useState<ChimeBackendState>({
+export const useBackendManager = (props: UseBackendManagerProps): BackendManagerStateAndMethod => {
+    const [state, setState] = useState<BackendManagerState>({
         meetings: []
     })
 
     const restClient = useMemo(() => {
-        if (props.idToken && props.accessToken && props.refreshToken) {
-            const context: RestApiClientContext = {
-                baseUrl: props.RestAPIEndpoint,
-                idToken: props.idToken,
-                accessToken: props.accessToken,
-                refreshToken: props.refreshToken
-            }
+        return new RestApiClient()
+    }, [])
 
-
-            return new RestApiClient(context)
-        } else {
-            return null
+    const context: RestApiClientContext = useMemo(() => {
+        return {
+            idToken: props.idToken || "",
+            accessToken: props.accessToken || "",
+            refreshToken: props.refreshToken || ""
         }
-    }, [props.RestAPIEndpoint, props.idToken, props.accessToken, props.refreshToken])
-    useEffect(() => {
-        if (restClient) {
-            reloadMeetingList({})
-        }
-    }, [restClient]);
-
+    }, [props.idToken, props.accessToken, props.refreshToken])
 
     // (1) Meetings
     //// (1-1) Create Meeting (POST)
     const createMeeting = async (params: CreateMeetingParams): Promise<CreateMeetingResponse | null> => {
         if (!restClient) return null
-        const res = await restClient.createMeeting(params as RestCreateMeetingRequest)
+        const res = await restClient.createMeeting(params as RestCreateMeetingRequest, context)
         return res as CreateMeetingResponse
 
     }
@@ -76,7 +66,7 @@ export const useChimeBackend = (props: UseRestClientProps): ChimeBackendStateAnd
     //// (1-2) List Meetings (GET)
     const reloadMeetingList = async (params: ListMeetingsRequest): Promise<ListMeetingsResponse | null> => {
         if (!restClient) return null
-        const res = await restClient.listMeetings(params as RestListMeetingsRequest)
+        const res = await restClient.listMeetings(params as RestListMeetingsRequest, context)
         setState({ ...state, meetings: res.meetings })
         return res as ListMeetingsResponse
     }
@@ -88,14 +78,14 @@ export const useChimeBackend = (props: UseRestClientProps): ChimeBackendStateAnd
     //// (2-2) Get Meeting Info (GET)
     const getMeetingInfo = async (params: GetMeetingInfoResponse): Promise<GetMeetingInfoResponse | null> => {
         if (!restClient) return null
-        const res = await restClient.getMeetingInfo(params as RestGetMeetingInfoResponse)
+        const res = await restClient.getMeetingInfo(params as RestGetMeetingInfoResponse, context)
         return res as GetMeetingInfoResponse
     }
     //// (2-3) (PUT) 
     //// (2-4) End Meeting (DELETE)
     const endMeeting = async (params: EndMeetingRequest): Promise<EndMeetingResponse | null> => {
         if (!restClient) return null
-        const res = await restClient.endMeeting(params as RestEndMeetingRequest)
+        const res = await restClient.endMeeting(params as RestEndMeetingRequest, context)
         return res as EndMeetingResponse
     }
 
@@ -103,7 +93,7 @@ export const useChimeBackend = (props: UseRestClientProps): ChimeBackendStateAnd
     //// (3-1) join meeting (POST)
     const joinMeeting = async (params: JoinMeetingRequest): Promise<JoinMeetingResponse | null> => {
         if (!restClient) return null
-        const res = await restClient.joinMeeting(params as RestJoinMeetingRequest)
+        const res = await restClient.joinMeeting(params as RestJoinMeetingRequest, context)
         return res as JoinMeetingResponse
     }
 
@@ -121,14 +111,14 @@ export const useChimeBackend = (props: UseRestClientProps): ChimeBackendStateAnd
     //// (4-2) get Attendee Name (GET)
     const getAttendeeInfo = async (params: GetAttendeeInfoRequest): Promise<RestGetAttendeeInfoResponse | null> => {
         if (!restClient) return null
-        const res = await restClient.geAttendeeInfo(params as RestGetAttendeeInfoRequest)
+        const res = await restClient.geAttendeeInfo(params as RestGetAttendeeInfoRequest, context)
         return res as RestGetAttendeeInfoResponse
     }
 
     // (4-3)  (PUT) -> no support
     // (4-4)  (DELETE) 
 
-    const returnVal: ChimeBackendStateAndMethod = {
+    const returnVal: BackendManagerStateAndMethod = {
         ...state,
         createMeeting,
         reloadMeetingList,

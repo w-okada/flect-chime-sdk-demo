@@ -96,6 +96,12 @@ body {
         animation-fill-mode: forwards;
         animation-direction: normal;
     }
+    &:checked ~ .div-container {
+        display: block;
+    }
+    & ~ .div-container {
+        display: none;
+    }
 }
 
 @keyframes dialog-hide {

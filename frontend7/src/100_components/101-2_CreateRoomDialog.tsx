@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AVAILABLE_AWS_REGIONS, DEFAULT_REGION } from "../const";
-import { useAppState } from "../providers/AppStateProvider";
+import { useAppState } from "../003_provider/AppStateProvider";
 import { ChimeDemoException } from "../000_exception/Exception";
 import { Processing } from "./parts/001_processing";
 
@@ -12,7 +12,7 @@ export type CreateRoomDialogProps = {
 };
 
 export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
-    const { chimeBackendState } = useAppState();
+    const { backendManagerState } = useAppState();
     const [useCode, setUseCode] = useState<boolean>(false);
     const [message, setMessage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -32,14 +32,17 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
         const code = (document.getElementById("create-room-dialog-code") as HTMLInputElement).value;
         try {
             setIsProcessing(true);
-            await chimeBackendState.createMeeting({
+            const res = await backendManagerState.createMeeting({
                 meetingName: roomName,
                 region: region,
                 secret: secret,
                 useCode: useCode,
                 code: code,
             });
-            await chimeBackendState.reloadMeetingList({});
+            if (res?.created === false) {
+                throw new Error(ChimeDemoException.NoMeetingRoomCreated);
+            }
+            await backendManagerState.reloadMeetingList({});
             initializeState();
             props.close();
         } catch (ex) {
@@ -94,18 +97,20 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
     const useCodeToggle = useMemo(() => {
         return (
             <div className="dialog-input-controls">
-                <input className="checkbox" type="checkbox" id="create-room-dialog-secret" />
-                <label htmlFor="secret">secret</label>
-                <input
-                    className="checkbox"
-                    type="checkbox"
-                    id="create-room-dialog-use-code"
-                    onChange={(ev) => {
-                        console.log("target:", ev.target.checked);
-                        setUseCode(ev.target.checked);
-                    }}
-                />
-                <label htmlFor="user-code">use code</label>
+                <div style={{ display: "flex" }}>
+                    <input className="checkbox" type="checkbox" id="create-room-dialog-secret" />
+                    <label htmlFor="create-room-dialog-secret">secret</label>
+                    <input
+                        className="checkbox"
+                        type="checkbox"
+                        id="create-room-dialog-use-code"
+                        onChange={(ev) => {
+                            console.log("target:", ev.target.checked);
+                            setUseCode(ev.target.checked);
+                        }}
+                    />
+                    <label create-room-dialog-use-code="user-code">use code</label>
+                </div>
             </div>
         );
     }, []);
@@ -132,11 +137,13 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
     const buttons = useMemo(() => {
         return (
             <div className="dialog-input-controls">
-                <div id="cancel" className="cancel-button" onClick={cancel}>
-                    cancel
-                </div>
-                <div id="submit" className="submit-button" onClick={onSubmit}>
-                    submit
+                <div>
+                    <div id="cancel" className="cancel-button" onClick={cancel}>
+                        cancel
+                    </div>
+                    <div id="submit" className="submit-button" onClick={onSubmit}>
+                        submit
+                    </div>
                 </div>
             </div>
         );

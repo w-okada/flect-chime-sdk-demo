@@ -1,19 +1,17 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo } from "react";
 import { ReactNode } from "react";
-import { MessageState, MessageType, useMessageState } from "./hooks/useMessageState";
-import { RestAPIEndpoint, UserPoolClientId, UserPoolId, WebSocketEndpoint } from "../BackendConfig";
+import { MessageState, MessageType, useMessageState } from "../providers/hooks/useMessageState";
+import { RestAPIEndpoint, UserPoolClientId, UserPoolId } from "../BackendConfig";
 
-import { useWindowSizeChangeListener, WindowSizeState } from "./hooks/011_useWindowSizeChange";
+import { useWindowSizeChangeListener, WindowSizeState } from "../providers/hooks/011_useWindowSizeChange";
 // import { AttendeeState, CognitoClient, DrawingData, FlectChimeClient, GameState, RealtimeData, useAmongUsServer, VideoTileState, WebSocketWhiteboardClient } from "@dannadori/flect-amazon-chime-lib2";
 // import { ChimeClientState, useChimeClient } from "./hooks/useChimeClient";
-import { CognitoClientState, useCognitoClient } from "./hooks/000_useCognitoClient";
-import { FrontendState, useFrontend } from "./hooks/021_useFrontend";
-import { useWhiteboardClient, WhiteboardClientState } from "./hooks/useWhiteBoardClient";
-import { DeviceInfoStateAndMethods, useDeviceState } from "./hooks/010_useDeviceState";
-import { SignInType, StageManagerStateAndMethods, useStageManager } from "./hooks/020_useStageManager";
-import { ChimeClientState, useChimeClient } from "./hooks/002_useChimeClient";
-import { MeetingInfo } from "../003_chime/FlectChimeClient";
-import { ChimeBackendStateAndMethod, useChimeBackend } from "./hooks/001_useChimeBackend";
+import { CognitoClientState, CognitoClientStateAndMethods, useCognitoClient } from "../002_hooks/001_useCognitoClient";
+import { FrontendState, useFrontend } from "../providers/hooks/021_useFrontend";
+import { DeviceInfoStateAndMethods, useDeviceState } from "../002_hooks/004_useDeviceState";
+import { SignInType, StageManagerStateAndMethods, useStageManager } from "../providers/hooks/020_useStageManager";
+import { ChimeClientState, useChimeClient } from "../002_hooks/003_useChimeClient";
+import { BackendManagerStateAndMethod, useBackendManager } from "../002_hooks/002_useBackendManager";
 
 type Props = {
     children: ReactNode;
@@ -21,8 +19,8 @@ type Props = {
 
 interface AppStateValue {
     /** (000) Clients */
-    cognitoClientState: CognitoClientState;
-    chimeBackendState: ChimeBackendStateAndMethod;
+    cognitoClientState: CognitoClientStateAndMethods;
+    backendManagerState: BackendManagerStateAndMethod;
     chimeClientState: ChimeClientState;
 
     /** (010) Environment State */
@@ -69,8 +67,7 @@ export const AppStateProvider = ({ children }: Props) => {
     /** (000) Clients */
     //// (000) cognito
     const cognitoClientState = useCognitoClient({ userPoolId: UserPoolId, userPoolClientId: UserPoolClientId });
-    const chimeBackendState = useChimeBackend({
-        RestAPIEndpoint,
+    const backendManagerState = useBackendManager({
         idToken: cognitoClientState.idToken,
         accessToken: cognitoClientState.accessToken,
         refreshToken: cognitoClientState.refreshToken,
@@ -95,11 +92,17 @@ export const AppStateProvider = ({ children }: Props) => {
 
     // (2) useEffect
     /** (000) Clients */
+    useEffect(() => {
+        if (cognitoClientState.signInCompleted) {
+            backendManagerState.reloadMeetingList({});
+            deviceState.reloadDevices();
+        }
+    }, [cognitoClientState.signInCompleted]);
     /** (010) Environment State */
     //// (010) device
     useEffect(() => {
         if (stageState.signInComplete) {
-            deviceState.reloadRealDevices();
+            deviceState.reloadDevices();
         }
     }, [stageState.signInComplete]);
 
@@ -141,7 +144,7 @@ export const AppStateProvider = ({ children }: Props) => {
     const providerValue = {
         /** (000) Clients */
         cognitoClientState,
-        chimeBackendState,
+        backendManagerState,
         chimeClientState,
         /** (010) Environment State */
         deviceState,
