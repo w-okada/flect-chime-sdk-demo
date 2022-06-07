@@ -113,6 +113,7 @@ export class FlectChimeClient {
         this.addAttendeeChangeSubscriber()
         this.addActiveSpeakerDetector()
         // await p1
+        this._meetingSession.audioVideo.startLocalVideoTile()
         this._meetingSession.audioVideo.start();
     }
     private setDeivces = async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVideoInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {

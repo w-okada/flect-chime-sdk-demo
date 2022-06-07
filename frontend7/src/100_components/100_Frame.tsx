@@ -248,27 +248,53 @@ export const Frame = (props: FrameProps) => {
     // (5) bottom nav (belongs to main area)
     const bottomNav = (
         <>
-            <input type="checkbox" className="open-bottom-nav-checkbox" id="open-bottom-nav-checkbox-secondary" />
-            <input type="checkbox" className="open-sidebar-checkbox" id="open-sidebar-checkbox-secondary" />
-            <input type="checkbox" className="open-right-sidebar-checkbox" id="open-right-sidebar-checkbox-secondary" />
+            {openBottomNavCheckbox.trigger}
             <div className="bottom-nav"></div>
         </>
     );
 
     // (6) main vide area (belongs to main area)
+    const height = "33%";
+    const width = "33%";
     const mainVideoArea = (
         <>
-            <input type="checkbox" className="open-bottom-nav-checkbox" id="open-bottom-nav-checkbox-secondary" />
-            <div className="main-video-area"></div>
+            {openBottomNavCheckbox.trigger}
+            <div className="main-video-area">
+                <div style={{ display: "flex", alignItems: "stretch", justifyContent: "stretch", flexWrap: "wrap", height: "100%", width: "100%" }}>
+                    <div style={{ width: width, height: height }}>
+                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    </div>
+                    <div style={{ width: width, height: height }}>
+                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    </div>
+                    <div style={{ width: width, height: height }}>
+                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    </div>
+                    <div style={{ width: width, height: height }}>
+                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    </div>
+                    <div style={{ width: width, height: height }}>
+                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    </div>
+                    <div style={{ width: width, height: height }}>
+                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    </div>
+                    <div style={{ width: width, height: height }}>
+                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    </div>
+                    <div style={{ width: width, height: height }}>
+                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    </div>
+                </div>
+            </div>
         </>
     );
 
     // (7) main area
     const mainArea = (
         <>
-            <input type="checkbox" className="open-sidebar-checkbox" id="open-sidebar-checkbox-secondary" />
-            <input type="checkbox" className="open-right-sidebar-checkbox" id="open-right-sidebar-checkbox-secondary" />
-
+            {openSidebarCheckbox.trigger}
+            {openRightSidebarCheckbox.trigger}
             <div className="main-area">
                 {mainVideoArea}
                 {bottomNav}
