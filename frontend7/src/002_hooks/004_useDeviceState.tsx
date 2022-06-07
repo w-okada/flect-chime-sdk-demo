@@ -179,6 +179,7 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
                 device: state.audioInput,
                 noiseSuppressionType: state.noiseSuppretionType,
             });
+            console.log("audio", device);
             stateRef.current = { ...stateRef.current, chimeAudioInputDevice: device };
             setState(stateRef.current);
         };

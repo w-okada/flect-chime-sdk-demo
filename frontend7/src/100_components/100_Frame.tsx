@@ -8,6 +8,7 @@ import { useAppState } from "../003_provider/AppStateProvider";
 import { JoinRoomDialog, JoinRoomDialogProps } from "./101-3_JoinRoomDialog";
 import { SettingDialog } from "./101-5_SettingDialog";
 import { Chime } from "aws-sdk";
+import { RightSidebar, RightSidebarProps } from "./103_RightSidebar";
 
 export type FrameProps = {
     signInCompleted: boolean;
@@ -53,10 +54,6 @@ export const Frame = (props: FrameProps) => {
             </label>
         </div>
     );
-    useEffect(() => {
-        openSidebarCheckbox.updateState(true);
-    });
-
     //// (1-2) Center space
     // None....
 
@@ -243,12 +240,10 @@ export const Frame = (props: FrameProps) => {
     };
     const sidebar = <Sidebar {...sidebarProps}></Sidebar>;
     // (4) right sidebar
-    const rightSidebar = (
-        <>
-            <input type="checkbox" className="open-right-sidebar-checkbox" id="open-right-sidebar-checkbox-secondary" />
-            <div className="right-sidebar"></div>
-        </>
-    );
+    const rightSidebarProps: RightSidebarProps = {
+        rightSidebarTrigger: openRightSidebarCheckbox.trigger,
+    };
+    const rightSidebar = <RightSidebar {...rightSidebarProps}></RightSidebar>;
 
     // (5) bottom nav (belongs to main area)
     const bottomNav = (
@@ -309,6 +304,14 @@ export const Frame = (props: FrameProps) => {
             createRoomCheckbox.updateState(false);
         },
     };
+
+    //// for DEBUG
+    useEffect(() => {
+        openSidebarCheckbox.updateState(true);
+    }, []);
+    useEffect(() => {
+        openRightSidebarCheckbox.updateState(true);
+    }, []);
 
     return (
         <>

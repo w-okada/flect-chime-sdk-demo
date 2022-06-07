@@ -89,39 +89,6 @@ export const Sidebar = (props: SidebarProps) => {
         });
     }, [backendManagerState.meetings]);
 
-    // /**
-    //  * (2)action linking
-    //  */
-    // // (2-1) Open Meeting Accrdion
-    // useEffect(() => {
-    //     const meetingCheckboxes = document.querySelectorAll(".sidebar-accordion-meeting-checkbox");
-    //     meetingCheckboxes.forEach((x) => {
-    //         // @ts-ignore
-    //         x.onchange = (ev) => {
-    //             const meetingCheckboxes = document.querySelectorAll(".sidebar-accordion-meeting-checkbox");
-    //             meetingCheckboxes.forEach((y) => {
-    //                 //@ts-ignore
-    //                 y.checked = ev.target.checked;
-    //             });
-    //         };
-    //     });
-    // }, []);
-
-    // // (2-2) open Global Chat Accrdion
-    // useEffect(() => {
-    //     const meetingCheckboxes = document.querySelectorAll(".sidebar-accordion-chat-checkbox");
-    //     meetingCheckboxes.forEach((x) => {
-    //         // @ts-ignore
-    //         x.onchange = (ev) => {
-    //             const meetingCheckboxes = document.querySelectorAll(".sidebar-accordion-chat-checkbox");
-    //             meetingCheckboxes.forEach((y) => {
-    //                 //@ts-ignore
-    //                 y.checked = ev.target.checked;
-    //             });
-    //         };
-    //     });
-    // }, []);
-
     return (
         <>
             {/* <input type="checkbox" className="open-sidebar-checkbox" id="open-sidebar-checkbox-secondary" /> */}

@@ -41,7 +41,8 @@
 
 /** (1-2) sidebar, main-area, right-sidebar **/
 /*** (1-2-1) initialize ***/
-.sidebar {
+.sidebar,
+.right-sidebar {
     position: fixed;
     top: var(--header-height);
     height: calc(100vh - var(--header-height));
@@ -54,7 +55,6 @@
         position: static;
         display: flex;
         flex-direction: column;
-        align-items: center;
         width: 100%;
         color: rgba(255, 255, 255, 1);
         background: rgba(0, 0, 0, 0);
@@ -80,6 +80,7 @@
         .sidebar-content {
             position: static;
             width: 100%;
+            /* height: var(--header-height); */
             height: calc(100% - var(--header-height));
             background: rgba(200, 0, 0, 1);
             .sidebar-create-room {
@@ -90,7 +91,8 @@
                 cursor: pointer;
                 font-size: 1rem;
             }
-            .sidebar-room-list {
+            .sidebar-room-list,
+            .sidebar-attendee-list {
                 width: 100%;
                 height: calc(100% - 6rem);
                 overflow-y: scroll;
@@ -108,13 +110,15 @@
                     border-radius: 100px;
                     width: 130px;
                 }
-                .sidebar-room-item {
+                .sidebar-room-item,
+                .sidebar-attendee-item {
                     width: 100%;
                     display: flex;
                     justify-content: space-between;
                     margin-top: 0.2rem;
 
-                    .sidebar-room-name {
+                    .sidebar-room-name,
+                    .sidebar-attendee-name {
                         padding-left: 1rem;
                         max-width: calc(100% - 6rem);
                         overflow: hidden;
@@ -133,10 +137,13 @@
     }
 
     .sidebar-accordion-meeting-checkbox,
-    .sidebar-accordion-chat-checkbox {
+    .sidebar-accordion-chat-checkbox,
+    .sidebar-accordion-attendees-checkbox,
+    .sidebar-accordion-local-chat-checkbox,
+    .sidebar-accordion-whiteboard-checkbox {
         display: none;
         &:checked + .sidebar-partition {
-            height: 100vh;
+            flex-grow: 1;
             transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
         }
         &:not(checked) + .sidebar-partition {
@@ -491,6 +498,39 @@
                     display: none;
                 }
             }
+        }
+    }
+}
+
+.sidebar-partition {
+    .sidebar-signage-area {
+        position: static;
+        width: 100%;
+        /* text-align: center; */
+        height: 2rem;
+        /* padding: 2px; */
+        background: rgba(0, 0, 0, 0.8);
+
+        .letter {
+            display: inline-block;
+            position: relative;
+            float: left;
+            transform: translateZ(25px);
+            transform-origin: 50% 50% 25px;
+        }
+
+        .letter.out {
+            transform: rotateX(90deg);
+            transition: transform 0.32s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+        }
+
+        .letter.behind {
+            transform: rotateX(-90deg);
+        }
+
+        .letter.in {
+            transform: rotateX(0deg);
+            transition: transform 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
     }
 }

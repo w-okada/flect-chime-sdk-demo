@@ -26,6 +26,7 @@ export type MeetingInfo = {
 }
 export type AttendeeState = {
     attendeeId: string;
+    attendeeName: string | null;
     active: boolean;
     score: number; // active score
     volume: number; // volume
@@ -71,6 +72,15 @@ export class FlectChimeClient {
     // (X) Meeing Setup Process
     // (1) join and creating meeting session
     joinMeeting = async (meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => {
+        // clear cache
+        this._attendees = {}
+        this._videoTileStates = {}
+        if (this._meetingSession) {
+            this._meetingSession.audioVideo.stopLocalVideoTile();
+            this._meetingSession.audioVideo.stop()
+            this._meetingSession = null
+        }
+
         console.log("join meeting!!!!!!!!!!")
         //// (1-1) creating configuration
         const configuration = new MeetingSessionConfiguration(meetingInfo, attendeeInfo);
@@ -97,11 +107,12 @@ export class FlectChimeClient {
         if (!this._meetingSession) {
             return
         }
-        const p1 = this.setDeivces(audioInput, videoInput, audioOutput, audioOutputElement)
+        // const p1 = this.setDeivces(audioInput, videoInput, audioOutput, audioOutputElement)
+        await this.setDeivces(audioInput, videoInput, audioOutput, audioOutputElement)
         this.addAudioVideoOserver()
         this.addAttendeeChangeSubscriber()
         this.addActiveSpeakerDetector()
-        await p1
+        // await p1
         this._meetingSession.audioVideo.start();
     }
     private setDeivces = async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVideoInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
@@ -172,6 +183,7 @@ export class FlectChimeClient {
                     // Add to Attendee List
                     const new_attendee: AttendeeState = {
                         attendeeId: attendeeId,
+                        attendeeName: null,
                         active: false,
                         score: 0,
                         volume: 0,
@@ -202,13 +214,14 @@ export class FlectChimeClient {
                 return;
             } else {
                 // Delete Subscribe volume Indicator
+                console.log("delete user", attendeeId)
                 this.meetingSession!.audioVideo.realtimeUnsubscribeFromVolumeIndicator(attendeeId);
                 delete this._attendees[attendeeId];
                 this._flectChimeClientListener?.attendeesUpdated(this._attendees);
                 return;
             }
         }
-        this.meetingSession!.audioVideo.realtimeSubscribeToAttendeeIdPresence(subscriber);
+        this._meetingSession!.audioVideo.realtimeSubscribeToAttendeeIdPresence(subscriber);
     }
 
     private addActiveSpeakerDetector = () => {
@@ -242,6 +255,15 @@ export class FlectChimeClient {
             },
             5000
         );
+    }
+
+    // (3) Leave Meeting
+    leaveMeeting = () => {
+        if (!this._meetingSession) {
+            return
+        }
+        this._meetingSession.audioVideo.stopLocalVideoTile();
+        this._meetingSession.audioVideo.stop();
     }
 
     // (X) Configuration

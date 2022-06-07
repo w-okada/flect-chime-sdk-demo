@@ -36,6 +36,7 @@ export class AudioInputDeviceGenerator {
     voiceFocusDeviceTransformer: VoiceFocusDeviceTransformer | null = null
     generatedDvice: string | MediaStream | VoiceFocusTransformDevice | null = null
     generateAudioInputDeivce = async (params: GenerateAudioInputDeivceParams) => {
+        console.log("generate tone device1")
         //// (a) no device selected 
         if (params.device === AudioInputCustomDevices.none) {
             return null
@@ -43,6 +44,7 @@ export class AudioInputDeviceGenerator {
 
         //// (b) tone device selected 
         if (params.device === AudioInputCustomDevices.tone) {
+            console.log("generate tone device2")
             return this.generateToneDevice();
         }
 

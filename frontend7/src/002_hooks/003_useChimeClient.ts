@@ -1,14 +1,20 @@
+import { VideoTileState } from "amazon-chime-sdk-js";
 import { Chime } from "aws-sdk";
-import { useMemo, useState } from "react";
-import { FlectChimeClient, MeetingInfo } from "../001_clients_and_managers/003_chime/FlectChimeClient";
+import { useEffect, useMemo, useState } from "react";
+import { AttendeeState, FlectChimeClient, FlectChimeClientListener, MeetingInfo } from "../001_clients_and_managers/003_chime/FlectChimeClient";
+import { GetAttendeeInfoRequest, GetAttendeeInfoResponse } from "./002_useBackendManager";
 import { ChimeAudioInputDevice, ChimeAudioOutputDevice, ChimeAudioOutputElement, ChimeVideoInputDevice } from "./004_useDeviceState";
 
 
 export type UseChimeClientProps = {
+    getAttendeeInfo: (params: GetAttendeeInfoRequest) => Promise<GetAttendeeInfoResponse | null>
 };
 
 export type ChimeClientState = {
     chimeClient: FlectChimeClient
+    attendees: AttendeeList
+    videoTileStates: VideoTileStateList
+    activeSpeakerId: string | null
     // getMeetingInfo: (meetingName: string, userName?: string | null) => Promise<void>;
 
     // (3)
@@ -25,11 +31,55 @@ export type ChimeClientStateAndMethods = ChimeClientState & {
 
 }
 
-
+export type AttendeeList = { [attendeeId: string]: AttendeeState; }
+export type VideoTileStateList = { [attendeeId: string]: VideoTileState; }
 export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndMethods => {
+    const [meetingName, setMeetingName] = useState<string>()
+    const [attendees, setAttendees] = useState<AttendeeList>({})
+    const [videoTileStates, setVideoTileStates] = useState<VideoTileStateList>({})
+    const [activeSpeakerId, setActiveSpeakerId] = useState<string | null>(null)
+
     const chimeClient = useMemo(() => {
         return new FlectChimeClient()
     }, [])
+
+    console.log("meeting state:::", attendees, videoTileStates)
+    useEffect(() => {
+        const l: FlectChimeClientListener = {
+            meetingStateUpdated: (): void => {
+                console.log("meeting state update....")
+            },
+            activeSpekaerUpdated: (activeSpeakerId: string | null): void => {
+                setActiveSpeakerId(activeSpeakerId)
+            },
+            attendeesUpdated: (list: { [attendeeId: string]: AttendeeState; }): void => {
+                const updateAttendeeList = async () => {
+                    for (let x of Object.values(list)) {
+                        if (x.attendeeName === null) {
+                            const info = await props.getAttendeeInfo({
+                                meetingName: meetingName!,
+                                attendeeId: x.attendeeId
+                            })
+                            x.attendeeName = info?.attendeeName || null
+                        }
+                    }
+                    const nameUnresolved = Object.values(list).find(x => { return x.attendeeName === null })
+                    if (nameUnresolved) {
+                        console.log("retry resolve attendee name", nameUnresolved)
+                        setTimeout(updateAttendeeList, 1000 * 2)
+                    }
+                    setAttendees({ ...list })
+                }
+                updateAttendeeList()
+            },
+            videoTileStateUpdated: (list: { [attendeeId: string]: VideoTileState; }): void => {
+                setVideoTileStates({ ...list })
+            }
+        }
+        chimeClient.setFlectChimeClientListener(l)
+    }, [props.getAttendeeInfo, meetingName])
+
+
 
     //// (3) Create Meeting
     const joinMeeting = useMemo(() => {
@@ -38,6 +88,7 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
                 console.warn("chime client is not initialized.")
                 return
             }
+            setMeetingName(meetingName)
             await chimeClient.joinMeeting(meetingInfo, attendeeInfo);
         }
     }, [chimeClient])
@@ -65,6 +116,9 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
 
     const returnValue: ChimeClientStateAndMethods = {
         chimeClient,
+        attendees,
+        videoTileStates,
+        activeSpeakerId,
         // (1) Meetings
         joinMeeting,
         enterMeeting,
