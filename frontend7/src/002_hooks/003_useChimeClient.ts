@@ -30,6 +30,9 @@ export type ChimeClientStateAndMethods = ChimeClientState & {
     setAudioOutput: (audioOutput: ChimeAudioOutputDevice) => Promise<void>
     isLocalVideoStarted: () => boolean
 
+    startScreenShare: () => Promise<boolean>
+    stopScreenShare: () => void
+
     bindVideoElement: (tileId: number, videoElement: HTMLVideoElement) => void
 
 }
@@ -62,11 +65,23 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
                 const updateAttendeeList = async () => {
                     for (let x of Object.values(list)) {
                         if (x.attendeeName === null) {
-                            const info = await props.getAttendeeInfo({
-                                meetingName: meetingName!,
-                                attendeeId: x.attendeeId
-                            })
-                            x.attendeeName = info?.attendeeName || null
+                            if (!x.isSharedContent) {
+                                const info = await props.getAttendeeInfo({
+                                    meetingName: meetingName!,
+                                    attendeeId: x.attendeeId
+                                })
+                                x.attendeeName = info?.attendeeName || null
+                            } else {
+                                console.log("OWNER:::", x.ownerId)
+                                const info = await props.getAttendeeInfo({
+                                    meetingName: meetingName!,
+                                    attendeeId: x.ownerId
+                                })
+                                x.attendeeName = info?.attendeeName || null
+                                if (x.attendeeName) {
+                                    x.attendeeName = `Content(${x.attendeeName})`
+                                }
+                            }
                         }
                     }
                     const nameUnresolved = Object.values(list).find(x => { return x.attendeeName === null })
@@ -129,6 +144,19 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
         chimeClient.bindVideoElement(tileId, videoElement)
     }
 
+    // Feature
+    const startScreenShare = async () => {
+        const ms = await chimeClient.startScreenShare()
+        if (!ms) {
+            return false
+        } else {
+            return true
+        }
+    }
+    const stopScreenShare = () => {
+        chimeClient.stopScreenShare()
+    }
+
     const returnValue: ChimeClientStateAndMethods = {
         chimeClient,
         attendees,
@@ -141,6 +169,9 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
         setVideoInput,
         setAudioOutput,
         isLocalVideoStarted,
+
+        startScreenShare,
+        stopScreenShare,
 
         bindVideoElement,
     }

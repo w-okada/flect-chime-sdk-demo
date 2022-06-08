@@ -41,23 +41,32 @@ export const useStateControlCheckbox = (className: string, changeCallback?: (new
     const currentValForTriggerCallback = useRef<boolean>();
     // (4) トリガチェックボックス
     const callback = useMemo(() => {
-        return (e: ChangeEvent<HTMLInputElement>) => {
+        console.log("generate callback function", className);
+        return (newVal: boolean) => {
             if (!changeCallback) {
                 return;
             }
             //  値が同じときはスルー (== 初期値(undefined)か、値が違ったのみ発火)
-            if (currentValForTriggerCallback.current === e.target.checked) {
+            if (currentValForTriggerCallback.current === newVal) {
                 return;
             }
-
             // 初期値(undefined)か、値が違ったのみ発火
-            currentValForTriggerCallback.current = e.target.checked;
+            currentValForTriggerCallback.current = newVal;
             changeCallback(currentValForTriggerCallback.current);
         };
     }, []);
     const trigger = useMemo(() => {
         if (changeCallback) {
-            return <input type="checkbox" className={`${className} state-control-checkbox rotate-button`} id={`${className}`} onChange={callback} />;
+            return (
+                <input
+                    type="checkbox"
+                    className={`${className} state-control-checkbox rotate-button`}
+                    id={`${className}`}
+                    onChange={(e) => {
+                        callback(e.target.checked);
+                    }}
+                />
+            );
         } else {
             return <input type="checkbox" className={`${className} state-control-checkbox rotate-button`} id={`${className}`} />;
         }
@@ -93,7 +102,7 @@ export const useStateControlCheckbox = (className: string, changeCallback?: (new
                 y.checked = newVal;
             });
             if (changeCallback) {
-                changeCallback(newVal);
+                callback(newVal);
             }
         };
     }, []);

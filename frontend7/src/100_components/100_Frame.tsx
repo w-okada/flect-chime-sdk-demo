@@ -7,7 +7,6 @@ import { CreateRoomDialog, CreateRoomDialogProps } from "./101-2_CreateRoomDialo
 import { useAppState } from "../003_provider/AppStateProvider";
 import { JoinRoomDialog, JoinRoomDialogProps } from "./101-3_JoinRoomDialog";
 import { SettingDialog } from "./101-5_SettingDialog";
-import { Chime } from "aws-sdk";
 import { RightSidebar, RightSidebarProps } from "./103_RightSidebar";
 import { MainVideoArea, MainVideoAreaProps } from "./111_MainVideoArea";
 import { useStateControlRadioButton } from "./hooks/useStateControlRadioButton";
@@ -33,6 +32,7 @@ export const Frame = (props: FrameProps) => {
         deviceState.setVideoInputEnable(newVal);
     });
     const speakerEnableCheckbox = useStateControlCheckbox("speaker-enable-checkbox", (newVal: boolean) => {
+        console.log("speaker 1 ");
         deviceState.setAudioOutputEnable(newVal);
     });
     const openBottomNavCheckbox = useStateControlCheckbox("open-bottom-nav-checkbox");
@@ -42,7 +42,20 @@ export const Frame = (props: FrameProps) => {
         frontendState.setViewType(suffix as ViewType);
     });
 
-    const shareScreenCheckbox = useStateControlCheckbox("share-screen-checkbox");
+    const shareScreenCheckbox = useStateControlCheckbox("share-screen-checkbox", (newVal: boolean) => {
+        const handleShareScreen = () => {
+            if (newVal) {
+                chimeClientState.startScreenShare().then((res) => {
+                    if (!res) {
+                        shareScreenCheckbox.updateState(false);
+                    }
+                });
+            } else {
+                chimeClientState.stopScreenShare();
+            }
+        };
+        handleShareScreen();
+    });
     const startTranscribeCheckbox = useStateControlCheckbox("start-transcribe-checkbox");
     const settingCheckbox = useStateControlCheckbox("setting-checkbox");
     const leaveCheckbox = useStateControlCheckbox("leave-checkbox");

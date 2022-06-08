@@ -318,4 +318,18 @@ export class FlectChimeClient {
         this._meetingSession.audioVideo.bindVideoElement(tileId, videoElement)
     }
 
+    // () Features
+    startScreenShare = async () => {
+        if (!this._meetingSession) {
+            return
+        }
+        return await this._meetingSession.audioVideo.startContentShareFromScreenCapture()
+    }
+    stopScreenShare = () => {
+        if (!this._meetingSession) {
+            return
+        }
+        this._meetingSession.audioVideo.stopContentShare()
+    }
+
 }
