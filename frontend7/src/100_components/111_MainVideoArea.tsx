@@ -46,7 +46,7 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
     useEffect(() => {
         const SHOW_DEMO_NUM = 4;
         const loadDemoMovie = async () => {
-            const demo = await fetch("test.mp4");
+            const demo = await fetch("demo.mp4");
             const data = await demo.blob();
             const url = URL.createObjectURL(data);
 

@@ -355,6 +355,9 @@ export const Frame = (props: FrameProps) => {
     //// initial
     useEffect(() => {
         viewRadioButtons.selectButton(ViewType.feature);
+        micEnableCheckbox.updateState(true);
+        cameraEnableCheckbox.updateState(false);
+        speakerEnableCheckbox.updateState(true);
     }, []);
 
     return (

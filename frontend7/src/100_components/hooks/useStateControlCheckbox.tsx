@@ -85,13 +85,18 @@ export const useStateControlCheckbox = (className: string, changeCallback?: (new
     }, []);
 
     // (3) ステート変更
-    const updateState = (newVal: boolean) => {
-        const currentCheckboxes = document.querySelectorAll(`.${className}`);
-        currentCheckboxes.forEach((y) => {
-            // @ts-ignore
-            y.checked = newVal;
-        });
-    };
+    const updateState = useMemo(() => {
+        return (newVal: boolean) => {
+            const currentCheckboxes = document.querySelectorAll(`.${className}`);
+            currentCheckboxes.forEach((y) => {
+                // @ts-ignore
+                y.checked = newVal;
+            });
+            if (changeCallback) {
+                changeCallback(newVal);
+            }
+        };
+    }, []);
 
     return { trigger, updateState };
 };
