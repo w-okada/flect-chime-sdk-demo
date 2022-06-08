@@ -124,7 +124,6 @@ export const RightSidebar = (props: RightSidebarProps) => {
 
     useEffect(() => {
         setInterval(() => {
-            console.log("setTExt");
             setSignageText("now:" + new Date().getTime());
         }, 1000 * 5);
     }, []);

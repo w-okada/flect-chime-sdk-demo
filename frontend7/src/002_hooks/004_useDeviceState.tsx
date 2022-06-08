@@ -146,6 +146,8 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
                     videoElem.onloadedmetadata = () => {
                         videoElem.height = videoElem.videoHeight;
                         videoElem.width = videoElem.videoWidth;
+                        videoElem.play();
+                        videoElem.loop = true;
                         //@ts-ignore
                         const ms = videoElem.captureStream();
                         resolve(ms as MediaStream);

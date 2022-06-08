@@ -105,16 +105,21 @@ export class FlectChimeClient {
     // (2) enter meeting
     enterMeeting = async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVideoInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
         if (!this._meetingSession) {
+            console.warn("meeting session is not initialized")
             return
         }
         // const p1 = this.setDeivces(audioInput, videoInput, audioOutput, audioOutputElement)
+        console.log("setting devices...")
         await this.setDeivces(audioInput, videoInput, audioOutput, audioOutputElement)
+        console.log("setting devices... done.")
         this.addAudioVideoOserver()
         this.addAttendeeChangeSubscriber()
         this.addActiveSpeakerDetector()
         // await p1
+        console.log("starting...")
         this._meetingSession.audioVideo.startLocalVideoTile()
         this._meetingSession.audioVideo.start();
+        console.log("starting... done.")
     }
     private setDeivces = async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVideoInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
         let p1
@@ -277,14 +282,24 @@ export class FlectChimeClient {
     }
     setVideoInputDevice = async (videoInput: ChimeVideoInputDevice) => {
         await this._meetingSession?.audioVideo.stopVideoInput()
+        await this._meetingSession?.audioVideo.stopLocalVideoTile()
         if (videoInput) {
             await this._meetingSession?.audioVideo.startVideoInput(videoInput)
+            await this._meetingSession?.audioVideo.startLocalVideoTile()
         }
     }
     setAudioOutputDevoce = async (audioOutput: ChimeAudioOutputDevice) => {
         if (this._meetingSession) {
             await this._meetingSession.audioVideo.chooseAudioOutput(audioOutput)
         }
+    }
+
+    // (X) Tiles
+    bindVideoElement = (tileId: number, videoElement: HTMLVideoElement) => {
+        if (!this._meetingSession) {
+            return
+        }
+        this._meetingSession.audioVideo.bindVideoElement(tileId, videoElement)
     }
 
 }

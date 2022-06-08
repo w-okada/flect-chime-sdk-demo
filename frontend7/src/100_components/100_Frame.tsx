@@ -9,6 +9,7 @@ import { JoinRoomDialog, JoinRoomDialogProps } from "./101-3_JoinRoomDialog";
 import { SettingDialog } from "./101-5_SettingDialog";
 import { Chime } from "aws-sdk";
 import { RightSidebar, RightSidebarProps } from "./103_RightSidebar";
+import { MainVideoArea, MainVideoAreaProps } from "./111_MainVideoArea";
 
 export type FrameProps = {
     signInCompleted: boolean;
@@ -254,41 +255,10 @@ export const Frame = (props: FrameProps) => {
     );
 
     // (6) main vide area (belongs to main area)
-    const height = "33%";
-    const width = "33%";
-    const mainVideoArea = (
-        <>
-            {openBottomNavCheckbox.trigger}
-            <div className="main-video-area">
-                <div style={{ display: "flex", alignItems: "stretch", justifyContent: "stretch", flexWrap: "wrap", height: "100%", width: "100%" }}>
-                    <div style={{ width: width, height: height }}>
-                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
-                    </div>
-                    <div style={{ width: width, height: height }}>
-                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
-                    </div>
-                    <div style={{ width: width, height: height }}>
-                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
-                    </div>
-                    <div style={{ width: width, height: height }}>
-                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
-                    </div>
-                    <div style={{ width: width, height: height }}>
-                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
-                    </div>
-                    <div style={{ width: width, height: height }}>
-                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
-                    </div>
-                    <div style={{ width: width, height: height }}>
-                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
-                    </div>
-                    <div style={{ width: width, height: height }}>
-                        <video controls src="test.mp4" autoPlay style={{ objectFit: "contain", width: "100%", height: "100%" }} />
-                    </div>
-                </div>
-            </div>
-        </>
-    );
+    const mainVideoAreaProps: MainVideoAreaProps = {
+        bottomNavTrigger: openBottomNavCheckbox.trigger,
+    };
+    const mainVideoArea = <MainVideoArea {...mainVideoAreaProps}></MainVideoArea>;
 
     // (7) main area
     const mainArea = (

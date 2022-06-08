@@ -29,6 +29,8 @@ export type ChimeClientStateAndMethods = ChimeClientState & {
     setVideoInput: (videoInput: ChimeVideoInputDevice) => Promise<void>
     setAudioOutput: (audioOutput: ChimeAudioOutputDevice) => Promise<void>
 
+    bindVideoElement: (tileId: number, videoElement: HTMLVideoElement) => void
+
 }
 
 export type AttendeeList = { [attendeeId: string]: AttendeeState; }
@@ -104,6 +106,7 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
     }, [chimeClient])
 
 
+    // Device
     const setAudioInput = async (audioInput: ChimeAudioInputDevice) => {
         await chimeClient.setAudioInputDevice(audioInput)
     }
@@ -112,6 +115,11 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
     }
     const setAudioOutput = async (audioOutput: ChimeAudioOutputDevice) => {
         await chimeClient.setAudioOutputDevoce(audioOutput)
+    }
+
+    // Tiles
+    const bindVideoElement = (tileId: number, videoElement: HTMLVideoElement) => {
+        chimeClient.bindVideoElement(tileId, videoElement)
     }
 
     const returnValue: ChimeClientStateAndMethods = {
@@ -125,6 +133,8 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
         setAudioInput,
         setVideoInput,
         setAudioOutput,
+
+        bindVideoElement,
     }
     return returnValue
 }

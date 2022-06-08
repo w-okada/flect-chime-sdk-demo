@@ -259,7 +259,7 @@ export const SettingDialog = (props: SettingDialogProps) => {
         const hidden = tab === "video-input" ? "" : "hidden";
         return (
             <div className={`dialog-input-controls ${hidden}`}>
-                <video id="setting-dialog-video-preview" />
+                <video id="setting-dialog-video-preview" controls className="video" />
             </div>
         );
     }, [tab]);
@@ -318,15 +318,17 @@ export const SettingDialog = (props: SettingDialogProps) => {
         console.log("meetingsession");
         const videoPreviewEl = document.getElementById("setting-dialog-video-preview") as HTMLVideoElement;
 
-        if (deviceState.chimeVideoInputDevice) {
-            chimeClientState.chimeClient.meetingSession.audioVideo.startVideoInput(deviceState.chimeVideoInputDevice).then(() => {
-                chimeClientState.chimeClient.meetingSession!.audioVideo.startVideoPreviewForVideoInput(videoPreviewEl);
-            });
-        } else {
-            chimeClientState.chimeClient.meetingSession.audioVideo.startVideoInput(deviceState.videoInput).then(() => {
-                chimeClientState.chimeClient.meetingSession!.audioVideo.startVideoPreviewForVideoInput(videoPreviewEl);
-            });
-        }
+        chimeClientState.chimeClient.meetingSession?.audioVideo.stopLocalVideoTile();
+        chimeClientState.chimeClient.meetingSession?.audioVideo.startVideoPreviewForVideoInput(videoPreviewEl);
+        // if (deviceState.chimeVideoInputDevice) {
+        //     chimeClientState.chimeClient.meetingSession.audioVideo.startVideoInput(deviceState.chimeVideoInputDevice).then(() => {
+        //         chimeClientState.chimeClient.meetingSession!.audioVideo.startVideoPreviewForVideoInput(videoPreviewEl);
+        //     });
+        // } else {
+        //     chimeClientState.chimeClient.meetingSession.audioVideo.startVideoInput(deviceState.videoInput).then(() => {
+        //         chimeClientState.chimeClient.meetingSession!.audioVideo.startVideoPreviewForVideoInput(videoPreviewEl);
+        //     });
+        // }
     }, [deviceState.videoInput, deviceState.chimeVideoInputDevice]);
 
     return (
