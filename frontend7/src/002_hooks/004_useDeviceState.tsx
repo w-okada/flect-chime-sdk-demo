@@ -1,3 +1,4 @@
+import { faL } from "@fortawesome/free-solid-svg-icons";
 import { DefaultVideoTransformDevice, VoiceFocusTransformDevice } from "amazon-chime-sdk-js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DeviceInfo, Devicemanager } from "../001_clients_and_managers/004_devices/001_DeviceManager";
@@ -21,16 +22,19 @@ export type DeviceInfoState = {
 
     // auido input
     audioInput: string | AudioInputCustomDevices;
+    audioInputEnable: boolean;
     noiseSuppretionType: NoiseSuppressionTypes;
     chimeAudioInputDevice: ChimeAudioInputDevice;
     // video input
     videoInput: string | VideoInputCustomDevices;
+    videoInputEnable: boolean;
     virtualBackgroundType: VirtualBackgroundTypes;
     virtualBackgroundImageDataURL: string | null;
     videoDataURL: string | null;
     chimeVideoInputDevice: ChimeVideoInputDevice;
     // audio output
     audioOutput: string | AudioOutputCustomDevices;
+    audioOutputEnable: boolean;
     chimeAudioOutputDevice: ChimeAudioOutputDevice;
     audioOutputElement: ChimeAudioOutputElement;
 };
@@ -38,8 +42,11 @@ export type DeviceInfoState = {
 export type DeviceInfoStateAndMethods = DeviceInfoState & {
     reloadDevices: () => Promise<void>;
     setAudioInputDevice: (device: string) => void;
+    setAudioInputEnable: (val: boolean) => void;
     setVideoInputDevice: (device: string) => Promise<void>;
+    setVideoInputEnable: (val: boolean) => void;
     setAudioOutputDevice: (device: string) => void;
+    setAudioOutputEnable: (val: boolean) => void;
     setAudioOutputElement: (elem: HTMLAudioElement) => void;
     setNoiseSuppressionType: (val: NoiseSuppressionTypes) => void;
     setVirtualBackgroundType: (val: VirtualBackgroundTypes) => void;
@@ -61,10 +68,12 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
 
         // auido input
         audioInput: localStorage.audioInputDevice || AudioInputCustomDevices.none,
+        audioInputEnable: true,
         noiseSuppretionType: localStorage.noiseSuppressionType || NoiseSuppressionTypes.auto,
         chimeAudioInputDevice: null,
         // video input
         videoInput: localStorage.videoInputDevice || VideoInputCustomDevices.none,
+        videoInputEnable: true,
         virtualBackgroundType: localStorage.virtualBackgroundType || VirtualBackgroundTypes.none,
         virtualBackgroundImageDataURL: null,
         videoDataURL: null,
@@ -72,6 +81,7 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
 
         // audio output
         audioOutput: localStorage.audioOutputDevice || AudioOutputCustomDevices.none,
+        audioOutputEnable: true,
         chimeAudioOutputDevice: null,
         audioOutputElement: null,
     });
@@ -125,6 +135,21 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         stateRef.current = { ...stateRef.current, audioOutputElement: elem };
         setState(stateRef.current);
     };
+
+    //// (3-x) set device enable
+    const setAudioInputEnable = (val: boolean) => {
+        stateRef.current = { ...stateRef.current, audioInputEnable: val };
+        setState(stateRef.current);
+    };
+    const setVideoInputEnable = (val: boolean) => {
+        stateRef.current = { ...stateRef.current, videoInputEnable: val };
+        setState(stateRef.current);
+    };
+    const setAudioOutputEnable = (val: boolean) => {
+        stateRef.current = { ...stateRef.current, audioOutputEnable: val };
+        setState(stateRef.current);
+    };
+
     //// (3-3) set effects
     const setNoiseSuppressionType = (val: NoiseSuppressionTypes) => {
         localStorage.noiseSuppressionType = val;
@@ -141,6 +166,12 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
     useEffect(() => {
         const generateDevice = async () => {
             let media;
+            if (state.videoInputEnable === false) {
+                stateRef.current = { ...stateRef.current, chimeVideoInputDevice: null };
+                setState(stateRef.current);
+                return;
+            }
+
             if (state.videoInput === "file") {
                 console.log("URL", state.videoDataURL);
                 const p = new Promise<MediaStream>((resolve, reject) => {
@@ -175,10 +206,16 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         };
 
         generateDevice();
-    }, [state.videoInput, state.videoDataURL, state.virtualBackgroundType]);
+    }, [state.videoInput, state.videoInputEnable, state.videoDataURL, state.virtualBackgroundType]);
 
     useEffect(() => {
         const generateDevice = async () => {
+            if (state.audioInputEnable === false) {
+                stateRef.current = { ...stateRef.current, chimeAudioInputDevice: null };
+                setState(stateRef.current);
+                return;
+            }
+
             const device = await deviceManager.generateAudioInputDeivce({
                 device: state.audioInput,
                 noiseSuppressionType: state.noiseSuppretionType,
@@ -188,18 +225,27 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         };
 
         generateDevice();
-    }, [state.audioInput, state.noiseSuppretionType]);
+    }, [state.audioInput, state.audioInputEnable, state.noiseSuppretionType]);
 
     useEffect(() => {
+        if (state.audioOutputEnable === false) {
+            stateRef.current = { ...stateRef.current, chimeAudioOutputDevice: null };
+            setState(stateRef.current);
+            return;
+        }
+
         stateRef.current = { ...stateRef.current, chimeAudioOutputDevice: state.audioOutput };
         setState(stateRef.current);
-    }, [state.audioOutput]);
+    }, [state.audioOutput, state.audioOutputEnable]);
     const returnVal: DeviceInfoStateAndMethods = {
         ...state,
         reloadDevices,
         setAudioInputDevice,
+        setAudioInputEnable,
         setVideoInputDevice,
+        setVideoInputEnable,
         setAudioOutputDevice,
+        setAudioOutputEnable,
         setAudioOutputElement,
         setNoiseSuppressionType,
         setVirtualBackgroundType,

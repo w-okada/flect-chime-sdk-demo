@@ -19,16 +19,22 @@ export type FrameProps = {
 };
 
 export const Frame = (props: FrameProps) => {
-    const { frontendState, chimeClientState } = useAppState();
+    const { frontendState, chimeClientState, deviceState } = useAppState();
     const [joinRoomProps, setJoinRoomProps] = useState<JoinRoomDialogProps>({
         decodedMeetingName: "",
         useCode: false,
         close: () => {},
     });
     const openSidebarCheckbox = useStateControlCheckbox("open-sidebar-checkbox");
-    const micEnableCheckbox = useStateControlCheckbox("mic-enable-checkbox");
-    const cameraEnableCheckbox = useStateControlCheckbox("camera-enable-checkbox");
-    const speakerEnableCheckbox = useStateControlCheckbox("speaker-enable-checkbox");
+    const micEnableCheckbox = useStateControlCheckbox("mic-enable-checkbox", (newVal: boolean) => {
+        deviceState.setAudioInputEnable(newVal);
+    });
+    const cameraEnableCheckbox = useStateControlCheckbox("camera-enable-checkbox", (newVal: boolean) => {
+        deviceState.setVideoInputEnable(newVal);
+    });
+    const speakerEnableCheckbox = useStateControlCheckbox("speaker-enable-checkbox", (newVal: boolean) => {
+        deviceState.setAudioOutputEnable(newVal);
+    });
     const openBottomNavCheckbox = useStateControlCheckbox("open-bottom-nav-checkbox");
     const openRightSidebarCheckbox = useStateControlCheckbox("open-right-sidebar-checkbox");
 

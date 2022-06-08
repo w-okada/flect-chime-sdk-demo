@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ChangeEvent, useMemo, useRef } from "react";
 import { useEffect } from "react";
 
 export type StateControlCheckbox = {
@@ -37,9 +37,31 @@ export type StateControlCheckbox = {
 // 備考２：(4-2) のやり方に統一したほうが良い気がする。
 // 備考３： rotate-buttonも汎用className。
 
-export const useStateControlCheckbox = (className: string): StateControlCheckbox => {
+export const useStateControlCheckbox = (className: string, changeCallback?: (newVal: boolean) => void): StateControlCheckbox => {
+    const currentValForTriggerCallback = useRef<boolean>();
     // (4) トリガチェックボックス
-    const trigger = <input type="checkbox" className={`${className} state-control-checkbox rotate-button`} id={`${className}`} />;
+    const callback = useMemo(() => {
+        return (e: ChangeEvent<HTMLInputElement>) => {
+            if (!changeCallback) {
+                return;
+            }
+            //  値が同じときはスルー (== 初期値(undefined)か、値が違ったのみ発火)
+            if (currentValForTriggerCallback.current === e.target.checked) {
+                return;
+            }
+
+            // 初期値(undefined)か、値が違ったのみ発火
+            currentValForTriggerCallback.current = e.target.checked;
+            changeCallback(currentValForTriggerCallback.current);
+        };
+    }, []);
+    const trigger = useMemo(() => {
+        if (changeCallback) {
+            return <input type="checkbox" className={`${className} state-control-checkbox rotate-button`} id={`${className}`} onChange={callback} />;
+        } else {
+            return <input type="checkbox" className={`${className} state-control-checkbox rotate-button`} id={`${className}`} />;
+        }
+    }, []);
 
     useEffect(() => {
         const checkboxes = document.querySelectorAll(`.${className}`);
