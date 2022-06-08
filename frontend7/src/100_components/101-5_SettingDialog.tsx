@@ -310,26 +310,26 @@ export const SettingDialog = (props: SettingDialogProps) => {
     }, [tab, audioInputSelectField, noiseSuppressionSelectField, videoInputSelectField, virtualBackgroundSelectField, audioOutputSelectField]);
 
     // Effect
-    useEffect(() => {
-        if (!chimeClientState.chimeClient.meetingSession) {
-            console.log("no meetingsession");
-            return;
-        }
-        console.log("meetingsession");
-        const videoPreviewEl = document.getElementById("setting-dialog-video-preview") as HTMLVideoElement;
+    // useEffect(() => {
+    //     if (!chimeClientState.chimeClient.meetingSession) {
+    //         console.log("no meetingsession");
+    //         return;
+    //     }
+    //     console.log("meetingsession");
+    //     const videoPreviewEl = document.getElementById("setting-dialog-video-preview") as HTMLVideoElement;
 
-        chimeClientState.chimeClient.meetingSession?.audioVideo.stopLocalVideoTile();
-        chimeClientState.chimeClient.meetingSession?.audioVideo.startVideoPreviewForVideoInput(videoPreviewEl);
-        // if (deviceState.chimeVideoInputDevice) {
-        //     chimeClientState.chimeClient.meetingSession.audioVideo.startVideoInput(deviceState.chimeVideoInputDevice).then(() => {
-        //         chimeClientState.chimeClient.meetingSession!.audioVideo.startVideoPreviewForVideoInput(videoPreviewEl);
-        //     });
-        // } else {
-        //     chimeClientState.chimeClient.meetingSession.audioVideo.startVideoInput(deviceState.videoInput).then(() => {
-        //         chimeClientState.chimeClient.meetingSession!.audioVideo.startVideoPreviewForVideoInput(videoPreviewEl);
-        //     });
-        // }
-    }, [deviceState.videoInput, deviceState.chimeVideoInputDevice]);
+    //     chimeClientState.chimeClient.meetingSession?.audioVideo.stopLocalVideoTile();
+    //     chimeClientState.chimeClient.meetingSession?.audioVideo.startVideoPreviewForVideoInput(videoPreviewEl);
+    //     // if (deviceState.chimeVideoInputDevice) {
+    //     //     chimeClientState.chimeClient.meetingSession.audioVideo.startVideoInput(deviceState.chimeVideoInputDevice).then(() => {
+    //     //         chimeClientState.chimeClient.meetingSession!.audioVideo.startVideoPreviewForVideoInput(videoPreviewEl);
+    //     //     });
+    //     // } else {
+    //     //     chimeClientState.chimeClient.meetingSession.audioVideo.startVideoInput(deviceState.videoInput).then(() => {
+    //     //         chimeClientState.chimeClient.meetingSession!.audioVideo.startVideoPreviewForVideoInput(videoPreviewEl);
+    //     //     });
+    //     // }
+    // }, [deviceState.videoInput, deviceState.chimeVideoInputDevice]);
 
     return (
         <div className="dialog-frame-warpper">

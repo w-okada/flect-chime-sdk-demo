@@ -5,11 +5,12 @@ import { UserPoolClientId, UserPoolId } from "../BackendConfig";
 
 import { useWindowSizeChangeListener, WindowSizeState } from "../providers/hooks/011_useWindowSizeChange";
 import { CognitoClientStateAndMethods, useCognitoClient } from "../002_hooks/001_useCognitoClient";
-import { FrontendState, useFrontend } from "../providers/hooks/021_useFrontend";
+
 import { DeviceInfoStateAndMethods, useDeviceState } from "../002_hooks/004_useDeviceState";
 import { SignInType, StageManagerStateAndMethods, useStageManager } from "../providers/hooks/020_useStageManager";
 import { ChimeClientState, ChimeClientStateAndMethods, useChimeClient } from "../002_hooks/003_useChimeClient";
 import { BackendManagerStateAndMethod, useBackendManager } from "../002_hooks/002_useBackendManager";
+import { FrontendState, useFrontend } from "../002_hooks/011_useFrontend";
 
 type Props = {
     children: ReactNode;

@@ -1,15 +1,17 @@
 import { useMemo, useState } from "react";
 
-export const ScreenType = {
-    FeatureView: "FeatureView",
-    GridView: "GridView",
+export const ViewType = {
+    feature: "feature",
+    grid: "grid",
 } as const;
-export type ScreenType = typeof ScreenType[keyof typeof ScreenType];
+export type ViewType = typeof ViewType[keyof typeof ViewType];
 
 export type FrontendState = {
     // (1) User Information
     username: string
     setUserName: (name: string) => void
+    viewType: ViewType
+    setViewType: (val: ViewType) => void
     // // (2) GUI Control
     // screenType: ScreenType;
     // setScreenType: (v: ScreenType) => void;
@@ -27,6 +29,7 @@ export type FrontendState = {
 export const useFrontend = () => {
     // (1) User Information
     const [username, setUserName] = useState<string>("")
+    const [viewType, setViewType] = useState<ViewType>(ViewType.feature)
 
     // // (2) GUI Control
     // const [screenType, setScreenType] = useState<ScreenType>(ScreenType.FeatureView);
@@ -39,7 +42,8 @@ export const useFrontend = () => {
         // (1) User Information
         username,
         setUserName,
-
+        viewType,
+        setViewType
         // // (2) GUI Control
         // screenType,
         // setScreenType,

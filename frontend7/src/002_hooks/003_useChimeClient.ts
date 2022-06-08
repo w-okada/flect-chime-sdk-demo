@@ -45,7 +45,8 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
         return new FlectChimeClient()
     }, [])
 
-    console.log("meeting state:::", attendees, videoTileStates)
+    console.log("meeting state::1:", attendees)
+    console.log("meeting state::2:", videoTileStates)
     useEffect(() => {
         const l: FlectChimeClientListener = {
             meetingStateUpdated: (): void => {

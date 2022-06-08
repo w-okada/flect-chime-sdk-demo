@@ -45,13 +45,11 @@ export class VideoInputDeviceGenerator {
     backgroundReplacementProcessor: VideoFrameProcessor | null = null
     videoTransformDevice: DefaultVideoTransformDevice | null = null
     generateVideoInputDeivce = async (params: GenerateVideoInputDeivceParams) => {
-        console.log("video input device::", params)
 
         //// (a) no device selected 
         if (params.device === VideoInputCustomDevices.none) {
             return null
         }
-
         //// (b) no processor selected
         if (
             params.virtualBackgroundType === VirtualBackgroundTypes.none &&

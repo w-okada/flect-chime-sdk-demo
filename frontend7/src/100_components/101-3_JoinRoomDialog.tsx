@@ -52,7 +52,6 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
             const audioElement = document.getElementById("chime-audio-output-element") as HTMLAudioElement;
             await chimeClientState.enterMeeting(deviceState.chimeAudioInputDevice, deviceState.chimeVideoInputDevice, deviceState.chimeAudioOutputDevice, audioElement);
             setMessage("enter meeting.... done.");
-
             initializeState();
             props.close();
         } catch (ex) {

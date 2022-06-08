@@ -108,18 +108,19 @@ export class FlectChimeClient {
             console.warn("meeting session is not initialized")
             return
         }
-        // const p1 = this.setDeivces(audioInput, videoInput, audioOutput, audioOutputElement)
+        const p1 = this.setDeivces(audioInput, videoInput, audioOutput, audioOutputElement)
         console.log("setting devices...")
-        await this.setDeivces(audioInput, videoInput, audioOutput, audioOutputElement)
+        // await this.setDeivces(audioInput, videoInput, audioOutput, audioOutputElement)
         console.log("setting devices... done.")
         this.addAudioVideoOserver()
         this.addAttendeeChangeSubscriber()
         this.addActiveSpeakerDetector()
-        // await p1
+        await p1
         console.log("starting...")
+        this._meetingSession.audioVideo.start(); // start -> startLocalVideoTileの順番でないと接続時にカメラが有効にならない！
         this._meetingSession.audioVideo.startLocalVideoTile()
-        this._meetingSession.audioVideo.start();
         console.log("starting... done.")
+
     }
     private setDeivces = async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVideoInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
         let p1

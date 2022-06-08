@@ -74,8 +74,12 @@ export class Devicemanager {
 
     // (A) Device List生成
     reloadDevices = async () => {
-        await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        console.log("reload device2.1")
+        await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        console.log("reload device2.2")
         const mediaDeviceInfos = await navigator.mediaDevices.enumerateDevices();
+        console.log("reload device2.3", mediaDeviceInfos)
+
         this.realAudioInputDevices = mediaDeviceInfos.filter(x => { return x.kind === "audioinput" }).map(x => { return { label: x.label, deviceId: x.deviceId } })
         this.realVideoInputDevices = mediaDeviceInfos.filter(x => { return x.kind === "videoinput" }).map(x => { return { label: x.label, deviceId: x.deviceId } })
         this.realAudioOutputDevices = mediaDeviceInfos.filter(x => { return x.kind === "audiooutput" }).map(x => { return { label: x.label, deviceId: x.deviceId } })

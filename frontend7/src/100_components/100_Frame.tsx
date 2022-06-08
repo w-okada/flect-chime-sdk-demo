@@ -10,6 +10,8 @@ import { SettingDialog } from "./101-5_SettingDialog";
 import { Chime } from "aws-sdk";
 import { RightSidebar, RightSidebarProps } from "./103_RightSidebar";
 import { MainVideoArea, MainVideoAreaProps } from "./111_MainVideoArea";
+import { useStateControlRadioButton } from "./hooks/useStateControlRadioButton";
+import { ViewType } from "../002_hooks/011_useFrontend";
 
 export type FrameProps = {
     signInCompleted: boolean;
@@ -29,6 +31,11 @@ export const Frame = (props: FrameProps) => {
     const speakerEnableCheckbox = useStateControlCheckbox("speaker-enable-checkbox");
     const openBottomNavCheckbox = useStateControlCheckbox("open-bottom-nav-checkbox");
     const openRightSidebarCheckbox = useStateControlCheckbox("open-right-sidebar-checkbox");
+
+    const viewRadioButtons = useStateControlRadioButton("view-radio-button", [ViewType.feature, ViewType.grid], (suffix: string) => {
+        frontendState.setViewType(suffix as ViewType);
+    });
+
     const shareScreenCheckbox = useStateControlCheckbox("share-screen-checkbox");
     const startTranscribeCheckbox = useStateControlCheckbox("start-transcribe-checkbox");
     const settingCheckbox = useStateControlCheckbox("setting-checkbox");
@@ -94,6 +101,31 @@ export const Frame = (props: FrameProps) => {
                 <div className="colored">
                     <FontAwesomeIcon icon={["fas", "volume-high"]} className="spin-on" />
                     <FontAwesomeIcon icon={["fas", "volume-mute"]} className="spin-off" />
+                </div>
+            </label>
+        </div>
+    );
+
+    ///// (1-3-x) Feature View
+    const featureViewButton = (
+        <div className="rotate-button-container tooltip-bottom" data-tooltip="feature view">
+            {viewRadioButtons.buttons[ViewType.feature]}
+            <label htmlFor={`view-radio-button-${ViewType.feature}`} className="rotate-lable">
+                <div className="colored">
+                    <FontAwesomeIcon icon={["fas", "square"]} className="spin-on" />
+                    <FontAwesomeIcon icon={["fas", "square"]} className="spin-off" />
+                </div>
+            </label>
+        </div>
+    );
+    ///// (1-3-x) Grid View
+    const gridViewButton = (
+        <div className="rotate-button-container tooltip-bottom" data-tooltip="grid view">
+            {viewRadioButtons.buttons[ViewType.grid]}
+            <label htmlFor={`view-radio-button-${ViewType.grid}`} className="rotate-lable">
+                <div className="colored">
+                    <FontAwesomeIcon icon={["fas", "table-cells"]} className="spin-on" />
+                    <FontAwesomeIcon icon={["fas", "table-cells"]} className="spin-off" />
                 </div>
             </label>
         </div>
@@ -195,6 +227,11 @@ export const Frame = (props: FrameProps) => {
                     {cameraButton}
                     {speakerButton}
                 </div>
+                <div className="group">
+                    {featureViewButton}
+                    {gridViewButton}
+                </div>
+
                 <div className="group">
                     {shareScreenButton}
                     {startTranscribeButton}
@@ -307,6 +344,11 @@ export const Frame = (props: FrameProps) => {
     }, []);
     useEffect(() => {
         openRightSidebarCheckbox.updateState(true);
+    }, []);
+
+    //// initial
+    useEffect(() => {
+        viewRadioButtons.selectButton(ViewType.feature);
     }, []);
 
     return (
