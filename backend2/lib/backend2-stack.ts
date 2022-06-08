@@ -4,7 +4,7 @@ import { Construct } from 'constructs';
 
 import { createUserPool } from './001_UserPool/001_UserPool';
 
-import { FRONTEND_LOCAL_DEV, USE_DOCKER, USE_CDN, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, SLACK_SIGNING_SECRET, SLACK_STATE_SECRET, SLACK_APP_DB_PASSWORD, SLACK_APP_DB_SALT, SLACK_APP_DB_SECRET } from "../bin/config";
+import { FRONTEND_LOCAL_DEV, USE_DOCKER, USE_CDN, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, SLACK_SIGNING_SECRET, SLACK_STATE_SECRET, SLACK_APP_DB_PASSWORD, SLACK_APP_DB_SALT, SLACK_APP_DB_SECRET, LOCAL_CORS_ORIGIN } from "../bin/config";
 import { createFrontendS3 } from './002_S3/001_FrontendBucket';
 import { createMeetingTable } from './003_DynamoDB/001_MeetingTable';
 import { createAttendeeTable } from './003_DynamoDB/002_AttendeeTable';
@@ -108,8 +108,7 @@ export class Backend2Stack extends Stack {
     const { authorizer } = createAuthorizer(this, id, roleForAPIAuthorizer.roleArn, restApi.restApiId, authorizerUri)
     let corsOrigin
     if (FRONTEND_LOCAL_DEV) {
-      corsOrigin = "'https://localhost:3000'";
-      // origin = "'https://192.168.0.4:3000'";
+      corsOrigin = LOCAL_CORS_ORIGIN;
     } else {
       if (USE_CDN) {
         corsOrigin = `'https://${frontendCdn!.distributionDomainName}'`;
