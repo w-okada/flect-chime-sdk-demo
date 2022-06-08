@@ -28,6 +28,7 @@ export type ChimeClientStateAndMethods = ChimeClientState & {
     setAudioInput: (audioInput: ChimeAudioInputDevice) => Promise<void>
     setVideoInput: (videoInput: ChimeVideoInputDevice) => Promise<void>
     setAudioOutput: (audioOutput: ChimeAudioOutputDevice) => Promise<void>
+    isLocalVideoStarted: () => boolean
 
     bindVideoElement: (tileId: number, videoElement: HTMLVideoElement) => void
 
@@ -45,9 +46,10 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
         return new FlectChimeClient()
     }, [])
 
-    console.log("meeting state::Attendee:", attendees)
-    console.log("meeting state::VideoTiles:", videoTileStates)
-    console.log("meeting state::ActiveSpeaker:", activeSpeakerId)
+    // console.log("meeting state::Attendee:", attendees)
+    // console.log("meeting state::VideoTiles:", videoTileStates)
+    // console.log("meeting state::ActiveSpeaker:", activeSpeakerId)
+
     useEffect(() => {
         const l: FlectChimeClientListener = {
             meetingStateUpdated: (): void => {
@@ -118,6 +120,9 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
     const setAudioOutput = async (audioOutput: ChimeAudioOutputDevice) => {
         await chimeClient.setAudioOutputDevoce(audioOutput)
     }
+    const isLocalVideoStarted = () => {
+        return chimeClient.isLocalVideoStarted()
+    }
 
     // Tiles
     const bindVideoElement = (tileId: number, videoElement: HTMLVideoElement) => {
@@ -135,6 +140,7 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
         setAudioInput,
         setVideoInput,
         setAudioOutput,
+        isLocalVideoStarted,
 
         bindVideoElement,
     }

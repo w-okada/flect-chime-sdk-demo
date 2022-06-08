@@ -100,11 +100,8 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
     // (3) Method
     //// (3-1) reload Devices
     const reloadDevices = async () => {
-        console.log("reload device2");
         await deviceManager.reloadDevices();
-        console.log("reload device3");
         const { audioInputDevices, videoInputDevices, audioOutputDevices } = deviceManager.getDeviceLists();
-        console.log("reload device4", audioInputDevices, videoInputDevices, audioOutputDevices);
         stateRef.current = { ...stateRef.current, audioInputDevices, videoInputDevices, audioOutputDevices };
         setState(stateRef.current);
     };

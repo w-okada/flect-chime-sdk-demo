@@ -9,7 +9,7 @@ export type RightSidebarProps = {
 };
 
 export const RightSidebar = (props: RightSidebarProps) => {
-    const { chimeClientState } = useAppState();
+    const { chimeClientState, frontendState } = useAppState();
     const sidebarAccordionAttendeesCheckbox = useStateControlCheckbox("sidebar-accordion-attendees-checkbox");
     const sidebarAccordionLocalChatCheckbox = useStateControlCheckbox("sidebar-accordion-local-chat-checkbox");
     const sidebarAccordionWiteboardCheckbox = useStateControlCheckbox("sidebar-accordion-whiteboard-checkbox");
@@ -84,9 +84,21 @@ export const RightSidebar = (props: RightSidebarProps) => {
     //// () generate Attendee list
     const attendeeItems = useMemo(() => {
         return Object.values(chimeClientState.attendees).map((x, index) => {
+            let cameraIcon;
+            if (frontendState.currentMeetingInfo!.attendeeInfo.AttendeeId === x.attendeeId) {
+                cameraIcon = chimeClientState.isLocalVideoStarted() ? <FontAwesomeIcon icon={["fas", "video"]} /> : <FontAwesomeIcon icon={["fas", "video-slash"]} />;
+            } else {
+                cameraIcon = x.cameraOn ? <FontAwesomeIcon icon={["fas", "video"]} /> : <FontAwesomeIcon icon={["fas", "video-slash"]} />;
+            }
+
+            const micIcon = !x.muted ? <FontAwesomeIcon icon={["fas", "microphone"]} /> : <FontAwesomeIcon icon={["fas", "microphone-slash"]} />;
+
             return (
                 <div key={x.attendeeId} className="sidebar-attendee-item">
-                    <div className="sidebar-attendee-name">{x.attendeeName}</div>
+                    <div className="sidebar-attendee-name">
+                        {micIcon} {cameraIcon}
+                        {x.attendeeName}
+                    </div>
                 </div>
             );
         });

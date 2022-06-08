@@ -86,7 +86,6 @@ export class FlectChimeClient {
             this._meetingSession = null
         }
 
-        console.log("join meeting!!!!!!!!!!")
         //// (1-1) creating configuration
         const configuration = new MeetingSessionConfiguration(meetingInfo, attendeeInfo);
         //// (1-2) creating logger
@@ -159,6 +158,7 @@ export class FlectChimeClient {
             }
             if (this._attendees[tileState.boundAttendeeId]) {
                 this._attendees[tileState.boundAttendeeId].cameraOn = true;
+                this._flectChimeClientListener?.attendeesUpdated(this._attendees);
             }
             if (!this._videoTileStates[tileState.boundAttendeeId]) {
                 console.log("[FlectChimeClient][AudioVideoObserver] new tile added", tileState);
@@ -282,7 +282,9 @@ export class FlectChimeClient {
     //// 
     setAudioInputDevice = async (audioInput: ChimeAudioInputDevice) => {
         await this._meetingSession?.audioVideo.stopAudioInput()
+        this._meetingSession?.audioVideo.realtimeMuteLocalAudio()
         if (audioInput) {
+            this._meetingSession?.audioVideo.realtimeUnmuteLocalAudio()
             await this._meetingSession?.audioVideo.startAudioInput(audioInput)
         }
     }
@@ -297,6 +299,14 @@ export class FlectChimeClient {
     setAudioOutputDevoce = async (audioOutput: ChimeAudioOutputDevice) => {
         if (this._meetingSession) {
             await this._meetingSession.audioVideo.chooseAudioOutput(audioOutput)
+        }
+    }
+
+    isLocalVideoStarted = () => {
+        if (this._meetingSession) {
+            return this._meetingSession.audioVideo.hasStartedLocalVideoTile()
+        } else {
+            return false
         }
     }
 

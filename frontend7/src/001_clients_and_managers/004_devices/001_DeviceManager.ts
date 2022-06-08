@@ -74,11 +74,12 @@ export class Devicemanager {
 
     // (A) Device List生成
     reloadDevices = async () => {
-        console.log("reload device2.1")
-        await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        console.log("reload device2.2")
+        try {
+            await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        } catch (e) {
+            console.warn("Enumerate device error::", e)
+        }
         const mediaDeviceInfos = await navigator.mediaDevices.enumerateDevices();
-        console.log("reload device2.3", mediaDeviceInfos)
 
         this.realAudioInputDevices = mediaDeviceInfos.filter(x => { return x.kind === "audioinput" }).map(x => { return { label: x.label, deviceId: x.deviceId } })
         this.realVideoInputDevices = mediaDeviceInfos.filter(x => { return x.kind === "videoinput" }).map(x => { return { label: x.label, deviceId: x.deviceId } })

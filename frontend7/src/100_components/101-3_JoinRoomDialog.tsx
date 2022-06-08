@@ -45,6 +45,12 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
             setMessage("join meeting.... ");
             const meetingInfo = joinTokenResult.meeting;
             const attendeeInfo = joinTokenResult.attendee;
+            frontendState.setCurrentMeetingInfo({
+                meetingInfo: meetingInfo,
+                attendeeInfo: attendeeInfo,
+                meetingName: meetingName,
+                attendeeName: frontendState.username,
+            });
             await chimeClientState.joinMeeting(props.decodedMeetingName, meetingInfo, attendeeInfo);
             setMessage("join meeting.... done.");
             // (3) enter
