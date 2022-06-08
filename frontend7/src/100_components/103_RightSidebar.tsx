@@ -163,7 +163,7 @@ export const RightSidebar = (props: RightSidebarProps) => {
                 {sidebarAccordionWiteboardCheckbox.trigger}
                 <div className="sidebar-partition">
                     <div className="sidebar-header">
-                        <div className="title"> Chat (Local)</div>
+                        <div className="title">Draw</div>
                         <div className="caret"> {accodionButtonForWiteboard}</div>
                     </div>
 
