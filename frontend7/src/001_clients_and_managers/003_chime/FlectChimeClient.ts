@@ -61,6 +61,11 @@ export class FlectChimeClient {
     get attendees(): { [attendeeId: string]: AttendeeState } {
         return this._attendees;
     }
+    private _activeSpeakerId: string | null = null
+    get activeSpeakerId(): string | null {
+        return this._activeSpeakerId;
+    }
+
     ///////////////////////////////////////////
     // Listener
     ///////////////////////////////////////////
@@ -247,10 +252,10 @@ export class FlectChimeClient {
                         break;
                     }
                 }
-                // if (this._activeSpeakerId !== activeSpeakerId) {
-                //     this._activeSpeakerId = activeSpeakerId;
-                //     this._flectChimeClientListener?.activeSpekaerUpdated(this._activeSpeakerId);
-                // }
+                if (this._activeSpeakerId !== activeSpeakerId) {
+                    this._activeSpeakerId = activeSpeakerId;
+                    this._flectChimeClientListener?.activeSpekaerUpdated(this._activeSpeakerId);
+                }
             },
             (scores: { [attendeeId: string]: number }) => {
                 for (const attendeeId in scores) {

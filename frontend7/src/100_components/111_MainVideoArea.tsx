@@ -90,13 +90,19 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
             //// 面共有がなければ、アクティブスピーカーを検索
             if (targetTiles.length == 0 && chimeClientState.activeSpeakerId) {
                 if (chimeClientState.videoTileStates[chimeClientState.activeSpeakerId]) {
-                    targetTiles.push(chimeClientState.videoTileStates[chimeClientState.activeSpeakerId]);
+                    //// 自分がアクティブでなければ表示
+                    if (!chimeClientState.videoTileStates[chimeClientState.activeSpeakerId].localTile) {
+                        targetTiles.push(chimeClientState.videoTileStates[chimeClientState.activeSpeakerId]);
+                    }
                 }
             }
-            //// アクティブスピーカーがいなければ、最初のビデオを表示
+            //// アクティブスピーカーがいなければ、自分以外の最初のビデオを表示
             if (targetTiles.length == 0) {
-                if (Object.values(chimeClientState.videoTileStates).length > 0) {
-                    targetTiles.push(Object.values(chimeClientState.videoTileStates)[0]);
+                const firstOtherVideo = Object.values(chimeClientState.videoTileStates).find((x) => {
+                    return x.localTile === false;
+                });
+                if (firstOtherVideo) {
+                    targetTiles.push(firstOtherVideo);
                 }
             }
         }

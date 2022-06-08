@@ -387,7 +387,7 @@
 /*** (2-1-1) initialize***/
 .main-video-area {
     overflow: hidden;
-    background: #000000;
+    background: rgba(0, 0, 0, 0);
     width: 100%;
     height: 100%;
 }
