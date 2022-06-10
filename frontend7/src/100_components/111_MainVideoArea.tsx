@@ -15,16 +15,28 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
     const height = "33%";
     const width = "33%";
 
+    // (1) Util Functions
+    //// (1-1) DOM ID生成
     const getIds = (index: number) => {
         return {
             container: `main-video-area-container-${index}`,
             video: `main-video-area-video-${index}`,
-            // TagのIDはvideoエレメントのIDから辿れるようにしておく。（★１）
-            tag: `main-video-area-video-${index}-tag`,
+            tag: `main-video-area-video-tag-${index}`,
         };
     };
+    //// (1-2) 表示するタイル数に応じたサイズを算出
+    const calcSize = (tileNum: number) => {
+        const cols = Math.ceil(Math.sqrt(tileNum));
+        const rows = Math.ceil(tileNum / cols);
+        const width = 100 / cols;
+        const height = 100 / rows;
+        return { width, height };
+    };
 
-    const tiles = useMemo(() => {
+    // (2) Rendering Phase.
+    // DOMの生成に加えレンダリングフェーズでバインド対象のタイル情報を生成しておく
+    //// (2-1) タイル生成用ビデオコンポーネントを最大数分作成しておく。
+    const tileComponents = useMemo(() => {
         return [...Array(MAX_TILES)].map((x, index) => {
             const ids = getIds(index);
             return (
@@ -35,14 +47,43 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
             );
         });
     }, []);
+    //// (2-2) 表示対象タイルの決定
+    const targetTiles = useMemo(() => {
+        const targetTiles: VideoTileState[] = [];
+        if (frontendState.viewType == ViewType.grid) {
+            // Grid View
+            targetTiles.push(...Object.values(chimeClientState.videoTileStates));
+        } else {
+            // Feature View
+            //// 画面共有を検索
+            const shared = Object.values(chimeClientState.videoTileStates).filter((x) => {
+                return x.isContent;
+            });
+            targetTiles.push(...shared);
+            //// 面共有がなければ、アクティブスピーカーを検索
+            if (targetTiles.length == 0 && chimeClientState.activeSpeakerId) {
+                if (chimeClientState.videoTileStates[chimeClientState.activeSpeakerId]) {
+                    //// 自分がアクティブでなければ表示
+                    if (!chimeClientState.videoTileStates[chimeClientState.activeSpeakerId].localTile) {
+                        targetTiles.push(chimeClientState.videoTileStates[chimeClientState.activeSpeakerId]);
+                    }
+                }
+            }
+            //// アクティブスピーカーがいなければ、自分以外の最初のビデオを表示
+            if (targetTiles.length == 0) {
+                const firstOtherVideo = Object.values(chimeClientState.videoTileStates).find((x) => {
+                    return x.localTile === false;
+                });
+                if (firstOtherVideo) {
+                    targetTiles.push(firstOtherVideo);
+                }
+            }
+        }
+        return targetTiles;
+    }, [chimeClientState.videoTileStates, frontendState.viewType, chimeClientState.activeSpeakerId]);
 
-    const calcSize = (tileNum: number) => {
-        const cols = Math.ceil(Math.sqrt(tileNum));
-        const rows = Math.ceil(tileNum / cols);
-        const width = 100 / cols;
-        const height = 100 / rows;
-        return { width, height };
-    };
+    // (3) Commit Phase.
+    //// (3-1) Demo用のバインド処理
     useEffect(() => {
         const SHOW_DEMO_NUM = 4;
         const loadDemoMovie = async () => {
@@ -75,37 +116,8 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
         loadDemoMovie();
     }, []);
 
+    //// (3-2) タイルのバインド
     useEffect(() => {
-        const targetTiles: VideoTileState[] = [];
-        if (frontendState.viewType == ViewType.grid) {
-            // Grid View
-            targetTiles.push(...Object.values(chimeClientState.videoTileStates));
-        } else {
-            // Feature View
-            //// 画面共有を検索
-            const shared = Object.values(chimeClientState.videoTileStates).filter((x) => {
-                return x.isContent;
-            });
-            targetTiles.push(...shared);
-            //// 面共有がなければ、アクティブスピーカーを検索
-            if (targetTiles.length == 0 && chimeClientState.activeSpeakerId) {
-                if (chimeClientState.videoTileStates[chimeClientState.activeSpeakerId]) {
-                    //// 自分がアクティブでなければ表示
-                    if (!chimeClientState.videoTileStates[chimeClientState.activeSpeakerId].localTile) {
-                        targetTiles.push(chimeClientState.videoTileStates[chimeClientState.activeSpeakerId]);
-                    }
-                }
-            }
-            //// アクティブスピーカーがいなければ、自分以外の最初のビデオを表示
-            if (targetTiles.length == 0) {
-                const firstOtherVideo = Object.values(chimeClientState.videoTileStates).find((x) => {
-                    return x.localTile === false;
-                });
-                if (firstOtherVideo) {
-                    targetTiles.push(firstOtherVideo);
-                }
-            }
-        }
         const num = targetTiles.length;
         const { width, height } = calcSize(num);
         console.log("TILE:", num);
@@ -114,7 +126,6 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
             const ids = getIds(index);
             const div = document.getElementById(ids.container) as HTMLDivElement;
             const video = document.getElementById(ids.video) as HTMLVideoElement;
-            const tag = document.getElementById(ids.tag) as HTMLDivElement;
 
             chimeClientState.bindVideoElement(x.tileId!, video);
             div.style.display = "block";
@@ -130,30 +141,37 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
             div.style.display = "none";
             video.src = "";
         }
-    }, [chimeClientState.videoTileStates, frontendState.viewType, chimeClientState.activeSpeakerId]);
+    }, [targetTiles]);
 
-    // useEffect(() => {
-    //     console.log("UPDATE TAG");
-    //     Object.values(chimeClientState.videoTileStates).forEach((x) => {
-    //         console.log("UPDATE TAG1");
-    //         if (x.boundVideoElement) {
-    //             console.log("UPDATE TAG2");
-    //             x.boundVideoElement.id;
-    //             const tagId = `${x.boundVideoElement.id}-tag`;
-    //             const tag = document.getElementById(tagId) as HTMLDivElement;
-    //             if (chimeClientState.attendees[x.boundAttendeeId!]) {
-    //                 console.log("UPDATE TAG3");
+    //// (3-3) タグのバインド + Active Speakerのバインド
+    useEffect(() => {
+        const num = targetTiles.length;
 
-    //                 tag.innerText = chimeClientState.attendees[x.boundAttendeeId!].attendeeName || "aa";
-    //             }
-    //         }
-    //     });
-    // }, [chimeClientState.attendees]);
+        targetTiles.forEach((x, index) => {
+            const ids = getIds(index);
+            const tag = document.getElementById(ids.tag) as HTMLDivElement;
+            if (x.boundAttendeeId && chimeClientState.attendees[x.boundAttendeeId]) {
+                if (chimeClientState.activeSpeakerId === x.boundAttendeeId) {
+                    tag.style.color = "#f00";
+                } else {
+                    tag.style.color = "#fff";
+                }
+                tag.innerText = `${chimeClientState.attendees[x.boundAttendeeId!].attendeeName}`;
+            }
+        });
+
+        for (let i = num; i < 18; i++) {
+            const ids = getIds(i);
+            const tag = document.getElementById(ids.tag) as HTMLDivElement;
+            tag.innerText = "";
+        }
+    }, [targetTiles, chimeClientState.attendees, chimeClientState.activeSpeakerId]);
+
     return (
         <>
             {props.bottomNavTrigger}
             <div className="main-video-area">
-                <div style={{ display: "flex", flexWrap: "wrap", height: "100%", width: "100%" }}>{tiles}</div>
+                <div style={{ display: "flex", flexWrap: "wrap", height: "100%", width: "100%" }}>{tileComponents}</div>
             </div>
         </>
     );

@@ -561,7 +561,8 @@
 
     + .attendee-video-list {
         display: flex;
-        justify-content: space-around;
+        /* justify-content: space-around; */
+        justify-content: center;
         flex-direction: row;
         flex-wrap: nowrap;
         width: 100%;
