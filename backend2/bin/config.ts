@@ -18,3 +18,4 @@ export const SLACK_APP_DB_SECRET = " ";
 //////////////////////////////////////////////
 export const FRONTEND_LOCAL_DEV = false;
 export const USE_DOCKER = false;
+export const LOCAL_CORS_ORIGIN = ""
