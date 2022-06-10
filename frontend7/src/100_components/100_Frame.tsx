@@ -11,6 +11,7 @@ import { RightSidebar, RightSidebarProps } from "./103_RightSidebar";
 import { MainVideoArea, MainVideoAreaProps } from "./111_MainVideoArea";
 import { useStateControlRadioButton } from "./hooks/useStateControlRadioButton";
 import { ViewType } from "../002_hooks/011_useFrontend";
+import { BottomNav, BottomNavProps } from "./112_BottomNav";
 
 export type FrameProps = {
     signInCompleted: boolean;
@@ -303,12 +304,10 @@ export const Frame = (props: FrameProps) => {
     const rightSidebar = <RightSidebar {...rightSidebarProps}></RightSidebar>;
 
     // (5) bottom nav (belongs to main area)
-    const bottomNav = (
-        <>
-            {openBottomNavCheckbox.trigger}
-            <div className="bottom-nav"></div>
-        </>
-    );
+    const bottomNavProps: BottomNavProps = {
+        bottomNavTrigger: openBottomNavCheckbox.trigger,
+    };
+    const bottomNav = <BottomNav {...bottomNavProps}></BottomNav>;
 
     // (6) main vide area (belongs to main area)
     const mainVideoAreaProps: MainVideoAreaProps = {
@@ -371,6 +370,7 @@ export const Frame = (props: FrameProps) => {
         micEnableCheckbox.updateState(true);
         cameraEnableCheckbox.updateState(false);
         speakerEnableCheckbox.updateState(true);
+        openBottomNavCheckbox.updateState(true);
     }, []);
 
     return (
