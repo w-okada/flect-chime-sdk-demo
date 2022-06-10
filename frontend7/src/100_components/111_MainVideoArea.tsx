@@ -41,7 +41,7 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
             const ids = getIds(index);
             return (
                 <div key={ids.container} id={ids.container} style={{ position: "relative", width: width, height: height, display: "none" }}>
-                    <video id={ids.video} controls autoPlay style={{ position: "absolute", objectFit: "contain", width: "100%", height: "100%" }} />
+                    <video id={ids.video} autoPlay style={{ position: "absolute", objectFit: "contain", width: "100%", height: "100%" }} />
                     <div id={ids.tag} style={{ position: "absolute", background: "#333333", color: "#ffffff", bottom: 0, left: 0, marginLeft: "20px", paddingLeft: "2px", paddingRight: "2px" }}></div>
                 </div>
             );

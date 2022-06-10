@@ -19,7 +19,7 @@ export const BottomNav = (props: BottomNavProps) => {
     //// (1-1) DOM ID生成
     const getIds = (index: number) => {
         return {
-            container: `attendee-video-list-video-tile-${index}`,
+            container: `attendee-video-list-${index}`,
             video: `attendee-video-list-video-tile-${index}`,
             tag: `attendee-video-list-video-tile-tag-${index}`,
         };
@@ -80,6 +80,7 @@ export const BottomNav = (props: BottomNavProps) => {
         Object.values(chimeClientState.videoTileStates).forEach((x, index) => {
             const ids = getIds(index);
             const videoElem = document.getElementById(ids.video) as HTMLVideoElement;
+            console.log("sidebar bind::", ids, videoElem);
             chimeClientState.bindVideoElement(x.tileId!, videoElem);
         });
     }, [chimeClientState.videoTileStates]);
@@ -106,7 +107,6 @@ export const BottomNav = (props: BottomNavProps) => {
             <div className="bottom-nav">
                 <div className="attendee-video-list-container">{list}</div>
             </div>
-            <div></div>
         </>
     );
 };

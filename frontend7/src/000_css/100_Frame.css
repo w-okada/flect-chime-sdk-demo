@@ -572,7 +572,7 @@
 
     &:not(checked) + .attendee-video-list {
         position: absolute;
-        animation: MOVE_OUT 1s 1;
+        animation: MOVE_OUT 0.4s 1;
         animation-fill-mode: forwards;
         margin-left: 0vw;
         transform: translateZ(-100);
@@ -584,7 +584,7 @@
 
     &:checked + .attendee-video-list {
         position: absolute;
-        animation: MOVE_IN 1s 1;
+        animation: MOVE_IN 0.4s 1;
         animation-fill-mode: forwards;
         margin-left: 100%;
         opacity: 0;
