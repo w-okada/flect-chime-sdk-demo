@@ -7,7 +7,6 @@ import { useWindowSizeChangeListener, WindowSizeState } from "../providers/hooks
 import { CognitoClientStateAndMethods, useCognitoClient } from "../002_hooks/001_useCognitoClient";
 
 import { DeviceInfoStateAndMethods, useDeviceState } from "../002_hooks/004_useDeviceState";
-import { SignInType, StageManagerStateAndMethods, useStageManager } from "../providers/hooks/020_useStageManager";
 import { ChimeClientState, ChimeClientStateAndMethods, useChimeClient } from "../002_hooks/003_useChimeClient";
 import { BackendManagerStateAndMethod, useBackendManager } from "../002_hooks/002_useBackendManager";
 import { FrontendState, useFrontend } from "../002_hooks/011_useFrontend";
@@ -27,7 +26,6 @@ interface AppStateValue {
     windowSizeState: WindowSizeState;
 
     /** (020) App State*/
-    stageState: StageManagerStateAndMethods;
     frontendState: FrontendState;
 
     /** GUI Control*/
@@ -87,25 +85,17 @@ export const AppStateProvider = ({ children }: Props) => {
     const slackToken = useMemo(() => {
         return query.get("slack_token") || null;
     }, []);
-    const stageState = useStageManager({
-        signInType: slackToken ? SignInType.slack : SignInType.normal,
-    });
 
     // (2) useEffect
     /** (000) Clients */
     useEffect(() => {
         if (cognitoClientState.signInCompleted) {
             backendManagerState.reloadMeetingList({});
-            deviceState.reloadDevices();
+            deviceState.reloadDevices(true);
         }
     }, [cognitoClientState.signInCompleted]);
     /** (010) Environment State */
     //// (010) device
-    useEffect(() => {
-        if (stageState.signInComplete) {
-            deviceState.reloadDevices();
-        }
-    }, [stageState.signInComplete]);
 
     /** GUI Control*/
     /**** For WindowSizeChange */
@@ -160,9 +150,6 @@ export const AppStateProvider = ({ children }: Props) => {
         /** (010) Environment State */
         deviceState,
         windowSizeState,
-
-        /** (020) App State*/
-        stageState,
 
         frontendState,
 

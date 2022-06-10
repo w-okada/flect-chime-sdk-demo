@@ -40,7 +40,7 @@ export type DeviceInfoState = {
 };
 
 export type DeviceInfoStateAndMethods = DeviceInfoState & {
-    reloadDevices: () => Promise<void>;
+    reloadDevices: (useFirstDevice?: boolean) => Promise<void>;
     setAudioInputDevice: (device: string) => void;
     setAudioInputEnable: (val: boolean) => void;
     setVideoInputDevice: (device: string) => Promise<void>;
@@ -99,10 +99,35 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
 
     // (3) Method
     //// (3-1) reload Devices
-    const reloadDevices = async () => {
+    const reloadDevices = async (useFirstDevice?: boolean) => {
         await deviceManager.reloadDevices();
         const { audioInputDevices, videoInputDevices, audioOutputDevices } = deviceManager.getDeviceLists();
-        stateRef.current = { ...stateRef.current, audioInputDevices, videoInputDevices, audioOutputDevices };
+        if (useFirstDevice) {
+            let audioInput;
+            if (stateRef.current.audioInput == AudioInputCustomDevices.none && audioInputDevices.length > 0) {
+                audioInput = audioInputDevices[0].deviceId;
+            } else {
+                audioInput = stateRef.current.audioInput;
+            }
+
+            let videoInput;
+            if (stateRef.current.videoInput == VideoInputCustomDevices.none && videoInputDevices.length > 0) {
+                videoInput = videoInputDevices[0].deviceId;
+            } else {
+                videoInput = stateRef.current.videoInput;
+            }
+
+            let audioOutput;
+            if (stateRef.current.audioOutput == AudioOutputCustomDevices.none && audioOutputDevices.length > 0) {
+                audioOutput = audioOutputDevices[0].deviceId;
+            } else {
+                audioOutput = stateRef.current.audioOutput;
+            }
+            stateRef.current = { ...stateRef.current, audioInputDevices, videoInputDevices, audioOutputDevices, audioInput, videoInput, audioOutput };
+        } else {
+            stateRef.current = { ...stateRef.current, audioInputDevices, videoInputDevices, audioOutputDevices };
+        }
+
         setState(stateRef.current);
     };
 
