@@ -29,21 +29,19 @@ export const BottomNav = (props: BottomNavProps) => {
                 return (
                     <div key={`attendee-video-list-video-tile-${tileIndex}`} className="attendee-video-list-tile-container">
                         <video controls autoPlay id={`attendee-video-list-video-tile-${tileIndex}`} className="attendee-video-list-video-tile" src="./demo.mp4" />
-                        <div className="attendee-video-list-video-tile-tag" id={`attendee-video-list-video-tile-tag-${tileIndex}`}>
-                            a
-                        </div>
+                        <div className="attendee-video-list-video-tile-tag" id={`attendee-video-list-video-tile-tag-${tileIndex}`}></div>
                     </div>
                 );
             });
             return (
                 <React.Fragment key={`attendee-video-list-video-tile-frag-${index}`}>
-                    <label key={`attendee-video-list-video-tile-label-${index}`} htmlFor={`attendee-video-list-checkbox-${index}`} className="attendee-video-list-checkbox-label">
-                        Page.{index}
-                    </label>
                     <input key={`attendee-video-list-video-tile-input-${index}`} type="radio" className="attendee-video-list-checkbox" id={`attendee-video-list-checkbox-${index}`} name="attendee-video-list-checkbox" />
                     <div key={`attendee-video-list-video-tile-div-${index}`} className="attendee-video-list">
                         {tiles}
                     </div>
+                    <label key={`attendee-video-list-video-tile-label-${index}`} htmlFor={`attendee-video-list-checkbox-${index}`} className="attendee-video-list-checkbox-label">
+                        Page.{index}
+                    </label>
                 </React.Fragment>
             );
         });

@@ -557,7 +557,7 @@
 
 .attendee-video-list-checkbox {
     background: #0f0;
-    /* display: none; */
+    display: none;
 
     + .attendee-video-list {
         display: flex;
@@ -576,6 +576,9 @@
         margin-left: 0vw;
         transform: translateZ(-100);
         opacity: 1;
+        + .attendee-video-list-checkbox-label {
+            background: rgba(150, 150, 0, 0.6);
+        }
     }
 
     &:checked + .attendee-video-list {
@@ -584,6 +587,9 @@
         animation-fill-mode: forwards;
         margin-left: 100%;
         opacity: 0;
+        + .attendee-video-list-checkbox-label {
+            background: rgba(200, 200, 0, 0.9);
+        }
     }
 }
 
