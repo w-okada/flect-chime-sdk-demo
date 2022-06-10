@@ -16,16 +16,15 @@ import { Frame, FrameProps } from "./100_components/100_Frame";
 import { SignInDialogProps } from "./100_components/101-1_SignInDialog";
 
 const App = () => {
-    const { stageState, cognitoClientState, chimeClientState, frontendState } = useAppState();
+    const { cognitoClientState, chimeClientState, frontendState } = useAppState();
     const singInProps: SignInDialogProps = {
         signInSucceeded: (username: string) => {
-            stageState.setSignInComplete(true);
             frontendState.setUserName(username);
             console.log("sign in succeeded!!");
         },
-        defaultEmail: "mail2wokada@gmail.com",
-        defaultPassword: "test22",
-        defaultUsername: "wo",
+        // defaultEmail: "mail2wokada@gmail.com",
+        // defaultPassword: "test22",
+        // defaultUsername: "wo",
     };
     const frameProps: FrameProps = {
         signInCompleted: cognitoClientState.signInCompleted,
