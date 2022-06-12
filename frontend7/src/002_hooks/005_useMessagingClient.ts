@@ -3,6 +3,8 @@ import { MessagingClient } from "../001_clients_and_managers/005_messaging/Messa
 import * as STS from "@aws-sdk/client-sts"
 
 export type UseMessagingClientProps = {
+    userArn?: string | null
+    globalChannelArn?: string | null
     credentials?: STS.Credentials | null
 }
 
@@ -21,7 +23,7 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
     const connect = () => {
         console.log("connect called", props.credentials)
         if (props.credentials) {
-            client.connect(props.credentials)
+            client.connect(props.credentials, props.userArn!, props.globalChannelArn!)
         }
     }
 

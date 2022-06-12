@@ -78,6 +78,8 @@ export const AppStateProvider = ({ children }: Props) => {
 
     const messagingClientState = useMessagingClient({
         credentials: backendManagerState.environment?.credential || null,
+        userArn: backendManagerState.environment?.appInstanceUserArn || null,
+        globalChannelArn: backendManagerState.environment?.globalChannelArn || null,
     });
 
     /** (010) Environment State */
