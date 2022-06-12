@@ -26,6 +26,11 @@ export const createLambdaForWebsocket = (scope: Construct) => {
         handler: "connect",
         bundling: {
             externalModules: [
+                '@slack/bolt',
+                'aws-serverless-express',
+                'crypto',
+                'node-fetch',
+                'uuid',
                 '@aws-sdk/client-api-gateway',
                 '@aws-sdk/client-apigatewaymanagementapi',
                 '@aws-sdk/client-chime',
@@ -49,6 +54,11 @@ export const createLambdaForWebsocket = (scope: Construct) => {
         handler: "disconnect",
         bundling: {
             externalModules: [
+                '@slack/bolt',
+                'aws-serverless-express',
+                'crypto',
+                'node-fetch',
+                'uuid',
                 '@aws-sdk/client-api-gateway',
                 '@aws-sdk/client-apigatewaymanagementapi',
                 '@aws-sdk/client-chime',
@@ -74,6 +84,11 @@ export const createLambdaForWebsocket = (scope: Construct) => {
         handler: "message",
         bundling: {
             externalModules: [
+                '@slack/bolt',
+                'aws-serverless-express',
+                'crypto',
+                'node-fetch',
+                'uuid',
                 '@aws-sdk/client-api-gateway',
                 '@aws-sdk/client-apigatewaymanagementapi',
                 '@aws-sdk/client-chime',
@@ -96,6 +111,11 @@ export const createLambdaForWebsocket = (scope: Construct) => {
         handler: "authorize",
         bundling: {
             externalModules: [
+                '@slack/bolt',
+                'aws-serverless-express',
+                'crypto',
+                'node-fetch',
+                'uuid',
                 '@aws-sdk/client-api-gateway',
                 '@aws-sdk/client-apigatewaymanagementapi',
                 '@aws-sdk/client-chime',

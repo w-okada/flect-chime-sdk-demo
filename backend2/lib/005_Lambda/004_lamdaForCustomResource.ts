@@ -12,6 +12,20 @@ export const createCustomResource = (scope: Construct, id: string, policy: iam.P
         memorySize: 256,
         entry: `${__dirname}/../lambda-messaging/index.ts`,
         handler: "handler",
+        bundling: {
+            externalModules: [
+                '@slack/bolt',
+                'aws-serverless-express',
+                'crypto',
+                'node-fetch',
+                'uuid',
+                '@aws-sdk/client-api-gateway',
+                '@aws-sdk/client-apigatewaymanagementapi',
+                '@aws-sdk/client-chime',
+                '@aws-sdk/client-cognito-identity-provider',
+                '@aws-sdk/client-dynamodb',
+            ],
+        },
     });
     lambdaFunctionForMessagingCustomResource.addToRolePolicy(policy)
     lambdaFunctionForMessagingCustomResource.addEnvironment("STACK_ID", id)
