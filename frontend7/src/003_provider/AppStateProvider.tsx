@@ -10,6 +10,7 @@ import { DeviceInfoStateAndMethods, useDeviceState } from "../002_hooks/004_useD
 import { ChimeClientState, ChimeClientStateAndMethods, useChimeClient } from "../002_hooks/003_useChimeClient";
 import { BackendManagerStateAndMethod, useBackendManager } from "../002_hooks/002_useBackendManager";
 import { FrontendState, useFrontend } from "../002_hooks/011_useFrontend";
+import { MessagingClientStateAndMethod, useMessagingClient } from "../002_hooks/005_useMessagingClient";
 
 type Props = {
     children: ReactNode;
@@ -20,6 +21,7 @@ interface AppStateValue {
     cognitoClientState: CognitoClientStateAndMethods;
     backendManagerState: BackendManagerStateAndMethod;
     chimeClientState: ChimeClientStateAndMethods;
+    messagingClientState: MessagingClientStateAndMethod;
 
     /** (010) Environment State */
     deviceState: DeviceInfoStateAndMethods;
@@ -74,6 +76,10 @@ export const AppStateProvider = ({ children }: Props) => {
         getAttendeeInfo: backendManagerState.getAttendeeInfo,
     });
 
+    const messagingClientState = useMessagingClient({
+        credentials: backendManagerState.environment?.credential || null,
+    });
+
     /** (010) Environment State */
     //// (010) device
     const deviceState = useDeviceState();
@@ -94,6 +100,15 @@ export const AppStateProvider = ({ children }: Props) => {
             deviceState.reloadDevices(true);
         }
     }, [cognitoClientState.signInCompleted]);
+
+    useEffect(() => {
+        if (backendManagerState.environment) {
+            console.log("env", backendManagerState.environment);
+            messagingClientState.connect();
+        } else {
+            console.log("env not::", backendManagerState.environment);
+        }
+    }, [backendManagerState.environment]);
     /** (010) Environment State */
     //// (010) device
 
@@ -147,6 +162,7 @@ export const AppStateProvider = ({ children }: Props) => {
         cognitoClientState,
         backendManagerState,
         chimeClientState,
+        messagingClientState,
         /** (010) Environment State */
         deviceState,
         windowSizeState,

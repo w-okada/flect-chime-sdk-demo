@@ -2,7 +2,7 @@ import * as DynamoDB from "@aws-sdk/client-dynamodb"
 import * as Chime from "@aws-sdk/client-chime"
 
 import { v4 } from "uuid";
-import { getMeetingInfoFromDB, listMeetingsFromDB, MetaddataDB } from "./001_meeting_common";
+import { deleteMeetingFromDB, getMeetingInfoFromDB, listMeetingsFromDB, MetaddataDB } from "./001_meeting_common";
 import {
     BackendCreateMeetingRequest,
     BackendCreateMeetingResponse,
@@ -36,28 +36,6 @@ export const createMeeting = async (req: BackendCreateMeetingRequest): Promise<B
         };
     }
 
-    //// (2+1) create App Message Channel
-    // @ts-ignore
-
-    console.log("EP1")
-    const dateNow = new Date();
-    const params = {
-        Name: 'Channel',
-        AppInstanceArn: messagingAppInstanceArn,
-        // ClientRequestToken: `${dateNow.getHours().toString()}_${dateNow.getMinutes().toString()}`,
-        ClientRequestToken:
-            dateNow.getHours().toString() + dateNow.getMinutes().toString(),
-        ChimeBearer: messagingAppInstanceAdminArn,
-        Mode: 'RESTRICTED',
-        Privacy: 'PRIVATE'
-    };
-    console.log("Create Messaging Session2")
-
-    const response = await chime.createChannel(params);
-    console.log("Message Channel Created:", response.ChannelArn)
-
-
-
     //// (2) create meeting in Amazon Chime
     const request: Chime.CreateMeetingRequest = {
         ClientRequestToken: v4(),
@@ -65,7 +43,22 @@ export const createMeeting = async (req: BackendCreateMeetingRequest): Promise<B
     };
     const newMeetingInfo = await chime.createMeeting(request);
 
-    //// (3) register meeting info in DB
+    //// (3) create App Message Channel
+    const dateNow = new Date();
+    const params = {
+        Name: `Ch.${req.meetingName}`,
+        AppInstanceArn: messagingAppInstanceArn,
+        ClientRequestToken: `${dateNow.getHours().toString()}_${dateNow.getMinutes().toString()}`,
+        ChimeBearer: messagingAppInstanceAdminArn,
+        Mode: 'RESTRICTED',
+        Privacy: 'PRIVATE'
+    };
+
+    const response = await chime.createChannel(params);
+    console.log("Message Channel Created:", response.ChannelArn)
+
+
+    //// (4) register meeting info in DB
     const date = new Date();
     const now = date.getTime();
     const metadata: MetaddataDB = {
@@ -75,6 +68,7 @@ export const createMeeting = async (req: BackendCreateMeetingRequest): Promise<B
         UseCode: req.useCode,
         Code: req.code,
         StartTime: now,
+        MessageChannelArn: response.ChannelArn
     };
     const item = {
         MeetingName: { S: req.meetingName },
@@ -102,7 +96,28 @@ export const createMeeting = async (req: BackendCreateMeetingRequest): Promise<B
 
 // (1-2) List Meetings (GET)
 export const listMeetings = async (req: BackendListMeetingsRequest): Promise<BackendListMeetingsResponse> => {
-    return listMeetingsFromDB(req)
+    // Meetingのリストを取得(生死問わず)
+    const res = await listMeetingsFromDB(req)
+    // 死んでいるミーティングのMessaging Channelを削除
+    const deadMeetings = res.meetings.filter(x => {
+        return !res.aliveMeetingIds.includes(x.meetingId)
+    })
+    deadMeetings.forEach(x => {
+        console.log("delete meeting chat channel", x.meetingName)
+        deleteMeetingFromDB({
+            meetingName: x.meetingName,
+            messageChannelArn: x.metadata.MessageChannelArn
+        })
+    })
+
+    // 生きているミーティングのみ抽出して返す
+    const aliveMeetings = res.meetings.filter(x => {
+        return res.aliveMeetingIds.includes(x.meetingId)
+    })
+    return {
+        meetings: aliveMeetings,
+        aliveMeetingIds: res.aliveMeetingIds
+    }
 }
 //// (1-3) Update Meetings (PUT) -> no support
 //// (1-4) Delete Meetings (DELETE) -> no support

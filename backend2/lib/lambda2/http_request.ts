@@ -1,6 +1,7 @@
 /**
  * Frontendと共用するため、http_request.tsをベースにbackend_requestを作成する。
  */
+import * as STS from "@aws-sdk/client-sts"
 
 // (0) Common
 export const HTTPResponseCode = {
@@ -37,6 +38,7 @@ export type Metadata = {
     Secret: boolean,
     UseCode: boolean,
     StartTime: number;
+    MessageChannelArn: string;
 };
 
 // (1) Meetings 
@@ -135,6 +137,13 @@ export type StartTranscribeRequest = {
 
 export type StopTranscribeRequest = {};
 
+// (6) Environment
+export type HTTPGetEnvironmentRequest = {}
+export type HTTPGetEnvironmentResponse = {
+    globalChannelArn: string,
+    credential: STS.Credentials,
+    appInstanceUserArn: string,
+}
 
 ///////////////////////////
 // Federation

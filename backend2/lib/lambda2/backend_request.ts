@@ -15,7 +15,9 @@ export type BackendCreateMeetingResponse = HTTPCreateMeetingResponse;
 export type BackendListMeetingsRequest = HTTPListMeetingsRequest & {
     email: string
 }
-export type BackendListMeetingsResponse = HTTPListMeetingsResponse
+export type BackendListMeetingsResponse = HTTPListMeetingsResponse & {
+    aliveMeetingIds: string[]
+}
 //// (1-3) Update Meetings (PUT) -> no support
 //// (1-4) Delete Meetings (DELETE) -> no support
 
@@ -29,12 +31,14 @@ export type BackendGetMeetingInfoRequest = HTTPGetMeetingInfoRequest & {
 }
 export type BackendGetMeetingInfoResponse = HTTPGetMeetingInfoResponse & {
     code?: string;
+    alive: boolean;
 };
 
 //// (2-3) Update Meeting  -> no support
 //// (2-4) Delete Meeting
 export type BackendDeleteMeetingRequest = HTTPDeleteMeetingRequest & {
     meetingName: string;
+    messageChannelArn: string;
 };
 export type BackendDeleteMeetingResponse = HTTPDeleteMeetingResponse
 

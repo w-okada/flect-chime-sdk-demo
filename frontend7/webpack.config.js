@@ -14,6 +14,9 @@ module.exports = {
     resolve: {
         modules: [path.resolve(__dirname, "node_modules")],
         extensions: [".ts", ".tsx", ".js"],
+        fallback: {
+            events: false,
+        },
     },
     module: {
         rules: [

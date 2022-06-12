@@ -6,6 +6,12 @@ import { BackendDeleteMeetingRequest, BackendDeleteMeetingResponse, BackendGetMe
 //// (1-2) Get Meeting Info (Get)
 export const getMeetingInfo = async (req: BackendGetMeetingInfoRequest): Promise<BackendGetMeetingInfoResponse> => {
     const result = await getMeetingInfoFromDB(req);
+    if (result.alive === false) {
+        deleteMeetingFromDB({
+            meetingName: result.meetingName,
+            messageChannelArn: result.metadata.MessageChannelArn
+        })
+    }
     return result
 }
 

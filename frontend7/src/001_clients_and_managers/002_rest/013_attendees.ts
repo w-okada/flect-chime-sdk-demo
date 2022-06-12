@@ -1,5 +1,5 @@
-import { HTTPGetAttendeeInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "../../http_request";
-import { InternalRestApiClientContext, RestApiClientContext } from "./001_RestApiClient";
+import { HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } from "../../http_request";
+import { InternalRestApiClientContext } from "./001_RestApiClient";
 
 // (1) Join Meeting (POST)
 export type RestJoinMeetingRequest = HTTPJoinMeetingRequest

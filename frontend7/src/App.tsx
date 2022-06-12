@@ -22,9 +22,9 @@ const App = () => {
             frontendState.setUserName(username);
             console.log("sign in succeeded!!");
         },
-        // defaultEmail: "mail2wokada@gmail.com",
-        // defaultPassword: "test22",
-        // defaultUsername: "wo",
+        defaultEmail: "mail2wokada@gmail.com",
+        defaultPassword: "test22",
+        defaultUsername: "wo",
     };
     const frameProps: FrameProps = {
         signInCompleted: cognitoClientState.signInCompleted,

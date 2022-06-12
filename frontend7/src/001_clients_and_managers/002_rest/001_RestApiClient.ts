@@ -3,7 +3,8 @@ import { HTTPCreateMeetingRequest, HTTPListMeetingsRequest } from "../../http_re
 import { createMeeting, listMeetings, RestCreateMeetingRequest, RestCreateMeetingResponse, RestListMeetingsRequest, RestListMeetingsResponse } from "./011_meetings";
 import { endMeeting, getMeetingInfo, RestEndMeetingRequest, RestEndMeetingResponse, RestGetMeetingInfoRequest, RestGetMeetingInfoResponse } from "./012_meeting";
 import { joinMeeting, RestJoinMeetingRequest, RestJoinMeetingResponse } from "./013_attendees";
-import { geAttendeeInfo, RestGetAttendeeInfoRequest, RestGetAttendeeInfoResponse } from "./014_attendee";
+import { getAttendeeInfo, RestGetAttendeeInfoRequest, RestGetAttendeeInfoResponse } from "./014_attendee";
+import { getEnvironment, RestGetEnvironmentRequest, RestGetEnvironmentResponse } from "./016_environment";
 
 export { createMeeting, endMeeting, getMeetingInfo };
 export type { HTTPCreateMeetingRequest, HTTPListMeetingsRequest };
@@ -75,8 +76,8 @@ export class RestApiClient {
     // (4) Attendee
     //// (4-1) (POST)
     //// (4-2) get Attendee Name (GET)
-    geAttendeeInfo = async (params: RestGetAttendeeInfoRequest, context: RestApiClientContext): Promise<RestGetAttendeeInfoResponse> => {
-        const res = await geAttendeeInfo(params, { ...context, ...this.internalContext });
+    getAttendeeInfo = async (params: RestGetAttendeeInfoRequest, context: RestApiClientContext): Promise<RestGetAttendeeInfoResponse> => {
+        const res = await getAttendeeInfo(params, { ...context, ...this.internalContext });
         return res as RestGetAttendeeInfoResponse
     };
 
@@ -97,4 +98,12 @@ export class RestApiClient {
     // stopTranscribe = async (params: StopTranscribeRequest) => {
     //     stopTranscribe(params, this.context);
     // };
+
+    // (6) Environment
+    getEnvironment = async (params: RestGetEnvironmentRequest, context: RestApiClientContext): Promise<RestGetEnvironmentResponse> => {
+        const res = await getEnvironment(params, { ...context, ...this.internalContext });
+        return res as RestGetEnvironmentResponse
+    };
+
+
 }

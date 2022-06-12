@@ -4,12 +4,12 @@ import { Construct } from 'constructs';
 import { aws_cloudformation as cf } from "aws-cdk-lib"
 import { aws_iam as iam } from "aws-cdk-lib"
 
-export const createCustomResource = (scope: Construct, id: string, policy: iam.PolicyStatement) => {
+export const createCustomResource = (scope: Construct, id: string, policy: iam.PolicyStatement, nodeModulesLayer: lambda.LayerVersion) => {
 
     const baseParameters = {
         runtime: lambda.Runtime.NODEJS_14_X,
-        timeout: Duration.seconds(900),
-        memorySize: 256,
+        timeout: Duration.seconds(5),
+        memorySize: 128,
         bundling: {
             externalModules: [
                 '@slack/bolt',
@@ -22,6 +22,8 @@ export const createCustomResource = (scope: Construct, id: string, policy: iam.P
                 '@aws-sdk/client-chime',
                 '@aws-sdk/client-cognito-identity-provider',
                 '@aws-sdk/client-dynamodb',
+                '@aws-sdk/client-sts'
+
             ],
         },
     }
@@ -33,6 +35,7 @@ export const createCustomResource = (scope: Construct, id: string, policy: iam.P
     });
     lambdaFunctionForMessagingCustomResource.addToRolePolicy(policy)
     lambdaFunctionForMessagingCustomResource.addEnvironment("STACK_ID", id)
+    lambdaFunctionForMessagingCustomResource.addLayers(nodeModulesLayer)
 
     const messagingCustomResource = new cf.CfnCustomResource(scope, 'function', {
         serviceToken: lambdaFunctionForMessagingCustomResource.functionArn

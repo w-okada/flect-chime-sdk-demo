@@ -1,6 +1,5 @@
-import { InternalRestApiClientContext, RestApiClientContext } from "./001_RestApiClient";
-import { HTTPResponseBody } from "./010_common";
-import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse } from "../../http_request";
+import { InternalRestApiClientContext } from "./001_RestApiClient";
+import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPResponseBody } from "../../http_request";
 
 // (1) Create Meeting (POST)
 export type RestCreateMeetingRequest = HTTPCreateMeetingRequest

@@ -6,8 +6,8 @@ export const createLambdaForWebsocket = (scope: Construct) => {
     // (1) Base Parameters
     const baseParameters = {
         runtime: lambda.Runtime.NODEJS_14_X,
-        timeout: Duration.seconds(900),
-        memorySize: 256,
+        timeout: Duration.seconds(5),
+        memorySize: 128,
         bundling: {
             externalModules: [
                 '@slack/bolt',
@@ -20,6 +20,8 @@ export const createLambdaForWebsocket = (scope: Construct) => {
                 '@aws-sdk/client-chime',
                 '@aws-sdk/client-cognito-identity-provider',
                 '@aws-sdk/client-dynamodb',
+                '@aws-sdk/client-sts'
+
             ],
         },
     }

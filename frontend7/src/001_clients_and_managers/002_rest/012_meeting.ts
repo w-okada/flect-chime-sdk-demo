@@ -1,6 +1,5 @@
-import { InternalRestApiClientContext, RestApiClientContext } from "./001_RestApiClient";
-import { HTTPResponseBody } from "./010_common";
-import { HTTPDeleteMeetingRequest, HTTPDeleteMeetingResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse } from "../../http_request";
+import { InternalRestApiClientContext } from "./001_RestApiClient";
+import { HTTPDeleteMeetingRequest, HTTPDeleteMeetingResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse, HTTPResponseBody } from "../../http_request";
 
 // (1) (POST) -> no support
 // (2) Get Meeting Info (GET)

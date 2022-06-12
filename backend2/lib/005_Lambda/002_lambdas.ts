@@ -1,13 +1,15 @@
 import { aws_lambda as lambda, Duration, aws_lambda_nodejs } from "aws-cdk-lib"
 import { Construct } from 'constructs';
+import { aws_iam as iam } from "aws-cdk-lib"
 
-export const createLambdas = (scope: Construct) => {
+export const createLambdas = (scope: Construct, restApiRole: iam.Role) => {
 
     // (1) Base Parameters
     const baseParameters = {
         runtime: lambda.Runtime.NODEJS_14_X,
-        timeout: Duration.seconds(900),
-        memorySize: 256,
+        timeout: Duration.seconds(5),
+        memorySize: 128,
+        role: restApiRole,
         bundling: {
             externalModules: [
                 '@slack/bolt',
@@ -20,6 +22,7 @@ export const createLambdas = (scope: Construct) => {
                 '@aws-sdk/client-chime',
                 '@aws-sdk/client-cognito-identity-provider',
                 '@aws-sdk/client-dynamodb',
+                '@aws-sdk/client-sts'
             ],
         },
     }

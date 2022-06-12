@@ -6,14 +6,20 @@ import { joinMeeting } from "./004_attendees";
 import { getAttendeeInfo } from "./005_attendee";
 import { startTranscribe, stopTranscribe } from "./006_misc";
 import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest } from "./backend_request";
-import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
-
+import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetEnvironmentResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
+import { v4 } from "uuid";
 import { generateResponse, getEmailFromAccessToken } from "./util";
-// @ts-ignore
-var meetingTableName = process.env.MEETING_TABLE_NAME!;
-// @ts-ignore
-var attendeesTableName = process.env.ATTENDEE_TABLE_NAME!;
-var ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
+
+const messagingAppInstanceArn = process.env.MESSAGING_APP_INSTANCE_ARN!;
+const messagingAppInstanceAdminArn = process.env.MESSAGING_APP_INSTANCE_ADMIN_ARN!;
+const messagingRoleForClient = process.env.MESSAGING_ROLE_FOR_CLIENT
+const messagingGlobalChannelArn = process.env.MESSAGING_GLOBAL_CHANNEL_ARN!;
+
+
+import * as STS from "@aws-sdk/client-sts"
+import * as Chime from "@aws-sdk/client-chime"
+const chime = new Chime.Chime({ region: process.env.AWS_REGION });
+const sts = new STS.STS({ region: process.env.AWS_REGION });
 
 const Methods = {
     GET: "GET",
@@ -29,6 +35,7 @@ const Resources = {
     Attendees: "/meetings/{meetingName}/attendees",
     Attendee: "/meetings/{meetingName}/attendees/{attendeeId}",
     Operation: "/meetings/{meetingName}/attendees/{attendeeId}/operations/{operation}",
+    Environment: "/environment",
 } as const;
 type Resources = typeof Resources[keyof typeof Resources];
 
@@ -84,6 +91,9 @@ export const handler = (event: any, context: any, callback: any) => {
             break;
         case Resources.Operation:
             handleOperation(accessToken, method, pathParams, body, callback);
+            break;
+        case Resources.Environment:
+            handleEnvironment(accessToken, method, pathParams, body, callback);
             break;
         default:
             console.log(`Unknwon resource name: ${resource}`);
@@ -255,7 +265,11 @@ const handleDeleteMeeting = async (accessToken: string, pathParams: { [key: stri
             code: Codes.PARAMETER_ERROR,
         };
     } else {
-        await deleteMeeting({ meetingName });
+        const result = await getMeetingInfo({ meetingName, deleteCode: true });
+        await deleteMeeting({
+            meetingName,
+            messageChannelArn: result.metadata.MessageChannelArn
+        });
         res = {
             success: true,
             code: Codes.SUCCESS,
@@ -473,3 +487,88 @@ const handlePostStopTranscribe = async (accessToken: string, pathParams: { [key:
     const response = generateResponse(res);
     callback(null, response);
 };
+
+// (6) Environment
+const handleEnvironment = (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+    switch (method) {
+        case Methods.GET:
+            handleGetEnvironemnt(accessToken, pathParams, body, callback);
+            break;
+        default:
+            console.log(`Unknwon method: ${method}`);
+            const response = generateResponse({ success: false, code: Codes.UNKNOWN_METHOD });
+            callback(null, response);
+            break;
+    }
+};
+
+const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+
+    let res: HTTPResponseBody;
+    // (a) For Messaging
+    // (a-1) EmailをUserIDとする。
+    let email = "";
+    try {
+        email = (await getEmailFromAccessToken(accessToken)) || "";
+    } catch (e) {
+        res = {
+            success: false,
+            code: Codes.NO_SUCH_AN_ATTENDEE,
+        };
+        const response = generateResponse(res);
+        callback(null, response);
+    }
+    console.log("Generate Messaging Environment: Email", email)
+
+    // (a-2) Credentialを取得
+
+    const assumedRoleResponse = await sts.assumeRole({
+        RoleArn: messagingRoleForClient,
+        RoleSessionName: `chime_${v4()}`,
+        DurationSeconds: 3600,
+        Tags: [
+            {
+                Key: 'UserUUID',
+                Value: `chime_${v4()}`
+            }
+        ]
+    })
+    console.log("Generate Messaging Environment: Cred")
+
+    // (a-3) ユーザ登録
+    const createUserResponse = await chime
+        .createAppInstanceUser({
+            AppInstanceArn: messagingAppInstanceArn,
+            AppInstanceUserId: email,
+            ClientRequestToken: v4(),
+            Name: email
+        })
+    console.log("Generate Messaging Environment: UserArn", createUserResponse.AppInstanceUserArn)
+
+
+    // (a-4) グローバルチャンネルに追加
+    const params = {
+        ChannelArn: messagingGlobalChannelArn,
+        MemberArn: createUserResponse.AppInstanceUserArn,
+        Type: 'DEFAULT',
+        ChimeBearer: messagingAppInstanceAdminArn
+    };
+
+    const membershipResponse = await chime.createChannelMembership(params);
+    console.log("Generate Messaging Environment: addToGlobal", JSON.stringify(membershipResponse.Member))
+
+
+    const httpRes: HTTPGetEnvironmentResponse = {
+        globalChannelArn: messagingGlobalChannelArn,
+        credential: assumedRoleResponse.Credentials,
+        appInstanceUserArn: createUserResponse.AppInstanceUserArn,
+    }
+
+    res = {
+        success: true,
+        code: Codes.SUCCESS,
+        data: httpRes,
+    };
+    const response = generateResponse(res);
+    callback(null, response);
+}

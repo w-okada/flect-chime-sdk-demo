@@ -5,7 +5,8 @@ import { RestJoinMeetingRequest, RestJoinMeetingResponse } from "../001_clients_
 import { RestGetAttendeeInfoRequest, RestGetAttendeeInfoResponse } from "../001_clients_and_managers/002_rest/014_attendee";
 import { RestApiClient, RestApiClientContext } from "../001_clients_and_managers/002_rest/001_RestApiClient";
 import { MeetingListItem } from "../http_request";
-import { CognitoClient } from "../001_clients_and_managers/001_cognito/CognitoClient";
+import { RestGetEnvironmentResponse } from "../001_clients_and_managers/002_rest/016_environment";
+
 
 export type UseBackendManagerProps = {
     idToken: string | null;
@@ -28,6 +29,7 @@ export type GetAttendeeInfoResponse = RestGetAttendeeInfoResponse
 
 export type BackendManagerState = {
     meetings: MeetingListItem[]
+    environment: RestGetEnvironmentResponse | null
 }
 export type BackendManagerStateAndMethod = BackendManagerState & {
     createMeeting: (params: CreateMeetingParams) => Promise<CreateMeetingResponse | null>
@@ -39,7 +41,8 @@ export type BackendManagerStateAndMethod = BackendManagerState & {
 }
 export const useBackendManager = (props: UseBackendManagerProps): BackendManagerStateAndMethod => {
     const [state, setState] = useState<BackendManagerState>({
-        meetings: []
+        meetings: [],
+        environment: null
     })
 
     const restClient = useMemo(() => {
@@ -53,6 +56,23 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
             refreshToken: props.refreshToken || ""
         }
     }, [props.idToken, props.accessToken, props.refreshToken])
+
+    useEffect(() => {
+        const getEnvironment = async () => {
+            console.log("Environment:called1")
+            const env = await restClient.getEnvironment({}, context)
+            console.log("Environment:called2", env)
+            setState({ ...state, environment: env })
+        }
+        if (context.idToken.length > 0) {
+            console.log("idtolen1:", context.idToken)
+            getEnvironment()
+        } else {
+
+            console.log("idtolen2:", context.idToken)
+        }
+    }, [context])
+
 
     // (1) Meetings
     //// (1-1) Create Meeting (POST)
@@ -111,7 +131,7 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
     //// (4-2) get Attendee Name (GET)
     const getAttendeeInfo = async (params: GetAttendeeInfoRequest): Promise<RestGetAttendeeInfoResponse | null> => {
         if (!restClient) return null
-        const res = await restClient.geAttendeeInfo(params as RestGetAttendeeInfoRequest, context)
+        const res = await restClient.getAttendeeInfo(params as RestGetAttendeeInfoRequest, context)
         return res as RestGetAttendeeInfoResponse
     }
 

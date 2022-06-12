@@ -2,6 +2,9 @@ import { aws_apigateway as api } from "aws-cdk-lib"
 import { aws_lambda as lambda } from "aws-cdk-lib";
 import { addCorsOptions } from "./100_addCorsOptions";
 
+// (注) APIを追加したら、(3)でaddCorsOptionsを実施するのを忘れずに。
+
+
 export const createApis = (id: string, restApi: api.RestApi, authorizerId: string, lambdaFunctionForRestAPI: lambda.Function, corsOrigin: string) => {
 
     // (1) basic parameters
@@ -82,7 +85,12 @@ export const createApis = (id: string, restApi: api.RestApi, authorizerId: strin
         operationName: `${id}_postOperation`,
     });
 
-
+    //// (2-7) Environment
+    const apiEnvironemnt = root.addResource("environment");
+    apiEnvironemnt.addMethod("GET", new api.LambdaIntegration(lambdaFunctionForRestAPI), {
+        ...basicParams,
+        operationName: `${id}_getEnvironment`,
+    });
 
     // (3) CORS Configuration
     [root,
@@ -94,7 +102,8 @@ export const createApis = (id: string, restApi: api.RestApi, authorizerId: strin
         apiAttendeeOperation,
         apiLogs,
         apiOperations,
-        apiOperation,].forEach(func => {
+        apiOperation,
+        apiEnvironemnt,].forEach(func => {
             addCorsOptions(func, corsOrigin)
         })
 

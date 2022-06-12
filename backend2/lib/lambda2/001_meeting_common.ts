@@ -10,6 +10,8 @@ import {
 import { MeetingListItem, Metadata } from "./http_request";
 // @ts-ignore
 var meetingTableName = process.env.MEETING_TABLE_NAME!;
+var messagingAppInstanceAdminArn = process.env.MESSAGING_APP_INSTANCE_ADMIN_ARN!;
+
 var ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
 const chime = new Chime.Chime({ region: process.env.AWS_REGION });
 
@@ -50,10 +52,11 @@ export const listMeetingsFromDB = async (req: BackendListMeetingsRequest): Promi
         }
     })
     const aliveMeetingIds = await syncMeetingWithChimeBackend(meetings)
-    const aliveMeetings = meetings.filter(x => {
-        return aliveMeetingIds.includes(x.meetingId);
-    }).filter(x => { return x.secret == false })
-    const res = { meetings: aliveMeetings }
+    // const aliveMeetings = meetings.filter(x => {
+    //     return aliveMeetingIds.includes(x.meetingId);
+    // }).filter(x => { return x.secret == false })
+    const retMeetings = meetings.filter(x => { return x.secret == false })
+    const res = { meetings: retMeetings, aliveMeetingIds }
     return res
 }
 
@@ -73,7 +76,6 @@ const syncMeetingWithChimeBackend = async (meetings: MeetingListItem[]): Promise
             } else {
                 console.log("chime meeting exception:", err);
             }
-            await deleteMeetingFromDB({ meetingName: meeting.meetingName });
         }
     }
     return aliveMeetingId;
@@ -113,13 +115,18 @@ export const getMeetingInfoFromDB = async (req: BackendGetMeetingInfoRequest): P
         } else {
             console.log("chime meeting exception:", err);
         }
-        await deleteMeetingFromDB({ meetingName: req.meetingName });
-        return null;
+        return {
+            meetingName: meetingName,
+            meetingId: meetingId,
+            meeting: meeting,
+            metadata: metadata,
+            hmmTaskArn: hmmTaskArn,
+            isOwner: isOwner,
+            code: code,
+            alive: false
+        };
     }
-
     //// (4) return meeting info
-
-
     return {
         meetingName: meetingName,
         meetingId: meetingId,
@@ -127,13 +134,21 @@ export const getMeetingInfoFromDB = async (req: BackendGetMeetingInfoRequest): P
         metadata: metadata,
         hmmTaskArn: hmmTaskArn,
         isOwner: isOwner,
-        code: code
+        code: code,
+        alive: true
     };
 };
 
 // (A-4) DBからミーティングを削除する
 export const deleteMeetingFromDB = async (req: BackendDeleteMeetingRequest) => {
     console.log(`Delete meeting from DB ${req.meetingName}`)
+    const params = {
+        ChannelArn: req.messageChannelArn,
+        ChimeBearer: messagingAppInstanceAdminArn
+    };
+    const response = await chime.deleteChannel(params);
+    console.log(`Delete Channel ${req.messageChannelArn}`, response)
+
     await ddb
         .deleteItem({
             TableName: meetingTableName,

@@ -1,7 +1,7 @@
 
 import { aws_iam as iam } from "aws-cdk-lib"
-
-export const createRestApiPolicyStatement = (userPoolArn: string) => {
+import { Construct } from 'constructs';
+export const createRestApiPolicyStatement = (scope: Construct, userPoolArn: string) => {
     const restApiPolicyStatement = new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
@@ -39,10 +39,12 @@ export const createRestApiPolicyStatement = (userPoolArn: string) => {
             "chime:CreateChannel",
             "chime:*",
             "iam:*",
-            // "logs:CreateLogGroup",
-            // "logs:CreateLogStream",
-            // "logs:PutLogEvents"
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
 
+            "sts:TagSession",
+            "sts:AssumeRole"
         ],
         resources: [
             userPoolArn,
@@ -54,5 +56,12 @@ export const createRestApiPolicyStatement = (userPoolArn: string) => {
         ]
     });
 
-    return { restApiPolicyStatement }
+
+    const restApiRole = new iam.Role(scope, `ChimeRestAPIRole`, {
+        assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
+    })
+    restApiRole.addToPolicy(restApiPolicyStatement)
+
+
+    return { restApiPolicyStatement, restApiRole }
 }

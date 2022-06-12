@@ -30,6 +30,7 @@ import { aws_iam as iam } from "aws-cdk-lib"
 
 import { creatMessagingCustomResourcePolicyStatement } from './004_Role/002_MessagingCustomResourcePolicyStatement';
 import { createCustomResource } from './005_Lambda/004_lamdaForCustomResource';
+import { createMessagingUserRole } from './004_Role/003_MessagingUserRole';
 
 export class Backend2Stack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -53,18 +54,18 @@ export class Backend2Stack extends Stack {
       description: "Enables access to AWS Services and Resources used or managed by Amazon Chime."
     })
 
-
-    const { restApiPolicyStatement } = createRestApiPolicyStatement(userPool.userPoolArn)
+    const { restApiRole } = createRestApiPolicyStatement(this, userPool.userPoolArn)
 
     const { messagingPolicyForCreateCustomResource } = creatMessagingCustomResourcePolicyStatement()
+    const { messagingRoleForClient } = createMessagingUserRole(this, id, restApiRole)
     // (5) Lambda
     //// (5-1) Layer
     const { nodeModulesLayer } = createNodeModulesLayer(this, id)
     //// (5-2) Lambda
-    const { lambdaFuncRestAPIAuth, lambdaFunctionForRestAPI, lambdaFunctionForSlackFederationRestAPI } = createLambdas(this);
+    const { lambdaFuncRestAPIAuth, lambdaFunctionForRestAPI, lambdaFunctionForSlackFederationRestAPI } = createLambdas(this, restApiRole);
     //// (5-3) Lambda For Websocket
     const { lambdaFuncMessageConnect, lambdaFuncMessageDisconnect, lambdaFuncMessageMessage, lambdaFuncMessageAuth } = createLambdaForWebsocket(this)
-    const { messagingCustomResource } = createCustomResource(this, id, messagingPolicyForCreateCustomResource)
+    const { messagingCustomResource } = createCustomResource(this, id, messagingPolicyForCreateCustomResource, nodeModulesLayer)
 
     //// (5-4) Configure
     const configureFunctions = (func: lambda.Function) => {
@@ -73,7 +74,7 @@ export class Backend2Stack extends Stack {
         table.grantFullAccess(func)
       })
       // (a-2) Policy
-      func.addToRolePolicy(restApiPolicyStatement);
+      // func.addToRolePolicy(restApiPolicyStatement);
       // (a-3) Environment
       func.addEnvironment("MEETING_TABLE_NAME", meetingTable.tableName);
       func.addEnvironment("ATTENDEE_TABLE_NAME", attendeeTable.tableName);
@@ -101,6 +102,8 @@ export class Backend2Stack extends Stack {
       //// Messaging
       func.addEnvironment("MESSAGING_APP_INSTANCE_ARN", messagingCustomResource.getAtt('AppInstanceArn').toString())
       func.addEnvironment("MESSAGING_APP_INSTANCE_ADMIN_ARN", messagingCustomResource.getAtt('AppInstanceAdminArn').toString())
+      func.addEnvironment("MESSAGING_GLOBAL_CHANNEL_ARN", messagingCustomResource.getAtt('GlobalChannelArn').toString())
+      func.addEnvironment("MESSAGING_ROLE_FOR_CLIENT", messagingRoleForClient.roleArn)
 
       //// DEMO URL
       if (USE_CDN) {
@@ -208,19 +211,7 @@ export class Backend2Stack extends Stack {
     // });
 
 
-    //// (c) For client
-    const messagingPolicyForClient = new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      actions: [
-        "chime:GetMessagingSessionEndpoint",
-        "chime:SendChannelMessage",
-        "chime:ListChannelMessages",
-        "chime:Connect"
-      ],
-      resources: [
-        "*"
-      ]
-    });
+
 
 
 
