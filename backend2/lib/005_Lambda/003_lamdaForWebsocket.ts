@@ -5,25 +5,9 @@ import { Construct } from 'constructs';
 export const createLambdaForWebsocket = (scope: Construct) => {
     // (1) Base Parameters
     const baseParameters = {
-        code: lambda.Code.fromAsset(`${__dirname}/../dist`),
-        runtime: lambda.Runtime.NODEJS_14_X,
-        timeout: Duration.seconds(30),
-        memorySize: 256,
-    }
-
-    // (2) Functions
-    // (2-1) connect
-    // const lambdaFuncMessageConnect = new lambda.Function(scope, "ChimeMessageAPIConnect", {
-    //     ...baseParameters,
-    //     handler: "message.connect",
-    // });
-
-    const lambdaFuncMessageConnect: lambda.Function = new aws_lambda_nodejs.NodejsFunction(scope, "ChimeMessageAPIConnect", {
         runtime: lambda.Runtime.NODEJS_14_X,
         timeout: Duration.seconds(900),
         memorySize: 256,
-        entry: `${__dirname}/../lambda2/message.ts`,
-        handler: "connect",
         bundling: {
             externalModules: [
                 '@slack/bolt',
@@ -38,6 +22,18 @@ export const createLambdaForWebsocket = (scope: Construct) => {
                 '@aws-sdk/client-dynamodb',
             ],
         },
+    }
+    // (2) Functions
+    // (2-1) connect
+    // const lambdaFuncMessageConnect = new lambda.Function(scope, "ChimeMessageAPIConnect", {
+    //     ...baseParameters,
+    //     handler: "message.connect",
+    // });
+
+    const lambdaFuncMessageConnect: lambda.Function = new aws_lambda_nodejs.NodejsFunction(scope, "ChimeMessageAPIConnect", {
+        entry: `${__dirname}/../lambda2/message.ts`,
+        handler: "connect",
+        ...baseParameters
     });
 
 
@@ -47,25 +43,9 @@ export const createLambdaForWebsocket = (scope: Construct) => {
     //     handler: "message.disconnect",
     // });
     const lambdaFuncMessageDisconnect: lambda.Function = new aws_lambda_nodejs.NodejsFunction(scope, "ChimeMessageAPIDisconnect", {
-        runtime: lambda.Runtime.NODEJS_14_X,
-        timeout: Duration.seconds(900),
-        memorySize: 256,
         entry: `${__dirname}/../lambda2/message.ts`,
         handler: "disconnect",
-        bundling: {
-            externalModules: [
-                '@slack/bolt',
-                'aws-serverless-express',
-                'crypto',
-                'node-fetch',
-                'uuid',
-                '@aws-sdk/client-api-gateway',
-                '@aws-sdk/client-apigatewaymanagementapi',
-                '@aws-sdk/client-chime',
-                '@aws-sdk/client-cognito-identity-provider',
-                '@aws-sdk/client-dynamodb',
-            ],
-        },
+        ...baseParameters
     });
 
 
@@ -77,25 +57,9 @@ export const createLambdaForWebsocket = (scope: Construct) => {
     // });
 
     const lambdaFuncMessageMessage: lambda.Function = new aws_lambda_nodejs.NodejsFunction(scope, "ChimeMessageAPIMessage", {
-        runtime: lambda.Runtime.NODEJS_14_X,
-        timeout: Duration.seconds(900),
-        memorySize: 256,
         entry: `${__dirname}/../lambda2/message.ts`,
         handler: "message",
-        bundling: {
-            externalModules: [
-                '@slack/bolt',
-                'aws-serverless-express',
-                'crypto',
-                'node-fetch',
-                'uuid',
-                '@aws-sdk/client-api-gateway',
-                '@aws-sdk/client-apigatewaymanagementapi',
-                '@aws-sdk/client-chime',
-                '@aws-sdk/client-cognito-identity-provider',
-                '@aws-sdk/client-dynamodb',
-            ],
-        },
+        ...baseParameters
     });
 
     // (2-4) auth
@@ -104,25 +68,9 @@ export const createLambdaForWebsocket = (scope: Construct) => {
     //     handler: "message.authorize",
     // });
     const lambdaFuncMessageAuth: lambda.Function = new aws_lambda_nodejs.NodejsFunction(scope, "ChimeMessageAPIAuth", {
-        runtime: lambda.Runtime.NODEJS_14_X,
-        timeout: Duration.seconds(900),
-        memorySize: 256,
         entry: `${__dirname}/../lambda2/message.ts`,
         handler: "authorize",
-        bundling: {
-            externalModules: [
-                '@slack/bolt',
-                'aws-serverless-express',
-                'crypto',
-                'node-fetch',
-                'uuid',
-                '@aws-sdk/client-api-gateway',
-                '@aws-sdk/client-apigatewaymanagementapi',
-                '@aws-sdk/client-chime',
-                '@aws-sdk/client-cognito-identity-provider',
-                '@aws-sdk/client-dynamodb',
-            ],
-        },
+        ...baseParameters
     });
 
 
