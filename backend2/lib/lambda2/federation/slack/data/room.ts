@@ -1,4 +1,4 @@
-import { Meeting } from "aws-sdk/clients/chime";
+import * as Chime from "@aws-sdk/client-chime"
 
 export type RoomInfo = {
     roomName: string;
@@ -13,7 +13,7 @@ export type RoomInfo = {
 export type MeetingInfo = {
     meetingName: string; // must sync to roomName
     meetingId: string;
-    meeting: Meeting;
+    meeting: Chime.Meeting;
     metadata: Metadata;
 };
 export type Metadata = {

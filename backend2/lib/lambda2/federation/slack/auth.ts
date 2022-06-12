@@ -1,5 +1,5 @@
 import { Installation, InstallationQuery } from "@slack/bolt";
-import { DynamoDB } from "aws-sdk";
+import * as DynamoDB from "@aws-sdk/client-dynamodb"
 import { Encrypter } from "./encrypter";
 
 const authEncrypter = new Encrypter<string>({
@@ -16,7 +16,7 @@ const database: DatabaseCache<"v1" | "v2"> = {
     cache: {},
 };
 
-const ddb = new DynamoDB();
+const ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
 const slackFederationAuthsTableName = process.env.SLACK_FEDERATION_AUTHS_TABLE_NAME || "";
 
 const addInstllationToDB = async <AuthVersion extends "v1" | "v2">(installation: Installation<AuthVersion, boolean>) => {
@@ -32,13 +32,13 @@ const addInstllationToDB = async <AuthVersion extends "v1" | "v2">(installation:
             TableName: slackFederationAuthsTableName,
             Item: item,
         })
-        .promise();
+
 };
 
 const queryInstallationFromDB = async (teamId: string) => {
     try {
         console.log(`Query Installation1: ${teamId}`);
-        const result = await ddb.getItem({ TableName: slackFederationAuthsTableName, Key: { TeamId: { S: teamId } } }).promise();
+        const result = await ddb.getItem({ TableName: slackFederationAuthsTableName, Key: { TeamId: { S: teamId } } })
         console.log(`Query Installation2: ${JSON.stringify(result)}`);
         if (!result.Item) {
             console.log(`Query Installation: No record for ${teamId}`);
@@ -65,7 +65,6 @@ const deleteInstallationFromDB = async (teamId: string) => {
                 TeamId: { S: teamId },
             },
         })
-        .promise();
 };
 
 export const addTeamInformation = async <AuthVersion extends "v1" | "v2">(installation: Installation<AuthVersion, boolean>) => {

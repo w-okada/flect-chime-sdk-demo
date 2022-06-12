@@ -1,7 +1,8 @@
-import { Chime, DynamoDB, ApiGatewayManagementApi } from "aws-sdk";
-
-const chime = new Chime({ region: "us-east-1" });
-const ddb = new DynamoDB();
+import * as DynamoDB from "@aws-sdk/client-dynamodb"
+import * as Chime from "@aws-sdk/client-chime"
+import * as ApiGwatewayManagementAPI from "@aws-sdk/client-apigatewaymanagementapi"
+const chime = new Chime.Chime({ region: process.env.AWS_REGION });
+const ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
 
 /**
  * generate policy. subfunction of authorizer.
@@ -68,7 +69,6 @@ export const authorize = async (event: any, context: any, callback: any) => {
                 MeetingId: event.queryStringParameters.meetingId,
                 AttendeeId: attendeeId,
             })
-            .promise();
     } catch (e) {
         console.error(`failed to authenticate with join token: ${e}`);
         return generatePolicy("me", "Deny", event.methodArn, {});
@@ -94,7 +94,7 @@ export const authorize = async (event: any, context: any, callback: any) => {
  * @param {*} context
  * @param {*} callback
  */
-exports.connect = async (event: any, context: any, callback: any) => {
+export const connect = async (event: any, context: any, callback: any) => {
     console.log(event);
     console.log(context);
     console.log(callback);
@@ -116,7 +116,6 @@ exports.connect = async (event: any, context: any, callback: any) => {
                     TTL: { N: `${oneDayFromNow}` },
                 },
             })
-            .promise();
 
         console.log("update res", res);
     } catch (e) {
@@ -136,7 +135,7 @@ exports.connect = async (event: any, context: any, callback: any) => {
  * @param {*} context
  * @param {*} callback
  */
-exports.disconnect = async (event: any, context: any, callback: any) => {
+export const disconnect = async (event: any, context: any, callback: any) => {
     console.log(event);
     console.log(context);
     console.log(callback);
@@ -154,7 +153,6 @@ exports.disconnect = async (event: any, context: any, callback: any) => {
                     AttendeeId: { S: attendeeId },
                 },
             })
-            .promise();
     } catch (err) {
         console.error(`error : ${err}`);
         return {
@@ -175,7 +173,7 @@ exports.disconnect = async (event: any, context: any, callback: any) => {
  * @param {*} context
  * @param {*} callback
  */
-exports.message = async (event: any, context: any, callback: any) => {
+export const message = async (event: any, context: any, callback: any) => {
     console.log(event);
     console.log(context);
     console.log(callback);
@@ -194,14 +192,13 @@ exports.message = async (event: any, context: any, callback: any) => {
                 //@ts-ignore
                 TableName: process.env.CONNECTION_TABLE_NAME!,
             })
-            .promise();
     } catch (e) {
         console.log("Query error:", e);
         return { statusCode: 500, body: JSON.stringify(e) };
     }
 
     //// (2) get endpoint of API GW
-    const apigwManagementApi = new ApiGatewayManagementApi({
+    const apigwManagementApi = new ApiGwatewayManagementAPI.ApiGatewayManagementApi({
         apiVersion: "2018-11-29",
         endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`,
     });
@@ -225,9 +222,8 @@ exports.message = async (event: any, context: any, callback: any) => {
                 const res = await apigwManagementApi
                     .postToConnection({
                         ConnectionId: connectionId,
-                        Data: JSON.stringify(body),
+                        Data: new TextEncoder().encode(JSON.stringify(body)),
                     })
-                    .promise();
                 console.log("done sending!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1", res);
                 console.log("done sending!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!2", connectionId);
                 console.log("done sending!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!3", JSON.stringify(body));

@@ -1,4 +1,4 @@
-import { DynamoDB } from "aws-sdk";
+import * as DynamoDB from "@aws-sdk/client-dynamodb"
 // import { deleteMeeting, getMeetingInfoFromDB } from "./001_meeting_common";
 import { createMeeting, listMeetings } from "./002_meetings";
 import { deleteMeeting, getMeetingInfo } from "./003_meeting";
@@ -13,7 +13,7 @@ import { generateResponse, getEmailFromAccessToken } from "./util";
 var meetingTableName = process.env.MEETING_TABLE_NAME!;
 // @ts-ignore
 var attendeesTableName = process.env.ATTENDEE_TABLE_NAME!;
-var ddb = new DynamoDB();
+var ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
 
 const Methods = {
     GET: "GET",

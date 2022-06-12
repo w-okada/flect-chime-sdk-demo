@@ -1,9 +1,9 @@
-import { CognitoIdentityServiceProvider } from "aws-sdk";
+import * as CognitoIdentityServiceProvider from "@aws-sdk/client-cognito-identity-provider";
 import { UserInformation } from "./federation/slack/data/userInfo";
 import { Encrypter } from "./federation/slack/encrypter";
 import { HTTPResponseBody } from "./http_request";
 
-const provider = new CognitoIdentityServiceProvider();
+const provider = new CognitoIdentityServiceProvider.CognitoIdentityProvider({})
 
 export const getResponseTemplate = () => {
     var response = {

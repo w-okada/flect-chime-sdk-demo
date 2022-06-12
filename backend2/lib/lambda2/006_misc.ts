@@ -1,4 +1,4 @@
-import { DynamoDB, Chime, Endpoint } from "aws-sdk";
+import * as Chime from "@aws-sdk/client-chime"
 import { getMeetingInfoFromDB } from "./001_meeting_common";
 import {
     BackendStartTranscribeException,
@@ -8,8 +8,7 @@ import {
     BackendStopTranscribeExceptionType,
     BackendStopTranscribeRequest,
 } from "./backend_request";
-const chime = new Chime({ region: "us-east-1" });
-chime.endpoint = new Endpoint("https://service.chime.aws.amazon.com/console");
+const chime = new Chime.Chime({ region: "us-east-1" });
 
 
 export const startTranscribe = async (req: BackendStartTranscribeRequest): Promise<BackendStartTranscribeResponse | BackendStartTranscribeException> => {
@@ -47,7 +46,6 @@ export const startTranscribe = async (req: BackendStartTranscribeRequest): Promi
                 },
             },
         })
-        .promise();
 
     return {};
 };
@@ -83,7 +81,6 @@ export const stopTranscribe = async (req: BackendStopTranscribeRequest) => {
         .stopMeetingTranscription({
             MeetingId: meetingInfo.meetingId,
         })
-        .promise();
     console.log("stop transcribe result", res);
     return {};
 };

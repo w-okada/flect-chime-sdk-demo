@@ -1,4 +1,5 @@
-import { DynamoDB, Chime, Endpoint } from "aws-sdk";
+import * as DynamoDB from "@aws-sdk/client-dynamodb"
+import * as Chime from "@aws-sdk/client-chime"
 import { v4 } from "uuid";
 import { getMeetingInfoFromDB } from "./001_meeting_common";
 import {
@@ -10,9 +11,8 @@ import {
 import { getExpireDate } from "./util";
 // @ts-ignore
 var attendeesTableName = process.env.ATTENDEE_TABLE_NAME!;
-var ddb = new DynamoDB();
-const chime = new Chime({ region: "us-east-1" });
-chime.endpoint = new Endpoint("https://service.chime.aws.amazon.com/console");
+var ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
+const chime = new Chime.Chime({ region: process.env.AWS_REGION });
 
 // (3) attendees
 //// Join
@@ -48,7 +48,6 @@ export const joinMeeting = async (req: BackendJoinMeetingRequest): Promise<Backe
             MeetingId: meetingInfo.meetingId,
             ExternalUserId: v4(),
         })
-        .promise();
 
     //// (4) register attendee in DB
     await ddb
@@ -64,7 +63,6 @@ export const joinMeeting = async (req: BackendJoinMeetingRequest): Promise<Backe
                 },
             },
         })
-        .promise();
 
     console.log("MEETING_INFO", meetingInfo);
 

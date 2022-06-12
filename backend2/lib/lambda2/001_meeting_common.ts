@@ -1,4 +1,5 @@
-import { DynamoDB, Chime, Endpoint } from "aws-sdk";
+import * as DynamoDB from "@aws-sdk/client-dynamodb"
+import * as Chime from "@aws-sdk/client-chime"
 import {
     BackendDeleteMeetingRequest,
     BackendGetMeetingInfoRequest,
@@ -9,15 +10,12 @@ import {
 import { MeetingListItem, Metadata } from "./http_request";
 // @ts-ignore
 var meetingTableName = process.env.MEETING_TABLE_NAME!;
-var ddb = new DynamoDB();
-const chime = new Chime({ region: "us-east-1" });
-chime.endpoint = new Endpoint("https://service.chime.aws.amazon.com/console");
-
+var ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
+const chime = new Chime.Chime({ region: process.env.AWS_REGION });
 
 export type MetaddataDB = Metadata & {
     Code: string
 }
-
 
 ////////////////////////////////
 // (A) Common Functions。index.tsから直接コールされない。
@@ -31,7 +29,7 @@ export const listMeetingsFromDB = async (req: BackendListMeetingsRequest): Promi
     const result = await ddb.scan({
         TableName: meetingTableName,
         Limit: 100,
-    }).promise();
+    })
     console.log("dynamo: list all meetings result:", result);
 
     const meetingInfos = result.Items;
@@ -66,7 +64,7 @@ const syncMeetingWithChimeBackend = async (meetings: MeetingListItem[]): Promise
     const aliveMeetingId: string[] = []
     for (let meeting of meetings) {
         try {
-            const mid = await chime.getMeeting({ MeetingId: meeting.meetingId }).promise();
+            const mid = await chime.getMeeting({ MeetingId: meeting.meetingId })
             console.log("chime meeting info:", mid);
             aliveMeetingId.push(meeting.meetingId)
         } catch (err: any) {
@@ -88,7 +86,7 @@ const syncMeetingWithChimeBackend = async (meetings: MeetingListItem[]): Promise
 export const getMeetingInfoFromDB = async (req: BackendGetMeetingInfoRequest): Promise<BackendGetMeetingInfoResponse | null> => {
     //// (1) retrieve info
     console.log("dynamo1", req.meetingName);
-    const result = await ddb.getItem({ TableName: meetingTableName, Key: { MeetingName: { S: req.meetingName } } }).promise();
+    const result = await ddb.getItem({ TableName: meetingTableName, Key: { MeetingName: { S: req.meetingName } } })
     console.log("dynamo2", result);
 
     //// (2) If no meeting in DB, return null
@@ -107,7 +105,7 @@ export const getMeetingInfoFromDB = async (req: BackendGetMeetingInfoRequest): P
 
     try {
         // Check Exist?
-        const mid = await chime.getMeeting({ MeetingId: meeting.MeetingId }).promise();
+        const mid = await chime.getMeeting({ MeetingId: meeting.MeetingId })
         console.log("chime meeting info:", mid);
     } catch (err: any) {
         if (err.code == "NotFound") {
@@ -143,7 +141,6 @@ export const deleteMeetingFromDB = async (req: BackendDeleteMeetingRequest) => {
                 MeetingName: { S: req.meetingName },
             },
         })
-        .promise();
 };
 
 

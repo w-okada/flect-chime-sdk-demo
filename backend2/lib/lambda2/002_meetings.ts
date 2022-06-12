@@ -1,4 +1,6 @@
-import { DynamoDB, Chime, Endpoint } from "aws-sdk";
+import * as DynamoDB from "@aws-sdk/client-dynamodb"
+import * as Chime from "@aws-sdk/client-chime"
+
 import { v4 } from "uuid";
 import { getMeetingInfoFromDB, listMeetingsFromDB, MetaddataDB } from "./001_meeting_common";
 import {
@@ -10,9 +12,15 @@ import {
 import { getExpireDate } from "./util";
 // @ts-ignore
 var meetingTableName = process.env.MEETING_TABLE_NAME!;
-var ddb = new DynamoDB();
-const chime = new Chime({ region: "us-east-1" });
-chime.endpoint = new Endpoint("https://service.chime.aws.amazon.com/console");
+// @ts-ignore
+var messagingAppInstanceArn = process.env.MESSAGING_APP_INSTANCE_ARN!;
+// @ts-ignore
+var messagingAppInstanceAdminArn = process.env.MESSAGING_APP_INSTANCE_ADMIN_ARN!;
+
+var ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
+
+// const chime = new Chime({ region: "us-east-1" });
+const chime = new Chime.Chime({ region: process.env.AWS_REGION });
 
 // (1) Meetings
 // (1-1) Create Meeting (POST)
@@ -28,12 +36,34 @@ export const createMeeting = async (req: BackendCreateMeetingRequest): Promise<B
         };
     }
 
+    //// (2+1) create App Message Channel
+    // @ts-ignore
+
+    console.log("EP1")
+    const dateNow = new Date();
+    const params = {
+        Name: 'Channel',
+        AppInstanceArn: messagingAppInstanceArn,
+        // ClientRequestToken: `${dateNow.getHours().toString()}_${dateNow.getMinutes().toString()}`,
+        ClientRequestToken:
+            dateNow.getHours().toString() + dateNow.getMinutes().toString(),
+        ChimeBearer: messagingAppInstanceAdminArn,
+        Mode: 'RESTRICTED',
+        Privacy: 'PRIVATE'
+    };
+    console.log("Create Messaging Session2")
+
+    const response = await chime.createChannel(params);
+    console.log("Message Channel Created:", response.ChannelArn)
+
+
+
     //// (2) create meeting in Amazon Chime
     const request: Chime.CreateMeetingRequest = {
         ClientRequestToken: v4(),
         MediaRegion: req.region,
     };
-    const newMeetingInfo = await chime.createMeeting(request).promise();
+    const newMeetingInfo = await chime.createMeeting(request);
 
     //// (3) register meeting info in DB
     const date = new Date();
@@ -60,7 +90,6 @@ export const createMeeting = async (req: BackendCreateMeetingRequest): Promise<B
             TableName: meetingTableName,
             Item: item,
         })
-        .promise();
 
     return {
         created: true,

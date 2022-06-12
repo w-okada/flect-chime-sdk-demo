@@ -1,4 +1,5 @@
-import { DynamoDB, Chime, Endpoint } from "aws-sdk";
+import * as DynamoDB from "@aws-sdk/client-dynamodb"
+import * as Chime from "@aws-sdk/client-chime"
 import {
     BackendGetAttendeeInfoException,
     BackendGetAttendeeInfoExceptionType,
@@ -7,9 +8,8 @@ import {
 } from "./backend_request";
 // @ts-ignore
 var attendeesTableName = process.env.ATTENDEE_TABLE_NAME!;
-var ddb = new DynamoDB();
-const chime = new Chime({ region: "us-east-1" });
-chime.endpoint = new Endpoint("https://service.chime.aws.amazon.com/console");
+var ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
+const chime = new Chime.Chime({ region: process.env.AWS_REGION });
 
 
 export const getAttendeeInfo = async (req: BackendGetAttendeeInfoRequest): Promise<BackendGetAttendeeInfoResponse | BackendGetAttendeeInfoException> => {
@@ -23,7 +23,6 @@ export const getAttendeeInfo = async (req: BackendGetAttendeeInfoRequest): Promi
                 },
             },
         })
-        .promise();
 
     //// (2) If there is no attendee in the meeting, return fail
     if (!result.Item) {

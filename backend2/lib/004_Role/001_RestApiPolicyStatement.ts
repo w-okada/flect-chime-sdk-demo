@@ -29,7 +29,20 @@ export const createRestApiPolicyStatement = (userPoolArn: string) => {
 
             `ec2:DescribeNetworkInterfaces`,
 
-            "iam:PassRole"
+            "iam:PassRole",
+
+
+            // Messaging
+            "chime:CreateAppInstanceUser",
+            "chime:GetMessagingSessionEndpoint",
+            "chime:CreateChannelMembership",
+            "chime:CreateChannel",
+            "chime:*",
+            "iam:*",
+            // "logs:CreateLogGroup",
+            // "logs:CreateLogStream",
+            // "logs:PutLogEvents"
+
         ],
         resources: [
             userPoolArn,

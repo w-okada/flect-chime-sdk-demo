@@ -29,7 +29,7 @@ export type HTTPResponseBody = {
     data?: any;
 };
 
-import { Chime } from "aws-sdk";
+import * as Chime from "@aws-sdk/client-chime"
 
 export type Metadata = {
     OwnerId: string;

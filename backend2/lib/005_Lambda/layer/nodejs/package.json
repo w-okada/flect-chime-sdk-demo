@@ -1,10 +1,14 @@
 {
-  "dependencies": {
-    "@slack/bolt": "^3.8.1",
-    "aws-sdk": "^2.1043.0",
-    "aws-serverless-express": "^3.4.0",
-    "crypto": "^1.0.1",
-    "node-fetch": "^2.6.6",
-    "uuid": "^8.3.2"
-  }
+    "dependencies": {
+        "@slack/bolt": "^3.11.1",
+        "aws-serverless-express": "^3.4.0",
+        "crypto": "^1.0.1",
+        "node-fetch": "^3.2.6",
+        "uuid": "^8.3.2",
+        "@aws-sdk/client-api-gateway": "^3.105.0",
+        "@aws-sdk/client-apigatewaymanagementapi": "^3.105.0",
+        "@aws-sdk/client-chime": "^3.105.0",
+        "@aws-sdk/client-cognito-identity-provider": "^3.105.0",
+        "@aws-sdk/client-dynamodb": "^3.105.0"
+    }
 }

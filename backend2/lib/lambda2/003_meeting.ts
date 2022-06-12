@@ -1,10 +1,5 @@
-import { Chime, Endpoint } from "aws-sdk";
 import { deleteMeetingFromDB, getMeetingInfoFromDB } from "./001_meeting_common";
 import { BackendDeleteMeetingRequest, BackendDeleteMeetingResponse, BackendGetMeetingInfoRequest, BackendGetMeetingInfoResponse } from "./backend_request";
-
-// @ts-ignore
-const chime = new Chime({ region: "us-east-1" });
-chime.endpoint = new Endpoint("https://service.chime.aws.amazon.com/console");
 
 // (2) Meeting
 //// (1-1) (POST) -> no support

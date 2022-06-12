@@ -24,6 +24,13 @@ import { createWebsocket } from './006_APIGateway/012_Websocket';
 import { createWebsocketAuthorizer } from './006_APIGateway/013_WebsocketAuthorizer';
 import { createMessages } from './006_APIGateway/014_Messages';
 
+
+
+import { aws_iam as iam } from "aws-cdk-lib"
+
+import { creatMessagingCustomResourcePolicyStatement } from './004_Role/002_MessagingCustomResourcePolicyStatement';
+import { createCustomResource } from './005_Lambda/004_lamdaForCustomResource';
+
 export class Backend2Stack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
@@ -41,8 +48,15 @@ export class Backend2Stack extends Stack {
     const { slackFederationAuthsTable } = createSlackFederationAuthsTable(this, id)
 
     // (4) IAM
+    const role = new iam.CfnServiceLinkedRole(this, id, {
+      awsServiceName: "chime.amazonaws.com",
+      description: "Enables access to AWS Services and Resources used or managed by Amazon Chime."
+    })
+
+
     const { restApiPolicyStatement } = createRestApiPolicyStatement(userPool.userPoolArn)
 
+    const { messagingPolicyForCreateCustomResource } = creatMessagingCustomResourcePolicyStatement()
     // (5) Lambda
     //// (5-1) Layer
     const { nodeModulesLayer } = createNodeModulesLayer(this, id)
@@ -50,6 +64,8 @@ export class Backend2Stack extends Stack {
     const { lambdaFuncRestAPIAuth, lambdaFunctionForRestAPI, lambdaFunctionForSlackFederationRestAPI } = createLambdas(this);
     //// (5-3) Lambda For Websocket
     const { lambdaFuncMessageConnect, lambdaFuncMessageDisconnect, lambdaFuncMessageMessage, lambdaFuncMessageAuth } = createLambdaForWebsocket(this)
+    const { messagingCustomResource } = createCustomResource(this, id, messagingPolicyForCreateCustomResource)
+
     //// (5-4) Configure
     const configureFunctions = (func: lambda.Function) => {
       // (a-1) Table Access
@@ -81,6 +97,10 @@ export class Backend2Stack extends Stack {
       func.addEnvironment("SLACK_APP_DB_PASSWORD", SLACK_APP_DB_PASSWORD);
       func.addEnvironment("SLACK_APP_DB_SALT", SLACK_APP_DB_SALT);
       func.addEnvironment("SLACK_APP_DB_SECRET", SLACK_APP_DB_SECRET);
+
+      //// Messaging
+      func.addEnvironment("MESSAGING_APP_INSTANCE_ARN", messagingCustomResource.getAtt('AppInstanceArn').toString())
+      func.addEnvironment("MESSAGING_APP_INSTANCE_ADMIN_ARN", messagingCustomResource.getAtt('AppInstanceAdminArn').toString())
 
       //// DEMO URL
       if (USE_CDN) {
@@ -127,6 +147,83 @@ export class Backend2Stack extends Stack {
     createMessages(this, webSocketApi.ref, roleForWebsocketAuthorizer.roleArn, this.region, lambdaFuncMessageConnect.functionArn, lambdaFuncMessageDisconnect.functionArn, lambdaFuncMessageMessage.functionArn, websocketAuthorizer.ref)
 
 
+    // (X1) Messaging
+    //// (X1-1) Policy
+    //// (a) For create custom resource
+    // const messagingPolicyForCreateCustomResource = new iam.PolicyStatement({
+    //   effect: iam.Effect.ALLOW,
+    //   actions: [
+    //     "chime:CreateAppInstance",
+    //     "chime:DescribeAppInstance",
+    //     "chime:ListAppInstances",
+    //     "chime:UpdateAppInstance",
+    //     "chime:DeleteAppInstance",
+    //     "chime:CreateAppInstanceUser",
+    //     "chime:DeleteAppInstanceUser",
+    //     "chime:ListAppInstanceUsers",
+    //     "chime:UpdateAppInstanceUser",
+    //     "chime:DescribeAppInstanceUser",
+    //     "chime:CreateAppInstanceAdmin",
+    //     "chime:DescribeAppInstanceAdmin",
+    //     "chime:ListAppInstanceAdmins",
+    //     "chime:DeleteAppInstanceAdmin",
+    //     "chime:PutAppInstanceRetentionSettings",
+    //     "chime:GetAppInstanceRetentionSettings",
+    //     "chime:PutAppInstanceStreamingConfigurations",
+    //     "chime:GetAppInstanceStreamingConfigurations",
+    //     "chime:DeleteAppInstanceStreamingConfigurations",
+    //     "chime:TagResource",
+    //     "chime:UntagResource",
+    //     "chime:ListTagsForResource",
+
+    //     "chime:CreateChannel",
+    //     "iam:*",
+
+    //     "logs:CreateLogGroup",
+    //     "logs:CreateLogStream",
+    //     "logs:PutLogEvents",
+
+    //   ],
+    //   resources: [
+    //     "*"
+    //   ]
+    // });
+
+    // //// (b) For lambda
+    // const messagingPolicyForLambda = new iam.PolicyStatement({
+    //   effect: iam.Effect.ALLOW,
+    //   actions: [
+    //     "chime:CreateAppInstanceUser",
+    //     "chime:GetMessagingSessionEndpoint",
+    //     "chime:CreateChannelMembership",
+    //     "chime:CreateChannel",
+
+    //     "logs:CreateLogGroup",
+    //     "logs:CreateLogStream",
+    //     "logs:PutLogEvents"
+    //   ],
+    //   resources: [
+    //     "*"
+    //   ]
+    // });
+
+
+    //// (c) For client
+    const messagingPolicyForClient = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "chime:GetMessagingSessionEndpoint",
+        "chime:SendChannelMessage",
+        "chime:ListChannelMessages",
+        "chime:Connect"
+      ],
+      resources: [
+        "*"
+      ]
+    });
+
+
+
     ///////////////////////////////
     //// Output
     ///////////////////////////////
@@ -171,6 +268,15 @@ export class Backend2Stack extends Stack {
         value: frontendCdn!.distributionDomainName,
       });
     }
+
+    // Custom Resource for messaging
+    new CfnOutput(this, "AppInstanceArn", {
+      value: messagingCustomResource.getAtt('AppInstanceArn').toString()
+    });
+    new CfnOutput(this, "AppInstanceAdminArn", {
+      value: messagingCustomResource.getAtt('AppInstanceAdminArn').toString()
+    });
+
 
     //// DEMO URL
     if (USE_CDN) {
