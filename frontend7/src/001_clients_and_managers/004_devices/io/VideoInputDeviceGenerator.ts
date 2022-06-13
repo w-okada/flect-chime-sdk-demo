@@ -1,5 +1,6 @@
 import { BackgroundBlurVideoFrameProcessor, BackgroundReplacementVideoFrameProcessor, ConsoleLogger, DefaultVideoTransformDevice, VideoFrameProcessor } from "amazon-chime-sdk-js";
 import { GenerateVideoInputDeivceParams } from "../001_DeviceManager";
+import { VideoLoadImageProcessor } from "./videoProcessor/001_TrackingCamera";
 // import { VirtualBackground, VirtualBackgroundSegmentationType } from "../frame/VirtualBackground";
 
 //////////////////////////////
@@ -44,6 +45,8 @@ export class VideoInputDeviceGenerator {
     backgroundBlurProcessor: VideoFrameProcessor | null = null
     backgroundReplacementProcessor: VideoFrameProcessor | null = null
     videoTransformDevice: DefaultVideoTransformDevice | null = null
+
+    testProcessor = new VideoLoadImageProcessor()
     generateVideoInputDeivce = async (params: GenerateVideoInputDeivceParams) => {
 
         //// (a) no device selected 
@@ -78,18 +81,18 @@ export class VideoInputDeviceGenerator {
             }
         }
 
-        if (params.virtualBackgroundType == VirtualBackgroundTypes.image) {
-            const supported = await BackgroundReplacementVideoFrameProcessor.isSupported();
-            if (supported) {
-                const image = await fetch(params.imageURL);
-                const imageBlob = await image.blob();
-                const p = await BackgroundReplacementVideoFrameProcessor.create(undefined, { imageBlob });
-                this.backgroundReplacementProcessor = p || null
-            } else {
-                console.error("Background Replacement is not supported.")
-                this.backgroundReplacementProcessor = null
-            }
-        }
+        // if (params.virtualBackgroundType == VirtualBackgroundTypes.image) {
+        //     const supported = await BackgroundReplacementVideoFrameProcessor.isSupported();
+        //     if (supported) {
+        //         const image = await fetch(params.imageURL);
+        //         const imageBlob = await image.blob();
+        //         const p = await BackgroundReplacementVideoFrameProcessor.create(undefined, { imageBlob });
+        //         this.backgroundReplacementProcessor = p || null
+        //     } else {
+        //         console.error("Background Replacement is not supported.")
+        //         this.backgroundReplacementProcessor = null
+        //     }
+        // }
 
         if (params.enableAvatar) {
             // TODO
@@ -99,15 +102,16 @@ export class VideoInputDeviceGenerator {
         if (params.enableTracking) {
             // processors.push()
         }
-        if (params.virtualBackgroundType == VirtualBackgroundTypes.blur && this.backgroundBlurProcessor) {
-            processors.push(this.backgroundBlurProcessor)
-        }
-        if (params.virtualBackgroundType == VirtualBackgroundTypes.image && this.backgroundReplacementProcessor) {
-            // processors.push(this.backgroundReplacementProcessor)
-        }
-        if (params.enableAvatar) {
-            // processors.push()
-        }
+        processors.push(this.testProcessor)
+        // if (params.virtualBackgroundType == VirtualBackgroundTypes.blur && this.backgroundBlurProcessor) {
+        //     processors.push(this.backgroundBlurProcessor)
+        // }
+        // if (params.virtualBackgroundType == VirtualBackgroundTypes.image && this.backgroundReplacementProcessor) {
+        //     // processors.push(this.backgroundReplacementProcessor)
+        // }
+        // if (params.enableAvatar) {
+        //     // processors.push()
+        // }
 
 
         if (this.videoTransformDevice) {
