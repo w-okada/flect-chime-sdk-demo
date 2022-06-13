@@ -28,9 +28,10 @@ export type GetAttendeeInfoRequest = RestGetAttendeeInfoRequest
 export type GetAttendeeInfoResponse = RestGetAttendeeInfoResponse
 
 export type BackendManagerState = {
-    meetings: MeetingListItem[]
-    environment: RestGetEnvironmentResponse | null
+    meetings: MeetingListItem[],
+    environment: RestGetEnvironmentResponse | undefined
 }
+
 export type BackendManagerStateAndMethod = BackendManagerState & {
     createMeeting: (params: CreateMeetingParams) => Promise<CreateMeetingResponse | null>
     reloadMeetingList: (params: ListMeetingsRequest) => Promise<ListMeetingsResponse | null>
@@ -40,10 +41,11 @@ export type BackendManagerStateAndMethod = BackendManagerState & {
     getAttendeeInfo: (params: GetAttendeeInfoRequest) => Promise<GetAttendeeInfoResponse | null>
 }
 export const useBackendManager = (props: UseBackendManagerProps): BackendManagerStateAndMethod => {
-    const [state, setState] = useState<BackendManagerState>({
-        meetings: [],
-        environment: null
-    })
+
+
+    const [meetings, setMeetings] = useState<MeetingListItem[]>([])
+    const [environment, setEnvironment] = useState<RestGetEnvironmentResponse>()
+
 
     const restClient = useMemo(() => {
         return new RestApiClient()
@@ -62,7 +64,7 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
             console.log("Environment:called1")
             const env = await restClient.getEnvironment({}, context)
             console.log("Environment:called2", env)
-            setState({ ...state, environment: env })
+            setEnvironment(env)
         }
         if (context.idToken.length > 0) {
             console.log("idtolen1:", context.idToken)
@@ -87,7 +89,7 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
     const reloadMeetingList = async (params: ListMeetingsRequest): Promise<ListMeetingsResponse | null> => {
         if (!restClient) return null
         const res = await restClient.listMeetings(params as RestListMeetingsRequest, context)
-        setState({ ...state, meetings: res.meetings })
+        setMeetings(res.meetings)
         return res as ListMeetingsResponse
     }
     //// (1-3) (PUT)
@@ -139,7 +141,9 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
     // (4-4)  (DELETE) 
 
     const returnVal: BackendManagerStateAndMethod = {
-        ...state,
+        meetings,
+        environment,
+
         createMeeting,
         reloadMeetingList,
         getMeetingInfo,
