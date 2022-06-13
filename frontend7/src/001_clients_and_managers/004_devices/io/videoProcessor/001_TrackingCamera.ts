@@ -2,7 +2,7 @@ import { CanvasVideoFrameBuffer, VideoFrameBuffer, VideoFrameProcessor } from "a
 // import * as face_detection from "@mediapipe/face_detection";
 import { BlazefaceWorkerManager, generateBlazefaceDefaultConfig, generateDefaultBlazefaceParams, BackendTypes } from "@dannadori/blazeface-worker-js";
 
-export class VideoLoadImageProcessor implements VideoFrameProcessor {
+export class TrackingCameraImageProcessor implements VideoFrameProcessor {
     private targetCanvas: HTMLCanvasElement = document.createElement('canvas');
     private targetCanvasCtx: CanvasRenderingContext2D = this.targetCanvas.getContext('2d')!;
     private canvasVideoFrameBuffer = new CanvasVideoFrameBuffer(this.targetCanvas);
@@ -11,7 +11,7 @@ export class VideoLoadImageProcessor implements VideoFrameProcessor {
     private params = generateDefaultBlazefaceParams();
     constructor() {
         this.config.backendType = BackendTypes.wasm
-        this.config.processOnLocal = true
+        this.config.processOnLocal = false
         this.manager.init(this.config)
 
         this.params.processWidth = 300

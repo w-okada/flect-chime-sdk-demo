@@ -1,6 +1,6 @@
 import { BackgroundBlurVideoFrameProcessor, BackgroundReplacementVideoFrameProcessor, ConsoleLogger, DefaultVideoTransformDevice, VideoFrameProcessor } from "amazon-chime-sdk-js";
 import { GenerateVideoInputDeivceParams } from "../001_DeviceManager";
-import { VideoLoadImageProcessor } from "./videoProcessor/001_TrackingCamera";
+import { TrackingCameraImageProcessor } from "./videoProcessor/001_TrackingCamera";
 // import { VirtualBackground, VirtualBackgroundSegmentationType } from "../frame/VirtualBackground";
 
 //////////////////////////////
@@ -20,7 +20,8 @@ export const VideoInputCustomDeviceList = Object.entries(VideoInputCustomDevices
 export const VirtualBackgroundTypes = {
     none: "none",
     blur: "blur",
-    image: "image",
+    track: "track",
+    // image: "image",
 } as const;
 export type VirtualBackgroundTypes = typeof VirtualBackgroundTypes[keyof typeof VirtualBackgroundTypes];
 export const VirtualBackgroundTypeList = Object.entries(VirtualBackgroundTypes).map(([key, val]) => {
@@ -46,7 +47,7 @@ export class VideoInputDeviceGenerator {
     backgroundReplacementProcessor: VideoFrameProcessor | null = null
     videoTransformDevice: DefaultVideoTransformDevice | null = null
 
-    testProcessor = new VideoLoadImageProcessor()
+    trackingProcessor = new TrackingCameraImageProcessor()
     generateVideoInputDeivce = async (params: GenerateVideoInputDeivceParams) => {
 
         //// (a) no device selected 
@@ -81,6 +82,11 @@ export class VideoInputDeviceGenerator {
             }
         }
 
+
+        if (params.virtualBackgroundType == VirtualBackgroundTypes.track) {
+            // noop. フィールドで初期化されている
+        }
+
         // if (params.virtualBackgroundType == VirtualBackgroundTypes.image) {
         //     const supported = await BackgroundReplacementVideoFrameProcessor.isSupported();
         //     if (supported) {
@@ -98,14 +104,18 @@ export class VideoInputDeviceGenerator {
             // TODO
         }
 
+        // プロセッサーの追加
         const processors: VideoFrameProcessor[] = []
         if (params.enableTracking) {
             // processors.push()
         }
-        processors.push(this.testProcessor)
-        // if (params.virtualBackgroundType == VirtualBackgroundTypes.blur && this.backgroundBlurProcessor) {
-        //     processors.push(this.backgroundBlurProcessor)
-        // }
+        if (params.virtualBackgroundType == VirtualBackgroundTypes.blur && this.backgroundBlurProcessor) {
+            processors.push(this.backgroundBlurProcessor)
+        }
+
+        if (params.virtualBackgroundType == VirtualBackgroundTypes.track) {
+            processors.push(this.trackingProcessor)
+        }
         // if (params.virtualBackgroundType == VirtualBackgroundTypes.image && this.backgroundReplacementProcessor) {
         //     // processors.push(this.backgroundReplacementProcessor)
         // }
