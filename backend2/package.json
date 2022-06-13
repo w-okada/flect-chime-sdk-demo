@@ -9,8 +9,9 @@
         "clean": "rimraf dist/*",
         "deploy": "cdk deploy --outputs-file cfn_outputs.json",
         "destroy": "cdk destroy",
+        "install_lib": "cd lib/005_Lambda/layer/nodejs/ && npm install && cd -",
         "synth": "rimraf tmp_out/* && cdk synth -o tmp_out",
-        "build_all": "run-s clean deploy"
+        "build_all": "run-s clean install_lib deploy"
     },
     "devDependencies": {
         "@aws-cdk/aws-cognito": "^1.159.0",
