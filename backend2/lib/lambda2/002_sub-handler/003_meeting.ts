@@ -1,8 +1,10 @@
-import { deleteMeetingFromDB, getMeetingInfoFromDB } from "./001_meeting_common";
-import { BackendDeleteMeetingRequest, BackendDeleteMeetingResponse, BackendGetMeetingInfoRequest, BackendGetMeetingInfoResponse } from "./backend_request";
 
 // (2) Meeting
 //// (1-1) (POST) -> no support
+
+import { deleteMeetingFromDB, getMeetingInfoFromDB } from "../001_common/001_DynamoDB";
+import { BackendDeleteMeetingRequest, BackendDeleteMeetingResponse, BackendGetMeetingInfoRequest, BackendGetMeetingInfoResponse } from "../backend_request";
+
 //// (1-2) Get Meeting Info (Get)
 export const getMeetingInfo = async (req: BackendGetMeetingInfoRequest): Promise<BackendGetMeetingInfoResponse> => {
     const result = await getMeetingInfoFromDB(req);

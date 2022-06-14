@@ -1,13 +1,7 @@
 import * as Chime from "@aws-sdk/client-chime"
-import { getMeetingInfoFromDB } from "./001_meeting_common";
-import {
-    BackendStartTranscribeException,
-    BackendStartTranscribeExceptionType,
-    BackendStartTranscribeRequest,
-    BackendStartTranscribeResponse,
-    BackendStopTranscribeExceptionType,
-    BackendStopTranscribeRequest,
-} from "./backend_request";
+import { getMeetingInfoFromDB } from "../001_common/001_DynamoDB";
+import { BackendStartTranscribeException, BackendStartTranscribeExceptionType, BackendStartTranscribeRequest, BackendStartTranscribeResponse, BackendStopTranscribeExceptionType, BackendStopTranscribeRequest } from "../backend_request";
+
 const chime = new Chime.Chime({ region: "us-east-1" });
 
 

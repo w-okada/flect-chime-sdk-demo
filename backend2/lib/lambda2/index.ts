@@ -1,10 +1,4 @@
-import * as DynamoDB from "@aws-sdk/client-dynamodb"
-// import { deleteMeeting, getMeetingInfoFromDB } from "./001_meeting_common";
-import { createMeeting, listMeetings } from "./002_meetings";
-import { deleteMeeting, getMeetingInfo } from "./003_meeting";
-import { joinMeeting } from "./004_attendees";
-import { getAttendeeInfo } from "./005_attendee";
-import { startTranscribe, stopTranscribe } from "./006_misc";
+
 import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest } from "./backend_request";
 import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetEnvironmentResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
 import { v4 } from "uuid";
@@ -18,6 +12,11 @@ const messagingGlobalChannelArn = process.env.MESSAGING_GLOBAL_CHANNEL_ARN!;
 
 import * as STS from "@aws-sdk/client-sts"
 import * as Chime from "@aws-sdk/client-chime"
+import { createMeeting, listMeetings } from "./002_sub-handler/002_meetings"
+import { deleteMeeting, getMeetingInfo } from "./002_sub-handler/003_meeting";
+import { joinMeeting } from "./002_sub-handler/004_attendees";
+import { getAttendeeInfo } from "./002_sub-handler/005_attendee";
+import { startTranscribe, stopTranscribe } from "./002_sub-handler/006_misc";
 const chime = new Chime.Chime({ region: process.env.AWS_REGION });
 const sts = new STS.STS({ region: process.env.AWS_REGION });
 
