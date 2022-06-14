@@ -12,6 +12,7 @@ import { MainVideoArea, MainVideoAreaProps } from "./111_MainVideoArea";
 import { useStateControlRadioButton } from "./hooks/useStateControlRadioButton";
 import { ViewType } from "../002_hooks/011_useFrontend";
 import { BottomNav, BottomNavProps } from "./112_BottomNav";
+import { LeaveDialog, LeaveDialogProps } from "./101-6_LeaveDialog";
 
 export type FrameProps = {
     signInCompleted: boolean;
@@ -327,6 +328,14 @@ export const Frame = (props: FrameProps) => {
         </>
     );
 
+    const leaveDialogProps: LeaveDialogProps = useMemo(() => {
+        return {
+            close: () => {
+                leaveCheckbox.updateState(false);
+            },
+        };
+    }, []);
+
     /**
      * action linking
      */
@@ -380,7 +389,6 @@ export const Frame = (props: FrameProps) => {
             {rightSidebar}
             {mainArea}
             <div>
-                {/* <input type="checkbox" className="setting-checkbox" id="setting-checkbox-secondary" /> */}
                 {settingCheckbox.trigger}
                 <div className="dialog-container setting-checkbox-remover">
                     <SettingDialog></SettingDialog>
@@ -388,9 +396,10 @@ export const Frame = (props: FrameProps) => {
             </div>
 
             <div>
-                {/* <input type="checkbox" className="leave-checkbox" id="leave-checkbox-secondary" /> */}
                 {leaveCheckbox.trigger}
-                <div className="dialog-container leave-checkbox-remover"></div>
+                <div className="dialog-container leave-checkbox-remover">
+                    <LeaveDialog {...leaveDialogProps}></LeaveDialog>
+                </div>
             </div>
 
             <div>

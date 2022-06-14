@@ -14,6 +14,7 @@ import { useAppState } from "./003_provider/AppStateProvider";
 import logo from "../resources/icons/flect.png";
 import { Frame, FrameProps } from "./100_components/100_Frame";
 import { SignInDialogProps } from "./100_components/101-1_SignInDialog";
+import { DEFAULT_EMAIL, DEFAULT_NICKNAME, DEFAULT_PASSWORD } from "./const";
 
 const App = () => {
     const { cognitoClientState, chimeClientState, frontendState } = useAppState();
@@ -22,10 +23,11 @@ const App = () => {
             frontendState.setUserName(username);
             console.log("sign in succeeded!!");
         },
-        defaultEmail: "mail2wokada@gmail.com",
-        defaultPassword: "test22",
-        defaultUsername: "wo",
+        defaultEmail: DEFAULT_EMAIL,
+        defaultPassword: DEFAULT_PASSWORD,
+        defaultNickname: DEFAULT_NICKNAME,
     };
+
     const frameProps: FrameProps = {
         signInCompleted: cognitoClientState.signInCompleted,
         signInDialogProps: singInProps,

@@ -19,7 +19,7 @@ export type CognitoClientStateAndMethods = CognitoClientState & {
     resendVerification: (userId: string) => Promise<void>;
     sendVerificationCodeForChangePassword: (userId: string) => Promise<void>;
     changePassword: (userId: string, verifycode: string, password: string) => Promise<void>;
-    signOut: (userId: string) => Promise<void>;
+    signOut: () => Promise<void>;
 }
 
 export const useCognitoClient = (props: UseCognitoClientProps): CognitoClientStateAndMethods => {
@@ -63,8 +63,17 @@ export const useCognitoClient = (props: UseCognitoClientProps): CognitoClientSta
         await cognitoClient.changePassword(userId, verifycode, password);
         setLastUpdateTime(new Date().getTime());
     };
-    const signOut = async (userId: string) => {
-        await cognitoClient.signOut(userId);
+    const signOut = async () => {
+        if (state.userId) {
+            await cognitoClient.signOut(state.userId);
+        }
+        setState({
+            userId: null,
+            idToken: null,
+            accessToken: null,
+            refreshToken: null,
+            signInCompleted: false
+        })
         setLastUpdateTime(new Date().getTime());
     };
     const returnValue: CognitoClientStateAndMethods = {

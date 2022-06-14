@@ -13,8 +13,8 @@ import { DeviceChangeObserverImpl } from "./observer/DeviceChangeObserverImpl";
 import AudioVideoObserverTemplate from "./observer/AudioVideoObserverTemplate";
 import { ChimeDemoException } from "../../000_exception/Exception";
 import { RestJoinMeetingRequest } from "../002_rest/013_attendees";
-import { Chime } from "aws-sdk";
 import { ChimeAudioInputDevice, ChimeAudioOutputDevice, ChimeAudioOutputElement, ChimeVideoInputDevice } from "../../002_hooks/004_useDeviceState";
+import * as Chime from "@aws-sdk/client-chime"
 
 export type MeetingInfo = {
     meetingName: string;

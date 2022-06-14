@@ -2,17 +2,18 @@ import React, { useState } from "react";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAppState } from "../003_provider/AppStateProvider";
+import { FRONTEND_LOCAL_DEV } from "../const";
 
 export type SignInDialogProps = {
     signInSucceeded: (username: string) => void;
     defaultEmail?: string;
     defaultPassword?: string;
-    defaultUsername?: string;
+    defaultNickname?: string;
 };
 
 export const SignInDialog = (props: SignInDialogProps) => {
     const { cognitoClientState } = useAppState();
-
+    const [message, setMessage] = useState<string | null>(null);
     // (1) States
     const TabItems = {
         signin: "signin",
@@ -37,15 +38,19 @@ export const SignInDialog = (props: SignInDialogProps) => {
                     switch (exception.code) {
                         case "UserNotFoundException":
                             console.warn("未登録のユーザ");
+                            setMessage(`[${exception.code}] No registered user`);
                             break;
                         case "InvalidParameterException":
                             console.warn("パラメータが不正");
+                            setMessage(`[${exception.code}] Invalide parameter`);
                             break;
                         case "LimitExceededException":
                             console.warn("??");
+                            setMessage(`[${exception.code}] Unknown Exception`);
                             break;
                         default:
                             console.error("Unknown Exception");
+                            setMessage(`[${exception.code}] Unknown Exception`);
                     }
                 }
 
@@ -59,15 +64,19 @@ export const SignInDialog = (props: SignInDialogProps) => {
                     switch (exception.code) {
                         case "UserNotFoundException":
                             console.warn("未登録のユーザ");
+                            setMessage(`[${exception.code}] No registered user`);
                             break;
                         case "InvalidParameterException":
                             console.warn("パラメータが不正");
+                            setMessage(`[${exception.code}] Invalide parameter`);
                             break;
                         case "LimitExceededException":
                             console.warn("??");
+                            setMessage(`[${exception.code}] Unknown Exception`);
                             break;
                         default:
                             console.error("Unknown Exception");
+                            setMessage(`[${exception.code}] Unknown Exception`);
                     }
                 }
                 break;
@@ -82,14 +91,17 @@ export const SignInDialog = (props: SignInDialogProps) => {
         const password = (document.getElementById("signin-dialog-password") as HTMLInputElement).value;
         const newPassword = (document.getElementById("signin-dialog-new-password") as HTMLInputElement).value;
         const code = (document.getElementById("signin-dialog-verify-code") as HTMLInputElement).value;
-        const username = (document.getElementById("signin-dialog-username") as HTMLInputElement).value;
+        const username = (document.getElementById("signin-dialog-display-name") as HTMLInputElement).value;
         switch (tab) {
             // (A) Sign In
             case "signin":
                 try {
                     if (username.length < 1) {
                         console.warn("ユーザネームが入ってない。");
-                        throw "no user name";
+                        const err = new Error("no user name");
+                        // @ts-ignore
+                        err.code = "NoUserNameInput";
+                        throw err;
                     }
                     await cognitoClientState.signIn(email, password);
                     props.signInSucceeded(username);
@@ -98,16 +110,24 @@ export const SignInDialog = (props: SignInDialogProps) => {
                     switch (exception.code) {
                         case "NotAuthorizedException":
                             console.warn("サインインできない。");
+                            setMessage(`[${exception.code}] Password error`);
                             break;
                         case "UserNotFoundException":
                             console.warn("未登録のユーザ");
+                            setMessage(`[${exception.code}] No registered user`);
                             break;
                         case "InvalidParameterException":
                             console.warn("不正なパラメータ");
+                            setMessage(`[${exception.code}] Invalide parameter`);
                             break;
-
+                        case "NoUserNameInput":
+                            console.warn("ユーザ名が入っていない");
+                            setMessage(`[${exception.code}] No display name`);
+                            break;
                         default:
                             console.error("Unknown Exception");
+                            setMessage(`[${exception.code}] Unknown Exception`);
+                            break;
                     }
                 }
                 break;
@@ -116,17 +136,21 @@ export const SignInDialog = (props: SignInDialogProps) => {
                 try {
                     await cognitoClientState.signUp(email, newPassword);
                     setTab("verify");
+                    setMessage(null);
                 } catch (exception: any) {
                     console.warn("Sign Up Exception", JSON.stringify(exception));
                     switch (exception.code) {
                         case "InvalidParameterException":
-                            console.warn("パラメータがおかしい");
+                            console.warn("不正なパラメータ");
+                            setMessage(`[${exception.code}] Invalide parameter`);
                             break;
                         case "UsernameExistsException":
                             console.warn("登録済みのユーザ");
+                            setMessage(`[${exception.code}] The user is already registered.`);
                             break;
                         default:
                             console.error("Unknown Exception");
+                            setMessage(`[${exception.code}] Unknown Exception`);
                     }
                 }
                 break;
@@ -135,20 +159,25 @@ export const SignInDialog = (props: SignInDialogProps) => {
                 try {
                     await cognitoClientState.verify(email, code);
                     setTab("signin");
+                    setMessage(null);
                 } catch (exception: any) {
                     console.warn("Verification Exception", JSON.stringify(exception));
                     switch (exception.code) {
                         case "UserNotFoundException":
-                            console.warn("しらないユーザ");
+                            console.warn("未登録のユーザ");
+                            setMessage(`[${exception.code}] No registered user`);
                             break;
                         case "CodeMismatchException":
                             console.warn("コードが間違っている");
+                            setMessage(`[${exception.code}] Invalid code.`);
                             break;
                         case "NotAuthorizedException":
                             console.warn("？？？　ベリファイ後にもう一回やろうとすると出る");
+                            setMessage(`[${exception.code}] Unknown Exception. Maybe you verified twice.`);
                             break;
                         default:
                             console.error("Unknown Exception");
+                            setMessage(`[${exception.code}] Unknown Exception`);
                     }
                 }
                 break;
@@ -157,20 +186,25 @@ export const SignInDialog = (props: SignInDialogProps) => {
                 try {
                     await cognitoClientState.changePassword(email, code, newPassword);
                     setTab("signin");
+                    setMessage(null);
                 } catch (exception: any) {
                     console.warn("Verification Exception", JSON.stringify(exception));
                     switch (exception.code) {
                         case "UserNotFoundException":
-                            console.warn("しらないユーザ");
+                            console.warn("未登録のユーザ");
+                            setMessage(`[${exception.code}] No registered user`);
                             break;
                         case "InvalidParameterException":
                             console.warn("不正なパラメータ");
+                            setMessage(`[${exception.code}] Invalide parameter`);
                             break;
                         case "CodeMismatchException":
                             console.warn("コードが間違っている");
+                            setMessage(`[${exception.code}] Invalid code.`);
                             break;
                         default:
                             console.error("Unknown Exception");
+                            setMessage(`[${exception.code}] Unknown Exception`);
                     }
                 }
                 break;
@@ -192,6 +226,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
                 name="signin-dialog"
                 onChange={() => {
                     setTab("signin");
+                    setMessage(null);
                 }}
                 checked={tab === "signin"}
             />
@@ -212,6 +247,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
                 name="signin-dialog"
                 onChange={() => {
                     setTab("signup");
+                    setMessage(null);
                 }}
                 checked={tab === "signup"}
             />
@@ -232,6 +268,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
                 name="signin-dialog"
                 onChange={() => {
                     setTab("verify");
+                    setMessage(null);
                 }}
                 checked={tab === "verify"}
             />
@@ -252,6 +289,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
                 name="signin-dialog"
                 onChange={() => {
                     setTab("forgot");
+                    setMessage(null);
                 }}
                 checked={tab === "forgot"}
             />
@@ -284,18 +322,30 @@ export const SignInDialog = (props: SignInDialogProps) => {
     }, [tab]);
 
     const emailField = useMemo(() => {
+        // usernameというキーワードがname, label等どこかに使用されるとそこにautofillが引っ張られる？
+        // 動作仕様が見つからない。
+        const additionalAttr = {};
+        if (FRONTEND_LOCAL_DEV) {
+            // @ts-ignore
+            additionalAttr["defaultValue"] = props.defaultEmail;
+        }
         return (
             <div className="dialog-input-controls">
-                <input type="text" id="signin-dialog-email" className="input-text" name="email" placeholder="email" autoComplete="email" defaultValue={props.defaultEmail ? props.defaultEmail : ""} />
-                <label htmlFor="email">Email</label>
+                <input type="text" id="signin-dialog-email" className="input-text" name="email" autoComplete="email" {...additionalAttr} />
+                <label htmlFor="email">email</label>
             </div>
         );
     }, [tab]);
     const passwordField = useMemo(() => {
         const hidden = tab !== "signin" ? "hidden" : "";
+        const additionalAttr = {};
+        if (FRONTEND_LOCAL_DEV) {
+            // @ts-ignore
+            additionalAttr["defaultValue"] = props.defaultPassword;
+        }
         return (
             <div className={`dialog-input-controls ${hidden}`}>
-                <input type="password" id="signin-dialog-password" className="input-text" name="password" placeholder="password" autoComplete="current-password" defaultValue={props.defaultPassword ? props.defaultPassword : ""} />
+                <input type="password" id="signin-dialog-password" className="input-text" name="password" autoComplete="current-password" {...additionalAttr} />
                 <label htmlFor="password">Password</label>
             </div>
         );
@@ -303,10 +353,15 @@ export const SignInDialog = (props: SignInDialogProps) => {
 
     const usernameField = useMemo(() => {
         const hidden = tab !== "signin" ? "hidden" : "";
+        const additionalAttr = {};
+        if (FRONTEND_LOCAL_DEV) {
+            // @ts-ignore
+            additionalAttr["defaultValue"] = props.defaultNickname;
+        }
         return (
             <div className={`dialog-input-controls ${hidden}`}>
-                <input type="text" id="signin-dialog-username" className="input-text" name="username" placeholder="username" autoComplete="username" defaultValue={props.defaultUsername ? props.defaultUsername : ""} />
-                <label htmlFor="username">username(displayed in meeting)</label>
+                <input type="text" id="signin-dialog-display-name" className="input-text" name="display-name" autoComplete="nickname" {...additionalAttr} />
+                <label htmlFor="display-name">display name in meeting</label>
             </div>
         );
     }, [tab]);
@@ -315,7 +370,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
         const hidden = tab !== "signup" && tab !== "forgot" ? "hidden" : "";
         return (
             <div className={`dialog-input-controls ${hidden}`}>
-                <input type="password" id="signin-dialog-new-password" className="input-text" name="newPassword" placeholder="new password" autoComplete="current-password" />
+                <input type="password" id="signin-dialog-new-password" className="input-text" name="newPassword" autoComplete="current-password" />
                 <label htmlFor="newPassword">newPassword</label>
             </div>
         );
@@ -325,11 +380,20 @@ export const SignInDialog = (props: SignInDialogProps) => {
         const hidden = tab !== "verify" && tab !== "forgot" ? "hidden" : "";
         return (
             <div className={`dialog-input-controls ${hidden}`}>
-                <input type="text" id="signin-dialog-verify-code" className="input-text" name="verify-code" placeholder="verify-code" autoComplete="off" />
+                <input type="text" id="signin-dialog-verify-code" className="input-text" name="verify-code" autoComplete="off" />
                 <label htmlFor="verify-code">verify-code</label>
             </div>
         );
     }, [tab]);
+
+    const messageArea = useMemo(() => {
+        return (
+            <div className="dialog-input-controls">
+                <div className="dialog-message">{message}</div>
+            </div>
+        );
+    }, [message]);
+
     const requestCodeButton = useMemo(() => {
         return (
             <div id="request-code" className="submit-button" onClick={requestVerifyCode}>
@@ -344,7 +408,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
                 <div>
                     {tab === "verify" || tab === "forgot" ? requestCodeButton : <></>}
                     <div id="submit" className="submit-button" onClick={onSubmit}>
-                        submit
+                        enter
                     </div>
                 </div>
             </div>
@@ -359,13 +423,15 @@ export const SignInDialog = (props: SignInDialogProps) => {
                 {usernameField}
                 {newPasswordField}
                 {verifyCodeFeild}
+                {messageArea}
                 {submitButton}
             </>
         );
-    }, [tab]);
+    }, [tab, messageArea]);
 
     return (
         <div className="dialog-frame-warpper">
+            <iframe id="dummy" name="dummy" style={{ display: "none" }} src="about:blank"></iframe>
             <div className="dialog-frame">
                 <div className="dialog-title">Sign in</div>
                 <div className="dialog-content">
@@ -377,7 +443,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
                         {forgotIcon}
                     </div>
                     <div className="dialog-description">{description}</div>
-                    <form>
+                    <form target="dummy" method="post" action="about:blank" autoComplete="on">
                         <div className="dialog-input-container">{form}</div>
                     </form>
                 </div>
