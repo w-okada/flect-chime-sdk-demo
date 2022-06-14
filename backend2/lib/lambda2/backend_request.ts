@@ -2,7 +2,7 @@
  * Frontendと共用するため、http_request.tsをベースにbackend_requestを作成する。
  */
 
-import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPDeleteMeetingRequest, HTTPDeleteMeetingResponse, HTTPGetAttendeeInfoRequest, HTTPGetAttendeeInfoResponse, HTTPGetAttendeesListRequest, HTTPGetAttendeesListResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, Metadata } from "./http_request";
+import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPDeleteMeetingRequest, HTTPDeleteMeetingResponse, HTTPGetAttendeeInfoRequest, HTTPGetAttendeeInfoResponse, HTTPGetAttendeesListRequest, HTTPGetAttendeesListResponse, HTTPGetEnvironmentRequest, HTTPGetEnvironmentResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, Metadata } from "./http_request";
 
 
 // (1) Meetings 
@@ -123,3 +123,8 @@ export type BackendStopTranscribeException = {
     code: BackendStopTranscribeExceptionType;
     exception: boolean;
 };
+
+
+// (6) Environment
+export type BackendGetEnvironmentRequest = HTTPGetEnvironmentRequest & { email: string }
+export type BackendGetEnvironmentResponse = HTTPGetEnvironmentResponse

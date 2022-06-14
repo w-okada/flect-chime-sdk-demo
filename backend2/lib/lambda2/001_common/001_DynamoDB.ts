@@ -23,8 +23,41 @@ var ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
 export type MetaddataDB = Metadata & {
     Code: string
 }
-// (1) ミーティングをDBから列挙。
-// Chimeのバックエンドと同期して返す(checkMeetingExistInChimeをコール)。
+
+
+// (1) 新規ミーティングの登録
+export const registerMeetingIntoDB = async (meetingName: string, ownerEmail: string, region: string, secret: boolean, useCode: boolean, code: string, messageChannelArn: string, meeting: Chime.Meeting) => {
+    const date = new Date();
+    const now = date.getTime();
+    const metadata: MetaddataDB = {
+        OwnerId: ownerEmail,
+        Region: region,
+        Secret: secret,
+        UseCode: useCode,
+        Code: code,
+        StartTime: now,
+        MessageChannelArn: messageChannelArn
+    };
+    const item = {
+        MeetingName: { S: meetingName },
+        MeetingId: { S: meeting!.MeetingId },
+        Meeting: { S: JSON.stringify(meeting) },
+        Metadata: { S: JSON.stringify(metadata) },
+        TTL: {
+            N: "" + getExpireDate(),
+        },
+    };
+    await ddb
+        .putItem({
+            TableName: meetingTableName,
+            Item: item,
+        })
+
+}
+
+// (2) ミーティングをDBから列挙。
+// Chimeのバックエンドに存在確認も実施（変更検討が必要）。
+
 export const listMeetingsFromDB = async (req: BackendListMeetingsRequest): Promise<BackendListMeetingsResponse> => {
     console.log("dynamo: list all meetings");
     const result = await ddb.scan({
@@ -60,10 +93,9 @@ export const listMeetingsFromDB = async (req: BackendListMeetingsRequest): Promi
 }
 
 
-// (2) DBからミーティングの情報を取得する。
+// (3) DBからミーティングの情報を取得する。
 // DBに存在しない場合はnullを返す。
-// DBに存在して、Chimeのバックエンドに存在しない場合はDBから削除したうえで、nullを返す。
-// 
+// Chimeのバックエンドに存在確認も実施（変更検討が必要）。
 export const getMeetingInfoFromDB = async (req: BackendGetMeetingInfoRequest): Promise<BackendGetMeetingInfoResponse | null> => {
     //// (1) retrieve info
     const result = await ddb.getItem({ TableName: meetingTableName, Key: { MeetingName: { S: req.meetingName } } })
@@ -97,7 +129,7 @@ export const getMeetingInfoFromDB = async (req: BackendGetMeetingInfoRequest): P
     };
 };
 
-// (3) DBからミーティングを削除する
+// (4) DBからミーティングを削除する
 export const deleteMeetingFromDB = async (req: BackendDeleteMeetingRequest) => {
     console.log(`Delete meeting from DB ${req.meetingName}`)
     deleteMessageChannelFromChimeBackend(req.messageChannelArn)
@@ -111,37 +143,8 @@ export const deleteMeetingFromDB = async (req: BackendDeleteMeetingRequest) => {
         })
 };
 
-// (4) 新規ミーティングの登録
-export const registerMeetingIntoDB = async (meetingName: string, ownerEmail: string, region: string, secret: boolean, useCode: boolean, code: string, messageChannelArn: string, meeting: Chime.Meeting) => {
-    const date = new Date();
-    const now = date.getTime();
-    const metadata: MetaddataDB = {
-        OwnerId: ownerEmail,
-        Region: region,
-        Secret: secret,
-        UseCode: useCode,
-        Code: code,
-        StartTime: now,
-        MessageChannelArn: messageChannelArn
-    };
-    const item = {
-        MeetingName: { S: meetingName },
-        MeetingId: { S: meeting!.MeetingId },
-        Meeting: { S: JSON.stringify(meeting) },
-        Metadata: { S: JSON.stringify(metadata) },
-        TTL: {
-            N: "" + getExpireDate(),
-        },
-    };
-    await ddb
-        .putItem({
-            TableName: meetingTableName,
-            Item: item,
-        })
 
-}
-
-// (5) 新規会議参加者の登録
+// (5) DBに会議参加者を登録
 export const registerAttendeeIntoDB = async (meetingName: string, attendeeId: string, attendeeName: string) => {
     await ddb
         .putItem({
@@ -158,6 +161,7 @@ export const registerAttendeeIntoDB = async (meetingName: string, attendeeId: st
         })
 }
 
+// (6) DBから会議参加者の情報を取得
 export const getAttendeeInfoFromDB = async (meetingName: string, attendeeId: string): Promise<BackendGetAttendeeInfoResponse | BackendGetAttendeeInfoException> => {
     const result = await ddb
         .getItem({

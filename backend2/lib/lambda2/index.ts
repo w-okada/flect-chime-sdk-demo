@@ -1,24 +1,17 @@
 
 import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest } from "./backend_request";
 import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetEnvironmentResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
-import { v4 } from "uuid";
 import { generateResponse, getEmailFromAccessToken } from "./util";
 
-const messagingAppInstanceArn = process.env.MESSAGING_APP_INSTANCE_ARN!;
-const messagingAppInstanceAdminArn = process.env.MESSAGING_APP_INSTANCE_ADMIN_ARN!;
-const messagingRoleForClient = process.env.MESSAGING_ROLE_FOR_CLIENT
-const messagingGlobalChannelArn = process.env.MESSAGING_GLOBAL_CHANNEL_ARN!;
 
 
-import * as STS from "@aws-sdk/client-sts"
-import * as Chime from "@aws-sdk/client-chime"
 import { createMeeting, listMeetings } from "./002_sub-handler/002_meetings"
 import { deleteMeeting, getMeetingInfo } from "./002_sub-handler/003_meeting";
 import { joinMeeting } from "./002_sub-handler/004_attendees";
 import { getAttendeeInfo } from "./002_sub-handler/005_attendee";
 import { startTranscribe, stopTranscribe } from "./002_sub-handler/006_misc";
-const chime = new Chime.Chime({ region: process.env.AWS_REGION });
-const sts = new STS.STS({ region: process.env.AWS_REGION });
+import { getEnvironment } from "./002_sub-handler/010_environment";
+
 
 const Methods = {
     GET: "GET",
@@ -518,50 +511,10 @@ const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: str
         callback(null, response);
     }
     console.log("Generate Messaging Environment: Email", email)
-
-    // (a-2) Credentialを取得
-
-    const assumedRoleResponse = await sts.assumeRole({
-        RoleArn: messagingRoleForClient,
-        RoleSessionName: `chime_${v4()}`,
-        DurationSeconds: 3600,
-        Tags: [
-            {
-                Key: 'UserUUID',
-                Value: `chime_${v4()}`
-            }
-        ]
-    })
-    console.log("Generate Messaging Environment: Cred")
-
-    // (a-3) ユーザ登録
-    const createUserResponse = await chime
-        .createAppInstanceUser({
-            AppInstanceArn: messagingAppInstanceArn,
-            AppInstanceUserId: email,
-            ClientRequestToken: v4(),
-            Name: email
-        })
-    console.log("Generate Messaging Environment: UserArn", createUserResponse.AppInstanceUserArn)
+    const backendRes = await getEnvironment({ email })
 
 
-    // (a-4) グローバルチャンネルに追加
-    const params = {
-        ChannelArn: messagingGlobalChannelArn,
-        MemberArn: createUserResponse.AppInstanceUserArn,
-        Type: 'DEFAULT',
-        ChimeBearer: messagingAppInstanceAdminArn
-    };
-
-    const membershipResponse = await chime.createChannelMembership(params);
-    console.log("Generate Messaging Environment: addToGlobal", JSON.stringify(membershipResponse.Member))
-
-
-    const httpRes: HTTPGetEnvironmentResponse = {
-        globalChannelArn: messagingGlobalChannelArn,
-        credential: assumedRoleResponse.Credentials,
-        appInstanceUserArn: createUserResponse.AppInstanceUserArn,
-    }
+    const httpRes: HTTPGetEnvironmentResponse = backendRes
 
     res = {
         success: true,
