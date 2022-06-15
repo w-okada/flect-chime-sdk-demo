@@ -4,6 +4,7 @@ import { useEffect } from "react";
 export type StateControlCheckbox = {
     trigger: JSX.Element;
     updateState: (newVal: boolean) => void;
+    className: string;
 };
 
 // 画面アクション用チェックボックス
@@ -107,5 +108,5 @@ export const useStateControlCheckbox = (className: string, changeCallback?: (new
         };
     }, []);
 
-    return { trigger, updateState };
+    return { trigger, updateState, className };
 };

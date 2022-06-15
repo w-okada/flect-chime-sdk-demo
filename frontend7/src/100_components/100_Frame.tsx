@@ -13,6 +13,8 @@ import { useStateControlRadioButton } from "./hooks/useStateControlRadioButton";
 import { ViewType } from "../002_hooks/011_useFrontend";
 import { BottomNav, BottomNavProps } from "./112_BottomNav";
 import { LeaveDialog, LeaveDialogProps } from "./101-6_LeaveDialog";
+import { AnimationTypes, HeaderButton, HeaderButtonProps } from "./parts/002_HeaderButton";
+import { useHeader } from "./100-1_Header";
 
 export type FrameProps = {
     signInCompleted: boolean;
@@ -20,47 +22,48 @@ export type FrameProps = {
 };
 
 export const Frame = (props: FrameProps) => {
-    const { frontendState, chimeClientState, deviceState } = useAppState();
     const [joinRoomProps, setJoinRoomProps] = useState<JoinRoomDialogProps>({
         decodedMeetingName: "",
         useCode: false,
         close: () => {},
     });
-    const openSidebarCheckbox = useStateControlCheckbox("open-sidebar-checkbox");
-    const micEnableCheckbox = useStateControlCheckbox("mic-enable-checkbox", (newVal: boolean) => {
-        deviceState.setAudioInputEnable(newVal);
-    });
-    const cameraEnableCheckbox = useStateControlCheckbox("camera-enable-checkbox", (newVal: boolean) => {
-        deviceState.setVideoInputEnable(newVal);
-    });
-    const speakerEnableCheckbox = useStateControlCheckbox("speaker-enable-checkbox", (newVal: boolean) => {
-        console.log("speaker 1 ");
-        deviceState.setAudioOutputEnable(newVal);
-    });
-    const openBottomNavCheckbox = useStateControlCheckbox("open-bottom-nav-checkbox");
-    const openRightSidebarCheckbox = useStateControlCheckbox("open-right-sidebar-checkbox");
 
-    const viewRadioButtons = useStateControlRadioButton("view-radio-button", [ViewType.feature, ViewType.grid], (suffix: string) => {
-        frontendState.setViewType(suffix as ViewType);
-    });
+    const headerState = useHeader();
+    // const openSidebarCheckbox = useStateControlCheckbox("open-sidebar-checkbox");
+    // const micEnableCheckbox = useStateControlCheckbox("mic-enable-checkbox", (newVal: boolean) => {
+    //     deviceState.setAudioInputEnable(newVal);
+    // });
+    // const cameraEnableCheckbox = useStateControlCheckbox("camera-enable-checkbox", (newVal: boolean) => {
+    //     deviceState.setVideoInputEnable(newVal);
+    // });
+    // const speakerEnableCheckbox = useStateControlCheckbox("speaker-enable-checkbox", (newVal: boolean) => {
+    //     console.log("speaker 1 ");
+    //     deviceState.setAudioOutputEnable(newVal);
+    // });
+    // const openBottomNavCheckbox = useStateControlCheckbox("open-bottom-nav-checkbox");
+    // const openRightSidebarCheckbox = useStateControlCheckbox("open-right-sidebar-checkbox");
 
-    const shareScreenCheckbox = useStateControlCheckbox("share-screen-checkbox", (newVal: boolean) => {
-        const handleShareScreen = () => {
-            if (newVal) {
-                chimeClientState.startScreenShare().then((res) => {
-                    if (!res) {
-                        shareScreenCheckbox.updateState(false);
-                    }
-                });
-            } else {
-                chimeClientState.stopScreenShare();
-            }
-        };
-        handleShareScreen();
-    });
-    const startTranscribeCheckbox = useStateControlCheckbox("start-transcribe-checkbox");
-    const settingCheckbox = useStateControlCheckbox("setting-checkbox");
-    const leaveCheckbox = useStateControlCheckbox("leave-checkbox");
+    // const viewRadioButtons = useStateControlRadioButton("view-radio-button", [ViewType.feature, ViewType.grid], (suffix: string) => {
+    //     frontendState.setViewType(suffix as ViewType);
+    // });
+
+    // const shareScreenCheckbox = useStateControlCheckbox("share-screen-checkbox", (newVal: boolean) => {
+    //     const handleShareScreen = () => {
+    //         if (newVal) {
+    //             chimeClientState.startScreenShare().then((res) => {
+    //                 if (!res) {
+    //                     shareScreenCheckbox.updateState(false);
+    //                 }
+    //             });
+    //         } else {
+    //             chimeClientState.stopScreenShare();
+    //         }
+    //     };
+    //     handleShareScreen();
+    // });
+    // const startTranscribeCheckbox = useStateControlCheckbox("start-transcribe-checkbox");
+    // const settingCheckbox = useStateControlCheckbox("setting-checkbox");
+    // const leaveCheckbox = useStateControlCheckbox("leave-checkbox");
 
     const signInCheckbox = useStateControlCheckbox("sign-in-checkbox");
     const createRoomCheckbox = useStateControlCheckbox("create-room-checkbox");
@@ -71,204 +74,159 @@ export const Frame = (props: FrameProps) => {
      */
     // (1) Header Buttons
     //// (1-1) Left space
-    ////// (1-1-1) Sidebar Button
-    const sidebarButton = (
-        <div className="rotate-button-container">
-            {openSidebarCheckbox.trigger}
-            <label htmlFor="open-sidebar-checkbox" className="rotate-lable">
-                <div className="spinner">
-                    <FontAwesomeIcon icon={["fas", "bars"]} className="spin-off" />
-                    <FontAwesomeIcon icon={["fas", "xmark"]} className="spin-on" />
-                </div>
-            </label>
-        </div>
-    );
-    //// (1-2) Center space
-    // None....
+    // ////// (1-1-1) Sidebar Button
+    // const sidebarButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: openSidebarCheckbox,
+    //     tooltip: "sidebar open/close",
+    //     onIcon: ["fas", "chevron-right"],
+    //     offIcon: ["fas", "chevron-right"],
+    //     animation: AnimationTypes.spinner,
+    //     tooltipClass: "tooltip-right",
+    // };
+    // const sidebarButton = <HeaderButton {...sidebarButtonProps}></HeaderButton>;
 
-    //// (1-3) Right space
+    // ///// (1-3-1) Microphone
+    // const micButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: micEnableCheckbox,
+    //     tooltip: "mic on/off",
+    //     onIcon: ["fas", "microphone"],
+    //     offIcon: ["fas", "microphone-slash"],
+    //     animation: AnimationTypes.colored,
+    // };
+    // const micButton = <HeaderButton {...micButtonProps}></HeaderButton>;
 
-    ///// (1-3-1) Microphone
-    const micButton = (
-        <div className="rotate-button-container tooltip-bottom" data-tooltip="mic on/off">
-            {micEnableCheckbox.trigger}
-            <label htmlFor="mic-enable-checkbox" className="rotate-lable">
-                <div className="colored">
-                    <FontAwesomeIcon icon={["fas", "microphone"]} className="spin-on" />
-                    <FontAwesomeIcon icon={["fas", "microphone-slash"]} className="spin-off" />
-                </div>
-            </label>
-        </div>
-    );
+    // ///// (1-3-2) Camera
+    // const cameraButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: cameraEnableCheckbox,
+    //     tooltip: "camera on/off",
+    //     onIcon: ["fas", "video"],
+    //     offIcon: ["fas", "video-slash"],
+    //     animation: AnimationTypes.colored,
+    // };
+    // const cameraButton = <HeaderButton {...cameraButtonProps}></HeaderButton>;
 
-    ///// (1-3-2) Camera
-    const cameraButton = (
-        <div className="rotate-button-container tooltip-bottom" data-tooltip="camera on/off">
-            {cameraEnableCheckbox.trigger}
-            <label htmlFor="camera-enable-checkbox" className="rotate-lable">
-                <div className="colored">
-                    <FontAwesomeIcon icon={["fas", "video"]} className="spin-on" />
-                    <FontAwesomeIcon icon={["fas", "video-slash"]} className="spin-off" />
-                </div>
-            </label>
-        </div>
-    );
+    // ///// (1-3-3) Speaker
+    // const speakerButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: speakerEnableCheckbox,
+    //     tooltip: "speaker on/off",
+    //     onIcon: ["fas", "volume-high"],
+    //     offIcon: ["fas", "volume-mute"],
+    //     animation: AnimationTypes.colored,
+    // };
+    // const speakerButton = <HeaderButton {...speakerButtonProps}></HeaderButton>;
 
-    ///// (1-3-3) Speaker
-    const speakerButton = (
-        <div className="rotate-button-container tooltip-bottom" data-tooltip="speaker on/off">
-            {speakerEnableCheckbox.trigger}
-            <label htmlFor="speaker-enable-checkbox" className="rotate-lable">
-                <div className="colored">
-                    <FontAwesomeIcon icon={["fas", "volume-high"]} className="spin-on" />
-                    <FontAwesomeIcon icon={["fas", "volume-mute"]} className="spin-off" />
-                </div>
-            </label>
-        </div>
-    );
+    // ///// (1-3-x) Feature View
+    // const featureViewButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: viewRadioButtons[ViewType.feature],
+    //     tooltip: "feature view",
+    //     onIcon: ["fas", "square"],
+    //     offIcon: ["fas", "square"],
+    //     animation: AnimationTypes.colored,
+    // };
+    // const featureViewButton = <HeaderButton {...featureViewButtonProps}></HeaderButton>;
+    // ///// (1-3-x) Grid View
+    // const gridViewButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: viewRadioButtons[ViewType.grid],
+    //     tooltip: "grid view",
+    //     onIcon: ["fas", "table-cells"],
+    //     offIcon: ["fas", "table-cells"],
+    //     animation: AnimationTypes.colored,
+    // };
+    // const gridViewButton = <HeaderButton {...gridViewButtonProps}></HeaderButton>;
 
-    ///// (1-3-x) Feature View
-    const featureViewButton = (
-        <div className="rotate-button-container tooltip-bottom" data-tooltip="feature view">
-            {viewRadioButtons.buttons[ViewType.feature]}
-            <label htmlFor={`view-radio-button-${ViewType.feature}`} className="rotate-lable">
-                <div className="colored">
-                    <FontAwesomeIcon icon={["fas", "square"]} className="spin-on" />
-                    <FontAwesomeIcon icon={["fas", "square"]} className="spin-off" />
-                </div>
-            </label>
-        </div>
-    );
-    ///// (1-3-x) Grid View
-    const gridViewButton = (
-        <div className="rotate-button-container tooltip-bottom" data-tooltip="grid view">
-            {viewRadioButtons.buttons[ViewType.grid]}
-            <label htmlFor={`view-radio-button-${ViewType.grid}`} className="rotate-lable">
-                <div className="colored">
-                    <FontAwesomeIcon icon={["fas", "table-cells"]} className="spin-on" />
-                    <FontAwesomeIcon icon={["fas", "table-cells"]} className="spin-off" />
-                </div>
-            </label>
-        </div>
-    );
+    // ///// (1-3-4) Bottom Nav
+    // const bottomNavButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: openBottomNavCheckbox,
+    //     tooltip: "show attendee's camera",
+    //     onIcon: ["fas", "users-rectangle"],
+    //     offIcon: ["fas", "users-rectangle"],
+    //     animation: AnimationTypes.colored,
+    // };
+    // const bottomNavButton = <HeaderButton {...bottomNavButtonProps}></HeaderButton>;
 
-    ///// (1-3-4) Bottom Nav
-    const bottomNavButton = (
-        <div className="rotate-button-container tooltip-bottom" data-tooltip="show attendee's video">
-            {openBottomNavCheckbox.trigger}
-            <label htmlFor="open-bottom-nav-checkbox" className="rotate-lable">
-                <div className="colored">
-                    <FontAwesomeIcon icon={["fas", "users-rectangle"]} className="spin-on" />
-                    <FontAwesomeIcon icon={["fas", "users-rectangle"]} className="spin-off" />
-                </div>
-            </label>
-        </div>
-    );
-    ///// (1-3-5) Right Sidebar
-    const rightSidebarButton = (
-        <div className="rotate-button-container tooltip-bottom" data-tooltip="open utility area(attendee-list, chat...)">
-            {openRightSidebarCheckbox.trigger}
-            <label htmlFor="open-right-sidebar-checkbox" className="rotate-lable">
-                <div className="colored">
-                    <div className="spin-on" style={{ position: "relative", width: "100%" }}>
-                        <FontAwesomeIcon icon={["fas", "chart-line"]} style={{ width: "45%", height: "65%", top: "-2px", position: "absolute" }} />
-                        <FontAwesomeIcon icon={["fas", "comment"]} style={{ width: "35%", height: "35%", right: 0, position: "absolute" }} />
+    // ///// (1-3-5) Right Sidebar
+    // const rightSidebarButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: openBottomNavCheckbox,
+    //     tooltip: "open meeting props",
+    //     onIcon: ["fas", "address-card"],
+    //     offIcon: ["fas", "address-card"],
+    //     animation: AnimationTypes.colored,
+    // };
 
-                        <FontAwesomeIcon icon={["fas", "user-group"]} style={{ width: "85%", height: "80%", right: 0, bottom: "-1px", position: "absolute" }} />
-                    </div>
-                    <div className="spin-off" style={{ position: "relative", width: "100%" }}>
-                        <FontAwesomeIcon icon={["fas", "chart-line"]} style={{ width: "45%", height: "65%", top: "-2px", position: "absolute" }} />
-                        <FontAwesomeIcon icon={["fas", "comment"]} style={{ width: "35%", height: "35%", right: 0, position: "absolute" }} />
+    // const rightSidebarButton = <HeaderButton {...rightSidebarButtonProps}></HeaderButton>;
 
-                        <FontAwesomeIcon icon={["fas", "user-group"]} style={{ width: "85%", height: "80%", right: 0, bottom: "-1px", position: "absolute" }} />
-                    </div>
-                </div>
-            </label>
-        </div>
-    );
+    // ///// (1-3-6) share screen
+    // const shareScreenButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: shareScreenCheckbox,
+    //     tooltip: "share screen",
+    //     onIcon: ["fas", "share-from-square"],
+    //     offIcon: ["fas", "share-from-square"],
+    //     animation: AnimationTypes.colored,
+    // };
+    // const shareScreenButton = <HeaderButton {...shareScreenButtonProps}></HeaderButton>;
 
-    ///// (1-3-6) share screen
-    const shareScreenButton = (
-        <div className="rotate-button-container tooltip-bottom" data-tooltip="share screen">
-            {shareScreenCheckbox.trigger}
-            <label htmlFor="share-screen-checkbox" className="rotate-lable">
-                <div className="colored">
-                    <FontAwesomeIcon icon={["fas", "share-from-square"]} className="spin-on" />
-                    <FontAwesomeIcon icon={["fas", "share-from-square"]} className="spin-off" />
-                </div>
-            </label>
-        </div>
-    );
+    // ///// (1-3-7) start transcribe
+    // const startTranscribeButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: startTranscribeCheckbox,
+    //     tooltip: "transcribe",
+    //     onIcon: ["fas", "t"],
+    //     offIcon: ["fas", "t"],
+    //     animation: AnimationTypes.colored,
+    // };
+    // const startTranscribeButton = <HeaderButton {...startTranscribeButtonProps}></HeaderButton>;
 
-    ///// (1-3-7) start transcribe
-    const startTranscribeButton = (
-        <div className="rotate-button-container tooltip-bottom" data-tooltip="transcribe">
-            {startTranscribeCheckbox.trigger}
-            <label htmlFor="start-transcribe-checkbox" className="rotate-lable">
-                <div className="colored">
-                    <FontAwesomeIcon icon={["fas", "t"]} className="spin-on" />
-                    <FontAwesomeIcon icon={["fas", "t"]} className="spin-off" />
-                </div>
-            </label>
-        </div>
-    );
-    ///// (1-3-8) setting
-    const settingButton = (
-        <div className="rotate-button-container tooltip-bottom" data-tooltip="setting">
-            {settingCheckbox.trigger}
-            <label htmlFor="setting-checkbox" className="rotate-lable">
-                <div className="colored">
-                    <FontAwesomeIcon icon={["fas", "gear"]} className="spin-on" />
-                    <FontAwesomeIcon icon={["fas", "gear"]} className="spin-off" />
-                </div>
-            </label>
-        </div>
-    );
-    ///// (1-3-9) leave
-    const leaveButton = (
-        <div className="rotate-button-container tooltip-bottom" data-tooltip="leave demo">
-            {leaveCheckbox.trigger}
-            <label htmlFor="leave-checkbox" className="rotate-lable">
-                <div className="colored">
-                    <FontAwesomeIcon icon={["fas", "right-from-bracket"]} className="spin-on" />
-                    <FontAwesomeIcon icon={["fas", "right-from-bracket"]} className="spin-off" />
-                </div>
-            </label>
-        </div>
-    );
+    // ///// (1-3-8) setting
+    // const settingButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: settingCheckbox,
+    //     tooltip: "setting",
+    //     onIcon: ["fas", "gear"],
+    //     offIcon: ["fas", "gear"],
+    //     animation: AnimationTypes.colored,
+    // };
+    // const settingButton = <HeaderButton {...settingButtonProps}></HeaderButton>;
 
-    // (2) Header
-    const header = (
-        <div className="header">
-            <div className="sidebar-button-area">{sidebarButton}</div>
-            <div className="status-area">{frontendState.username}</div>
-            <div className="menu-item-area">
-                <div className="group">
-                    {micButton}
-                    {cameraButton}
-                    {speakerButton}
-                </div>
-                <div className="group">
-                    {featureViewButton}
-                    {gridViewButton}
-                </div>
+    // ///// (1-3-9) leave
+    // const leaveButtonProps: HeaderButtonProps = {
+    //     stateControlCheckbox: leaveCheckbox,
+    //     tooltip: "leave demo",
+    //     onIcon: ["fas", "right-from-bracket"],
+    //     offIcon: ["fas", "right-from-bracket"],
+    //     animation: AnimationTypes.colored,
+    // };
+    // const leaveButton = <HeaderButton {...leaveButtonProps}></HeaderButton>;
 
-                <div className="group">
-                    {shareScreenButton}
-                    {startTranscribeButton}
-                    <div className="spacer"></div>
-                    {bottomNavButton}
-                    {rightSidebarButton}
-                </div>
-                <div className="group">
-                    {settingButton}
-                    <div className="spacer"></div>
-                    {leaveButton}
-                    <div className="spacer"></div>
-                </div>
-            </div>
-        </div>
-    );
+    // // (2) Header
+    // const header = (
+    //     <div className="header">
+    //         <div className="sidebar-button-area">{sidebarButton}</div>
+    //         <div className="status-area">{frontendState.username}</div>
+    //         <div className="menu-item-area">
+    //             <div className="group">
+    //                 {micButton}
+    //                 {cameraButton}
+    //                 {speakerButton}
+    //             </div>
+    //             <div className="group">
+    //                 {featureViewButton}
+    //                 {gridViewButton}
+    //             </div>
+
+    //             <div className="group">
+    //                 {shareScreenButton}
+    //                 {startTranscribeButton}
+    //                 <div className="spacer"></div>
+    //                 {bottomNavButton}
+    //                 {rightSidebarButton}
+    //             </div>
+    //             <div className="group">
+    //                 {settingButton}
+    //                 <div className="spacer"></div>
+    //                 {leaveButton}
+    //                 <div className="spacer"></div>
+    //             </div>
+    //         </div>
+    //     </div>
+    // );
 
     // (3) sidebar
     const sidebarProps: SidebarProps = {
@@ -295,32 +253,32 @@ export const Frame = (props: FrameProps) => {
             });
             joinRoomCheckbox.updateState(true);
         },
-        sidebarTrigger: openSidebarCheckbox.trigger,
+        sidebarTrigger: headerState.openSidebarCheckbox.trigger,
     };
     const sidebar = <Sidebar {...sidebarProps}></Sidebar>;
     // (4) right sidebar
     const rightSidebarProps: RightSidebarProps = {
-        rightSidebarTrigger: openRightSidebarCheckbox.trigger,
+        rightSidebarTrigger: headerState.openRightSidebarCheckbox.trigger,
     };
     const rightSidebar = <RightSidebar {...rightSidebarProps}></RightSidebar>;
 
     // (5) bottom nav (belongs to main area)
     const bottomNavProps: BottomNavProps = {
-        bottomNavTrigger: openBottomNavCheckbox.trigger,
+        bottomNavTrigger: headerState.openBottomNavCheckbox.trigger,
     };
     const bottomNav = <BottomNav {...bottomNavProps}></BottomNav>;
 
     // (6) main vide area (belongs to main area)
     const mainVideoAreaProps: MainVideoAreaProps = {
-        bottomNavTrigger: openBottomNavCheckbox.trigger,
+        bottomNavTrigger: headerState.openBottomNavCheckbox.trigger,
     };
     const mainVideoArea = <MainVideoArea {...mainVideoAreaProps}></MainVideoArea>;
 
     // (7) main area
     const mainArea = (
         <>
-            {openSidebarCheckbox.trigger}
-            {openRightSidebarCheckbox.trigger}
+            {headerState.openSidebarCheckbox.trigger}
+            {headerState.openRightSidebarCheckbox.trigger}
             <div className="main-area">
                 {mainVideoArea}
                 {bottomNav}
@@ -331,7 +289,7 @@ export const Frame = (props: FrameProps) => {
     const leaveDialogProps: LeaveDialogProps = useMemo(() => {
         return {
             close: () => {
-                leaveCheckbox.updateState(false);
+                headerState.leaveCheckbox.updateState(false);
             },
         };
     }, []);
@@ -367,36 +325,36 @@ export const Frame = (props: FrameProps) => {
 
     //// for DEBUG
     useEffect(() => {
-        openSidebarCheckbox.updateState(true);
+        headerState.openSidebarCheckbox.updateState(true);
     }, []);
     useEffect(() => {
-        openRightSidebarCheckbox.updateState(true);
+        headerState.openRightSidebarCheckbox.updateState(true);
     }, []);
 
     //// initial
     useEffect(() => {
-        viewRadioButtons.selectButton(ViewType.feature);
-        micEnableCheckbox.updateState(true);
-        cameraEnableCheckbox.updateState(false);
-        speakerEnableCheckbox.updateState(true);
-        openBottomNavCheckbox.updateState(true);
+        headerState.viewRadioButtons[ViewType.feature].updateState(true);
+        headerState.micEnableCheckbox.updateState(true);
+        headerState.cameraEnableCheckbox.updateState(false);
+        headerState.speakerEnableCheckbox.updateState(true);
+        headerState.openBottomNavCheckbox.updateState(true);
     }, []);
 
     return (
         <>
-            {header}
+            {headerState.header}
             {sidebar}
             {rightSidebar}
             {mainArea}
             <div>
-                {settingCheckbox.trigger}
+                {headerState.settingCheckbox.trigger}
                 <div className="dialog-container setting-checkbox-remover">
                     <SettingDialog></SettingDialog>
                 </div>
             </div>
 
             <div>
-                {leaveCheckbox.trigger}
+                {headerState.leaveCheckbox.trigger}
                 <div className="dialog-container leave-checkbox-remover">
                     <LeaveDialog {...leaveDialogProps}></LeaveDialog>
                 </div>

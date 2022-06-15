@@ -21,32 +21,20 @@ interface AppStateValue {
     cognitoClientState: CognitoClientStateAndMethods;
     backendManagerState: BackendManagerStateAndMethod;
     chimeClientState: ChimeClientStateAndMethods;
+    deviceState: DeviceInfoStateAndMethods;
     messagingClientState: MessagingClientStateAndMethod;
 
-    /** (010) Environment State */
-    deviceState: DeviceInfoStateAndMethods;
-    windowSizeState: WindowSizeState;
-
-    /** (020) App State*/
     frontendState: FrontendState;
-
-    /** GUI Control*/
-    /**** For WindowSizeChange */
-    /**** Other GUI Props */
-
-    /** Clients */
-
-    // chimeClientState: ChimeClientState;
-    // whiteboardClientState: WhiteboardClientState;
-    /** For Device State */
+    /** (010) Environment State */
+    windowSizeState: WindowSizeState;
 
     /** For Message*/
     messageState: MessageState;
     setMessage: (type: MessageType, title: string, detail: string[]) => void;
     resolveMessage: () => void;
 
-    /** Federation */
-    slackToken: string | null;
+    // /** Federation */
+    // slackToken: string | null;
 }
 
 const AppStateContext = React.createContext<AppStateValue | null>(null);
