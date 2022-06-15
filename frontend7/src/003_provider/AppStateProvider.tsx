@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useMemo } from "react";
 import { ReactNode } from "react";
-import { MessageState, MessageType, useMessageState } from "../providers/hooks/useMessageState";
+import { MessageState, MessageType, useMessageState } from "../002_hooks/013_useMessageState";
 import { UserPoolClientId, UserPoolId } from "../BackendConfig";
 
-import { useWindowSizeChangeListener, WindowSizeState } from "../providers/hooks/011_useWindowSizeChange";
+import { useWindowSizeChangeListener, WindowSizeState } from "../002_hooks/012_useWindowSizeChange";
 import { CognitoClientStateAndMethods, useCognitoClient } from "../002_hooks/001_useCognitoClient";
 
 import { DeviceInfoStateAndMethods, useDeviceState } from "../002_hooks/004_useDeviceState";

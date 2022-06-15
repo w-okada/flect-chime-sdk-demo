@@ -1,4 +1,4 @@
-import { Chime } from "aws-sdk";
+import * as Chime from "@aws-sdk/client-chime"
 import { useMemo, useState } from "react";
 
 export const ViewType = {

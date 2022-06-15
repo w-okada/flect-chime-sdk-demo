@@ -1,5 +1,4 @@
 
-import { HTTPCreateMeetingRequest, HTTPListMeetingsRequest, RestApiClient, RestApiClientContext } from "../002_rest/001_RestApiClient";
 import {
     ConsoleLogger,
     DefaultActiveSpeakerPolicy,
@@ -11,8 +10,7 @@ import {
 } from 'amazon-chime-sdk-js';
 import { DeviceChangeObserverImpl } from "./observer/DeviceChangeObserverImpl";
 import AudioVideoObserverTemplate from "./observer/AudioVideoObserverTemplate";
-import { ChimeDemoException } from "../../000_exception/Exception";
-import { RestJoinMeetingRequest } from "../002_rest/013_attendees";
+
 import { ChimeAudioInputDevice, ChimeAudioOutputDevice, ChimeAudioOutputElement, ChimeVideoInputDevice } from "../../002_hooks/004_useDeviceState";
 import * as Chime from "@aws-sdk/client-chime"
 
