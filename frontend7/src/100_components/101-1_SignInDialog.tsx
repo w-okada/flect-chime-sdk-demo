@@ -12,7 +12,7 @@ const TabItems = {
 } as const;
 type TabItems = typeof TabItems[keyof typeof TabItems];
 
-export type DialogTileIconProps = {
+type DialogTileIconProps = {
     tabId: TabItems;
     onChange: (tabId: TabItems) => void;
     selected: boolean;
@@ -20,7 +20,7 @@ export type DialogTileIconProps = {
     label: string;
 };
 
-export const DialogTileIcon = (props: DialogTileIconProps) => {
+const DialogTileIcon = (props: DialogTileIconProps) => {
     const icon = useMemo(() => {
         return (
             <div className="dialog-tile-icon-container">
