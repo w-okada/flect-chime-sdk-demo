@@ -3,11 +3,13 @@
 
 @import "./002_Frame.css";
 @import "./003_MainArea.css";
+@import "./004_MainVideoArea.css";
 
 @import "./010_Dialog.css";
 @import "./101_processing.css";
 @import "./102_RotatedButton.css";
 @import "./103_tooltips.css";
+@import "./104_signage.css";
 
 :root {
     --text-color: #333;

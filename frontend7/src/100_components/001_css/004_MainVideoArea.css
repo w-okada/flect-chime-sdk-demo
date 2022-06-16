@@ -1,0 +1,28 @@
+.main-video-area-container {
+    display: flex;
+    flex-wrap: wrap;
+    height: 100%;
+    width: 100%;
+}
+.main-video-area-tile {
+    position: relative;
+    display: none;
+}
+
+.main-video-area-tile-video {
+    position: absolute;
+    objectfit: contain;
+    width: 100%;
+    height: 100%;
+}
+
+.main-video-area-tile-tag {
+    position: absolute;
+    background: #333333;
+    color: #ffffff;
+    bottom: 0;
+    left: 0;
+    marginleft: 20px;
+    paddingleft: 2px;
+    paddingright: 2px;
+}
