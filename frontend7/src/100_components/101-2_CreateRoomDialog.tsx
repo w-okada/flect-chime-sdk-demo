@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useMemo } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AVAILABLE_AWS_REGIONS, DEFAULT_REGION } from "../const";
 import { useAppState } from "../003_provider/AppStateProvider";
 import { ChimeDemoException } from "../000_exception/Exception";
@@ -8,7 +7,7 @@ import { Processing } from "./parts/001_processing";
 
 export type CreateRoomDialogProps = {};
 
-export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
+export const CreateRoomDialog = (_props: CreateRoomDialogProps) => {
     const { backendManagerState, frontendState } = useAppState();
     const [useCode, setUseCode] = useState<boolean>(false);
     const [message, setMessage] = useState<string | null>(null);
@@ -144,11 +143,7 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
         );
     }, [onSubmit]);
     const processing = useMemo(() => {
-        return (
-            <div className="dialog-input-controls">
-                <div className="dialog-processing">{isProcessing ? <Processing /> : <></>}</div>
-            </div>
-        );
+        return <div className="dialog-input-controls">{isProcessing ? <Processing /> : <></>}</div>;
     }, [isProcessing]);
     const form = useMemo(() => {
         return (

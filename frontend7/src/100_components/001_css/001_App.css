@@ -5,7 +5,7 @@
 @import "./003_MainArea.css";
 
 @import "./010_Dialog.css";
-
+@import "./101_processing.css";
 /* @import "./000_css/100_Frame.css";
 @import "./000_css/101_Dialog.css";
 @import "./000_css/900_tooltips.css"; */
@@ -61,6 +61,7 @@ body {
     height: 100%;
     width: 100%;
     overflow: hidden;
+    list-style-type: none;
 }
 
 .state-control-checkbox {

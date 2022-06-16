@@ -1,7 +1,4 @@
-import { VideoTileState } from "amazon-chime-sdk-js";
-import { lstat } from "fs/promises";
 import React, { useEffect, useMemo } from "react";
-import { ViewTypes } from "../002_hooks/011_useFrontend";
 import { useAppState } from "../003_provider/AppStateProvider";
 
 const MAX_TILES = 18;

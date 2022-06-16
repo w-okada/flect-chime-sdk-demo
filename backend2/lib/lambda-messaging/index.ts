@@ -17,7 +17,7 @@ export const handler = async (event: any, context: any, callback: any) => {
         // (1) APP INSTANCEの作成
         const params = {
             Name: `${stackId}_${dateNow.toISOString()}`,
-            ClientRequestToken: `${dateNow.getHours().toString()}_${dateNow.getMinutes().toString()}`
+            ClientRequestToken: `createAppInstance ${dateNow.getHours().toString()}_${dateNow.getMinutes().toString()}`
         };
         const chimeResponse = await chime.createAppInstance(
             params
@@ -30,7 +30,7 @@ export const handler = async (event: any, context: any, callback: any) => {
         const createUserParams = {
             AppInstanceArn: appInstanceArn,
             AppInstanceUserId: 'ServiceUser',
-            ClientRequestToken: dateNow2.getHours().toString() + dateNow2.getMinutes().toString() + dateNow2.getSeconds().toString(),
+            ClientRequestToken: "createAppInstanceUser" + dateNow2.getHours().toString() + dateNow2.getMinutes().toString() + dateNow2.getSeconds().toString(),
             Name: 'ServiceUser',
         };
         const chimeResponse2 = await chime.createAppInstanceUser(
@@ -56,7 +56,7 @@ export const handler = async (event: any, context: any, callback: any) => {
         const createChannelParams = {
             Name: `GlobalChannel`,
             AppInstanceArn: appInstanceArn,
-            ClientRequestToken: `${dateNow3.getHours().toString()}_${dateNow3.getMinutes().toString()}_${dateNow3.getSeconds().toString()}`,
+            ClientRequestToken: `createChannel ${dateNow3.getHours().toString()}_${dateNow3.getMinutes().toString()}_${dateNow3.getSeconds().toString()}`,
             ChimeBearer: adminUserArn,
             Mode: 'RESTRICTED',
             Privacy: 'PUBLIC'

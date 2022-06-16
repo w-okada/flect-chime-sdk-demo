@@ -1,12 +1,13 @@
-import React, { useState } from "react";
-import { useMemo } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { useAppState } from "../003_provider/AppStateProvider";
 import { SignInDialog } from "./101-1_SignInDialog";
 import { CreateRoomDialog } from "./101-2_CreateRoomDialog";
+import { JoinRoomDialog } from "./101-3_JoinRoomDialog";
+import { SettingDialog } from "./101-4_SettingDialog";
+import { LeaveDialog } from "./101-5_LeaveDialog";
 
 export const Dialog = () => {
-    const { cognitoClientState, chimeClientState, frontendState } = useAppState();
+    const { frontendState } = useAppState();
 
     return (
         <div>
@@ -21,6 +22,15 @@ export const Dialog = () => {
 
                 {frontendState.stateControls.createRoomCheckbox.trigger}
                 <CreateRoomDialog />
+
+                {frontendState.stateControls.joinRoomCheckbox.trigger}
+                <JoinRoomDialog />
+
+                {frontendState.stateControls.settingCheckbox.trigger}
+                <SettingDialog />
+
+                {frontendState.stateControls.leaveCheckbox.trigger}
+                <LeaveDialog />
             </div>
         </div>
     );

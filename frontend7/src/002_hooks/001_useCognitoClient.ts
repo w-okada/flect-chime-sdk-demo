@@ -22,7 +22,7 @@ export type CognitoClientStateAndMethods = CognitoClientState & {
     signOut: () => Promise<void>;
 }
 
-export const useCognitoClient = (props: UseCognitoClientProps): CognitoClientStateAndMethods => {
+export const useCognitoClient = (_props: UseCognitoClientProps): CognitoClientStateAndMethods => {
     const [_lastUpdateTime, setLastUpdateTime] = useState(0);
     const [state, setState] = useState<CognitoClientState>({
         userId: null,

@@ -57,7 +57,7 @@ export const createMessageChannelInChimeBackend = async (meetingName: string,) =
     const params = {
         Name: `Ch.${meetingName}`,
         AppInstanceArn: messagingAppInstanceArn,
-        ClientRequestToken: `${dateNow.getHours().toString()}_${dateNow.getMinutes().toString()}`,
+        ClientRequestToken: v4(),
         ChimeBearer: messagingAppInstanceAdminArn,
         Mode: 'RESTRICTED',
         Privacy: 'PRIVATE'

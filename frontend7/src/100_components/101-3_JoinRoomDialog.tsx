@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { useMemo } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AVAILABLE_AWS_REGIONS, DEFAULT_REGION } from "../const";
 import { useAppState } from "../003_provider/AppStateProvider";
 import { ChimeDemoException } from "../000_exception/Exception";
 import { Processing } from "./parts/001_processing";
 
 export type JoinRoomDialogProps = {};
 
-export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
+export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
     const [message, setMessage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const { backendManagerState, chimeClientState, frontendState, deviceState } = useAppState();
@@ -83,7 +81,7 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
         const hidden = frontendState.joinRoomDialogProps.decodedMeetingName.length > 0 ? "hidden" : "";
         return (
             <div className={`dialog-input-controls ${hidden}`}>
-                <input type="text" id="join-room-dialog-room-name" className="input-text" name="room-name" placeholder="roomName" autoComplete="none" />
+                <input type="text" id="join-room-dialog-room-name" className="input-text" name="room-name" autoComplete="none" />
                 <label htmlFor="room-name">room name</label>
             </div>
         );
@@ -93,7 +91,7 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
         const hidden = frontendState.joinRoomDialogProps.useCode ? "" : "hidden";
         return (
             <div className={`dialog-input-controls ${hidden}`}>
-                <input type="text" id="join-room-dialog-code" className="input-text" name="code" placeholder="code" autoComplete="none" />
+                <input type="text" id="join-room-dialog-code" className="input-text" name="code" autoComplete="none" />
                 <label htmlFor="code">code</label>
             </div>
         );
@@ -110,55 +108,40 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
     const buttons = useMemo(() => {
         return (
             <div className="dialog-input-controls">
-                <div>
-                    <div id="cancel" className="cancel-button" onClick={cancel}>
-                        cancel
-                    </div>
-                    <div id="submit" className="submit-button" onClick={onSubmit}>
-                        submit
-                    </div>
+                <div id="cancel" className="cancel-button" onClick={cancel}>
+                    cancel
+                </div>
+                <div id="submit" className="submit-button" onClick={onSubmit}>
+                    submit
                 </div>
             </div>
         );
     }, [onSubmit]);
 
     const processing = useMemo(() => {
-        return (
-            <div className="dialog-input-controls">
-                <div className="dialog-processing">{isProcessing ? <Processing /> : <></>}</div>
-            </div>
-        );
+        return <div className="dialog-input-controls">{isProcessing ? <Processing /> : <></>}</div>;
     }, [isProcessing]);
     const form = useMemo(() => {
         return (
-            <>
-                {roomNameField}
-                {codeField}
-                {messageArea}
-                {buttons}
-                {processing}
-            </>
+            <div className="dialog-frame">
+                <div className="dialog-title">Create New Room</div>
+
+                <div className="dialog-content">
+                    <div className="dialog-application-title"></div>
+                    <div className="dialog-description">{description}</div>
+                    <form>
+                        <div className="dialog-input-container">
+                            {roomNameField}
+                            {codeField}
+                            {messageArea}
+                            {buttons}
+                            {processing}
+                        </div>
+                    </form>
+                </div>
+            </div>
         );
     }, [roomNameField, codeField, messageArea, buttons, processing]);
 
-    return (
-        <div>
-            {frontendState.stateControls.joinRoomCheckbox.trigger}
-            <div className="dialog-container create-room-checkbox-remover">
-                <div className="dialog-frame-warpper">
-                    <div className="dialog-frame">
-                        <div className="dialog-title">Create New Room</div>
-
-                        <div className="dialog-content">
-                            <div className="dialog-application-title"></div>
-                            <div className="dialog-description">{description}</div>
-                            <form>
-                                <div className="dialog-input-container">{form}</div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+    return form;
 };

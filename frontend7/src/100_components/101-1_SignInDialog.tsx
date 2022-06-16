@@ -12,7 +12,7 @@ const TabItems = {
 } as const;
 type TabItems = typeof TabItems[keyof typeof TabItems];
 
-type DialogTileIcon = {
+export type DialogTileIconProps = {
     tabId: TabItems;
     onChange: (tabId: TabItems) => void;
     selected: boolean;
@@ -20,7 +20,7 @@ type DialogTileIcon = {
     label: string;
 };
 
-const DialogTileIcon = (props: DialogTileIcon) => {
+export const DialogTileIcon = (props: DialogTileIconProps) => {
     const icon = useMemo(() => {
         return (
             <div className="dialog-tile-icon-container">
@@ -53,7 +53,7 @@ type DialogTilesProps = {
 
 const DialogTiles = (props: DialogTilesProps) => {
     const tiles = useMemo(() => {
-        const signInIconProps: DialogTileIcon = {
+        const signInIconProps: DialogTileIconProps = {
             tabId: TabItems.signin,
             onChange: () => {
                 props.onChange(TabItems.signin);
@@ -64,7 +64,7 @@ const DialogTiles = (props: DialogTilesProps) => {
         };
         const signInIcon = <DialogTileIcon {...signInIconProps}></DialogTileIcon>;
 
-        const signUpIconProps: DialogTileIcon = {
+        const signUpIconProps: DialogTileIconProps = {
             tabId: TabItems.signup,
             onChange: () => {
                 props.onChange(TabItems.signup);
@@ -75,7 +75,7 @@ const DialogTiles = (props: DialogTilesProps) => {
         };
         const signUpIcon = <DialogTileIcon {...signUpIconProps}></DialogTileIcon>;
 
-        const verfiyIconProps: DialogTileIcon = {
+        const verfiyIconProps: DialogTileIconProps = {
             tabId: TabItems.verify,
             onChange: () => {
                 props.onChange(TabItems.verify);
@@ -86,7 +86,7 @@ const DialogTiles = (props: DialogTilesProps) => {
         };
         const verfiyIcon = <DialogTileIcon {...verfiyIconProps}></DialogTileIcon>;
 
-        const forgotIconProps: DialogTileIcon = {
+        const forgotIconProps: DialogTileIconProps = {
             tabId: TabItems.forgot,
             onChange: () => {
                 props.onChange(TabItems.forgot);
