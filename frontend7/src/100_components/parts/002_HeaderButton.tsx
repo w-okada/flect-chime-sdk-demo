@@ -2,7 +2,6 @@ import { IconName, IconPrefix } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useMemo } from "react";
 import { StateControlCheckbox } from "../hooks/useStateControlCheckbox";
-import "../001_css/002_RotatedButton.css";
 
 export const AnimationTypes = {
     colored: "colored",

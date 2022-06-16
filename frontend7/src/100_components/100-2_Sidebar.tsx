@@ -6,7 +6,7 @@ import { AnimationTypes, HeaderButton, HeaderButtonProps } from "./parts/002_Hea
 
 export type SidebarProps = {};
 
-export const Sidebar = (props: SidebarProps) => {
+export const Sidebar = (_props: SidebarProps) => {
     const { backendManagerState, frontendState } = useAppState();
     const sidebarAccordionMeetingCheckbox = useStateControlCheckbox("sidebar-accordion-meeting-checkbox");
     const sidebarAccordionChatCheckbox = useStateControlCheckbox("sidebar-accordion-chat-checkbox");

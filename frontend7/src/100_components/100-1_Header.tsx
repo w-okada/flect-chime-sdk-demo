@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { ViewType } from "../002_hooks/011_useFrontend";
+import { ViewTypes } from "../002_hooks/011_useFrontend";
 import { useAppState } from "../003_provider/AppStateProvider";
 import { AnimationTypes, HeaderButton, HeaderButtonProps } from "./parts/002_HeaderButton";
 
@@ -90,7 +90,7 @@ export const Header = () => {
         //// (3) View
         ///// (3-1) Feature View
         const featureViewButtonProps: HeaderButtonProps = {
-            stateControlCheckbox: frontendState.stateControls.viewRadioButtons[ViewType.feature],
+            stateControlCheckbox: frontendState.stateControls.viewRadioButtons[ViewTypes.feature],
             tooltip: "feature view",
             onIcon: ["fas", "square"],
             offIcon: ["fas", "square"],
@@ -99,7 +99,7 @@ export const Header = () => {
         const featureViewButton = <HeaderButton {...featureViewButtonProps}></HeaderButton>;
         ///// (3-2) Grid View
         const gridViewButtonProps: HeaderButtonProps = {
-            stateControlCheckbox: frontendState.stateControls.viewRadioButtons[ViewType.grid],
+            stateControlCheckbox: frontendState.stateControls.viewRadioButtons[ViewTypes.grid],
             tooltip: "grid view",
             onIcon: ["fas", "table-cells"],
             offIcon: ["fas", "table-cells"],

@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import "../001_css/001_processing.css";
 export const Processing = () => {
     const processing = useMemo(() => {
         return (

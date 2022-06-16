@@ -1,7 +1,7 @@
 import { VideoTileState } from "amazon-chime-sdk-js";
 import { lstat } from "fs/promises";
 import React, { useEffect, useMemo } from "react";
-import { ViewType } from "../002_hooks/011_useFrontend";
+import { ViewTypes } from "../002_hooks/011_useFrontend";
 import { useAppState } from "../003_provider/AppStateProvider";
 
 const MAX_TILES = 18;
@@ -10,7 +10,7 @@ export type BottomNavProps = {};
 
 // TODO: 非表示部分のバインドまでされてしまう。Chromeが映像再生を止めてくれればCPU負荷抑えられるが、ネットワークは多分無理。というかそもそもバインドしていなければデータを取得しない、という処理がChimeとしてサポートされていない可能性がある。明示的なpauseをする必要があるか？もしそうなら、表示切替のタイミングを取得してpauseをかける必要があるが、CSSによる制御のみである場合は不可。イベントをもらう必要が出てくる。（調査等いろいろ必要なので、まずはペンディング。）
 
-export const BottomNav = (props: BottomNavProps) => {
+export const BottomNav = (_props: BottomNavProps) => {
     const { chimeClientState, frontendState } = useAppState();
 
     // (1) Util Functions

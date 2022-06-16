@@ -5,7 +5,7 @@ import { useAppState } from "../003_provider/AppStateProvider";
 import { AnimationTypes, HeaderButton, HeaderButtonProps } from "./parts/002_HeaderButton";
 export type RightSidebarProps = {};
 
-export const RightSidebar = (props: RightSidebarProps) => {
+export const RightSidebar = (_props: RightSidebarProps) => {
     const { chimeClientState, frontendState } = useAppState();
     const sidebarAccordionAttendeesCheckbox = useStateControlCheckbox("sidebar-accordion-attendees-checkbox");
     const sidebarAccordionLocalChatCheckbox = useStateControlCheckbox("sidebar-accordion-local-chat-checkbox");
@@ -55,7 +55,7 @@ export const RightSidebar = (props: RightSidebarProps) => {
 
     //// () generate Attendee list
     const attendeeItems = useMemo(() => {
-        return Object.values(chimeClientState.attendees).map((x, index) => {
+        return Object.values(chimeClientState.attendees).map((x) => {
             let cameraIcon;
             if (frontendState.currentMeetingInfo!.attendeeInfo.AttendeeId === x.attendeeId) {
                 cameraIcon = chimeClientState.isLocalVideoStarted() ? <FontAwesomeIcon icon={["fas", "video"]} /> : <FontAwesomeIcon icon={["fas", "video-slash"]} />;

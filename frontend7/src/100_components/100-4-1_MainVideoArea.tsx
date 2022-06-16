@@ -1,6 +1,6 @@
 import { VideoTileState } from "amazon-chime-sdk-js";
 import React, { useEffect, useMemo } from "react";
-import { ViewType } from "../002_hooks/011_useFrontend";
+import { ViewTypes } from "../002_hooks/011_useFrontend";
 import { useAppState } from "../003_provider/AppStateProvider";
 
 const MAX_TILES = 18;
@@ -47,7 +47,7 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
     //// (2-2) 表示対象タイルの決定
     const targetTiles = useMemo(() => {
         const targetTiles: VideoTileState[] = [];
-        if (frontendState.viewType == ViewType.grid) {
+        if (frontendState.viewType == ViewTypes.grid) {
             // Grid View
             targetTiles.push(...Object.values(chimeClientState.videoTileStates));
         } else {

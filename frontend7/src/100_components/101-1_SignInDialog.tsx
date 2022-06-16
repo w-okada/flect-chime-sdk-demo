@@ -2,17 +2,12 @@ import React, { useState } from "react";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAppState } from "../003_provider/AppStateProvider";
-import { FRONTEND_LOCAL_DEV } from "../const";
+import { FRONTEND_LOCAL_DEV, DEFAULT_EMAIL, DEFAULT_PASSWORD, DEFAULT_NICKNAME } from "../const";
 
-export type SignInDialogProps = {
-    signInSucceeded: (username: string) => void;
-    defaultEmail?: string;
-    defaultPassword?: string;
-    defaultNickname?: string;
-};
+export type SignInDialogProps = {};
 
-export const SignInDialog = (props: SignInDialogProps) => {
-    const { cognitoClientState } = useAppState();
+export const SignInDialog = (_props: SignInDialogProps) => {
+    const { cognitoClientState, frontendState } = useAppState();
     const [message, setMessage] = useState<string | null>(null);
     // (1) States
     const TabItems = {
@@ -104,7 +99,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
                         throw err;
                     }
                     await cognitoClientState.signIn(email, password);
-                    props.signInSucceeded(username);
+                    frontendState.setUserName(username);
                 } catch (exception: any) {
                     console.warn("Sign In Exception", JSON.stringify(exception));
                     switch (exception.code) {
@@ -327,7 +322,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
         const additionalAttr = {};
         if (FRONTEND_LOCAL_DEV) {
             // @ts-ignore
-            additionalAttr["defaultValue"] = props.defaultEmail;
+            additionalAttr["defaultValue"] = DEFAULT_EMAIL;
         }
         return (
             <div className="dialog-input-controls">
@@ -341,7 +336,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
         const additionalAttr = {};
         if (FRONTEND_LOCAL_DEV) {
             // @ts-ignore
-            additionalAttr["defaultValue"] = props.defaultPassword;
+            additionalAttr["defaultValue"] = DEFAULT_PASSWORD;
         }
         return (
             <div className={`dialog-input-controls ${hidden}`}>
@@ -356,7 +351,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
         const additionalAttr = {};
         if (FRONTEND_LOCAL_DEV) {
             // @ts-ignore
-            additionalAttr["defaultValue"] = props.defaultNickname;
+            additionalAttr["defaultValue"] = DEFAULT_NICKNAME;
         }
         return (
             <div className={`dialog-input-controls ${hidden}`}>
@@ -431,7 +426,6 @@ export const SignInDialog = (props: SignInDialogProps) => {
 
     return (
         <div className="dialog-frame-warpper">
-            <iframe id="dummy" name="dummy" style={{ display: "none" }} src="about:blank"></iframe>
             <div className="dialog-frame">
                 <div className="dialog-title">Sign in</div>
                 <div className="dialog-content">
@@ -443,7 +437,7 @@ export const SignInDialog = (props: SignInDialogProps) => {
                         {forgotIcon}
                     </div>
                     <div className="dialog-description">{description}</div>
-                    <form target="dummy" method="post" action="about:blank" autoComplete="on">
+                    <form>
                         <div className="dialog-input-container">{form}</div>
                     </form>
                 </div>

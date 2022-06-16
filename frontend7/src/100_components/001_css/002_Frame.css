@@ -1,0 +1,251 @@
+/** (1) Header **/
+.header {
+    position: fixed;
+    height: var(--header-height);
+    width: 100%;
+    background: var(--company-color1);
+    box-shadow: 2px 2px 2px var(--global-shadow-color);
+    display: flex;
+    z-index: 100;
+
+    .sidebar-button-area {
+        flex-grow: 0;
+        height: 100%;
+        width: 100%;
+        display: flex;
+    }
+    .status-area {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-grow: 1;
+        height: 100%;
+        width: 100%;
+        font-size: 1.5rem;
+    }
+    .menu-item-area {
+        flex-grow: 1;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        .group {
+            display: flex;
+            .spacer {
+                margin-left: 1rem;
+            }
+        }
+    }
+}
+
+/** (2) sidebar, right-sidebar **/
+/*** (2-1) initialize ***/
+.sidebar,
+.right-sidebar {
+    position: fixed;
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height));
+    display: flex;
+    flex-direction: column;
+}
+.sidebar {
+    width: var(--sidebar-width);
+    background: linear-gradient(10deg, var(--company-color1) 0, 5%, var(--company-color2) 5% 10%, var(--company-color3) 10% 80%, var(--company-color1) 80% 85%, var(--company-color2) 85% 100%);
+    z-index: 50;
+}
+.right-sidebar {
+    width: var(--right-sidebar-width);
+    background: var(--company-color3);
+    z-index: 50;
+}
+
+/*** (2-2) sidebarの中身 partition -> (header, content) ※(4)で開閉処理定義 ***/
+.sidebar-partition {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    color: rgba(255, 255, 255, 1);
+    background: rgba(0, 0, 0, 0);
+    z-index: 52;
+    overflow: hidden;
+
+    .sidebar-header {
+        position: static;
+        width: 100%;
+        height: var(--header-height);
+        font-size: 1.3rem;
+        background: rgba(10, 10, 10, 0.5);
+        display: flex;
+        justify-content: space-between;
+        .title {
+            padding-left: 1rem;
+            user-select: none;
+        }
+        .caret {
+            align-items: right;
+        }
+    }
+    .sidebar-content {
+        position: static;
+        width: 100%;
+        height: calc(100% - var(--header-height));
+        background: rgba(200, 0, 0, 1);
+    }
+}
+
+/*** (2-2-1) sidebar-contentの中身 ***/
+.sidebar-create-room {
+    padding: 0;
+    margin: 0;
+    text-align: right;
+    user-select: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+.sidebar-room-list,
+.sidebar-attendee-list {
+    width: 100%;
+    height: calc(100% - 6rem);
+    overflow-y: scroll;
+    overflow-x: hidden;
+    &::-webkit-scrollbar {
+        width: 12px;
+        height: 10px;
+    }
+    &::-webkit-scrollbar-track {
+        background-color: var(--company-color3-alpha);
+        border-radius: 100px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--company-color2);
+        border-radius: 100px;
+        width: 130px;
+    }
+    .sidebar-room-item,
+    .sidebar-attendee-item {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.2rem;
+
+        .sidebar-room-name,
+        .sidebar-attendee-name {
+            padding-left: 1rem;
+            max-width: calc(100% - 6rem);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .sidebar-room-join {
+            cursor: pointer;
+            max-width: 5rem;
+            font-size: 1rem;
+            padding-right: 1rem;
+        }
+    }
+}
+
+/*** (2-3) 装飾***/
+.sidebar:after {
+    content: "";
+    position: absolute;
+    height: calc(100vh - var(--header-height));
+    width: var(--sidebar-width);
+    background: var(--company-color1-alpha);
+}
+.sidebar:before {
+    content: "";
+    position: absolute;
+    height: calc(100vh - var(--header-height));
+    width: var(--sidebar-width);
+    background: var(--company-color2-alpha);
+    clip-path: ellipse(98% 71% at 20% 30%);
+}
+
+.right-sidebar:before {
+    content: "";
+    position: absolute;
+    height: calc(100vh - var(--header-height));
+    width: var(--right-sidebar-width);
+    background: var(--company-color2-alpha);
+    /* clip-path: ellipse(98% 30% at 91% 90%); */
+}
+.right-sidebar:after {
+    content: "";
+    position: absolute;
+    height: calc(100vh - var(--header-height));
+    width: var(--right-sidebar-width);
+    background: var(--company-color1-alpha);
+    clip-path: ellipse(158% 41% at 60% 30%);
+}
+
+/** (3) main area **/
+.main-area {
+    position: fixed;
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height));
+    z-index: 50;
+}
+
+/*** (4) 開閉処理 ***/
+
+/*** (4-1) sidebar の開閉***/
+.state-control-checkbox:checked + .sidebar {
+    left: 0;
+    transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
+}
+.state-control-checkbox + .sidebar {
+    left: calc(-1 * var(--sidebar-width));
+    transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
+}
+
+/*** (4-2) right-sidebar の開閉***/
+.state-control-checkbox:checked + .right-sidebar {
+    right: 0;
+    transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
+}
+.state-control-checkbox + .right-sidebar {
+    right: calc(-1 * var(--right-sidebar-width));
+    transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
+}
+
+/*** (4-3) sidebar partitionの開閉 ***/
+.state-control-checkbox:checked + .sidebar-partition {
+    flex-grow: 1;
+    transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
+}
+.state-control-checkbox + .sidebar-partition {
+    height: var(--header-height);
+    transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
+}
+
+/*** (4-4) main-areaの領域決定 ***/
+.open-sidebar-checkbox:checked + .open-right-sidebar-checkbox:checked + .main-area {
+    margin-right: 0rem;
+    left: var(--sidebar-width);
+    right: var(--right-sidebar-width);
+    width: calc(calc(100vw - var(--sidebar-width)) - var(--right-sidebar-width));
+    transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
+}
+.open-sidebar-checkbox:checked + .open-right-sidebar-checkbox + .main-area {
+    margin-right: 0rem;
+    left: var(--sidebar-width);
+    right: 0rem;
+    width: calc(100vw - var(--sidebar-width));
+    transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
+}
+.open-sidebar-checkbox + .open-right-sidebar-checkbox:checked + .main-area {
+    margin-right: 0rem;
+    left: 0rem;
+    right: var(--right-sidebar-width);
+    width: calc(100vw - var(--right-sidebar-width));
+    transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
+}
+.open-sidebar-checkbox + .open-right-sidebar-checkbox + .main-area {
+    margin-right: 0rem;
+    left: 0rem;
+    right: 0rem;
+    width: 100vw;
+    transition: all var(--sidebar-transition-time) var(--sidebar-transition-animation);
+}

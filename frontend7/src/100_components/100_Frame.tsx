@@ -5,26 +5,24 @@ import { CreateRoomDialog } from "./101-2_CreateRoomDialog";
 import { JoinRoomDialog } from "./101-3_JoinRoomDialog";
 import { SettingDialog } from "./101-5_SettingDialog";
 import { RightSidebar } from "./100-3_RightSidebar";
-import { ViewType } from "../002_hooks/011_useFrontend";
+import { ViewTypes } from "../002_hooks/011_useFrontend";
 import { LeaveDialog, LeaveDialogProps } from "./101-6_LeaveDialog";
 import { Header } from "./100-1_Header";
 import { useAppState } from "../003_provider/AppStateProvider";
 import { MainArea } from "./100-4_MainArea";
+import { Dialog } from "./101_Dialog";
 
-export type FrameProps = {
-    signInCompleted: boolean;
-    signInDialogProps: SignInDialogProps;
-};
+export type FrameProps = {};
 
-export const Frame = (props: FrameProps) => {
-    const { frontendState } = useAppState();
+export const Frame = (_props: FrameProps) => {
+    const { frontendState, cognitoClientState } = useAppState();
 
     /**
      * action linking
      */
     // (x) signin state
     useEffect(() => {
-        if (!props.signInCompleted) {
+        if (!cognitoClientState.signInCompleted) {
             const signInDialogCheckboxs = document.querySelectorAll(".sign-in-checkbox");
             signInDialogCheckboxs.forEach((x) => {
                 //@ts-ignore
@@ -37,7 +35,7 @@ export const Frame = (props: FrameProps) => {
                 x.checked = false;
             });
         }
-    }, [props.signInCompleted]);
+    }, [cognitoClientState.signInCompleted]);
 
     //// Dialog
 
@@ -51,7 +49,7 @@ export const Frame = (props: FrameProps) => {
 
     //// initial
     useEffect(() => {
-        frontendState.stateControls.viewRadioButtons[ViewType.feature].updateState(true);
+        frontendState.stateControls.viewRadioButtons[ViewTypes.feature].updateState(true);
         frontendState.stateControls.micEnableCheckbox.updateState(true);
         frontendState.stateControls.cameraEnableCheckbox.updateState(false);
         frontendState.stateControls.speakerEnableCheckbox.updateState(true);
@@ -65,7 +63,8 @@ export const Frame = (props: FrameProps) => {
             <RightSidebar />
             <MainArea />
 
-            <SettingDialog />
+            <Dialog />
+            {/* <SettingDialog />
             <LeaveDialog />
             <CreateRoomDialog />
             <JoinRoomDialog />
@@ -73,9 +72,9 @@ export const Frame = (props: FrameProps) => {
             <div>
                 {frontendState.stateControls.signInCheckbox.trigger}
                 <div className="dialog-container">
-                    <SignInDialog {...props.signInDialogProps}></SignInDialog>
+                    <SignInDialog />
                 </div>
-            </div>
+            </div> */}
 
             <div>
                 <audio id="chime-audio-output-element" />

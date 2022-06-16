@@ -17,11 +17,11 @@ export type UseFrontendProps = {
 }
 
 
-export const ViewType = {
+export const ViewTypes = {
     feature: "feature",
     grid: "grid",
 } as const;
-export type ViewType = typeof ViewType[keyof typeof ViewType];
+export type ViewTypes = typeof ViewTypes[keyof typeof ViewTypes];
 
 export type FrontendMeetingInfo = {
     meetingInfo: Chime.Meeting,
@@ -62,8 +62,8 @@ export type FrontendState = {
     // (1) User Information
     username: string
     setUserName: (name: string) => void
-    viewType: ViewType
-    setViewType: (val: ViewType) => void
+    viewType: ViewTypes
+    setViewType: (val: ViewTypes) => void
     currentMeetingInfo: FrontendMeetingInfo | undefined
     setCurrentMeetingInfo: (val: FrontendMeetingInfo) => void
 
@@ -76,7 +76,7 @@ export type FrontendState = {
 export const useFrontend = (props: UseFrontendProps) => {
     // (1) User Information
     const [username, setUserName] = useState<string>("")
-    const [viewType, setViewType] = useState<ViewType>(ViewType.feature)
+    const [viewType, setViewType] = useState<ViewTypes>(ViewTypes.feature)
     const [currentMeetingInfo, setCurrentMeetingInfo] = useState<FrontendMeetingInfo>()
     // (2) GUI Control
     //// (2-1) Frame 関連
@@ -94,8 +94,8 @@ export const useFrontend = (props: UseFrontendProps) => {
         props.deviceState.setAudioOutputEnable(newVal);
     });
 
-    const viewRadioButtons = useStateControlRadioButton("view-radio-button", [ViewType.feature, ViewType.grid], (suffix: string) => {
-        setViewType(suffix as ViewType);
+    const viewRadioButtons = useStateControlRadioButton("view-radio-button", [ViewTypes.feature, ViewTypes.grid], (suffix: string) => {
+        setViewType(suffix as ViewTypes);
     });
 
     const shareScreenCheckbox = useStateControlCheckbox("share-screen-checkbox", (newVal: boolean) => {

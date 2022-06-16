@@ -5,7 +5,7 @@ import { useAppState } from "../003_provider/AppStateProvider";
 
 export type LeaveDialogProps = {};
 
-export const LeaveDialog = (props: LeaveDialogProps) => {
+export const LeaveDialog = (_props: LeaveDialogProps) => {
     const { cognitoClientState, chimeClientState, frontendState } = useAppState();
 
     const description = useMemo(() => {
