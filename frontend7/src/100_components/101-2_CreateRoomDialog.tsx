@@ -6,13 +6,10 @@ import { useAppState } from "../003_provider/AppStateProvider";
 import { ChimeDemoException } from "../000_exception/Exception";
 import { Processing } from "./parts/001_processing";
 
-export type CreateRoomDialogProps = {
-    meetingCreated: () => void;
-    close: () => void;
-};
+export type CreateRoomDialogProps = {};
 
 export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
-    const { backendManagerState } = useAppState();
+    const { backendManagerState, frontendState } = useAppState();
     const [useCode, setUseCode] = useState<boolean>(false);
     const [message, setMessage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -44,7 +41,7 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
             }
             await backendManagerState.reloadMeetingList({});
             initializeState();
-            props.close();
+            frontendState.stateControls.createRoomCheckbox.updateState(false);
         } catch (ex) {
             // @ts-ignore
             if (ex.message === ChimeDemoException.NoMeetingRoomCreated) {
@@ -58,7 +55,7 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
         }
     };
     const cancel = () => {
-        props.close();
+        frontendState.stateControls.createRoomCheckbox.updateState(false);
         initializeState();
     };
 
@@ -170,16 +167,21 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
     }, [useCode, buttons, messageArea, processing]);
 
     return (
-        <div className="dialog-frame-warpper">
-            <div className="dialog-frame">
-                <div className="dialog-title">Create New Room</div>
+        <div>
+            {frontendState.stateControls.createRoomCheckbox.trigger}
+            <div className="dialog-container create-room-checkbox-remover">
+                <div className="dialog-frame-warpper">
+                    <div className="dialog-frame">
+                        <div className="dialog-title">Create New Room</div>
 
-                <div className="dialog-content">
-                    <div className="dialog-application-title"></div>
-                    <div className="dialog-description">{description}</div>
-                    <form>
-                        <div className="dialog-input-container">{form}</div>
-                    </form>
+                        <div className="dialog-content">
+                            <div className="dialog-application-title"></div>
+                            <div className="dialog-description">{description}</div>
+                            <form>
+                                <div className="dialog-input-container">{form}</div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -7,7 +7,7 @@ import { useWindowSizeChangeListener, WindowSizeState } from "../002_hooks/012_u
 import { CognitoClientStateAndMethods, useCognitoClient } from "../002_hooks/001_useCognitoClient";
 
 import { DeviceInfoStateAndMethods, useDeviceState } from "../002_hooks/004_useDeviceState";
-import { ChimeClientState, ChimeClientStateAndMethods, useChimeClient } from "../002_hooks/003_useChimeClient";
+import { ChimeClientStateAndMethods, useChimeClient } from "../002_hooks/003_useChimeClient";
 import { BackendManagerStateAndMethod, useBackendManager } from "../002_hooks/002_useBackendManager";
 import { FrontendState, useFrontend } from "../002_hooks/011_useFrontend";
 import { MessagingClientStateAndMethod, useMessagingClient } from "../002_hooks/005_useMessagingClient";
@@ -64,16 +64,14 @@ export const AppStateProvider = ({ children }: Props) => {
         getAttendeeInfo: backendManagerState.getAttendeeInfo,
     });
 
+    const deviceState = useDeviceState();
+
     const messagingClientState = useMessagingClient({
         credentials: backendManagerState.environment?.credential || null,
         userArn: backendManagerState.environment?.appInstanceUserArn || null,
         globalChannelArn: backendManagerState.environment?.globalChannelArn || null,
     });
 
-    /** (010) Environment State */
-    //// (010) device
-    const deviceState = useDeviceState();
-    //// (011) window size
     const windowSizeState = useWindowSizeChangeListener();
 
     /** (020) App State*/
@@ -106,7 +104,9 @@ export const AppStateProvider = ({ children }: Props) => {
     /**** For WindowSizeChange */
     /**** For StageManager */
     /**** Other GUI Props */
-    const frontendState = useFrontend();
+
+    /// FrontendStateは全てのバックエンド情報を使用して作成する
+    const frontendState = useFrontend({ cognitoClientState, backendManagerState, chimeClientState, deviceState, messagingClientState });
 
     /** Clients */
     // const chimeClientState = useChimeClient({ RestAPIEndpoint: RestAPIEndpoint });

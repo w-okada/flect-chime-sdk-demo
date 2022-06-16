@@ -1,14 +1,11 @@
 import { VideoTileState } from "amazon-chime-sdk-js";
-import { lstat } from "fs/promises";
 import React, { useEffect, useMemo } from "react";
 import { ViewType } from "../002_hooks/011_useFrontend";
 import { useAppState } from "../003_provider/AppStateProvider";
 
 const MAX_TILES = 18;
 
-export type MainVideoAreaProps = {
-    bottomNavTrigger: JSX.Element;
-};
+export type MainVideoAreaProps = {};
 
 export const MainVideoArea = (props: MainVideoAreaProps) => {
     const { chimeClientState, frontendState } = useAppState();
@@ -169,7 +166,7 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
 
     return (
         <>
-            {props.bottomNavTrigger}
+            {frontendState.stateControls.openBottomNavCheckbox.trigger}
             <div className="main-video-area">
                 <div style={{ display: "flex", flexWrap: "wrap", height: "100%", width: "100%" }}>{tileComponents}</div>
             </div>

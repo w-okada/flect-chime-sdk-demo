@@ -1,18 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useStateControlCheckbox } from "./hooks/useStateControlCheckbox";
 import { useAppState } from "../003_provider/AppStateProvider";
-import { MeetingInfo } from "../001_clients_and_managers/003_chime/FlectChimeClient";
+import { AnimationTypes, HeaderButton, HeaderButtonProps } from "./parts/002_HeaderButton";
 
-export type SidebarProps = {
-    newRoomClicked: () => void;
-    joinRoomClicked: (decodedMeetingName: string, useCode: boolean) => void;
-    joinSecretRoomClicked: () => void;
-    sidebarTrigger: JSX.Element;
-};
+export type SidebarProps = {};
 
 export const Sidebar = (props: SidebarProps) => {
-    const { backendManagerState } = useAppState();
+    const { backendManagerState, frontendState } = useAppState();
     const sidebarAccordionMeetingCheckbox = useStateControlCheckbox("sidebar-accordion-meeting-checkbox");
     const sidebarAccordionChatCheckbox = useStateControlCheckbox("sidebar-accordion-chat-checkbox");
 
@@ -20,52 +15,62 @@ export const Sidebar = (props: SidebarProps) => {
      * (1) Operation
      */
     //// (1-1) new meeting room
-    const newRoomClicked = async () => {
-        props.newRoomClicked();
-    };
+    const newRoomClicked = useMemo(() => {
+        return async () => {
+            frontendState.stateControls.createRoomCheckbox.updateState(true);
+        };
+    }, []);
     //// (1-2) reload meetings
-    const reloadRoomClicked = async () => {
-        backendManagerState.reloadMeetingList({});
-    };
+    const reloadRoomClicked = useMemo(() => {
+        return async () => {
+            backendManagerState.reloadMeetingList({});
+        };
+    }, []);
     ///// (1-3)
-    const joinSecretRoomClicked = async () => {
-        props.joinSecretRoomClicked();
-    };
-    const joinMeetingClicked = async (decodedMeetingName: string, useCode: boolean) => {
-        props.joinRoomClicked(decodedMeetingName, useCode);
-    };
-
-    /**
-     * (1) action linking
-     */
-    //// (1) accordion button
-    const accodionButtonForMeeting = useMemo(() => {
-        return (
-            <div className="rotate-button-container">
-                {sidebarAccordionMeetingCheckbox.trigger}
-                <label htmlFor="sidebar-accordion-meeting-checkbox" className="rotate-lable">
-                    <div className="spinner">
-                        <FontAwesomeIcon icon={["fas", "caret-down"]} className="spin-off" />
-                        <FontAwesomeIcon icon={["fas", "caret-down"]} className="spin-on" />
-                    </div>
-                </label>
-            </div>
-        );
+    const joinSecretRoomClicked = useMemo(() => {
+        return async () => {
+            frontendState.setJoinRoomDialogProps({
+                decodedMeetingName: "",
+                useCode: true,
+            });
+            frontendState.stateControls.joinRoomCheckbox.updateState(true);
+        };
+    }, []);
+    const joinMeetingClicked = useMemo(() => {
+        return async (decodedMeetingName: string, useCode: boolean) => {
+            frontendState.setJoinRoomDialogProps({
+                decodedMeetingName,
+                useCode: useCode,
+            });
+            frontendState.stateControls.joinRoomCheckbox.updateState(true);
+        };
     }, []);
 
-    //// (1) accordion button
+    // Buttons
+    //// (1) accordion button for meeting list
+    const accodionButtonForMeeting = useMemo(() => {
+        const accodionButtonForMeetingProps: HeaderButtonProps = {
+            stateControlCheckbox: sidebarAccordionMeetingCheckbox,
+            tooltip: "Open/Close meeting list",
+            onIcon: ["fas", "caret-down"],
+            offIcon: ["fas", "caret-down"],
+            animation: AnimationTypes.spinner,
+            tooltipClass: "tooltip-right",
+        };
+        return <HeaderButton {...accodionButtonForMeetingProps}></HeaderButton>;
+    }, []);
+
+    //// (2) accordion button for global chat
     const accodionButtonForChat = useMemo(() => {
-        return (
-            <div className="rotate-button-container">
-                {sidebarAccordionChatCheckbox.trigger}
-                <label htmlFor="sidebar-accordion-chat-checkbox" className="rotate-lable">
-                    <div className="spinner">
-                        <FontAwesomeIcon icon={["fas", "caret-down"]} className="spin-off" />
-                        <FontAwesomeIcon icon={["fas", "caret-down"]} className="spin-on" />
-                    </div>
-                </label>
-            </div>
-        );
+        const accodionButtonForChatProps: HeaderButtonProps = {
+            stateControlCheckbox: sidebarAccordionChatCheckbox,
+            tooltip: "Open/Close chat",
+            onIcon: ["fas", "caret-down"],
+            offIcon: ["fas", "caret-down"],
+            animation: AnimationTypes.spinner,
+            tooltipClass: "tooltip-right",
+        };
+        return <HeaderButton {...accodionButtonForChatProps}></HeaderButton>;
     }, []);
 
     //// () generate Room list
@@ -91,8 +96,7 @@ export const Sidebar = (props: SidebarProps) => {
 
     return (
         <>
-            {/* <input type="checkbox" className="open-sidebar-checkbox" id="open-sidebar-checkbox-secondary" /> */}
-            {props.sidebarTrigger}
+            {frontendState.stateControls.openSidebarCheckbox.trigger}
             <div className="sidebar">
                 {sidebarAccordionMeetingCheckbox.trigger}
                 <div className="sidebar-partition">
@@ -124,16 +128,6 @@ export const Sidebar = (props: SidebarProps) => {
                     </div>
 
                     <div className="sidebar-content">
-                        <div>a</div>
-                        <div>a</div>
-                        <div>a</div>
-                        <div>a</div>
-                        <div>a</div>
-                        <div>a</div>
-                        <div>a</div>
-                        <div>a</div>
-                        <div>a</div>
-                        <div>a</div>
                         <div>a</div>
                     </div>
                 </div>

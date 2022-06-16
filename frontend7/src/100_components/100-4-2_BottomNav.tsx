@@ -6,9 +6,7 @@ import { useAppState } from "../003_provider/AppStateProvider";
 
 const MAX_TILES = 18;
 
-export type BottomNavProps = {
-    bottomNavTrigger: JSX.Element;
-};
+export type BottomNavProps = {};
 
 // TODO: 非表示部分のバインドまでされてしまう。Chromeが映像再生を止めてくれればCPU負荷抑えられるが、ネットワークは多分無理。というかそもそもバインドしていなければデータを取得しない、という処理がChimeとしてサポートされていない可能性がある。明示的なpauseをする必要があるか？もしそうなら、表示切替のタイミングを取得してpauseをかける必要があるが、CSSによる制御のみである場合は不可。イベントをもらう必要が出てくる。（調査等いろいろ必要なので、まずはペンディング。）
 
@@ -103,7 +101,7 @@ export const BottomNav = (props: BottomNavProps) => {
 
     return (
         <>
-            {props.bottomNavTrigger}
+            {frontendState.stateControls.openBottomNavCheckbox.trigger}
             <div className="bottom-nav">
                 <div className="attendee-video-list-container">{list}</div>
             </div>

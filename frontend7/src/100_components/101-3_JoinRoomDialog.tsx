@@ -6,11 +6,7 @@ import { useAppState } from "../003_provider/AppStateProvider";
 import { ChimeDemoException } from "../000_exception/Exception";
 import { Processing } from "./parts/001_processing";
 
-export type JoinRoomDialogProps = {
-    decodedMeetingName: string;
-    useCode: boolean;
-    close: () => void;
-};
+export type JoinRoomDialogProps = {};
 
 export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
     const [message, setMessage] = useState<string | null>(null);
@@ -32,7 +28,7 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
             // (1) get meeting token from backend
             setMessage("try to get meeting token....");
             const joinTokenResult = await backendManagerState.joinMeeting({
-                meetingName: props.decodedMeetingName.length > 0 ? props.decodedMeetingName : meetingName,
+                meetingName: frontendState.joinRoomDialogProps.decodedMeetingName.length > 0 ? frontendState.joinRoomDialogProps.decodedMeetingName : meetingName,
                 attendeeName: frontendState.username,
                 code: code,
             });
@@ -51,7 +47,7 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
                 meetingName: meetingName,
                 attendeeName: frontendState.username,
             });
-            await chimeClientState.joinMeeting(props.decodedMeetingName, meetingInfo, attendeeInfo);
+            await chimeClientState.joinMeeting(frontendState.joinRoomDialogProps.decodedMeetingName, meetingInfo, attendeeInfo);
             setMessage("join meeting.... done.");
             // (3) enter
             setMessage("enter meeting.... ");
@@ -59,7 +55,7 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
             await chimeClientState.enterMeeting(deviceState.chimeAudioInputDevice, deviceState.chimeVideoInputDevice, deviceState.chimeAudioOutputDevice, audioElement);
             setMessage("enter meeting.... done.");
             initializeState();
-            props.close();
+            frontendState.stateControls.joinRoomCheckbox.updateState(false);
         } catch (ex) {
             // @ts-ignore
             if (ex.message === ChimeDemoException.RestClientNotInitilized) {
@@ -73,7 +69,7 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
         }
     };
     const cancel = () => {
-        props.close();
+        frontendState.stateControls.joinRoomCheckbox.updateState(false);
         initializeState();
     };
 
@@ -81,27 +77,27 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
     //  Conponents
     ////////////////////////////
 
-    const description = `Join the room: ${props.decodedMeetingName}`;
+    const description = `Join the room: ${frontendState.joinRoomDialogProps.decodedMeetingName}`;
 
     const roomNameField = useMemo(() => {
-        const hidden = props.decodedMeetingName.length > 0 ? "hidden" : "";
+        const hidden = frontendState.joinRoomDialogProps.decodedMeetingName.length > 0 ? "hidden" : "";
         return (
             <div className={`dialog-input-controls ${hidden}`}>
                 <input type="text" id="join-room-dialog-room-name" className="input-text" name="room-name" placeholder="roomName" autoComplete="none" />
                 <label htmlFor="room-name">room name</label>
             </div>
         );
-    }, [props.decodedMeetingName]);
+    }, [frontendState.joinRoomDialogProps.decodedMeetingName]);
 
     const codeField = useMemo(() => {
-        const hidden = props.useCode ? "" : "hidden";
+        const hidden = frontendState.joinRoomDialogProps.useCode ? "" : "hidden";
         return (
             <div className={`dialog-input-controls ${hidden}`}>
                 <input type="text" id="join-room-dialog-code" className="input-text" name="code" placeholder="code" autoComplete="none" />
                 <label htmlFor="code">code</label>
             </div>
         );
-    }, [props.useCode]);
+    }, [frontendState.joinRoomDialogProps.useCode]);
 
     const messageArea = useMemo(() => {
         return (
@@ -125,6 +121,7 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
             </div>
         );
     }, [onSubmit]);
+
     const processing = useMemo(() => {
         return (
             <div className="dialog-input-controls">
@@ -145,16 +142,21 @@ export const JoinRoomDialog = (props: JoinRoomDialogProps) => {
     }, [roomNameField, codeField, messageArea, buttons, processing]);
 
     return (
-        <div className="dialog-frame-warpper">
-            <div className="dialog-frame">
-                <div className="dialog-title">Create New Room</div>
+        <div>
+            {frontendState.stateControls.joinRoomCheckbox.trigger}
+            <div className="dialog-container create-room-checkbox-remover">
+                <div className="dialog-frame-warpper">
+                    <div className="dialog-frame">
+                        <div className="dialog-title">Create New Room</div>
 
-                <div className="dialog-content">
-                    <div className="dialog-application-title"></div>
-                    <div className="dialog-description">{description}</div>
-                    <form>
-                        <div className="dialog-input-container">{form}</div>
-                    </form>
+                        <div className="dialog-content">
+                            <div className="dialog-application-title"></div>
+                            <div className="dialog-description">{description}</div>
+                            <form>
+                                <div className="dialog-input-container">{form}</div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

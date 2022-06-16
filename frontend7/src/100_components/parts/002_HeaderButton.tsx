@@ -1,8 +1,8 @@
 import { IconName, IconPrefix } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import React, { useMemo } from "react";
 import { StateControlCheckbox } from "../hooks/useStateControlCheckbox";
-import "./002_HeaderButton.css";
+import "../001_css/002_RotatedButton.css";
 
 export const AnimationTypes = {
     colored: "colored",
@@ -20,17 +20,19 @@ export type HeaderButtonProps = {
 };
 
 export const HeaderButton = (props: HeaderButtonProps) => {
-    const tooltipClass = props.tooltipClass || "tooltip-bottom";
-    const headerButton = (
-        <div className={`rotate-button-container ${tooltipClass}`} data-tooltip={props.tooltip}>
-            {props.stateControlCheckbox.trigger}
-            <label htmlFor={props.stateControlCheckbox.className} className="rotate-lable">
-                <div className={props.animation}>
-                    <FontAwesomeIcon icon={props.onIcon} className="spin-on" />
-                    <FontAwesomeIcon icon={props.offIcon} className="spin-off" />
-                </div>
-            </label>
-        </div>
-    );
+    const headerButton = useMemo(() => {
+        const tooltipClass = props.tooltipClass || "tooltip-bottom";
+        return (
+            <div className={`rotate-button-container ${tooltipClass}`} data-tooltip={props.tooltip}>
+                {props.stateControlCheckbox.trigger}
+                <label htmlFor={props.stateControlCheckbox.className} className="rotate-lable">
+                    <div className={props.animation}>
+                        <FontAwesomeIcon icon={props.onIcon} className="spin-on" />
+                        <FontAwesomeIcon icon={props.offIcon} className="spin-off" />
+                    </div>
+                </label>
+            </div>
+        );
+    }, []);
     return headerButton;
 };

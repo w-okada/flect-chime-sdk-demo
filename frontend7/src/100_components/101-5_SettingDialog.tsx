@@ -9,7 +9,7 @@ import { useStateControlCheckbox } from "./hooks/useStateControlCheckbox";
 export type SettingDialogProps = {};
 
 export const SettingDialog = (props: SettingDialogProps) => {
-    const { cognitoClientState, deviceState, chimeClientState } = useAppState();
+    const { deviceState, frontendState } = useAppState();
     const videoInputFileCheckbox = useStateControlCheckbox("setting-dialog-video-file-checkbox");
 
     // (1) States
@@ -332,22 +332,27 @@ export const SettingDialog = (props: SettingDialogProps) => {
     // }, [deviceState.videoInput, deviceState.chimeVideoInputDevice]);
 
     return (
-        <div className="dialog-frame-warpper">
-            <div className="dialog-frame">
-                <div className="dialog-title">Setting</div>
-                <div className="dialog-content">
-                    <div className={"dialog-application-title"}>Setting</div>
-                    <div className="dialog-radio-tile-group">
-                        {audioInputIcon}
-                        {videoInputIcon}
-                        {audioOutputIcon}
+        <>
+            {frontendState.stateControls.settingCheckbox.trigger}
+            <div className="dialog-container setting-checkbox-remover">
+                <div className="dialog-frame-warpper">
+                    <div className="dialog-frame">
+                        <div className="dialog-title">Setting</div>
+                        <div className="dialog-content">
+                            <div className={"dialog-application-title"}>Setting</div>
+                            <div className="dialog-radio-tile-group">
+                                {audioInputIcon}
+                                {videoInputIcon}
+                                {audioOutputIcon}
+                            </div>
+                            <div className="dialog-description">{description}</div>
+                            <form>
+                                <div className="dialog-input-container">{form}</div>
+                            </form>
+                        </div>
                     </div>
-                    <div className="dialog-description">{description}</div>
-                    <form>
-                        <div className="dialog-input-container">{form}</div>
-                    </form>
                 </div>
             </div>
-        </div>
+        </>
     );
 };

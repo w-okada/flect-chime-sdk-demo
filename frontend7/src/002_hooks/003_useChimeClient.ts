@@ -12,6 +12,7 @@ export type UseChimeClientProps = {
 
 export type ChimeClientState = {
     chimeClient: FlectChimeClient
+    meetingName: string,
     attendees: AttendeeList
     videoTileStates: VideoTileStateList
     activeSpeakerId: string | null
@@ -41,7 +42,7 @@ export type ChimeClientStateAndMethods = ChimeClientState & {
 export type AttendeeList = { [attendeeId: string]: AttendeeState; }
 export type VideoTileStateList = { [attendeeId: string]: VideoTileState; }
 export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndMethods => {
-    const [meetingName, setMeetingName] = useState<string>()
+    const [meetingName, setMeetingName] = useState<string>("")
     const [attendees, setAttendees] = useState<AttendeeList>({})
     const [videoTileStates, setVideoTileStates] = useState<VideoTileStateList>({})
     const [activeSpeakerId, setActiveSpeakerId] = useState<string | null>(null)
@@ -68,14 +69,14 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
                         if (x.attendeeName === null) {
                             if (!x.isSharedContent) {
                                 const info = await props.getAttendeeInfo({
-                                    meetingName: meetingName!,
+                                    meetingName: meetingName,
                                     attendeeId: x.attendeeId
                                 })
                                 x.attendeeName = info?.attendeeName || null
                             } else {
                                 console.log("OWNER:::", x.ownerId)
                                 const info = await props.getAttendeeInfo({
-                                    meetingName: meetingName!,
+                                    meetingName: meetingName,
                                     attendeeId: x.ownerId
                                 })
                                 x.attendeeName = info?.attendeeName || null
@@ -165,6 +166,7 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
 
     const returnValue: ChimeClientStateAndMethods = {
         chimeClient,
+        meetingName,
         attendees,
         videoTileStates,
         activeSpeakerId,

@@ -2,11 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useStateControlCheckbox } from "./hooks/useStateControlCheckbox";
 import { useAppState } from "../003_provider/AppStateProvider";
-import { MeetingInfo } from "../001_clients_and_managers/003_chime/FlectChimeClient";
-
-export type RightSidebarProps = {
-    rightSidebarTrigger: JSX.Element;
-};
+import { AnimationTypes, HeaderButton, HeaderButtonProps } from "./parts/002_HeaderButton";
+export type RightSidebarProps = {};
 
 export const RightSidebar = (props: RightSidebarProps) => {
     const { chimeClientState, frontendState } = useAppState();
@@ -14,71 +11,46 @@ export const RightSidebar = (props: RightSidebarProps) => {
     const sidebarAccordionLocalChatCheckbox = useStateControlCheckbox("sidebar-accordion-local-chat-checkbox");
     const sidebarAccordionWiteboardCheckbox = useStateControlCheckbox("sidebar-accordion-whiteboard-checkbox");
 
-    // /**
-    //  * (1) Operation
-    //  */
-    // //// (1-1) new meeting room
-    // const newRoomClicked = async () => {
-    //     props.newRoomClicked();
-    // };
-    // //// (1-2) reload meetings
-    // const reloadRoomClicked = async () => {
-    //     backendManagerState.reloadMeetingList({});
-    // };
-    // ///// (1-3)
-    // const joinSecretRoomClicked = async () => {
-    //     props.joinSecretRoomClicked();
-    // };
-    // const joinMeetingClicked = async (decodedMeetingName: string, useCode: boolean) => {
-    //     props.joinRoomClicked(decodedMeetingName, useCode);
-    // };
-
     /**
      * (1) action linking
      */
-    //// (1) accordion button
-    const accodionButtonForMeeting = useMemo(() => {
-        return (
-            <div className="rotate-button-container">
-                {sidebarAccordionAttendeesCheckbox.trigger}
-                <label htmlFor="sidebar-accordion-attendees-checkbox" className="rotate-lable">
-                    <div className="spinner">
-                        <FontAwesomeIcon icon={["fas", "caret-down"]} className="spin-off" />
-                        <FontAwesomeIcon icon={["fas", "caret-down"]} className="spin-on" />
-                    </div>
-                </label>
-            </div>
-        );
+    //// (1-1) accordion button
+    const accodionButtonForAttendeeList = useMemo(() => {
+        const accodionButtonForAttendeeListProps: HeaderButtonProps = {
+            stateControlCheckbox: sidebarAccordionAttendeesCheckbox,
+            tooltip: "Open/Close attendee list",
+            onIcon: ["fas", "caret-down"],
+            offIcon: ["fas", "caret-down"],
+            animation: AnimationTypes.spinner,
+            tooltipClass: "tooltip-right",
+        };
+        return <HeaderButton {...accodionButtonForAttendeeListProps}></HeaderButton>;
     }, []);
 
-    //// (1) accordion button
+    //// (1-2) accordion button
     const accodionButtonForLocalChat = useMemo(() => {
-        return (
-            <div className="rotate-button-container">
-                {sidebarAccordionLocalChatCheckbox.trigger}
-                <label htmlFor="sidebar-accordion-local-chat-checkbox" className="rotate-lable">
-                    <div className="spinner">
-                        <FontAwesomeIcon icon={["fas", "caret-down"]} className="spin-off" />
-                        <FontAwesomeIcon icon={["fas", "caret-down"]} className="spin-on" />
-                    </div>
-                </label>
-            </div>
-        );
+        const accodionButtonForLocalChatProps: HeaderButtonProps = {
+            stateControlCheckbox: sidebarAccordionLocalChatCheckbox,
+            tooltip: "Open/Close chat",
+            onIcon: ["fas", "caret-down"],
+            offIcon: ["fas", "caret-down"],
+            animation: AnimationTypes.spinner,
+            tooltipClass: "tooltip-right",
+        };
+        return <HeaderButton {...accodionButtonForLocalChatProps}></HeaderButton>;
     }, []);
 
-    //// (1) accordion button
+    //// (1-3) accordion button
     const accodionButtonForWiteboard = useMemo(() => {
-        return (
-            <div className="rotate-button-container">
-                {sidebarAccordionWiteboardCheckbox.trigger}
-                <label htmlFor="sidebar-accordion-whiteboard-checkbox" className="rotate-lable">
-                    <div className="spinner">
-                        <FontAwesomeIcon icon={["fas", "caret-down"]} className="spin-off" />
-                        <FontAwesomeIcon icon={["fas", "caret-down"]} className="spin-on" />
-                    </div>
-                </label>
-            </div>
-        );
+        const accodionButtonForWiteboardProps: HeaderButtonProps = {
+            stateControlCheckbox: sidebarAccordionWiteboardCheckbox,
+            tooltip: "Open/Close drawing",
+            onIcon: ["fas", "caret-down"],
+            offIcon: ["fas", "caret-down"],
+            animation: AnimationTypes.spinner,
+            tooltipClass: "tooltip-right",
+        };
+        return <HeaderButton {...accodionButtonForWiteboardProps}></HeaderButton>;
     }, []);
 
     //// () generate Attendee list
@@ -104,7 +76,7 @@ export const RightSidebar = (props: RightSidebarProps) => {
         });
     }, [chimeClientState.attendees]);
 
-    const [signageText, setSignageText] = useState<string>("F C");
+    const [signageText, setSignageText] = useState<string>("Flect Amazon Chime SDK demo ");
     useEffect(() => {
         const sinageArea = document.getElementById("sidebar-signage-area") as HTMLDivElement;
         sinageArea.innerHTML = "";
@@ -142,7 +114,7 @@ export const RightSidebar = (props: RightSidebarProps) => {
 
     return (
         <>
-            {props.rightSidebarTrigger}
+            {frontendState.stateControls.openRightSidebarCheckbox.trigger}
             <div className="right-sidebar">
                 <div className="sidebar-partition">
                     <div className="sidebar-signage-area" id="sidebar-signage-area"></div>
@@ -152,7 +124,7 @@ export const RightSidebar = (props: RightSidebarProps) => {
                 <div className="sidebar-partition">
                     <div className="sidebar-header">
                         <div className="title"> Attendees</div>
-                        <div className="caret"> {accodionButtonForMeeting}</div>
+                        <div className="caret"> {accodionButtonForAttendeeList}</div>
                     </div>
                     <div className="sidebar-content">
                         <div className="sidebar-attendee-list">{attendeeItems}</div>

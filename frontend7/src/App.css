@@ -1,7 +1,5 @@
 @import "./000_css/AppTailwind.css";
 @import url("https://fonts.googleapis.com/css2?family=Chicle&family=Poppins:ital,wght@0,200;0,400;0,600;1,200;1,400;1,600&display=swap");
-/* @import "./000_css/Dialog.css"; */
-/* @import "./000_css/Header.css"; */
 
 @import "./000_css/100_Frame.css";
 @import "./000_css/101_Dialog.css";
@@ -135,32 +133,3 @@ body {
         z-index: 200;
     }
 }
-
-/* 
-.sidebarMenuInner {
-    margin: 0;
-    padding: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-.sidebarMenuInner li {
-    list-style: none;
-    color: #fff;
-    text-transform: uppercase;
-    font-weight: bold;
-    padding: 20px;
-    cursor: pointer;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-.sidebarMenuInner li span {
-    display: block;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.5);
-}
-.sidebarMenuInner li a {
-    color: #fff;
-    text-transform: uppercase;
-    font-weight: bold;
-    cursor: pointer;
-    text-decoration: none;
-} */
-/* Base styles for the element that has a tooltip */
