@@ -4,79 +4,183 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAppState } from "../003_provider/AppStateProvider";
 import { FRONTEND_LOCAL_DEV, DEFAULT_EMAIL, DEFAULT_PASSWORD, DEFAULT_NICKNAME } from "../const";
 
-export type SignInDialogProps = {};
+const TabItems = {
+    signin: "signin",
+    signup: "signup",
+    verify: "verify",
+    forgot: "forgot",
+} as const;
+type TabItems = typeof TabItems[keyof typeof TabItems];
 
-export const SignInDialog = (_props: SignInDialogProps) => {
+type DialogTileIcon = {
+    tabId: TabItems;
+    onChange: (tabId: TabItems) => void;
+    selected: boolean;
+    icon: JSX.Element;
+    label: string;
+};
+
+const DialogTileIcon = (props: DialogTileIcon) => {
+    const icon = useMemo(() => {
+        return (
+            <div className="dialog-tile-icon-container">
+                <input
+                    id={props.tabId}
+                    className="dialog-radio-button"
+                    type="radio"
+                    name="signin-dialog"
+                    onChange={() => {
+                        props.onChange(props.tabId);
+                    }}
+                    checked={props.selected}
+                />
+                <div className="dialog-radio-tile">
+                    {props.icon}
+                    <label htmlFor={props.tabId} className="dialog-radio-tile-label">
+                        {props.label}
+                    </label>
+                </div>
+            </div>
+        );
+    }, [props.selected]);
+    return icon;
+};
+
+type DialogTilesProps = {
+    currentTab: TabItems;
+    onChange: (tabId: TabItems) => void;
+};
+
+const DialogTiles = (props: DialogTilesProps) => {
+    const tiles = useMemo(() => {
+        const signInIconProps: DialogTileIcon = {
+            tabId: TabItems.signin,
+            onChange: () => {
+                props.onChange(TabItems.signin);
+            },
+            selected: props.currentTab == TabItems.signin,
+            icon: <FontAwesomeIcon icon={["fas", "right-to-bracket"]} size="3x" />,
+            label: "sign in",
+        };
+        const signInIcon = <DialogTileIcon {...signInIconProps}></DialogTileIcon>;
+
+        const signUpIconProps: DialogTileIcon = {
+            tabId: TabItems.signup,
+            onChange: () => {
+                props.onChange(TabItems.signup);
+            },
+            selected: props.currentTab == TabItems.signup,
+            icon: <FontAwesomeIcon icon={["fas", "user-plus"]} size="3x" />,
+            label: "sign up",
+        };
+        const signUpIcon = <DialogTileIcon {...signUpIconProps}></DialogTileIcon>;
+
+        const verfiyIconProps: DialogTileIcon = {
+            tabId: TabItems.verify,
+            onChange: () => {
+                props.onChange(TabItems.verify);
+            },
+            selected: props.currentTab == TabItems.verify,
+            icon: <FontAwesomeIcon icon={["fas", "spell-check"]} size="3x" />,
+            label: "verify",
+        };
+        const verfiyIcon = <DialogTileIcon {...verfiyIconProps}></DialogTileIcon>;
+
+        const forgotIconProps: DialogTileIcon = {
+            tabId: TabItems.forgot,
+            onChange: () => {
+                props.onChange(TabItems.forgot);
+            },
+            selected: props.currentTab == TabItems.forgot,
+            icon: (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                    <FontAwesomeIcon icon={["fas", "key"]} size="3x" />
+                    <FontAwesomeIcon icon={["fas", "arrow-rotate-right"]} style={{ right: "4px", bottom: "0px", margin: 0, padding: 0, fontSize: "1.3rem" }} />
+                </div>
+            ),
+            label: "forgot password",
+        };
+        const forgotIcon = <DialogTileIcon {...forgotIconProps}></DialogTileIcon>;
+
+        const tiles = (
+            <div className="dialog-radio-tile-group">
+                {signInIcon}
+                {signUpIcon}
+                {verfiyIcon}
+                {forgotIcon}
+            </div>
+        );
+        return tiles;
+    }, [props.currentTab]);
+    return tiles;
+};
+
+export const SignInDialog = () => {
     const { cognitoClientState, frontendState } = useAppState();
     const [message, setMessage] = useState<string | null>(null);
+
+    // (x) Show  Message
+    const showMessage = (action: string, exception: any) => {
+        console.log("showMessage:(row):", exception);
+        console.log("showMessage:(json):", JSON.stringify(exception));
+        switch (exception.code) {
+            case "UserNotFoundException":
+                console.warn("未登録のユーザ");
+                setMessage(`[${action}][${exception.code}] No registered user`);
+                break;
+            case "InvalidParameterException":
+                console.warn("パラメータが不正");
+                setMessage(`[${action}][${exception.code}] Invalide parameter`);
+                break;
+            case "LimitExceededException":
+                console.warn("??");
+                setMessage(`[${action}][${exception.code}] Unknown Exception`);
+                break;
+            case "NotAuthorizedException":
+                console.warn("サインインできない。");
+                setMessage(`[${action}][${exception.code}] Password error`);
+                break;
+            case "NoUserNameInput":
+                console.warn("ユーザ名が入っていない");
+                setMessage(`[${action}][${exception.code}] No display name`);
+                break;
+            case "UsernameExistsException":
+                console.warn("登録済みのユーザ");
+                setMessage(`[${action}][${exception.code}] The user is already registered.`);
+                break;
+            case "CodeMismatchException":
+                console.warn("コードが間違っている");
+                setMessage(`[${exception.code}] Invalid code.`);
+                break;
+            default:
+                console.error("Unknown Exception");
+                setMessage(`[${action}][${exception.code}] Unknown Exception`);
+        }
+    };
+
     // (1) States
-    const TabItems = {
-        signin: "signin",
-        signup: "signup",
-        verify: "verify",
-        forgot: "forgot",
-    } as const;
-    type TabItems = typeof TabItems[keyof typeof TabItems];
+
     const [tab, setTab] = useState<TabItems>("signin");
 
     // (2) Action
     // (2-1) Request to send verify code
     const requestVerifyCode = async () => {
         const email = (document.getElementById("signin-dialog-email") as HTMLInputElement).value;
-        switch (tab) {
-            // (2-1-1) Resend for first verification
-            case "verify":
-                try {
+        try {
+            switch (tab) {
+                // (2-1-1) Resend for first verification
+                case "verify":
                     await cognitoClientState.resendVerification(email);
-                } catch (exception: any) {
-                    console.warn("Request code for signup exception", JSON.stringify(exception));
-                    switch (exception.code) {
-                        case "UserNotFoundException":
-                            console.warn("未登録のユーザ");
-                            setMessage(`[${exception.code}] No registered user`);
-                            break;
-                        case "InvalidParameterException":
-                            console.warn("パラメータが不正");
-                            setMessage(`[${exception.code}] Invalide parameter`);
-                            break;
-                        case "LimitExceededException":
-                            console.warn("??");
-                            setMessage(`[${exception.code}] Unknown Exception`);
-                            break;
-                        default:
-                            console.error("Unknown Exception");
-                            setMessage(`[${exception.code}] Unknown Exception`);
-                    }
-                }
-
-                break;
-            // (2-1-2) Send for Change Password
-            case "forgot":
-                try {
+                    break;
+                // (2-1-2) Send for Change Password
+                case "forgot":
                     await cognitoClientState.sendVerificationCodeForChangePassword(email);
-                } catch (exception: any) {
-                    console.warn("Request code for change password exception", JSON.stringify(exception));
-                    switch (exception.code) {
-                        case "UserNotFoundException":
-                            console.warn("未登録のユーザ");
-                            setMessage(`[${exception.code}] No registered user`);
-                            break;
-                        case "InvalidParameterException":
-                            console.warn("パラメータが不正");
-                            setMessage(`[${exception.code}] Invalide parameter`);
-                            break;
-                        case "LimitExceededException":
-                            console.warn("??");
-                            setMessage(`[${exception.code}] Unknown Exception`);
-                            break;
-                        default:
-                            console.error("Unknown Exception");
-                            setMessage(`[${exception.code}] Unknown Exception`);
-                    }
-                }
-                break;
-            default:
-                break;
+                    break;
+                default:
+                    break;
+            }
+        } catch (exception) {
+            showMessage(tab, exception);
         }
     };
 
@@ -87,10 +191,10 @@ export const SignInDialog = (_props: SignInDialogProps) => {
         const newPassword = (document.getElementById("signin-dialog-new-password") as HTMLInputElement).value;
         const code = (document.getElementById("signin-dialog-verify-code") as HTMLInputElement).value;
         const username = (document.getElementById("signin-dialog-display-name") as HTMLInputElement).value;
-        switch (tab) {
-            // (A) Sign In
-            case "signin":
-                try {
+        try {
+            switch (tab) {
+                // (A) Sign In
+                case "signin":
                     if (username.length < 1) {
                         console.warn("ユーザネームが入ってない。");
                         const err = new Error("no user name");
@@ -100,205 +204,45 @@ export const SignInDialog = (_props: SignInDialogProps) => {
                     }
                     await cognitoClientState.signIn(email, password);
                     frontendState.setUserName(username);
-                } catch (exception: any) {
-                    console.warn("Sign In Exception", JSON.stringify(exception));
-                    switch (exception.code) {
-                        case "NotAuthorizedException":
-                            console.warn("サインインできない。");
-                            setMessage(`[${exception.code}] Password error`);
-                            break;
-                        case "UserNotFoundException":
-                            console.warn("未登録のユーザ");
-                            setMessage(`[${exception.code}] No registered user`);
-                            break;
-                        case "InvalidParameterException":
-                            console.warn("不正なパラメータ");
-                            setMessage(`[${exception.code}] Invalide parameter`);
-                            break;
-                        case "NoUserNameInput":
-                            console.warn("ユーザ名が入っていない");
-                            setMessage(`[${exception.code}] No display name`);
-                            break;
-                        default:
-                            console.error("Unknown Exception");
-                            setMessage(`[${exception.code}] Unknown Exception`);
-                            break;
-                    }
-                }
-                break;
-            // (B) Sign Up
-            case "signup":
-                try {
+                    break;
+                // (B) Sign Up
+                case "signup":
                     await cognitoClientState.signUp(email, newPassword);
                     setTab("verify");
                     setMessage(null);
-                } catch (exception: any) {
-                    console.warn("Sign Up Exception", JSON.stringify(exception));
-                    switch (exception.code) {
-                        case "InvalidParameterException":
-                            console.warn("不正なパラメータ");
-                            setMessage(`[${exception.code}] Invalide parameter`);
-                            break;
-                        case "UsernameExistsException":
-                            console.warn("登録済みのユーザ");
-                            setMessage(`[${exception.code}] The user is already registered.`);
-                            break;
-                        default:
-                            console.error("Unknown Exception");
-                            setMessage(`[${exception.code}] Unknown Exception`);
-                    }
-                }
-                break;
-            // (C) Verify
-            case "verify":
-                try {
+                    break;
+                // (C) Verify
+                case "verify":
                     await cognitoClientState.verify(email, code);
                     setTab("signin");
                     setMessage(null);
-                } catch (exception: any) {
-                    console.warn("Verification Exception", JSON.stringify(exception));
-                    switch (exception.code) {
-                        case "UserNotFoundException":
-                            console.warn("未登録のユーザ");
-                            setMessage(`[${exception.code}] No registered user`);
-                            break;
-                        case "CodeMismatchException":
-                            console.warn("コードが間違っている");
-                            setMessage(`[${exception.code}] Invalid code.`);
-                            break;
-                        case "NotAuthorizedException":
-                            console.warn("？？？　ベリファイ後にもう一回やろうとすると出る");
-                            setMessage(`[${exception.code}] Unknown Exception. Maybe you verified twice.`);
-                            break;
-                        default:
-                            console.error("Unknown Exception");
-                            setMessage(`[${exception.code}] Unknown Exception`);
-                    }
-                }
-                break;
-            // (D) Change password
-            case "forgot":
-                try {
+                    break;
+                // (D) Change password
+                case "forgot":
                     await cognitoClientState.changePassword(email, code, newPassword);
                     setTab("signin");
                     setMessage(null);
-                } catch (exception: any) {
-                    console.warn("Verification Exception", JSON.stringify(exception));
-                    switch (exception.code) {
-                        case "UserNotFoundException":
-                            console.warn("未登録のユーザ");
-                            setMessage(`[${exception.code}] No registered user`);
-                            break;
-                        case "InvalidParameterException":
-                            console.warn("不正なパラメータ");
-                            setMessage(`[${exception.code}] Invalide parameter`);
-                            break;
-                        case "CodeMismatchException":
-                            console.warn("コードが間違っている");
-                            setMessage(`[${exception.code}] Invalid code.`);
-                            break;
-                        default:
-                            console.error("Unknown Exception");
-                            setMessage(`[${exception.code}] Unknown Exception`);
-                    }
-                }
-                break;
-            default:
-                console.error("unknwon tab:", tab);
-                break;
+                    break;
+                default:
+                    console.error("unknwon tab:", tab);
+                    break;
+            }
+        } catch (exception) {
+            showMessage(tab, exception);
         }
     };
 
     ////////////////////////////
     //  Conponents
     ////////////////////////////
-    const signInIcon = (
-        <div className="dialog-tile-icon-container">
-            <input
-                id="signin"
-                className="dialog-radio-button"
-                type="radio"
-                name="signin-dialog"
-                onChange={() => {
-                    setTab("signin");
-                    setMessage(null);
-                }}
-                checked={tab === "signin"}
-            />
-            <div className="dialog-radio-tile">
-                <FontAwesomeIcon icon={["fas", "right-to-bracket"]} size="3x" />
-                <label htmlFor="signin" className="dialog-radio-tile-label">
-                    sign in
-                </label>
-            </div>
-        </div>
-    );
-    const signUpIcon = (
-        <div className="dialog-tile-icon-container">
-            <input
-                id="signup"
-                className="dialog-radio-button"
-                type="radio"
-                name="signin-dialog"
-                onChange={() => {
-                    setTab("signup");
-                    setMessage(null);
-                }}
-                checked={tab === "signup"}
-            />
-            <div className="dialog-radio-tile">
-                <FontAwesomeIcon icon={["fas", "user-plus"]} size="3x" />
-                <label htmlFor="signup" className="dialog-radio-tile-label">
-                    sign up
-                </label>
-            </div>
-        </div>
-    );
-    const verfiyIcon = (
-        <div className="dialog-tile-icon-container">
-            <input
-                id="verify"
-                className="dialog-radio-button"
-                type="radio"
-                name="signin-dialog"
-                onChange={() => {
-                    setTab("verify");
-                    setMessage(null);
-                }}
-                checked={tab === "verify"}
-            />
-            <div className="dialog-radio-tile">
-                <FontAwesomeIcon icon={["fas", "spell-check"]} size="3x" />
-                <label htmlFor="verify" className="dialog-radio-tile-label">
-                    verify
-                </label>
-            </div>
-        </div>
-    );
-    const forgotIcon = (
-        <div className="dialog-tile-icon-container">
-            <input
-                id="forgot"
-                className="dialog-radio-button"
-                type="radio"
-                name="signin-dialog"
-                onChange={() => {
-                    setTab("forgot");
-                    setMessage(null);
-                }}
-                checked={tab === "forgot"}
-            />
-            <div className="dialog-radio-tile">
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
-                    <FontAwesomeIcon icon={["fas", "key"]} size="3x" />
-                    <FontAwesomeIcon icon={["fas", "arrow-rotate-right"]} style={{ right: "4px", bottom: "0px", margin: 0, padding: 0, fontSize: "1.3rem" }} />
-                </div>
-                <label htmlFor="forgot" className="dialog-radio-tile-label">
-                    forgot password
-                </label>
-            </div>
-        </div>
-    );
+    const dialogTilesProps: DialogTilesProps = {
+        currentTab: tab,
+        onChange: (tabId: TabItems) => {
+            setTab(tabId);
+            setMessage("");
+        },
+    };
+    const dialogTiles = <DialogTiles {...dialogTilesProps}></DialogTiles>;
 
     const description = useMemo(() => {
         switch (tab) {
@@ -389,22 +333,22 @@ export const SignInDialog = (_props: SignInDialogProps) => {
         );
     }, [message]);
 
-    const requestCodeButton = useMemo(() => {
+    const buttons = useMemo(() => {
+        let requestCode;
+        if (tab == TabItems.signin || tab == TabItems.signup) {
+            requestCode = <></>;
+        } else {
+            requestCode = (
+                <div id="request-code" className={`submit-button`} onClick={requestVerifyCode}>
+                    request code
+                </div>
+            );
+        }
         return (
-            <div id="request-code" className="submit-button" onClick={requestVerifyCode}>
-                request code
-            </div>
-        );
-    }, [tab]);
-
-    const submitButton = useMemo(() => {
-        return (
-            <div className="dialog-input-controls align-center">
-                <div>
-                    {tab === "verify" || tab === "forgot" ? requestCodeButton : <></>}
-                    <div id="submit" className="submit-button" onClick={onSubmit}>
-                        enter
-                    </div>
+            <div className="dialog-input-controls">
+                {requestCode}
+                <div id="submit" className="submit-button" onClick={onSubmit}>
+                    enter
                 </div>
             </div>
         );
@@ -412,36 +356,27 @@ export const SignInDialog = (_props: SignInDialogProps) => {
 
     const form = useMemo(() => {
         return (
-            <>
-                {emailField}
-                {passwordField}
-                {usernameField}
-                {newPasswordField}
-                {verifyCodeFeild}
-                {messageArea}
-                {submitButton}
-            </>
-        );
-    }, [tab, messageArea]);
-
-    return (
-        <div className="dialog-frame-warpper">
             <div className="dialog-frame">
                 <div className="dialog-title">Sign in</div>
                 <div className="dialog-content">
                     <div className={"dialog-application-title"}>Flect Amazon Chime Demo</div>
-                    <div className="dialog-radio-tile-group">
-                        {signInIcon}
-                        {signUpIcon}
-                        {verfiyIcon}
-                        {forgotIcon}
-                    </div>
+                    {dialogTiles}
                     <div className="dialog-description">{description}</div>
                     <form>
-                        <div className="dialog-input-container">{form}</div>
+                        <div className="dialog-input-container">
+                            {emailField}
+                            {passwordField}
+                            {usernameField}
+                            {newPasswordField}
+                            {verifyCodeFeild}
+                            {messageArea}
+                            {buttons}
+                        </div>
                     </form>
                 </div>
             </div>
-        </div>
-    );
+        );
+    }, [tab, messageArea]);
+
+    return form;
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { SignInDialog, SignInDialogProps } from "./101-1_SignInDialog";
+import { SignInDialog } from "./101-1_SignInDialog";
 import { Sidebar } from "./100-2_Sidebar";
 import { CreateRoomDialog } from "./101-2_CreateRoomDialog";
 import { JoinRoomDialog } from "./101-3_JoinRoomDialog";

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAppState } from "../003_provider/AppStateProvider";
+import { SignInDialog } from "./101-1_SignInDialog";
+import { CreateRoomDialog } from "./101-2_CreateRoomDialog";
 
 export const Dialog = () => {
     const { cognitoClientState, chimeClientState, frontendState } = useAppState();
@@ -15,28 +17,10 @@ export const Dialog = () => {
             {frontendState.stateControls.leaveCheckbox.trigger}
             <div className="dialog-container">
                 {frontendState.stateControls.signInCheckbox.trigger}
-                <div className="dialog-frame">
-                    <div className="dialog-title">Sign in</div>
-                    <div className="dialog-content">
-                        <div className={"dialog-application-title"}>Flect Amazon Chime Demo</div>
-                        <div className="dialog-description">aaa</div>
-                        <form>
-                            <div className="dialog-input-container">bbb</div>
-                        </form>
-                    </div>
-                </div>
+                <SignInDialog />
 
                 {frontendState.stateControls.createRoomCheckbox.trigger}
-                <div className="dialog-frame">
-                    <div className="dialog-title">Sign in</div>
-                    <div className="dialog-content">
-                        <div className={"dialog-application-title"}>Flect Amazon Chime Demo</div>
-                        <div className="dialog-description">aaa</div>
-                        <form>
-                            <div className="dialog-input-container">bbb</div>
-                        </form>
-                    </div>
-                </div>
+                <CreateRoomDialog />
             </div>
         </div>
     );

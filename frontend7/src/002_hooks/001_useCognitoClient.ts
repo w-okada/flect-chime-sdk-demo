@@ -29,8 +29,8 @@ export const useCognitoClient = (props: UseCognitoClientProps): CognitoClientSta
         idToken: null,
         accessToken: null,
         refreshToken: null,
-        signInCompleted: false
-        // signInCompleted: true // for debug
+        // signInCompleted: false
+        signInCompleted: true // for debug
     })
 
 

@@ -68,7 +68,7 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
     const roomNameField = useMemo(() => {
         return (
             <div className="dialog-input-controls">
-                <input type="text" id="create-room-dialog-room-name" className="input-text" name="room-name" placeholder="roomName" autoComplete="none" />
+                <input type="text" id="create-room-dialog-room-name" className="input-text" name="room-name" autoComplete="none" />
                 <label htmlFor="room-name">room name</label>
             </div>
         );
@@ -94,19 +94,20 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
     const useCodeToggle = useMemo(() => {
         return (
             <div className="dialog-input-controls">
-                <div style={{ display: "flex" }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
                     <input className="checkbox" type="checkbox" id="create-room-dialog-secret" />
                     <label htmlFor="create-room-dialog-secret">secret</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center" }}>
                     <input
                         className="checkbox"
                         type="checkbox"
                         id="create-room-dialog-use-code"
                         onChange={(ev) => {
-                            console.log("target:", ev.target.checked);
                             setUseCode(ev.target.checked);
                         }}
                     />
-                    <label create-room-dialog-use-code="user-code">use code</label>
+                    <label htmlFor="create-room-dialog-use-code">use code</label>
                 </div>
             </div>
         );
@@ -116,7 +117,7 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
         const hidden = useCode ? "" : "hidden";
         return (
             <div className={`dialog-input-controls ${hidden}`}>
-                <input type="text" id="create-room-dialog-code" className="input-text" name="code" placeholder="code" autoComplete="none" />
+                <input type="text" id="create-room-dialog-code" className="input-text" name="code" autoComplete="none" />
                 <label htmlFor="code">code</label>
             </div>
         );
@@ -126,7 +127,6 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
         return (
             <div className="dialog-input-controls">
                 <div className="dialog-message">{message}</div>
-                {/* <div className="dialog-message">aaa a aaaaa aaa aaa</div> */}
             </div>
         );
     }, [message]);
@@ -134,13 +134,11 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
     const buttons = useMemo(() => {
         return (
             <div className="dialog-input-controls">
-                <div>
-                    <div id="cancel" className="cancel-button" onClick={cancel}>
-                        cancel
-                    </div>
-                    <div id="submit" className="submit-button" onClick={onSubmit}>
-                        submit
-                    </div>
+                <div id="cancel" className="cancel-button" onClick={cancel}>
+                    cancel
+                </div>
+                <div id="submit" className="submit-button" onClick={onSubmit}>
+                    submit
                 </div>
             </div>
         );
@@ -154,36 +152,27 @@ export const CreateRoomDialog = (props: CreateRoomDialogProps) => {
     }, [isProcessing]);
     const form = useMemo(() => {
         return (
-            <>
-                {roomNameField}
-                {regionField}
-                {useCodeToggle}
-                {codeField}
-                {messageArea}
-                {buttons}
-                {processing}
-            </>
+            <div className="dialog-frame">
+                <div className="dialog-title">Create New Room</div>
+
+                <div className="dialog-content">
+                    <div className="dialog-application-title"></div>
+                    <div className="dialog-description">{description}</div>
+                    <form>
+                        <div className="dialog-input-container">
+                            {roomNameField}
+                            {regionField}
+                            {useCodeToggle}
+                            {codeField}
+                            {messageArea}
+                            {buttons}
+                            {processing}
+                        </div>
+                    </form>
+                </div>
+            </div>
         );
     }, [useCode, buttons, messageArea, processing]);
 
-    return (
-        <div>
-            {frontendState.stateControls.createRoomCheckbox.trigger}
-            <div className="dialog-container create-room-checkbox-remover">
-                <div className="dialog-frame-warpper">
-                    <div className="dialog-frame">
-                        <div className="dialog-title">Create New Room</div>
-
-                        <div className="dialog-content">
-                            <div className="dialog-application-title"></div>
-                            <div className="dialog-description">{description}</div>
-                            <form>
-                                <div className="dialog-input-container">{form}</div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+    return form;
 };
