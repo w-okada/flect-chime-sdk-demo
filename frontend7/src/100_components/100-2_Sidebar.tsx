@@ -25,7 +25,7 @@ export const Sidebar = (_props: SidebarProps) => {
         return async () => {
             backendManagerState.reloadMeetingList({});
         };
-    }, []);
+    }, [backendManagerState]);
     ///// (1-3)
     const joinSecretRoomClicked = useMemo(() => {
         return async () => {
