@@ -61,6 +61,7 @@
         "@fortawesome/free-solid-svg-icons": "^6.1.1",
         "@fortawesome/react-fontawesome": "^0.1.18",
         "@mediapipe/face_detection": "^0.4.1646425229",
+        "@tensorflow-models/face-detection": "^1.0.1",
         "amazon-chime-sdk-js": "^3.4.0",
         "amazon-cognito-identity-js": "^5.2.9",
         "events": "^3.3.0",
