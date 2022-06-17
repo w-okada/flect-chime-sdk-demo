@@ -3,7 +3,7 @@ import React, { useEffect, useMemo } from "react";
 import { ViewTypes } from "../002_hooks/011_useFrontend";
 import { useAppState } from "../003_provider/AppStateProvider";
 
-const MAX_TILES = 18;
+const MAX_TILES = 27;
 
 export type MainVideoAreaProps = {};
 
@@ -78,6 +78,16 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
         }
         return targetTiles;
     }, [chimeClientState.videoTileStates, frontendState.viewType, chimeClientState.activeSpeakerId]);
+    //// (2-3) リバインド判定用IDの作成
+    const rebindId = useMemo(() => {
+        return targetTiles
+            .sort((x, y) => {
+                return x.boundAttendeeId! > y.boundAttendeeId! ? -1 : 1;
+            })
+            .reduce((prev, cur) => {
+                return `${prev}_${cur}`;
+            }, "");
+    }, [targetTiles]);
 
     // (3) Commit Phase.
     //// (3-1) Demo用のバインド処理
@@ -131,14 +141,14 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
             video.src = "";
         });
 
-        for (let i = num; i < 18; i++) {
+        for (let i = num; i < MAX_TILES; i++) {
             const ids = getIds(i);
             const div = document.getElementById(ids.container) as HTMLDivElement;
             const video = document.getElementById(ids.video) as HTMLVideoElement;
             div.style.display = "none";
             video.src = "";
         }
-    }, [targetTiles]);
+    }, [rebindId]);
 
     //// (3-3) タグのバインド + Active Speakerのバインド
     useEffect(() => {
@@ -157,12 +167,12 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
             }
         });
 
-        for (let i = num; i < 18; i++) {
+        for (let i = num; i < MAX_TILES; i++) {
             const ids = getIds(i);
             const tag = document.getElementById(ids.tag) as HTMLDivElement;
             tag.innerText = "";
         }
-    }, [targetTiles, chimeClientState.attendees, chimeClientState.activeSpeakerId]);
+    }, [rebindId, chimeClientState.attendees, chimeClientState.activeSpeakerId]);
 
     return (
         <>

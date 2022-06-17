@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo } from "react";
 import { useAppState } from "../003_provider/AppStateProvider";
 
-const MAX_TILES = 18;
-
 export type BottomNavProps = {};
-
+const MAX_TILES = 27;
+const TILES_IN_CARD = 7;
+const cardNum = Math.ceil(MAX_TILES / TILES_IN_CARD);
 // TODO: 非表示部分のバインドまでされてしまう。Chromeが映像再生を止めてくれればCPU負荷抑えられるが、ネットワークは多分無理。というかそもそもバインドしていなければデータを取得しない、という処理がChimeとしてサポートされていない可能性がある。明示的なpauseをする必要があるか？もしそうなら、表示切替のタイミングを取得してpauseをかける必要があるが、CSSによる制御のみである場合は不可。イベントをもらう必要が出てくる。（調査等いろいろ必要なので、まずはペンディング。）
 
 export const BottomNav = (_props: BottomNavProps) => {
@@ -21,12 +21,12 @@ export const BottomNav = (_props: BottomNavProps) => {
     };
 
     // (2) Rendering Phase.
-    const TILES_IN_CARD = 6;
+
     //// (2-1) カード数を計算 ⇒ 高々18なので3で固定。
     // const cardNum = useMemo(() => {
     //     return Math.ceil(Object.values(chimeClientState.videoTileStates).length / TILES_IN_CARD);
     // }, [chimeClientState.videoTileStates]);
-    const cardNum = 3;
+
     //// (2-2) カード内のビデオタイルリストのリストを作成　⇒ 高々18なので全数生成
     const list = useMemo(() => {
         return [...Array(cardNum)].map((_x, index) => {
@@ -58,7 +58,21 @@ export const BottomNav = (_props: BottomNavProps) => {
                 </React.Fragment>
             );
         });
-    }, [cardNum, chimeClientState.videoTileStates]);
+        // }, [cardNum, chimeClientState.videoTileStates]);
+    }, [cardNum]);
+
+    //// (2-3) リバインド判定用IDの作成
+    const rebindId = useMemo(() => {
+        const boundIds = Object.keys(chimeClientState.videoTileStates);
+
+        return boundIds
+            .sort((x, y) => {
+                return x > y ? -1 : 1;
+            })
+            .reduce((prev, cur) => {
+                return `${prev}_${cur}`;
+            }, "");
+    }, [chimeClientState.videoTileStates]);
 
     // (3) Commit Phase.
     //// (3-1) カード選択の初期値設定。
@@ -72,16 +86,24 @@ export const BottomNav = (_props: BottomNavProps) => {
 
     //// (3-2) タイルのバインド
     useEffect(() => {
+        const num = Object.values(chimeClientState.videoTileStates).length;
         Object.values(chimeClientState.videoTileStates).forEach((x, index) => {
             const ids = getIds(index);
             const videoElem = document.getElementById(ids.video) as HTMLVideoElement;
             console.log("sidebar bind::", ids, videoElem);
             chimeClientState.bindVideoElement(x.tileId!, videoElem);
         });
-    }, [chimeClientState.videoTileStates]);
+
+        for (let i = num; i < MAX_TILES; i++) {
+            const ids = getIds(i);
+            const video = document.getElementById(ids.video) as HTMLVideoElement;
+            video.src = "";
+        }
+    }, [rebindId]);
 
     //// (3-3) タグとactive speakerのバインド
     useEffect(() => {
+        const num = Object.values(chimeClientState.videoTileStates).length;
         Object.values(chimeClientState.videoTileStates).forEach((x, index) => {
             const ids = getIds(index);
             const tag = document.getElementById(ids.tag) as HTMLDivElement;
@@ -94,7 +116,12 @@ export const BottomNav = (_props: BottomNavProps) => {
                 tag.innerText = `${chimeClientState.attendees[x.boundAttendeeId!].attendeeName}`;
             }
         });
-    }, [chimeClientState.videoTileStates, chimeClientState.attendees]);
+        for (let i = num; i < MAX_TILES; i++) {
+            const ids = getIds(i);
+            const tag = document.getElementById(ids.tag) as HTMLDivElement;
+            tag.innerText = "";
+        }
+    }, [rebindId, chimeClientState.attendees, chimeClientState.activeSpeakerId]);
 
     return (
         <>
