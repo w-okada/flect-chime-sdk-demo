@@ -12,8 +12,9 @@ export enum Persistence {
     NonPersistent = 'NON_PERSISTENT',
 }
 export class MessagingClient {
-    private chimeClient: Chime.Chime | null = null
-    connect = async (messagingCred: STS.Credentials, userArn: string, globalChannelArn: string) => {
+    private chime: Chime.Chime | null = null
+    private userArn: string | null = null
+    connect = async (messagingCred: STS.Credentials, userArn: string) => {
         const prov: CredentialProvider = async () => {
             return {
                 accessKeyId: messagingCred.AccessKeyId!,
@@ -22,32 +23,42 @@ export class MessagingClient {
                 // expiration: messagingCred.Expiration,
             }
         }
+        this.chime = new Chime.Chime({ region: 'us-east-1', credentials: prov });
+        this.userArn = userArn
 
-        console.log("endpoint:::1")
-        this.chimeClient = new Chime.Chime({ region: 'us-east-1', credentials: prov });
-        // this.chimeClient = new Chime.Chime({ region: 'us-east-1' });
-        console.log("endpoint:::2")
-        const endpoint = await this.chimeClient.getMessagingSessionEndpoint({})!
-        const configuration = new MessagingSessionConfiguration(userArn, null, endpoint.Endpoint!.Url!, this.chimeClient);
-        console.log("endpoint:::3", configuration)
-        //         // this.chimeClient.sendChannelMessage
-        // this.configuration = new MessagingSessionConfiguration(this.userArn, null, endpoint.Endpoint.Url, chime, AWS);
+        const endpoint = await this.chime.getMessagingSessionEndpoint({})!
+        const configuration = new MessagingSessionConfiguration(userArn, null, endpoint.Endpoint!.Url!, this.chime);
+
         const session = new DefaultMessagingSession(configuration, new ConsoleLogger('SDK', LogLevel.INFO));
-        session.addObserver({
-            messagingSessionDidStart: () => { console.log("session start!") },
-            messagingSessionDidStartConnecting: (reconnecting: boolean) => { console.log("session connecting", reconnecting) },
-            messagingSessionDidStop: (event: CloseEvent) => { console.log("session event", event) },
-            messagingSessionDidReceiveMessage: (message: Message) => { console.log("session event", message) },
-        });
-        session.start();
+        // セッション情報に channelArnは含まれない。
 
-        await this.chimeClient.sendChannelMessage({
-            ChannelArn: globalChannelArn,
+
+        session.addObserver({
+            messagingSessionDidStart: () => {
+                console.log("[messaging] messagingSessionDidStart!")
+            },
+            messagingSessionDidStartConnecting: (reconnecting: boolean) => {
+                console.log(`[messaging] messagingSessionDidStartConnecting: reconnecting?:${reconnecting}`)
+            },
+            messagingSessionDidStop: (event: CloseEvent) => { console.log("[messaging] session event recieved:", event) },
+            messagingSessionDidReceiveMessage: (message: Message) => { console.log("[messaging] message recieved", message) },
+        });
+        await session.start();
+    }
+
+    send = async (channelArn: string, message: string) => {
+        if (!this.chime || !this.userArn) {
+            console.warn("[MessageClient] chime for messaging is not initialized")
+            return
+        }
+
+        await this.chime.sendChannelMessage({
+            ChannelArn: channelArn,
             ClientRequestToken: v4(),
-            Content: "sending message...",
+            Content: `${channelArn}:${message}`,
             Persistence: Persistence.Persistent,
             Type: 'STANDARD',
-            ChimeBearer: userArn,
+            ChimeBearer: this.userArn,
         });
     }
 }

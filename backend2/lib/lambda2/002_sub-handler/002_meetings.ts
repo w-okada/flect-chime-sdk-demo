@@ -28,7 +28,7 @@ export const createMeeting = async (req: BackendCreateMeetingRequest): Promise<B
     const response = await createMessageChannelInChimeBackend(req.meetingName)
 
     //// (4) register meeting info in DB
-    await registerMeetingIntoDB(req.meetingName, req.email, req.region, req.secret, req.useCode, req.code, response.ChannelArn, newMeetingInfo.Meeting)
+    await registerMeetingIntoDB(req.meetingName, req.email, req.region, req.secret, req.useCode, req.code, response.ChannelArn!, newMeetingInfo.Meeting!)
 
     return {
         created: true,

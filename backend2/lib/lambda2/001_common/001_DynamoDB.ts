@@ -40,7 +40,7 @@ export const registerMeetingIntoDB = async (meetingName: string, ownerEmail: str
     };
     const item = {
         MeetingName: { S: meetingName },
-        MeetingId: { S: meeting!.MeetingId },
+        MeetingId: { S: meeting!.MeetingId! },
         Meeting: { S: JSON.stringify(meeting) },
         Metadata: { S: JSON.stringify(metadata) },
         TTL: {
@@ -67,7 +67,7 @@ export const listMeetingsFromDB = async (req: BackendListMeetingsRequest): Promi
     console.log("dynamo: list all meetings result:", result);
 
     const meetingInfos = result.Items;
-    const meetings: MeetingListItem[] = meetingInfos.map(x => {
+    const meetings: MeetingListItem[] = meetingInfos!.map(x => {
         const info = JSON.parse(x.Meeting.S!)
         const id = x.MeetingId.S!
         const name = x.MeetingName.S!

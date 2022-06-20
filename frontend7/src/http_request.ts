@@ -94,6 +94,7 @@ export type HTTPDeleteMeetingResponse = {}
 export type HTTPJoinMeetingRequest = {
     meetingName: string;
     attendeeName: string;
+    messagingUserArn: string;
     code: string;
 };
 export type HTTPJoinMeetingResponse = {
@@ -101,14 +102,14 @@ export type HTTPJoinMeetingResponse = {
     meeting: Chime.Meeting;
     attendee: Chime.Attendee;
 };
-//// (3-2) Get Attendees List (GET)
+//// (3-2) Get Attendees List (GET) not inplemented
 export type HTTPGetAttendeesListRequest = {}
 export type HTTPGetAttendeesListResponse = {
     attendees: [
         {
             ExternalUserId: string;
             AttendeeId: string;
-            JoinToken: string;
+            // JoinToken: string;
         }
     ];
     result: string;

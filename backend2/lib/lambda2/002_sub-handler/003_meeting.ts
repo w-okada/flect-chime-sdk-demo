@@ -6,9 +6,9 @@ import { deleteMeetingFromDB, getMeetingInfoFromDB } from "../001_common/001_Dyn
 import { BackendDeleteMeetingRequest, BackendDeleteMeetingResponse, BackendGetMeetingInfoRequest, BackendGetMeetingInfoResponse } from "../backend_request";
 
 //// (1-2) Get Meeting Info (Get)
-export const getMeetingInfo = async (req: BackendGetMeetingInfoRequest): Promise<BackendGetMeetingInfoResponse> => {
+export const getMeetingInfo = async (req: BackendGetMeetingInfoRequest): Promise<BackendGetMeetingInfoResponse | null> => {
     const result = await getMeetingInfoFromDB(req);
-    if (result.alive === false) {
+    if (result && result.alive === false) {
         deleteMeetingFromDB({
             meetingName: result.meetingName,
             messageChannelArn: result.metadata.MessageChannelArn

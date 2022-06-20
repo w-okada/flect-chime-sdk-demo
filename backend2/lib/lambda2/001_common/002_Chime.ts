@@ -103,6 +103,21 @@ export const addUserToGlobalChannel = async (appInstanceUserArn: string) => {
     };
 
     const membershipResponse = await chime.createChannelMembership(params);
-    console.log("Generate Messaging Environment: addToGlobal", JSON.stringify(membershipResponse.Member))
+    console.log("Generate Messaging Environment: addUserToGlobalChannel", JSON.stringify(membershipResponse.Member))
+    return membershipResponse
+}
+
+
+// (7) room チャンネルにユーザを追加
+export const addUserToRoomChannel = async (roomChannelArn: string, appInstanceUserArn: string) => {
+    const params = {
+        ChannelArn: roomChannelArn,
+        MemberArn: appInstanceUserArn,
+        Type: 'DEFAULT',
+        ChimeBearer: messagingAppInstanceAdminArn
+    };
+
+    const membershipResponse = await chime.createChannelMembership(params);
+    console.log("Generate Messaging Environment: addUserToRoomChannel", JSON.stringify(membershipResponse.Member))
     return membershipResponse
 }

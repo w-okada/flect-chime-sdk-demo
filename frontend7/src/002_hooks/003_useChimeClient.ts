@@ -7,6 +7,7 @@ import { ChimeAudioInputDevice, ChimeAudioOutputDevice, ChimeAudioOutputElement,
 
 
 export type UseChimeClientProps = {
+    // 名前の解決のためにRestAPIをパラメータとして渡す
     getAttendeeInfo: (params: GetAttendeeInfoRequest) => Promise<GetAttendeeInfoResponse | null>
 };
 
@@ -16,11 +17,6 @@ export type ChimeClientState = {
     attendees: AttendeeList
     videoTileStates: VideoTileStateList
     activeSpeakerId: string | null
-    // getMeetingInfo: (meetingName: string, userName?: string | null) => Promise<void>;
-
-    // (3)
-
-
 }
 export type ChimeClientStateAndMethods = ChimeClientState & {
     joinMeeting: (meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => Promise<void>
@@ -55,13 +51,16 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
     // console.log("meeting state::VideoTiles:", videoTileStates)
     // console.log("meeting state::ActiveSpeaker:", activeSpeakerId)
 
+    // () リスナーの設定
+    // useEffectで設定する。REST APIが有効になったタイミングか、会議室名が変わったとき(入室時 joinMeeting)に再設定
+    // updateされる値が関数内に保存されないように、配列全体をclientクラスからパラメータとしてもらい、全体をstateに設定しなおすことに注意。
     useEffect(() => {
         const l: FlectChimeClientListener = {
             meetingStateUpdated: (): void => {
                 console.log("meeting state update....")
             },
             activeSpekaerUpdated: (activeSpeakerId: string | null): void => {
-                setActiveSpeakerId(activeSpeakerId)
+                setActiveSpeakerId(activeSpeakerId) // 冪等性
             },
             attendeesUpdated: (list: { [attendeeId: string]: AttendeeState; }): void => {
                 const updateAttendeeList = async () => {
@@ -89,14 +88,14 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
                     const nameUnresolved = Object.values(list).find(x => { return x.attendeeName === null })
                     if (nameUnresolved) {
                         console.log("retry resolve attendee name", nameUnresolved)
-                        setTimeout(updateAttendeeList, 1000 * 2)
+                        setTimeout(updateAttendeeList, 1000 * 2)// 冪等性
                     }
-                    setAttendees({ ...list })
+                    setAttendees({ ...list }) // 冪等性
                 }
                 updateAttendeeList()
             },
             videoTileStateUpdated: (list: { [attendeeId: string]: VideoTileState; }): void => {
-                setVideoTileStates({ ...list })
+                setVideoTileStates({ ...list }) // 冪等性
             }
         }
         chimeClient.setFlectChimeClientListener(l)
@@ -104,7 +103,7 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
 
 
 
-    //// (3) Create Meeting
+    //// (1) join
     const joinMeeting = useMemo(() => {
         return async (meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => {
             if (!chimeClient) {
@@ -116,6 +115,7 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
         }
     }, [chimeClient])
 
+    //// (2) enter
     const enterMeeting = useMemo(() => {
         return async (audioInput: ChimeAudioInputDevice, videoInput: ChimeVideoInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => {
             if (!chimeClient) {
@@ -126,6 +126,7 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
         }
     }, [chimeClient])
 
+    //// (3) leave
     const leaveMeeting = useMemo(() => {
         return () => {
             chimeClient.leaveMeeting()

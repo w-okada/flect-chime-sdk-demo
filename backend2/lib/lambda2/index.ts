@@ -258,14 +258,22 @@ const handleDeleteMeeting = async (accessToken: string, pathParams: { [key: stri
         };
     } else {
         const result = await getMeetingInfo({ meetingName, deleteCode: true });
-        await deleteMeeting({
-            meetingName,
-            messageChannelArn: result.metadata.MessageChannelArn
-        });
-        res = {
-            success: true,
-            code: Codes.SUCCESS,
-        };
+        if (!result) {
+            res = {
+                success: false,
+                code: Codes.NO_SUCH_A_MEETING_ROOM,
+            };
+        } else {
+            await deleteMeeting({
+                meetingName,
+                messageChannelArn: result.metadata.MessageChannelArn
+            });
+            res = {
+                success: true,
+                code: Codes.SUCCESS,
+            };
+
+        }
     }
     const response = generateResponse(res);
     callback(null, response);
@@ -299,11 +307,7 @@ const handleGetAttendees = async (accessToken: string, pathParams: { [key: strin
 const handlePostAttendees = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
     let res: HTTPResponseBody;
     const params = JSON.parse(body) as HTTPJoinMeetingRequest;
-    const backendParams: BackendJoinMeetingRequest = {
-        meetingName: params.meetingName,
-        attendeeName: params.attendeeName,
-        code: params.code
-    }
+    const backendParams: BackendJoinMeetingRequest = params
     const joinInfo = await joinMeeting(backendParams);
     if ("exception" in joinInfo) {
         const exception = joinInfo as BackendJoinMeetingException;

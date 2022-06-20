@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useMemo } from "react";
 import { ReactNode } from "react";
-import { MessageState, MessageType, useMessageState } from "../002_hooks/013_useMessageState";
 import { UserPoolClientId, UserPoolId } from "../BackendConfig";
 
 import { useWindowSizeChangeListener, WindowSizeState } from "../002_hooks/012_useWindowSizeChange";
@@ -11,6 +10,7 @@ import { ChimeClientStateAndMethods, useChimeClient } from "../002_hooks/003_use
 import { BackendManagerStateAndMethod, useBackendManager } from "../002_hooks/002_useBackendManager";
 import { FrontendState, useFrontend } from "../002_hooks/011_useFrontend";
 import { MessagingClientStateAndMethod, useMessagingClient } from "../002_hooks/005_useMessagingClient";
+import { Message } from "amazon-chime-sdk-js";
 
 type Props = {
     children: ReactNode;
@@ -27,11 +27,6 @@ interface AppStateValue {
     frontendState: FrontendState;
     /** (010) Environment State */
     windowSizeState: WindowSizeState;
-
-    /** For Message*/
-    messageState: MessageState;
-    setMessage: (type: MessageType, title: string, detail: string[]) => void;
-    resolveMessage: () => void;
 
     // /** Federation */
     // slackToken: string | null;
@@ -126,9 +121,6 @@ export const AppStateProvider = ({ children }: Props) => {
 
     /** For Device State */
 
-    /** For Message*/
-    const { messageState, setMessage, resolveMessage } = useMessageState();
-
     // /// whiteboard
     // ///////////////////
     // const [recreateWebSocketWhiteboardClientCount, setRecreateWebSocketWhiteboardClientCount] = useState(0);
@@ -158,11 +150,6 @@ export const AppStateProvider = ({ children }: Props) => {
         windowSizeState,
 
         frontendState,
-
-        /** For Message*/
-        messageState,
-        setMessage,
-        resolveMessage,
 
         /** Federation */
         slackToken,

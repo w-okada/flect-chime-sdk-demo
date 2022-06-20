@@ -3,13 +3,12 @@ import { useMemo } from "react";
 import { useAppState } from "../003_provider/AppStateProvider";
 import { ChimeDemoException } from "../000_exception/Exception";
 import { Processing } from "./parts/001_processing";
-
 export type JoinRoomDialogProps = {};
 
 export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
     const [message, setMessage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    const { backendManagerState, chimeClientState, frontendState, deviceState } = useAppState();
+    const { backendManagerState, chimeClientState, frontendState, deviceState, messagingClientState } = useAppState();
 
     // (2) Action
     const initializeState = () => {
@@ -29,6 +28,7 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
                 meetingName: frontendState.joinRoomDialogProps.decodedMeetingName.length > 0 ? frontendState.joinRoomDialogProps.decodedMeetingName : meetingName,
                 attendeeName: frontendState.username,
                 code: code,
+                messagingUserArn: backendManagerState.environment!.appInstanceUserArn,
             });
             setMessage("try to get meeting token.... done.");
             if (!joinTokenResult) {
@@ -52,6 +52,17 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
             const audioElement = document.getElementById("chime-audio-output-element") as HTMLAudioElement;
             await chimeClientState.enterMeeting(deviceState.chimeAudioInputDevice, deviceState.chimeVideoInputDevice, deviceState.chimeAudioOutputDevice, audioElement);
             setMessage("enter meeting.... done.");
+            // (4) メッセージング初期化
+            // messagingClientState.setMeetingChannelArn(meetingInfo.)
+            const joinedMeetingInfo = await backendManagerState.getMeetingInfo({
+                meetingName: frontendState.joinRoomDialogProps.decodedMeetingName,
+            });
+            console.log(`JOINEDMEETING`, joinedMeetingInfo);
+            messagingClientState.setMeetingChannelArn(joinedMeetingInfo?.metadata.MessageChannelArn!);
+            messagingClientState.sendGlobalMessage("GLOBAL MESSAGING SEND...");
+            messagingClientState.sendChannelMessage("CHANNEL MESSAGING SEND...");
+
+            // 後処理
             initializeState();
             frontendState.stateControls.joinRoomCheckbox.updateState(false);
         } catch (ex) {

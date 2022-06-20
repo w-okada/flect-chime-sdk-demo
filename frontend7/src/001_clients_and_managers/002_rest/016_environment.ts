@@ -26,3 +26,5 @@ export const getEnvironment = async (params: RestGetEnvironmentRequest, context:
     const data = response.data as RestGetEnvironmentResponse;
     return data;
 };
+
+

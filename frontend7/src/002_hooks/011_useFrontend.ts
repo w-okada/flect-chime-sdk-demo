@@ -56,6 +56,10 @@ export type StateControls = {
 export type JoinRoomDialogProps = {
     decodedMeetingName: string,
     useCode: boolean,
+
+    //// ↓ secret roomの時に確定できないので、ここでは設定しない。
+    ////  join後にroominfoを取得してchannelArnを特定することにする。 
+    //channelArn: string;
 }
 
 export type FrontendState = {

@@ -35,7 +35,7 @@ export type BackendManagerState = {
 export type BackendManagerStateAndMethod = BackendManagerState & {
     createMeeting: (params: CreateMeetingParams) => Promise<CreateMeetingResponse | null>
     reloadMeetingList: (params: ListMeetingsRequest) => Promise<ListMeetingsResponse | null>
-    getMeetingInfo: (params: GetMeetingInfoResponse) => Promise<GetMeetingInfoResponse | null>
+    getMeetingInfo: (params: GetMeetingInfoRequest) => Promise<GetMeetingInfoResponse | null>
     endMeeting: (params: EndMeetingRequest) => Promise<EndMeetingResponse | null>
     joinMeeting: (params: JoinMeetingRequest) => Promise<JoinMeetingResponse | null>
     getAttendeeInfo: (params: GetAttendeeInfoRequest) => Promise<GetAttendeeInfoResponse | null>
@@ -59,12 +59,12 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
         }
     }, [props.idToken, props.accessToken, props.refreshToken])
 
+    // contextが定まったら環境取得
     useEffect(() => {
         const getEnvironment = async () => {
-            console.log("Environment:called1")
             const env = await restClient.getEnvironment({}, context)
-            console.log("Environment:called2", env)
             setEnvironment(env)
+            // ここで取得したmessaging apiのuserArnはapp providerでmessaging clientに設定される。
         }
         if (context.idToken.length > 0) {
             console.log("idtolen1:", context.idToken)
@@ -98,7 +98,7 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
     // (2) Meeting
     //// (2-1) (POST)
     //// (2-2) Get Meeting Info (GET)
-    const getMeetingInfo = async (params: GetMeetingInfoResponse): Promise<GetMeetingInfoResponse | null> => {
+    const getMeetingInfo = async (params: GetMeetingInfoRequest): Promise<GetMeetingInfoResponse | null> => {
         if (!restClient) return null
         const res = await restClient.getMeetingInfo(params as RestGetMeetingInfoResponse, context)
         return res as GetMeetingInfoResponse

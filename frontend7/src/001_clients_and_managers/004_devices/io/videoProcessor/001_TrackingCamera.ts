@@ -23,18 +23,12 @@ export class TrackingCameraImageProcessor implements VideoFrameProcessor {
         this.params.processWidth = 300
         this.params.processHeight = 300
 
-        const loadDetector = async () => {
-            this.detector = await faceDetection.createDetector(faceDetection.SupportedModels.MediaPipeFaceDetector, {
-                runtime: "mediapipe",
-                solutionPath: `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection`,
-            });
-        }
-        loadDetector()
-
+        //this.prepairMediapipe()
     }
 
 
-    process2 = async (buffers: VideoFrameBuffer[]): Promise<VideoFrameBuffer[]> => {
+
+    process = async (buffers: VideoFrameBuffer[]): Promise<VideoFrameBuffer[]> => {
         if (!buffers[0]) {
             return buffers;
         }
@@ -53,8 +47,15 @@ export class TrackingCameraImageProcessor implements VideoFrameProcessor {
     }
 
 
+    // MediapipeはWebworkerでは動かない？？
+    prepairMediapipe = async () => {
+        this.detector = await faceDetection.createDetector(faceDetection.SupportedModels.MediaPipeFaceDetector, {
+            runtime: "mediapipe",
+            solutionPath: `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection`,
+        });
 
-    process = async (buffers: VideoFrameBuffer[]): Promise<VideoFrameBuffer[]> => {
+    }
+    processWithMediapipe = async (buffers: VideoFrameBuffer[]): Promise<VideoFrameBuffer[]> => {
         if (!buffers[0]) {
             return buffers;
         }

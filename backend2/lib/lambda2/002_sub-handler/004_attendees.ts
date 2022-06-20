@@ -3,7 +3,7 @@
 // (3) attendees
 
 import { getMeetingInfoFromDB, registerAttendeeIntoDB } from "../001_common/001_DynamoDB";
-import { joinMeetingInChimeBackend } from "../001_common/002_Chime";
+import { addUserToGlobalChannel, addUserToRoomChannel, joinMeetingInChimeBackend } from "../001_common/002_Chime";
 import { BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendJoinMeetingResponse } from "../backend_request";
 
 //// Join
@@ -36,7 +36,13 @@ export const joinMeeting = async (req: BackendJoinMeetingRequest): Promise<Backe
     const attendeeInfo = await joinMeetingInChimeBackend(meetingInfo.meetingId)
 
     //// (4) register attendee in DB
-    await registerAttendeeIntoDB(req.meetingName, attendeeInfo.Attendee!.AttendeeId, req.attendeeName)
+    await registerAttendeeIntoDB(req.meetingName, attendeeInfo.Attendee!.AttendeeId!, req.attendeeName)
+
+    //// (5) Roomのチャンネルにユーザを追加
+    console.log("USER REQ", JSON.stringify(req))
+    console.log("USER ARN", req.messagingUserArn)
+    const membershipResponse = await addUserToRoomChannel(meetingInfo.metadata.MessageChannelArn, req.messagingUserArn)
+    console.log("Generate Messaging Environment: addToGlobal", JSON.stringify(membershipResponse.Member))
 
     console.log("MEETING_INFO", meetingInfo);
 

@@ -14,13 +14,13 @@ export const getEnvironment = async (req: BackendGetEnvironmentRequest): Promise
     const createUserResponse = await createMessagingAPIUser(req.email)
 
     // (3) グローバルチャンネルにユーザを追加
-    const membershipResponse = await addUserToGlobalChannel(createUserResponse.AppInstanceUserArn)
+    const membershipResponse = await addUserToGlobalChannel(createUserResponse.AppInstanceUserArn!)
     console.log("Generate Messaging Environment: addToGlobal", JSON.stringify(membershipResponse.Member))
 
     const res: BackendGetEnvironmentResponse = {
         globalChannelArn: messagingGlobalChannelArn,
-        credential: assumedRoleResponse.Credentials,
-        appInstanceUserArn: createUserResponse.AppInstanceUserArn,
+        credential: assumedRoleResponse.Credentials!,
+        appInstanceUserArn: createUserResponse.AppInstanceUserArn!,
     }
     return res
 };
