@@ -6,6 +6,7 @@ export type UseCognitoClientProps = {};
 export type CognitoClientState = {
     // cognitoClient: CognitoClient;
     userId: string | null;
+    username: string | null
     idToken: string | null;
     accessToken: string | null;
     refreshToken: string | null;
@@ -26,6 +27,7 @@ export const useCognitoClient = (_props: UseCognitoClientProps): CognitoClientSt
     const [_lastUpdateTime, setLastUpdateTime] = useState(0);
     const [state, setState] = useState<CognitoClientState>({
         userId: null,
+        username: null,
         idToken: null,
         accessToken: null,
         refreshToken: null,
@@ -69,6 +71,7 @@ export const useCognitoClient = (_props: UseCognitoClientProps): CognitoClientSt
         }
         setState({
             userId: null,
+            username: null,
             idToken: null,
             accessToken: null,
             refreshToken: null,

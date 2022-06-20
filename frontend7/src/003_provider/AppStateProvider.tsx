@@ -25,8 +25,6 @@ interface AppStateValue {
     messagingClientState: MessagingClientStateAndMethod;
 
     frontendState: FrontendState;
-    /** (010) Environment State */
-    windowSizeState: WindowSizeState;
 
     // /** Federation */
     // slackToken: string | null;
@@ -66,8 +64,6 @@ export const AppStateProvider = ({ children }: Props) => {
         userArn: backendManagerState.environment?.appInstanceUserArn || null,
         globalChannelArn: backendManagerState.environment?.globalChannelArn || null,
     });
-
-    const windowSizeState = useWindowSizeChangeListener();
 
     /** (020) App State*/
     //// (020) stage
@@ -147,7 +143,6 @@ export const AppStateProvider = ({ children }: Props) => {
         messagingClientState,
         /** (010) Environment State */
         deviceState,
-        windowSizeState,
 
         frontendState,
 

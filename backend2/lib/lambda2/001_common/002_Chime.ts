@@ -30,7 +30,7 @@ export const checkMeetingExistInChimeBackend = async (meetingIds: string[]): Pro
             console.log("chime meeting info:", mid);
             aliveMeetingIds.push(meetingId)
         } catch (err: any) {
-            if (err.code == "NotFound") {
+            if (err.code == "NotFoundException") {
                 console.log("chime meeting exception, but this maybe happen when the meeting doesn't exist.");
             } else {
                 console.log("chime meeting exception:", err);

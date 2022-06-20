@@ -146,6 +146,18 @@ export type HTTPGetEnvironmentResponse = {
     appInstanceUserArn: string,
 }
 
+export type HTTPPostEnvironmentRequest = {
+    username: string
+}
+export type HTTPPostEnvironmentResponse = {
+    globalChannelArn: string,
+    credential: STS.Credentials,
+    appInstanceUserArn: string,
+    globalUserId: string,
+}
+
+
+
 ///////////////////////////
 // Federation
 //////////////////////////

@@ -1,4 +1,4 @@
-import { HTTPGetEnvironmentRequest, HTTPGetEnvironmentResponse, HTTPResponseBody } from "../../http_request";
+import { HTTPGetEnvironmentRequest, HTTPGetEnvironmentResponse, HTTPPostEnvironmentRequest, HTTPPostEnvironmentResponse, HTTPResponseBody } from "../../http_request";
 import { InternalRestApiClientContext } from "./001_RestApiClient";
 
 
@@ -8,8 +8,8 @@ export type RestGetEnvironmentResponse = HTTPGetEnvironmentResponse
 
 export const getEnvironment = async (params: RestGetEnvironmentRequest, context: InternalRestApiClientContext): Promise<RestGetEnvironmentResponse> => {
     console.log("Context:", context)
-    const attendeeUrl = `${context.baseUrl}environment`;
-    const res = await fetch(attendeeUrl, {
+    const url = `${context.baseUrl}environment`;
+    const res = await fetch(url, {
         method: "GET",
         headers: {
             Authorization: context.idToken,
@@ -24,6 +24,36 @@ export const getEnvironment = async (params: RestGetEnvironmentRequest, context:
         throw response.code;
     }
     const data = response.data as RestGetEnvironmentResponse;
+    return data;
+};
+
+
+
+export type RestPostEnvironmentRequest = HTTPPostEnvironmentRequest
+export type RestPostEnvironmentResponse = HTTPPostEnvironmentResponse
+
+export const postEnvironment = async (params: RestPostEnvironmentRequest, context: InternalRestApiClientContext): Promise<RestPostEnvironmentResponse> => {
+    console.log("Context:", context)
+    const url = `${context.baseUrl}environment`;
+
+    const requestBody = JSON.stringify(params);
+    const res = await fetch(url, {
+        method: "POST",
+        body: requestBody,
+        headers: {
+            Authorization: context.idToken,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-Flect-Access-Token": context.codeToAccess || context.accessToken,
+        },
+    });
+
+    const response = (await res.json()) as HTTPResponseBody;
+    if (response.success === false) {
+        console.log(response.code);
+        throw response.code;
+    }
+    const data = response.data as RestPostEnvironmentResponse;
     return data;
 };
 

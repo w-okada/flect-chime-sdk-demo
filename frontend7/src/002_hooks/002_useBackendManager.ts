@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RestCreateMeetingRequest, RestCreateMeetingResponse, RestListMeetingsRequest, RestListMeetingsResponse } from "../001_clients_and_managers/002_rest/011_meetings";
 import { RestEndMeetingRequest, RestEndMeetingResponse, RestGetMeetingInfoRequest, RestGetMeetingInfoResponse } from "../001_clients_and_managers/002_rest/012_meeting";
 import { RestJoinMeetingRequest, RestJoinMeetingResponse } from "../001_clients_and_managers/002_rest/013_attendees";
 import { RestGetAttendeeInfoRequest, RestGetAttendeeInfoResponse } from "../001_clients_and_managers/002_rest/014_attendee";
 import { RestApiClient, RestApiClientContext } from "../001_clients_and_managers/002_rest/001_RestApiClient";
 import { MeetingListItem } from "../http_request";
-import { RestGetEnvironmentResponse } from "../001_clients_and_managers/002_rest/016_environment";
+import { RestGetEnvironmentResponse, RestPostEnvironmentResponse } from "../001_clients_and_managers/002_rest/016_environment";
 
 
 export type UseBackendManagerProps = {
@@ -30,6 +30,8 @@ export type GetAttendeeInfoResponse = RestGetAttendeeInfoResponse
 export type BackendManagerState = {
     meetings: MeetingListItem[],
     environment: RestGetEnvironmentResponse | undefined
+    username: string
+
 }
 
 export type BackendManagerStateAndMethod = BackendManagerState & {
@@ -39,12 +41,21 @@ export type BackendManagerStateAndMethod = BackendManagerState & {
     endMeeting: (params: EndMeetingRequest) => Promise<EndMeetingResponse | null>
     joinMeeting: (params: JoinMeetingRequest) => Promise<JoinMeetingResponse | null>
     getAttendeeInfo: (params: GetAttendeeInfoRequest) => Promise<GetAttendeeInfoResponse | null>
+    setUsername: (username: string) => void
+
 }
 export const useBackendManager = (props: UseBackendManagerProps): BackendManagerStateAndMethod => {
 
 
     const [meetings, setMeetings] = useState<MeetingListItem[]>([])
-    const [environment, setEnvironment] = useState<RestGetEnvironmentResponse>()
+    const [environment, setEnvironment] = useState<RestPostEnvironmentResponse>()
+    const usernameRef = useRef<string>("")
+    const [username, _setUsername] = useState<string>(usernameRef.current)
+    const setUsername = (username: string) => {
+        usernameRef.current = username
+        _setUsername(usernameRef.current)
+    }
+
 
 
     const restClient = useMemo(() => {
@@ -61,14 +72,16 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
 
     // contextが定まったら環境取得
     useEffect(() => {
-        const getEnvironment = async () => {
-            const env = await restClient.getEnvironment({}, context)
+        const postEnvironment = async () => {
+            const env = await restClient.postEnvironment({
+                username: username
+            }, context)
             setEnvironment(env)
             // ここで取得したmessaging apiのuserArnはapp providerでmessaging clientに設定される。
         }
         if (context.idToken.length > 0) {
             console.log("idtolen1:", context.idToken)
-            getEnvironment()
+            postEnvironment()
         } else {
 
             console.log("idtolen2:", context.idToken)
@@ -143,13 +156,15 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
     const returnVal: BackendManagerStateAndMethod = {
         meetings,
         environment,
+        username,
 
         createMeeting,
         reloadMeetingList,
         getMeetingInfo,
         endMeeting,
         joinMeeting,
-        getAttendeeInfo
+        getAttendeeInfo,
+        setUsername
     }
 
     return returnVal

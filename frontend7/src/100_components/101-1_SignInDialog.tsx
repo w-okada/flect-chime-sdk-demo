@@ -116,7 +116,7 @@ const DialogTiles = (props: DialogTilesProps) => {
 };
 
 export const SignInDialog = () => {
-    const { cognitoClientState, frontendState } = useAppState();
+    const { cognitoClientState, frontendState, messagingClientState, backendManagerState } = useAppState();
     const [message, setMessage] = useState<string | null>(null);
 
     // (x) Show  Message
@@ -203,6 +203,7 @@ export const SignInDialog = () => {
                         throw err;
                     }
                     await cognitoClientState.signIn(email, password);
+                    backendManagerState.setUsername(username);
                     frontendState.setUserName(username);
                     break;
                 // (B) Sign Up

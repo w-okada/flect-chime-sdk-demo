@@ -146,6 +146,62 @@
     }
 }
 
+.sidebar-chat {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .sidebar-chat-message-view {
+        /* background: #000; */
+        color: #fff;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        .sidebar-chat-message-content {
+            width: 100%;
+            .sidebar-chat-message-metadata {
+                padding-left: 5px;
+                width: 100%;
+                background: #700;
+                font-size: 0.8rem;
+            }
+            .sidebar-chat-message-data {
+                padding-left: 15px;
+                width: 100%;
+                background: #600;
+                font-size: 1rem;
+            }
+        }
+    }
+    .sidebar-chat-text-input {
+        margin: 3px;
+        background: #fff;
+        height: 2rem;
+        flex-grow: 0;
+        border-radius: 10px;
+        padding: 5px;
+        font-size: 1rem;
+    }
+    .sidebar-chat-text-submit {
+        margin: 1px;
+        margin-left: calc(var(--sidebar-width) / 2 - 1rem);
+        padding: 2px;
+        width: 50%;
+        text-align: center;
+        color: #333;
+        font-size: 1.2rem;
+        font-weight: 600;
+        background-color: #ccc;
+        transition: 0.2s;
+        border-radius: 10px;
+        &:hover {
+            text-decoration: none;
+            background-color: #999;
+        }
+    }
+}
+
 /*** (2-3) 装飾***/
 .sidebar:after {
     content: "";

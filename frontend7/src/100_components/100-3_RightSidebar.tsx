@@ -139,8 +139,16 @@ export const RightSidebar = (_props: RightSidebarProps) => {
                     </div>
 
                     <div className="sidebar-content">
-                        {/* <div>a</div>
-                        <div>a</div> */}
+                        <div className="sidebar-chat">
+                            <div className="sidebar-chat-message-view">
+                                <div className="sidebar-chat-message-content">
+                                    <div className="sidebar-chat-message-metadata">2022/09/10 13:00 名前</div>
+                                    <div className="sidebar-chat-message-data">サンプルメッセージ</div>
+                                </div>
+                            </div>
+                            <input type="text" className="sidebar-chat-text-input" />
+                            <div className="sidebar-chat-text-submit">send(N/A)</div>
+                        </div>
                     </div>
                 </div>
 
@@ -152,8 +160,8 @@ export const RightSidebar = (_props: RightSidebarProps) => {
                     </div>
 
                     <div className="sidebar-content">
-                        <div>a</div>
-                        <div>a</div>
+                        <div>N/A</div>
+                        <div>N/A</div>
                     </div>
                 </div>
             </div>

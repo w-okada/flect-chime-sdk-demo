@@ -1,6 +1,6 @@
 
-import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest } from "./backend_request";
-import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetEnvironmentResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
+import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest, BackendPostEnvironmentRequest } from "./backend_request";
+import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetEnvironmentResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPPostEnvironmentRequest, HTTPPostEnvironmentResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
 import { generateResponse, getEmailFromAccessToken } from "./util";
 
 
@@ -10,7 +10,7 @@ import { deleteMeeting, getMeetingInfo } from "./002_sub-handler/003_meeting";
 import { joinMeeting } from "./002_sub-handler/004_attendees";
 import { getAttendeeInfo } from "./002_sub-handler/005_attendee";
 import { startTranscribe, stopTranscribe } from "./002_sub-handler/006_misc";
-import { getEnvironment } from "./002_sub-handler/010_environment";
+import { getEnvironment, postEnvironment } from "./002_sub-handler/010_environment";
 
 
 const Methods = {
@@ -490,6 +490,9 @@ const handleEnvironment = (accessToken: string, method: string, pathParams: { [k
         case Methods.GET:
             handleGetEnvironemnt(accessToken, pathParams, body, callback);
             break;
+        case Methods.POST:
+            handlePostEnvironment(accessToken, pathParams, body, callback);
+            break;
         default:
             console.log(`Unknwon method: ${method}`);
             const response = generateResponse({ success: false, code: Codes.UNKNOWN_METHOD });
@@ -528,3 +531,36 @@ const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: str
     const response = generateResponse(res);
     callback(null, response);
 }
+
+
+
+const handlePostEnvironment = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+    const params = JSON.parse(body) as HTTPPostEnvironmentRequest;
+    let email;
+    try {
+        email = await getEmailFromAccessToken(accessToken);
+    } catch (e) {
+        console.log(e);
+    }
+    let res: HTTPResponseBody;
+    if (email) {
+        const backendParams: BackendPostEnvironmentRequest = {
+            email: email,
+            ...params
+        }
+        const result = await postEnvironment(backendParams);
+        const httpRes: HTTPPostEnvironmentResponse = result;
+        res = {
+            success: true,
+            code: Codes.SUCCESS,
+            data: httpRes,
+        };
+    } else {
+        res = {
+            success: false,
+            code: Codes.TOKEN_ERROR,
+        };
+    }
+    const response = generateResponse(res);
+    callback(null, response);
+};

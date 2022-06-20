@@ -64,7 +64,7 @@ export const listMeetingsFromDB = async (req: BackendListMeetingsRequest): Promi
         TableName: meetingTableName,
         Limit: 100,
     })
-    console.log("dynamo: list all meetings result:", result);
+    console.log("dynamo: list all meetings result:", JSON.stringify(result));
 
     const meetingInfos = result.Items;
     const meetings: MeetingListItem[] = meetingInfos!.map(x => {
@@ -87,8 +87,8 @@ export const listMeetingsFromDB = async (req: BackendListMeetingsRequest): Promi
         return x.meetingId
     })
     const aliveMeetingIds = await checkMeetingExistInChimeBackend(meetingIds)
-    const retMeetings = meetings.filter(x => { return x.secret == false })
-    const res = { meetings: retMeetings, aliveMeetingIds }
+    // const retMeetings = meetings.filter(x => { return x.secret == false }) //ここでsecretを排除すると Deleteができなくなる。
+    const res = { meetings: meetings, aliveMeetingIds }
     return res
 }
 

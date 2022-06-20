@@ -86,10 +86,17 @@ export const createApis = (id: string, restApi: api.RestApi, authorizerId: strin
     });
 
     //// (2-7) Environment
+    ///// (2-7-1) Get envrionment // not use?
     const apiEnvironemnt = root.addResource("environment");
     apiEnvironemnt.addMethod("GET", new api.LambdaIntegration(lambdaFunctionForRestAPI), {
         ...basicParams,
         operationName: `${id}_getEnvironment`,
+    });
+
+    ///// (2-7-2) Post envrionment
+    apiEnvironemnt.addMethod("POST", new api.LambdaIntegration(lambdaFunctionForRestAPI), {
+        ...basicParams,
+        operationName: `${id}_postEnvironment`,
     });
 
     // (3) CORS Configuration

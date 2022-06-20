@@ -43,6 +43,7 @@ export const createMeeting = async (req: BackendCreateMeetingRequest): Promise<B
 export const listMeetings = async (req: BackendListMeetingsRequest): Promise<BackendListMeetingsResponse> => {
     // Meetingのリストを取得(生死問わず)
     const res = await listMeetingsFromDB(req)
+    console.log("listMeetingsFromDB Result:", JSON.stringify(res))
     // 死んでいるミーティングのMessaging Channelを削除
     const deadMeetings = res.meetings.filter(x => {
         return !res.aliveMeetingIds.includes(x.meetingId)
@@ -55,10 +56,11 @@ export const listMeetings = async (req: BackendListMeetingsRequest): Promise<Bac
         })
     })
 
-    // 生きているミーティングのみ抽出して返す
+    // 生きているミーティングかつ、secretではないmeetingのみ抽出して返す
     const aliveMeetings = res.meetings.filter(x => {
         return res.aliveMeetingIds.includes(x.meetingId)
-    })
+    }).filter(x => { x.secret != true })
+
     return {
         meetings: aliveMeetings,
         aliveMeetingIds: res.aliveMeetingIds
