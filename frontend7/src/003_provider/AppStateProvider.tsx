@@ -63,6 +63,7 @@ export const AppStateProvider = ({ children }: Props) => {
         credentials: backendManagerState.environment?.credential || null,
         userArn: backendManagerState.environment?.appInstanceUserArn || null,
         globalChannelArn: backendManagerState.environment?.globalChannelArn || null,
+        globalUserId: backendManagerState.environment?.globalUserId || null,
     });
 
     /** (020) App State*/

@@ -1,4 +1,4 @@
-import { getEmailFromAccessToken } from "./util";
+import { getUserInfoFromCognitoWithAccessToken } from "./util";
 /**
  * generate policy. subfunction of authorizer.
  * @param {*} principalId
@@ -44,8 +44,8 @@ export const authorize = async (event: any, context: any, callback: any) => {
     console.log("token", event.authorizationToken);
     const token = event.authorizationToken as string;
     try {
-        const email = await getEmailFromAccessToken(token);
-        console.log("email1", email);
+        const info = await getUserInfoFromCognitoWithAccessToken(token);
+        console.log("email1", info);
     } catch (e) {
         throw "invalid token!! unknwon federation code";
     }

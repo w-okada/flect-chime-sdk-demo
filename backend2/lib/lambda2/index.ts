@@ -1,7 +1,7 @@
 
 import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest, BackendPostEnvironmentRequest } from "./backend_request";
 import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetEnvironmentResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPPostEnvironmentRequest, HTTPPostEnvironmentResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
-import { generateResponse, getEmailFromAccessToken } from "./util";
+import { generateResponse, getUserInfoFromCognitoWithAccessToken } from "./util";
 
 
 
@@ -122,8 +122,11 @@ const handleMeetings = (accessToken: string, method: string, pathParams: { [key:
 const handleGetMeetings = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
     const params = JSON.parse(body) as HTTPListMeetingsRequest;
     let email;
+    let sub;
     try {
-        email = await getEmailFromAccessToken(accessToken);
+        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
+        email = info.email
+        sub = info.sub
     } catch (e) {
         console.log(e);
     }
@@ -153,8 +156,11 @@ const handleGetMeetings = async (accessToken: string, pathParams: { [key: string
 const handlePostMeetings = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
     const params = JSON.parse(body) as HTTPCreateMeetingRequest;
     let email;
+    let sub;
     try {
-        email = await getEmailFromAccessToken(accessToken);
+        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
+        email = info.email
+        sub = info.sub
     } catch (e) {
         console.log(e);
     }
@@ -204,8 +210,11 @@ const handleGetMeeting = async (accessToken: string, pathParams: { [key: string]
     let res: HTTPResponseBody;
     const meetingName = pathParams["meetingName"];
     let email = "";
+    let sub = ""
     try {
-        email = (await getEmailFromAccessToken(accessToken)) || "";
+        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
+        email = info.email
+        sub = info.sub
     } catch (e) {
         res = {
             success: false,
@@ -430,8 +439,11 @@ const handlePostStartTranscribe = async (accessToken: string, pathParams: { [key
     const attendeeId = pathParams["attendeeId"];
     //// (1) If there is no meeting, return fai
     let email = "";
+    let sub = ""
     try {
-        email = (await getEmailFromAccessToken(accessToken)) || "";
+        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
+        email = info.email
+        sub = info.sub
     } catch (e) {
         res = {
             success: false,
@@ -461,8 +473,11 @@ const handlePostStopTranscribe = async (accessToken: string, pathParams: { [key:
     const attendeeId = pathParams["attendeeId"];
     //// (1) If there is no meeting, return fai
     let email = "";
+    let sub = "";
     try {
-        email = (await getEmailFromAccessToken(accessToken)) || "";
+        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
+        email = info.email
+        sub = info.sub
     } catch (e) {
         res = {
             success: false,
@@ -507,8 +522,11 @@ const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: str
     // (a) For Messaging
     // (a-1) EmailをUserIDとする。
     let email = "";
+    let sub = "";
     try {
-        email = (await getEmailFromAccessToken(accessToken)) || "";
+        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
+        email = info.email
+        sub = info.sub
     } catch (e) {
         res = {
             success: false,
@@ -537,15 +555,18 @@ const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: str
 const handlePostEnvironment = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
     const params = JSON.parse(body) as HTTPPostEnvironmentRequest;
     let email;
+    let sub;
     try {
-        email = await getEmailFromAccessToken(accessToken);
+        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
+        email = info.email
+        sub = info.sub
     } catch (e) {
         console.log(e);
     }
     let res: HTTPResponseBody;
     if (email) {
         const backendParams: BackendPostEnvironmentRequest = {
-            email: email,
+            cognitoSub: sub,
             ...params
         }
         const result = await postEnvironment(backendParams);

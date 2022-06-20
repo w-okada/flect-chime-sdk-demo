@@ -5,6 +5,7 @@ import * as STS from "@aws-sdk/client-sts"
 export type UseMessagingClientProps = {
     userArn?: string | null
     globalChannelArn?: string | null
+    globalUserId?: string | null
     credentials?: STS.Credentials | null
 }
 

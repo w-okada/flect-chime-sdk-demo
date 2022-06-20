@@ -4,7 +4,7 @@ import { createMeeting, listMeetings, RestCreateMeetingRequest, RestCreateMeetin
 import { endMeeting, getMeetingInfo, RestEndMeetingRequest, RestEndMeetingResponse, RestGetMeetingInfoRequest, RestGetMeetingInfoResponse } from "./012_meeting";
 import { joinMeeting, RestJoinMeetingRequest, RestJoinMeetingResponse } from "./013_attendees";
 import { getAttendeeInfo, RestGetAttendeeInfoRequest, RestGetAttendeeInfoResponse } from "./014_attendee";
-import { getEnvironment, postEnvironment, RestGetEnvironmentRequest, RestGetEnvironmentResponse, RestPostEnvironmentRequest, RestPostEnvironmentResponse } from "./016_environment";
+import { postEnvironment, RestPostEnvironmentRequest, RestPostEnvironmentResponse } from "./016_environment";
 
 export { createMeeting, endMeeting, getMeetingInfo };
 export type { HTTPCreateMeetingRequest, HTTPListMeetingsRequest };
@@ -99,11 +99,11 @@ export class RestApiClient {
     //     stopTranscribe(params, this.context);
     // };
 
-    // (6) Environment
-    getEnvironment = async (params: RestGetEnvironmentRequest, context: RestApiClientContext): Promise<RestGetEnvironmentResponse> => {
-        const res = await getEnvironment(params, { ...context, ...this.internalContext });
-        return res as RestGetEnvironmentResponse
-    };
+    // // (6) Environment
+    // getEnvironment = async (params: RestGetEnvironmentRequest, context: RestApiClientContext): Promise<RestGetEnvironmentResponse> => {
+    //     const res = await getEnvironment(params, { ...context, ...this.internalContext });
+    //     return res as RestGetEnvironmentResponse
+    // };
 
     postEnvironment = async (params: RestPostEnvironmentRequest, context: RestApiClientContext) => {
         const res = await postEnvironment(params, { ...context, ...this.internalContext });

@@ -5,7 +5,7 @@ import { RestJoinMeetingRequest, RestJoinMeetingResponse } from "../001_clients_
 import { RestGetAttendeeInfoRequest, RestGetAttendeeInfoResponse } from "../001_clients_and_managers/002_rest/014_attendee";
 import { RestApiClient, RestApiClientContext } from "../001_clients_and_managers/002_rest/001_RestApiClient";
 import { MeetingListItem } from "../http_request";
-import { RestGetEnvironmentResponse, RestPostEnvironmentResponse } from "../001_clients_and_managers/002_rest/016_environment";
+import { RestPostEnvironmentResponse } from "../001_clients_and_managers/002_rest/016_environment";
 
 
 export type UseBackendManagerProps = {
@@ -29,7 +29,7 @@ export type GetAttendeeInfoResponse = RestGetAttendeeInfoResponse
 
 export type BackendManagerState = {
     meetings: MeetingListItem[],
-    environment: RestGetEnvironmentResponse | undefined
+    environment: RestPostEnvironmentResponse | undefined
     username: string
 
 }

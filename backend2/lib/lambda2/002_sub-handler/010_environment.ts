@@ -12,7 +12,10 @@ export const getEnvironment = async (req: BackendGetEnvironmentRequest): Promise
     const assumedRoleResponse = await assumedMessagingEnduserRole()
 
     // (2) MessagingAPIにユーザ登録
-    const createUserResponse = await createMessagingAPIUser(req.email)
+    const id = req.email
+    const name = req.email // getEnvironmentを使用することになるときに再考
+
+    const createUserResponse = await createMessagingAPIUser(id, name)
 
     // (3) グローバルチャンネルにユーザを追加
     const membershipResponse = await addUserToGlobalChannel(createUserResponse.AppInstanceUserArn!)
@@ -33,8 +36,9 @@ export const postEnvironment = async (req: BackendPostEnvironmentRequest): Promi
     const assumedRoleResponse = await assumedMessagingEnduserRole()
 
     // (2) MessagingAPIにユーザ登録
-    const globalUserId = `${v4()}_${req.username}`
-    const createUserResponse = await createMessagingAPIUser(globalUserId)
+    const id = req.cognitoSub
+    const name = req.username
+    const createUserResponse = await createMessagingAPIUser(id, name)
 
     // (3) グローバルチャンネルにユーザを追加
     const membershipResponse = await addUserToGlobalChannel(createUserResponse.AppInstanceUserArn!)
@@ -44,7 +48,7 @@ export const postEnvironment = async (req: BackendPostEnvironmentRequest): Promi
         globalChannelArn: messagingGlobalChannelArn,
         credential: assumedRoleResponse.Credentials!,
         appInstanceUserArn: createUserResponse.AppInstanceUserArn!,
-        globalUserId: globalUserId,
+        globalUserId: id,
     }
     return res
 };

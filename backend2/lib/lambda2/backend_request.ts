@@ -128,5 +128,5 @@ export type BackendStopTranscribeException = {
 // (6) Environment
 export type BackendGetEnvironmentRequest = HTTPGetEnvironmentRequest & { email: string }
 export type BackendGetEnvironmentResponse = HTTPGetEnvironmentResponse
-export type BackendPostEnvironmentRequest = HTTPPostEnvironmentRequest & { email: string }
+export type BackendPostEnvironmentRequest = HTTPPostEnvironmentRequest & { cognitoSub: string }
 export type BackendPostEnvironmentResponse = HTTPPostEnvironmentResponse
