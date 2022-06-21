@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react"
 import { MessageItem, MessagingClient } from "../001_clients_and_managers/005_messaging/MessagingClient"
 import * as STS from "@aws-sdk/client-sts"
 import { ChannelMessageType } from "@aws-sdk/client-chime"
-import { ControlTypes } from "../messaging_format"
+import { ControlTypes, MessageFormat, MessageTypes } from "../messaging_format"
 
 
 
@@ -69,7 +69,11 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
         console.log("connect called", props.credentials)
         if (props.credentials) {
             await client.connect(props.credentials, props.userArn!)
-            await client.send(props.globalChannelArn!, "initialize message")
+            const message: MessageFormat = {
+                type: MessageTypes.CONNECTED,
+                data: "initialize message"
+            }
+            await client.send(props.globalChannelArn!, JSON.stringify(message))
             client.setListener(props.globalChannelArn!, {
                 updated: (messages: MessageItem[]) => {
                     setGlobalMessages([...messages])
@@ -85,13 +89,16 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
             listGlobalMessage()
         }
     }
-    const sendGlobalMessage = async (message: string) => {
+    const sendGlobalMessage = async (data: string) => {
         if (!props.globalChannelArn) {
             console.warn("global channel arn is not set.")
             return
         }
-        await client.send(props.globalChannelArn!, message)
-
+        const message: MessageFormat = {
+            type: MessageTypes.MESSAGE,
+            data: data
+        }
+        await client.send(props.globalChannelArn!, JSON.stringify(message))
     }
     const listGlobalMessage = async () => {
         if (!props.globalChannelArn) {
@@ -102,13 +109,17 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
     }
 
 
-    const sendChannelMessage = async (message: string) => {
+    const sendChannelMessage = async (data: string) => {
         if (!meetingChannelArnRef.current) {
             console.warn("meeting channel arn is not set.")
             return
         }
         console.log("[messaging] meetingChannelArnRef.current:", meetingChannelArnRef.current)
-        await client.send(meetingChannelArnRef.current!, message)
+        const message: MessageFormat = {
+            type: MessageTypes.MESSAGE,
+            data: data
+        }
+        await client.send(meetingChannelArnRef.current!, JSON.stringify(message))
 
     }
 

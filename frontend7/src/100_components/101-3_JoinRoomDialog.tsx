@@ -58,8 +58,8 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
             });
             console.log(`JOINEDMEETING`, joinedMeetingInfo);
             messagingClientState.setMeetingChannelArn(joinedMeetingInfo?.metadata.MessageChannelArn!);
-            messagingClientState.sendGlobalMessage("GLOBAL MESSAGING SEND...");
-            messagingClientState.sendChannelMessage("CHANNEL MESSAGING SEND...");
+            // messagingClientState.sendGlobalMessage("GLOBAL MESSAGING SEND...");
+            // messagingClientState.sendChannelMessage("CHANNEL MESSAGING SEND...");
 
             // 後処理
             initializeState();

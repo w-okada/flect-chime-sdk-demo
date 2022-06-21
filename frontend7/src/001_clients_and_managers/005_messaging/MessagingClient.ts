@@ -147,7 +147,7 @@ export class MessagingClient {
             ClientRequestToken: v4(),
             Content: message,
             Persistence: Persistence.Persistent,
-            Type: 'STANDARD',
+            Type: ChannelMessageType.STANDARD,
             ChimeBearer: this.userArn,
         });
     }

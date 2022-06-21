@@ -3,10 +3,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useStateControlCheckbox } from "./hooks/useStateControlCheckbox";
 import { useAppState } from "../003_provider/AppStateProvider";
 import { AnimationTypes, HeaderButton, HeaderButtonProps } from "./parts/002_HeaderButton";
+import { ChannelMessageType } from "@aws-sdk/client-chime";
+import { MessageTypes } from "../messaging_format";
 export type RightSidebarProps = {};
 
 export const RightSidebar = (_props: RightSidebarProps) => {
-    const { chimeClientState, frontendState } = useAppState();
+    const { chimeClientState, frontendState, messagingClientState } = useAppState();
     const sidebarAccordionAttendeesCheckbox = useStateControlCheckbox("sidebar-accordion-attendees-checkbox");
     const sidebarAccordionLocalChatCheckbox = useStateControlCheckbox("sidebar-accordion-local-chat-checkbox");
     const sidebarAccordionWiteboardCheckbox = useStateControlCheckbox("sidebar-accordion-whiteboard-checkbox");
@@ -112,6 +114,55 @@ export const RightSidebar = (_props: RightSidebarProps) => {
         }, 1000 * 5);
     }, []);
 
+    const messages = useMemo(() => {
+        console.log("[Global Message Update]", messagingClientState.globalMessages);
+        const messages = messagingClientState.meetingMessages
+            .slice(0, 100)
+            .map((x) => {
+                try {
+                    const content = JSON.parse(x.content);
+                    const date = new Date(x.createdTimestamp);
+                    return {
+                        type: x.type,
+                        senderName: x.senderName,
+                        time: `${date.toLocaleString()}`,
+                        contentType: content.type,
+                        content: content.data,
+                    };
+                } catch (ex) {
+                    return {
+                        type: x.type,
+                        senderName: x.senderName,
+                        time: new Date(x.createdTimestamp).toDateString(),
+                        contentType: "",
+                        content: "",
+                    };
+                }
+            })
+            .filter((x) => {
+                return x.type == ChannelMessageType.STANDARD;
+            })
+            .filter((x) => {
+                return x.contentType == MessageTypes.MESSAGE;
+            });
+        const m = messages.map((x, index) => {
+            return (
+                <div key={`sidebar-chat-message-content-${index}`} className="sidebar-chat-message-content">
+                    <div className="sidebar-chat-message-metadata">
+                        {x.time} {x.senderName}
+                    </div>
+                    <div className="sidebar-chat-message-data">{x.content}</div>
+                </div>
+            );
+        });
+        return m;
+    }, [messagingClientState.meetingMessages]);
+
+    const sendMessage = async () => {
+        const input = document.getElementById("right-sidebar-chat-text-input") as HTMLInputElement;
+        messagingClientState.sendChannelMessage(input.value);
+        input.value = "";
+    };
     return (
         <>
             {frontendState.stateControls.openRightSidebarCheckbox.trigger}
@@ -140,14 +191,16 @@ export const RightSidebar = (_props: RightSidebarProps) => {
 
                     <div className="sidebar-content">
                         <div className="sidebar-chat">
-                            <div className="sidebar-chat-message-view">
-                                <div className="sidebar-chat-message-content">
-                                    <div className="sidebar-chat-message-metadata">2022/09/10 13:00 名前</div>
-                                    <div className="sidebar-chat-message-data">サンプルメッセージ</div>
-                                </div>
+                            <div className="sidebar-chat-message-view">{messages}</div>
+                            <input type="text" id="right-sidebar-chat-text-input" className="sidebar-chat-text-input" />
+                            <div
+                                className="sidebar-chat-text-submit"
+                                onClick={() => {
+                                    sendMessage();
+                                }}
+                            >
+                                send
                             </div>
-                            <input type="text" className="sidebar-chat-text-input" />
-                            <div className="sidebar-chat-text-submit">send(N/A)</div>
                         </div>
                     </div>
                 </div>
