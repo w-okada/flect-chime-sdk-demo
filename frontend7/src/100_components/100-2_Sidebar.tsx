@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useStateControlCheckbox } from "./hooks/useStateControlCheckbox";
 import { useAppState } from "../003_provider/AppStateProvider";
@@ -7,7 +7,7 @@ import { AnimationTypes, HeaderButton, HeaderButtonProps } from "./parts/002_Hea
 export type SidebarProps = {};
 
 export const Sidebar = (_props: SidebarProps) => {
-    const { backendManagerState, frontendState } = useAppState();
+    const { backendManagerState, frontendState, messagingClientState } = useAppState();
     const sidebarAccordionMeetingCheckbox = useStateControlCheckbox("sidebar-accordion-meeting-checkbox");
     const sidebarAccordionChatCheckbox = useStateControlCheckbox("sidebar-accordion-chat-checkbox");
 
@@ -93,6 +93,13 @@ export const Sidebar = (_props: SidebarProps) => {
             );
         });
     }, [backendManagerState.meetings]);
+
+    useEffect(() => {
+        console.log("[Global Message Update]", messagingClientState.globalMessages);
+    }, [messagingClientState.globalMessages]);
+    useEffect(() => {
+        console.log("[Meeting Message Update]", messagingClientState.meetingMessages);
+    }, [messagingClientState.meetingMessages]);
 
     return (
         <>

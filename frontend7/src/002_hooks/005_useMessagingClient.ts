@@ -1,6 +1,8 @@
 import { useMemo, useRef, useState } from "react"
-import { MessagingClient } from "../001_clients_and_managers/005_messaging/MessagingClient"
+import { MessageItem, MessagingClient } from "../001_clients_and_managers/005_messaging/MessagingClient"
 import * as STS from "@aws-sdk/client-sts"
+
+
 
 export type UseMessagingClientProps = {
     userArn?: string | null
@@ -10,7 +12,9 @@ export type UseMessagingClientProps = {
 }
 
 export type MessagingClientState = {
-    meetingChannelArn: string | null
+    meetingChannelArn: string | null,
+    globalMessages: MessageItem[],
+    meetingMessages: MessageItem[]
 }
 export type MessagingClientStateAndMethod = MessagingClientState & {
     connect: () => Promise<void>
@@ -24,9 +28,23 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
     const meetingChannelArnRef = useRef<string | null>(null)
     const [meetingChannelArn, _setMeetingChannelArn] = useState<string | null>(meetingChannelArnRef.current)
     const setMeetingChannelArn = (arn: string) => {
+        // Message Listener 初期化
+        setMeetingMessages([])
+        if (meetingChannelArnRef.current) {
+            client.removeListener(meetingChannelArnRef.current)
+        }
+
+        // channelArn設定
         meetingChannelArnRef.current = arn
+        client.setListener(meetingChannelArnRef.current, {
+            updated: (messages: MessageItem[]) => {
+                setMeetingMessages([...messages])
+            }
+        })
         _setMeetingChannelArn(meetingChannelArnRef.current)
     }
+    const [globalMessages, setGlobalMessages] = useState<MessageItem[]>([])
+    const [meetingMessages, setMeetingMessages] = useState<MessageItem[]>([])
 
     const client = useMemo(() => {
         const c = new MessagingClient()
@@ -37,6 +55,12 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
         if (props.credentials) {
             await client.connect(props.credentials, props.userArn!)
             await client.send(props.globalChannelArn!, "initialize message")
+            client.setListener(props.globalChannelArn!, {
+                updated: (messages: MessageItem[]) => {
+                    setGlobalMessages([...messages])
+                }
+            })
+            listGlobalMessage()
         }
     }
     const sendGlobalMessage = async (message: string) => {
@@ -47,6 +71,15 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
         await client.send(props.globalChannelArn!, message)
 
     }
+    const listGlobalMessage = async () => {
+        if (!props.globalChannelArn) {
+            console.warn("global channel arn is not set.")
+            return
+        }
+        await client.listMessages(props.globalChannelArn!)
+    }
+
+
     const sendChannelMessage = async (message: string) => {
         if (!meetingChannelArnRef.current) {
             console.warn("meeting channel arn is not set.")
@@ -62,7 +95,9 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
         meetingChannelArn,
         setMeetingChannelArn,
         sendGlobalMessage,
-        sendChannelMessage
+        sendChannelMessage,
+        globalMessages,
+        meetingMessages
     }
     return retVal
 }

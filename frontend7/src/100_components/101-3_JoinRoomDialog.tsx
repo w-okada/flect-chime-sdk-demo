@@ -53,7 +53,6 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
             await chimeClientState.enterMeeting(deviceState.chimeAudioInputDevice, deviceState.chimeVideoInputDevice, deviceState.chimeAudioOutputDevice, audioElement);
             setMessage("enter meeting.... done.");
             // (4) メッセージング初期化
-            // messagingClientState.setMeetingChannelArn(meetingInfo.)
             const joinedMeetingInfo = await backendManagerState.getMeetingInfo({
                 meetingName: frontendState.joinRoomDialogProps.decodedMeetingName,
             });

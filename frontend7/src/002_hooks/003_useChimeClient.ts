@@ -88,14 +88,14 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
                     const nameUnresolved = Object.values(list).find(x => { return x.attendeeName === null })
                     if (nameUnresolved) {
                         console.log("retry resolve attendee name", nameUnresolved)
-                        setTimeout(updateAttendeeList, 1000 * 2)// 冪等性
+                        setTimeout(updateAttendeeList, 1000 * 2)
                     }
-                    setAttendees({ ...list }) // 冪等性
+                    setAttendees({ ...list })
                 }
                 updateAttendeeList()
             },
             videoTileStateUpdated: (list: { [attendeeId: string]: VideoTileState; }): void => {
-                setVideoTileStates({ ...list }) // 冪等性
+                setVideoTileStates({ ...list })
             }
         }
         chimeClient.setFlectChimeClientListener(l)

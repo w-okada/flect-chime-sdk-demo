@@ -1,5 +1,7 @@
 import * as Chime from "@aws-sdk/client-chime"
+import { ChannelMessagePersistenceType, ChannelMessageType } from "@aws-sdk/client-chime";
 import { v4 } from "uuid";
+import { ControlTypes } from "../messaging_format";
 
 
 const messagingAppInstanceAdminArn = process.env.MESSAGING_APP_INSTANCE_ADMIN_ARN!;
@@ -17,7 +19,26 @@ export const createMeetingInChimeBackend = async (region: string) => {
         MediaRegion: region,
     };
     const newMeetingInfo = await chime.createMeeting(request);
+    await chime.sendChannelMessage({
+        ChannelArn: messagingGlobalChannelArn,
+        ClientRequestToken: v4(),
+        Content: ControlTypes.RoomCreated,
+        Type: ChannelMessageType.CONTROL,
+        Persistence: ChannelMessagePersistenceType.NON_PERSISTENT,
+        ChimeBearer: messagingAppInstanceAdminArn,
+    })
     return newMeetingInfo
+}
+
+export const notifyMeetingDeletedFromChimeBackend = async () => {
+    await chime.sendChannelMessage({
+        ChannelArn: messagingGlobalChannelArn,
+        ClientRequestToken: v4(),
+        Content: ControlTypes.RoomDeleted,
+        Type: ChannelMessageType.CONTROL,
+        Persistence: ChannelMessagePersistenceType.NON_PERSISTENT,
+        ChimeBearer: messagingAppInstanceAdminArn,
+    })
 }
 
 // (2) Chimeのバックエンドに会議室の存在確認。

@@ -4,7 +4,7 @@ import {
     BackendListMeetingsRequest,
     BackendListMeetingsResponse,
 } from "../backend_request";
-import { createMeetingInChimeBackend, createMessageChannelInChimeBackend } from "../001_common/002_Chime";
+import { createMeetingInChimeBackend, createMessageChannelInChimeBackend, notifyMeetingDeletedFromChimeBackend } from "../001_common/002_Chime";
 import { deleteMeetingFromDB, getMeetingInfoFromDB, listMeetingsFromDB, registerMeetingIntoDB } from "../001_common/001_DynamoDB";
 
 // (1) Meetings
@@ -55,11 +55,14 @@ export const listMeetings = async (req: BackendListMeetingsRequest): Promise<Bac
             messageChannelArn: x.metadata.MessageChannelArn
         })
     })
+    if (deadMeetings.length > 0) {
+        notifyMeetingDeletedFromChimeBackend()
+    }
 
     // 生きているミーティングかつ、secretではないmeetingのみ抽出して返す
     const aliveMeetings = res.meetings.filter(x => {
         return res.aliveMeetingIds.includes(x.meetingId)
-    }).filter(x => { x.secret != true })
+    }).filter(x => { return x.secret != true })
 
     return {
         meetings: aliveMeetings,
