@@ -85,10 +85,19 @@ export const AppStateProvider = ({ children }: Props) => {
         if (backendManagerState.environment) {
             console.log("env", backendManagerState.environment);
             messagingClientState.connect();
+            messagingClientState.setMessageControlLsiterner({
+                roomCreated: () => {
+                    backendManagerState.reloadMeetingList({});
+                },
+                roomDeleted: () => {
+                    backendManagerState.reloadMeetingList({});
+                },
+            });
         } else {
             console.log("env not::", backendManagerState.environment);
         }
     }, [backendManagerState.environment]);
+
     /** (010) Environment State */
     //// (010) device
 

@@ -38,7 +38,7 @@ export const CreateRoomDialog = (_props: CreateRoomDialogProps) => {
             if (res?.created === false) {
                 throw new Error(ChimeDemoException.NoMeetingRoomCreated);
             }
-            await backendManagerState.reloadMeetingList({});
+            // await backendManagerState.reloadMeetingList({}); // messaging api でnotifyされる。
             initializeState();
             frontendState.stateControls.createRoomCheckbox.updateState(false);
         } catch (ex) {

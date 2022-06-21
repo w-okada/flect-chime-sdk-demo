@@ -3,7 +3,7 @@ import * as STS from "@aws-sdk/client-sts"
 import { ConsoleLogger, DefaultMessagingSession, LogLevel, Message, MessagingSessionConfiguration } from "amazon-chime-sdk-js";
 import { CredentialProvider } from "@aws-sdk/types";
 import { v4 } from "uuid"
-import { SortOrder } from "@aws-sdk/client-chime";
+import { ChannelMessageType, SortOrder } from "@aws-sdk/client-chime";
 
 
 export enum Persistence {
@@ -15,6 +15,7 @@ export type MessageItem = {
     createdTimestamp: number,
     senderName: string,
     senderArn: string
+    type: ChannelMessageType | string
 }
 export type MessageItems = { [channelArn: string]: MessageItem[] }
 export type MessageListener = {
@@ -75,6 +76,7 @@ export class MessagingClient {
                         createdTimestamp: Date.parse(payload.CreatedTimestamp),
                         senderName: payload.Sender.Name,
                         senderArn: payload.Sender.Arn,
+                        type: payload.Type || ""
                     })
                     console.log("[messaging] messages", this.messages)
                     if (this.listeners[channelArn]) {
@@ -116,6 +118,7 @@ export class MessagingClient {
                     createdTimestamp: x.CreatedTimestamp?.getTime() || 0,
                     senderName: x.Sender?.Name || "",
                     senderArn: x.Sender?.Arn || "",
+                    type: x.Type || ""
                 })
             })
             if (this.listeners[channelArn]) {

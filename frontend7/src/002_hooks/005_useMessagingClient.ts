@@ -1,6 +1,8 @@
 import { useMemo, useRef, useState } from "react"
 import { MessageItem, MessagingClient } from "../001_clients_and_managers/005_messaging/MessagingClient"
 import * as STS from "@aws-sdk/client-sts"
+import { ChannelMessageType } from "@aws-sdk/client-chime"
+import { ControlTypes } from "../messaging_format"
 
 
 
@@ -21,6 +23,12 @@ export type MessagingClientStateAndMethod = MessagingClientState & {
     setMeetingChannelArn: (arn: string) => void
     sendGlobalMessage: (message: string) => Promise<void>
     sendChannelMessage: (mesage: string) => Promise<void>
+    setMessageControlLsiterner: (l: MessageControlListener) => void
+}
+
+export type MessageControlListener = {
+    roomCreated: () => void
+    roomDeleted: () => void
 }
 
 
@@ -45,6 +53,13 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
     }
     const [globalMessages, setGlobalMessages] = useState<MessageItem[]>([])
     const [meetingMessages, setMeetingMessages] = useState<MessageItem[]>([])
+    const messageControlListenerRef = useRef<MessageControlListener | null>(null)
+    const [_messageControlListener, _setMessageControlListener] = useState<MessageControlListener | null>(messageControlListenerRef.current)
+    const setMessageControlLsiterner = (l: MessageControlListener) => {
+        messageControlListenerRef.current = l
+        _setMessageControlListener(messageControlListenerRef.current)
+    }
+
 
     const client = useMemo(() => {
         const c = new MessagingClient()
@@ -58,6 +73,13 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
             client.setListener(props.globalChannelArn!, {
                 updated: (messages: MessageItem[]) => {
                     setGlobalMessages([...messages])
+                    if (messages[0].type == ChannelMessageType.CONTROL && messageControlListenerRef.current) {
+                        if (messages[0].content == ControlTypes.RoomCreated) {
+                            messageControlListenerRef.current.roomCreated()
+                        } else if (messages[0].content == ControlTypes.RoomDeleted) {
+                            messageControlListenerRef.current.roomDeleted()
+                        }
+                    }
                 }
             })
             listGlobalMessage()
@@ -96,6 +118,7 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
         setMeetingChannelArn,
         sendGlobalMessage,
         sendChannelMessage,
+        setMessageControlLsiterner,
         globalMessages,
         meetingMessages
     }
