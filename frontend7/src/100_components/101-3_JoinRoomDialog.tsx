@@ -4,9 +4,12 @@ import { useAppState } from "../003_provider/AppStateProvider";
 import { ChimeDemoException } from "../000_exception/Exception";
 import { Processing } from "./parts/001_processing";
 export type JoinRoomDialogProps = {};
-
+type DialogMessage = {
+    content: string;
+    color: string;
+};
 export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
-    const [message, setMessage] = useState<string | null>(null);
+    const [message, setMessage] = useState<DialogMessage | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const { backendManagerState, chimeClientState, frontendState, deviceState, messagingClientState } = useAppState();
 
@@ -23,20 +26,29 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
         try {
             setIsProcessing(true);
             // (1) get meeting token from backend
-            setMessage("try to get meeting token....");
+            setMessage({
+                content: "try to get meeting token....",
+                color: "#0000ff",
+            });
             const joinTokenResult = await backendManagerState.joinMeeting({
                 meetingName: frontendState.joinRoomDialogProps.decodedMeetingName.length > 0 ? frontendState.joinRoomDialogProps.decodedMeetingName : meetingName,
                 attendeeName: frontendState.username,
                 code: code,
                 messagingUserArn: backendManagerState.environment!.appInstanceUserArn,
             });
-            setMessage("try to get meeting token.... done.");
+            setMessage({
+                content: "try to get meeting token.... done.",
+                color: "#0000ff",
+            });
             if (!joinTokenResult) {
                 throw new Error(ChimeDemoException.RestClientNotInitilized);
             }
 
             // (2) join with token
-            setMessage("join meeting.... ");
+            setMessage({
+                content: "join meeting.... ",
+                color: "#0000ff",
+            });
             const meetingInfo = joinTokenResult.meeting;
             const attendeeInfo = joinTokenResult.attendee;
             frontendState.setCurrentMeetingInfo({
@@ -46,12 +58,22 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
                 attendeeName: frontendState.username,
             });
             await chimeClientState.joinMeeting(frontendState.joinRoomDialogProps.decodedMeetingName, meetingInfo, attendeeInfo);
-            setMessage("join meeting.... done.");
+            setMessage({
+                content: "join meeting.... done.",
+                color: "#0000ff",
+            });
             // (3) enter
-            setMessage("enter meeting.... ");
+            setMessage({
+                content: "enter meeting.... ",
+                color: "#0000ff",
+            });
             const audioElement = document.getElementById("chime-audio-output-element") as HTMLAudioElement;
             await chimeClientState.enterMeeting(deviceState.chimeAudioInputDevice, deviceState.chimeVideoInputDevice, deviceState.chimeAudioOutputDevice, audioElement);
-            setMessage("enter meeting.... done.");
+            setMessage({
+                content: "enter meeting.... done.",
+                color: "#0000ff",
+            });
+
             // (4) メッセージング初期化
             const joinedMeetingInfo = await backendManagerState.getMeetingInfo({
                 meetingName: frontendState.joinRoomDialogProps.decodedMeetingName,
@@ -67,7 +89,10 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
         } catch (ex) {
             // @ts-ignore
             if (ex.message === ChimeDemoException.RestClientNotInitilized) {
-                setMessage("Failed to create meeting room. maybe rest api client is not initilized.");
+                setMessage({
+                    content: "Failed to create meeting room. maybe rest api client is not initilized.",
+                    color: "#0000ff",
+                });
             } else {
                 console.error(ex);
                 // @ts-ignore
@@ -108,9 +133,14 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
     }, [frontendState.joinRoomDialogProps.useCode]);
 
     const messageArea = useMemo(() => {
+        if (!message) {
+            return <></>;
+        }
         return (
             <div className="dialog-input-controls">
-                <div className="dialog-message">{message}</div>
+                <div className="dialog-message" style={{ color: `${message.color}` }}>
+                    {message?.content}
+                </div>
             </div>
         );
     }, [message]);

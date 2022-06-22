@@ -6,11 +6,14 @@ import { ChimeDemoException } from "../000_exception/Exception";
 import { Processing } from "./parts/001_processing";
 
 export type CreateRoomDialogProps = {};
-
+type DialogMessage = {
+    content: string;
+    color: string;
+};
 export const CreateRoomDialog = (_props: CreateRoomDialogProps) => {
     const { backendManagerState, frontendState } = useAppState();
     const [useCode, setUseCode] = useState<boolean>(false);
-    const [message, setMessage] = useState<string | null>(null);
+    const [message, setMessage] = useState<DialogMessage | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
     // (2) Action
@@ -44,7 +47,10 @@ export const CreateRoomDialog = (_props: CreateRoomDialogProps) => {
         } catch (ex) {
             // @ts-ignore
             if (ex.message === ChimeDemoException.NoMeetingRoomCreated) {
-                setMessage("Failed to create meeting room. maybe same name room exists.");
+                setMessage({
+                    content: "Failed to create meeting room. maybe same name room exists.",
+                    color: "#ff0000",
+                });
             } else {
                 console.error(ex);
                 // @ts-ignore
@@ -123,9 +129,14 @@ export const CreateRoomDialog = (_props: CreateRoomDialogProps) => {
     }, [useCode]);
 
     const messageArea = useMemo(() => {
+        if (!message) {
+            return <></>;
+        }
         return (
             <div className="dialog-input-controls">
-                <div className="dialog-message">{message}</div>
+                <div className="dialog-message" style={{ color: `${message.color}` }}>
+                    {message?.content}
+                </div>
             </div>
         );
     }, [message]);

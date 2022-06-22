@@ -21,6 +21,11 @@ type DialogTileIconProps = {
     label: string;
 };
 
+type DialogMessage = {
+    content: string;
+    color: string;
+};
+
 const DialogTileIcon = (props: DialogTileIconProps) => {
     const icon = useMemo(() => {
         return (
@@ -118,7 +123,7 @@ const DialogTiles = (props: DialogTilesProps) => {
 
 export const SignInDialog = () => {
     const { cognitoClientState, frontendState, messagingClientState, backendManagerState } = useAppState();
-    const [message, setMessage] = useState<string | null>(null);
+    const [message, setMessage] = useState<DialogMessage | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
     // (x) Show  Message
@@ -128,35 +133,59 @@ export const SignInDialog = () => {
         switch (exception.code) {
             case "UserNotFoundException":
                 console.warn("未登録のユーザ");
-                setMessage(`[${action}][${exception.code}] No registered user`);
+                setMessage({
+                    content: `[${action}][${exception.code}] No registered user`,
+                    color: "#ff0000",
+                });
                 break;
             case "InvalidParameterException":
                 console.warn("パラメータが不正");
-                setMessage(`[${action}][${exception.code}] Invalide parameter`);
+                setMessage({
+                    content: `[${action}][${exception.code}] Invalide parameter`,
+                    color: "#ff0000",
+                });
                 break;
             case "LimitExceededException":
                 console.warn("??");
-                setMessage(`[${action}][${exception.code}] Unknown Exception`);
+                setMessage({
+                    content: `[${action}][${exception.code}] Unknown Exception`,
+                    color: "#ff0000",
+                });
                 break;
             case "NotAuthorizedException":
                 console.warn("サインインできない。");
-                setMessage(`[${action}][${exception.code}] Password error`);
+                setMessage({
+                    content: `[${action}][${exception.code}] Password error`,
+                    color: "#ff0000",
+                });
                 break;
             case "NoUserNameInput":
                 console.warn("ユーザ名が入っていない");
-                setMessage(`[${action}][${exception.code}] No display name`);
+                setMessage({
+                    content: `[${action}][${exception.code}] No display name`,
+                    color: "#ff0000",
+                });
                 break;
             case "UsernameExistsException":
                 console.warn("登録済みのユーザ");
-                setMessage(`[${action}][${exception.code}] The user is already registered.`);
+                setMessage({
+                    content: `[${action}][${exception.code}] The user is already registered.`,
+                    color: "#ff0000",
+                });
                 break;
             case "CodeMismatchException":
                 console.warn("コードが間違っている");
-                setMessage(`[${exception.code}] Invalid code.`);
+                setMessage({
+                    content: `[${exception.code}] Invalid code.`,
+                    color: "#ff0000",
+                });
                 break;
             default:
                 console.error("Unknown Exception");
-                setMessage(`[${action}][${exception.code}] Unknown Exception`);
+                setMessage({
+                    content: `[${action}][${exception.code}] Unknown Exception`,
+                    color: "#ff0000",
+                });
         }
     };
 
@@ -216,14 +245,20 @@ export const SignInDialog = () => {
                     setIsProcessing(true);
                     await cognitoClientState.signUp(email, newPassword);
                     setIsProcessing(false);
-                    setMessage("A verification code is sent to your address. Please verify the code.");
+                    setMessage({
+                        content: "A verification code is sent to your address. Please verify the code.",
+                        color: "#0000ff",
+                    });
                     break;
                 // (C) Verify
                 case "verify":
                     setIsProcessing(true);
                     await cognitoClientState.verify(email, code);
                     setIsProcessing(false);
-                    setMessage("Verified.");
+                    setMessage({
+                        content: "Verified.",
+                        color: "#0000ff",
+                    });
 
                     break;
                 // (D) Change password
@@ -241,6 +276,7 @@ export const SignInDialog = () => {
             }
         } catch (exception) {
             showMessage(tab, exception);
+            setIsProcessing(false);
         }
     };
 
@@ -251,7 +287,10 @@ export const SignInDialog = () => {
         currentTab: tab,
         onChange: (tabId: TabItems) => {
             setTab(tabId);
-            setMessage("");
+            setMessage({
+                content: "",
+                color: "#000000",
+            });
         },
     };
     const dialogTiles = <DialogTiles {...dialogTilesProps}></DialogTiles>;
@@ -338,9 +377,14 @@ export const SignInDialog = () => {
     }, [tab]);
 
     const messageArea = useMemo(() => {
+        if (!message) {
+            return <></>;
+        }
         return (
             <div className="dialog-input-controls">
-                <div className="dialog-message">{message}</div>
+                <div className="dialog-message" style={{ color: `${message.color}` }}>
+                    {message?.content}
+                </div>
             </div>
         );
     }, [message]);
