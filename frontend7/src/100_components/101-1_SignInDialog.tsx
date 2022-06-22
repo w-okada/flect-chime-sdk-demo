@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAppState } from "../003_provider/AppStateProvider";
-import { FRONTEND_LOCAL_DEV, DEFAULT_EMAIL, DEFAULT_PASSWORD, DEFAULT_NICKNAME } from "../const";
+import { FRONTEND_LOCAL_DEV, DEFAULT_EMAIL, DEFAULT_PASSWORD } from "../const";
 import { Processing } from "./parts/001_processing";
 
 const TabItems = {
@@ -208,6 +208,7 @@ export const SignInDialog = () => {
                     await cognitoClientState.signIn(email, password);
                     backendManagerState.setUsername(username);
                     frontendState.setUserName(username);
+                    localStorage.username = username;
                     setIsProcessing(false);
                     break;
                 // (B) Sign Up
@@ -306,7 +307,7 @@ export const SignInDialog = () => {
         const additionalAttr = {};
         if (FRONTEND_LOCAL_DEV) {
             // @ts-ignore
-            additionalAttr["defaultValue"] = DEFAULT_NICKNAME;
+            additionalAttr["defaultValue"] = localStorage.username || "";
         }
         return (
             <div className={`dialog-input-controls ${hidden}`}>

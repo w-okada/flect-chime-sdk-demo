@@ -17,8 +17,7 @@ export const AVAILABLE_AWS_REGIONS: { [key: string]: string } = {
     "us-west-2": "United States (Oregon)",
 };
 
-export const FRONTEND_LOCAL_DEV = true;
-export const DEFAULT_EMAIL = "mail2wokada@gmail.com";
-export const DEFAULT_PASSWORD = "test22"
-export const DEFAULT_NICKNAME = "wo"
+export const FRONTEND_LOCAL_DEV = false;
+export const DEFAULT_EMAIL = "";
+export const DEFAULT_PASSWORD = ""
 
