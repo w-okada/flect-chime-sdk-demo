@@ -80,11 +80,7 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
             // ここで取得したmessaging apiのuserArnはapp providerでmessaging clientに設定される。
         }
         if (context.idToken.length > 0) {
-            console.log("idtolen1:", context.idToken)
             postEnvironment()
-        } else {
-
-            console.log("idtolen2:", context.idToken)
         }
     }, [context])
 

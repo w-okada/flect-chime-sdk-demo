@@ -15,14 +15,14 @@ import { Dialog } from "./101_Dialog";
 export type FrameProps = {};
 
 export const Frame = (_props: FrameProps) => {
-    const { frontendState, cognitoClientState } = useAppState();
+    const { frontendState, cognitoClientState, backendManagerState } = useAppState();
 
     /**
      * action linking
      */
     // (x) signin state
     useEffect(() => {
-        if (!cognitoClientState.signInCompleted) {
+        if (!cognitoClientState.signInCompleted || !backendManagerState.environment) {
             const signInDialogCheckboxs = document.querySelectorAll(".sign-in-checkbox");
             signInDialogCheckboxs.forEach((x) => {
                 //@ts-ignore
@@ -35,7 +35,7 @@ export const Frame = (_props: FrameProps) => {
                 x.checked = false;
             });
         }
-    }, [cognitoClientState.signInCompleted]);
+    }, [cognitoClientState.signInCompleted, backendManagerState.environment]);
 
     //// Dialog
 

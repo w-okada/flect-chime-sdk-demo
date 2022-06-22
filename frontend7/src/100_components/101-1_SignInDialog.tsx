@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAppState } from "../003_provider/AppStateProvider";
 import { FRONTEND_LOCAL_DEV, DEFAULT_EMAIL, DEFAULT_PASSWORD, DEFAULT_NICKNAME } from "../const";
+import { Processing } from "./parts/001_processing";
 
 const TabItems = {
     signin: "signin",
@@ -118,6 +119,7 @@ const DialogTiles = (props: DialogTilesProps) => {
 export const SignInDialog = () => {
     const { cognitoClientState, frontendState, messagingClientState, backendManagerState } = useAppState();
     const [message, setMessage] = useState<string | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     // (x) Show  Message
     const showMessage = (action: string, exception: any) => {
@@ -195,6 +197,7 @@ export const SignInDialog = () => {
             switch (tab) {
                 // (A) Sign In
                 case "signin":
+                    setIsProcessing(true);
                     if (username.length < 1) {
                         console.warn("ユーザネームが入ってない。");
                         const err = new Error("no user name");
@@ -205,27 +208,35 @@ export const SignInDialog = () => {
                     await cognitoClientState.signIn(email, password);
                     backendManagerState.setUsername(username);
                     frontendState.setUserName(username);
+                    setIsProcessing(false);
                     break;
                 // (B) Sign Up
                 case "signup":
+                    setIsProcessing(true);
                     await cognitoClientState.signUp(email, newPassword);
                     setTab("verify");
+                    setIsProcessing(false);
                     setMessage(null);
                     break;
                 // (C) Verify
                 case "verify":
+                    setIsProcessing(true);
                     await cognitoClientState.verify(email, code);
                     setTab("signin");
                     setMessage(null);
+                    setIsProcessing(false);
                     break;
                 // (D) Change password
                 case "forgot":
+                    setIsProcessing(true);
                     await cognitoClientState.changePassword(email, code, newPassword);
                     setTab("signin");
                     setMessage(null);
+                    setIsProcessing(false);
                     break;
                 default:
                     console.error("unknwon tab:", tab);
+                    setIsProcessing(false);
                     break;
             }
         } catch (exception) {
@@ -355,6 +366,19 @@ export const SignInDialog = () => {
         );
     }, [tab]);
 
+    const processing = useMemo(() => {
+        if (isProcessing) {
+            return (
+                <div className="dialog-input-controls">
+                    {" "}
+                    <Processing />{" "}
+                </div>
+            );
+        } else {
+            return <></>;
+        }
+    }, [cognitoClientState.signInCompleted, isProcessing]);
+
     const form = useMemo(() => {
         return (
             <div className="dialog-frame">
@@ -372,12 +396,13 @@ export const SignInDialog = () => {
                             {verifyCodeFeild}
                             {messageArea}
                             {buttons}
+                            {processing}
                         </div>
                     </form>
                 </div>
             </div>
         );
-    }, [tab, messageArea]);
+    }, [tab, messageArea, processing]);
 
     return form;
 };
