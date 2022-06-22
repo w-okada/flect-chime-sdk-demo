@@ -38,17 +38,21 @@ export class Backend2Stack extends Stack {
     super(scope, id, props);
 
     // (1) UserPool
-    let userPool: UserPool | null = null
-    let userPoolClient: UserPoolClient | null = null
+    // let userPool: UserPool | null = null
+    // let userPoolClient: UserPoolClient | null = null
+    let userPoolArn: string = ""
+    let userPoolId: string = ""
+    let userPoolClientId: string = ""
     if (COGNITO_USER_POOL_ARN || COGNITO_USER_POOL_ID || COGNITO_USER_POOL_CLIENT_ID) {
+      userPoolArn = COGNITO_USER_POOL_ARN!
+      userPoolId = COGNITO_USER_POOL_ID!
+      userPoolClientId = COGNITO_USER_POOL_CLIENT_ID!
     } else {
-      const pool = createUserPool(this, id)
-      userPool = pool.userPool
-      userPoolClient = pool.userPoolClient
+      const { userPool, userPoolClient } = createUserPool(this, id)
+      userPoolArn = userPool.userPoolArn
+      userPoolId = userPool.userPoolId
+      userPoolClientId = userPoolClient.userPoolClientId
     }
-    const userPoolArn = COGNITO_USER_POOL_ARN || userPool?.userPoolArn
-    const userPoolId = COGNITO_USER_POOL_ID || userPool?.userPoolId
-    const userPoolClientId = COGNITO_USER_POOL_CLIENT_ID || userPoolClient?.userPoolClientId
 
     // (2) S3
     const { frontendBucket, frontendCdn } = createFrontendS3(this, id, USE_CDN)

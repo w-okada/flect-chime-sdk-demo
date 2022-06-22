@@ -303,6 +303,39 @@ export const SettingDialog = () => {
         );
     }, [tab]);
 
+    const videoEffectToggleField = useMemo(() => {
+        if (tab != "videoInput") {
+            return <></>;
+        }
+        return (
+            <div className="dialog-input-controls">
+                <div style={{ display: "flex", alignItems: "center" }}>
+                    <input
+                        className="checkbox"
+                        type="checkbox"
+                        id="setting-dialog-video-effect-center-stage"
+                        onChange={(ev) => {
+                            deviceState.enableCenterStage(ev.target.checked);
+                            // setUseCode(ev.target.checked);
+                        }}
+                    />
+                    <label htmlFor="setting-dialog-video-effect-center-stage">center stage</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                    <input
+                        className="checkbox"
+                        type="checkbox"
+                        id="setting-dialog-video-effect-avatar"
+                        onChange={(ev) => {
+                            deviceState.enableAvatar(ev.target.checked);
+                        }}
+                    />
+                    <label htmlFor="setting-dialog-video-effect-avatar">avatar</label>
+                </div>
+            </div>
+        );
+    }, [tab]);
+
     // const videoPreview = useMemo(() => {
     //     const hidden = tab === "videoInput" ? "" : "hidden";
     //     return (
@@ -371,6 +404,7 @@ export const SettingDialog = () => {
                             {noiseSuppressionSelectField}
                             {videoInputSelectField}
                             {virtualBackgroundSelectField}
+                            {videoEffectToggleField}
                             {audioOutputSelectField}
                             {/* {videoPreview} */}
                             {buttons}

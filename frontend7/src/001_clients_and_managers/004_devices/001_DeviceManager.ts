@@ -35,7 +35,7 @@ export type GenerateVideoInputDeivceParams = {
     device: string | MediaStream,
     virtualBackgroundType: VirtualBackgroundTypes,
     blurStrength?: BlurStrength,
-    enableTracking: boolean,
+    enableCenterStage: boolean,
     enableAvatar: boolean,
     // imageBlob?: Blob,
     imageURL: string

@@ -5,7 +5,7 @@ import { BlazefaceWorkerManager, generateBlazefaceDefaultConfig, generateDefault
 import * as faceDetection from "@tensorflow-models/face-detection"
 
 
-export class TrackingCameraImageProcessor implements VideoFrameProcessor {
+export class CenterStageCameraImageProcessor implements VideoFrameProcessor {
     private targetCanvas: HTMLCanvasElement = document.createElement('canvas');
     private targetCanvasCtx: CanvasRenderingContext2D = this.targetCanvas.getContext('2d')!;
     private canvasVideoFrameBuffer = new CanvasVideoFrameBuffer(this.targetCanvas);

@@ -1,6 +1,6 @@
 import { BackgroundBlurVideoFrameProcessor, BackgroundReplacementVideoFrameProcessor, ConsoleLogger, DefaultVideoTransformDevice, VideoFrameProcessor } from "amazon-chime-sdk-js";
 import { GenerateVideoInputDeivceParams } from "../001_DeviceManager";
-import { TrackingCameraImageProcessor } from "./videoProcessor/001_TrackingCamera";
+import { CenterStageCameraImageProcessor } from "./videoProcessor/001_CenterStageCamera";
 // import { VirtualBackground, VirtualBackgroundSegmentationType } from "../frame/VirtualBackground";
 
 //////////////////////////////
@@ -47,7 +47,7 @@ export class VideoInputDeviceGenerator {
     backgroundReplacementProcessor: VideoFrameProcessor | null = null
     videoTransformDevice: DefaultVideoTransformDevice | null = null
 
-    trackingProcessor = new TrackingCameraImageProcessor()
+    centerStageProcessor = new CenterStageCameraImageProcessor()
     generateVideoInputDeivce = async (params: GenerateVideoInputDeivceParams) => {
 
         //// (a) no device selected 
@@ -58,11 +58,11 @@ export class VideoInputDeviceGenerator {
         if (
             params.virtualBackgroundType === VirtualBackgroundTypes.none &&
             params.enableAvatar === false &&
-            params.enableTracking === false) {
+            params.enableCenterStage === false) {
             return params.device
         }
 
-        if (params.enableTracking) {
+        if (params.enableCenterStage) {
             // TODO
         }
 
@@ -80,11 +80,6 @@ export class VideoInputDeviceGenerator {
                 console.error("Background Blur is not supported.")
                 this.backgroundBlurProcessor = null
             }
-        }
-
-
-        if (params.virtualBackgroundType == VirtualBackgroundTypes.track) {
-            // noop. フィールドで初期化されている
         }
 
         // if (params.virtualBackgroundType == VirtualBackgroundTypes.image) {
@@ -106,16 +101,13 @@ export class VideoInputDeviceGenerator {
 
         // プロセッサーの追加
         const processors: VideoFrameProcessor[] = []
-        if (params.enableTracking) {
-            // processors.push()
+        if (params.enableCenterStage) {
+            processors.push(this.centerStageProcessor)
         }
         if (params.virtualBackgroundType == VirtualBackgroundTypes.blur && this.backgroundBlurProcessor) {
             processors.push(this.backgroundBlurProcessor)
         }
 
-        if (params.virtualBackgroundType == VirtualBackgroundTypes.track) {
-            processors.push(this.trackingProcessor)
-        }
         // if (params.virtualBackgroundType == VirtualBackgroundTypes.image && this.backgroundReplacementProcessor) {
         //     // processors.push(this.backgroundReplacementProcessor)
         // }

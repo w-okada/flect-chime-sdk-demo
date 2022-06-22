@@ -32,6 +32,9 @@ export type DeviceInfoState = {
     virtualBackgroundImageDataURL: string | null;
     videoDataURL: string | null;
     chimeVideoInputDevice: ChimeVideoInputDevice;
+    videoEnableCenterStage: boolean;
+    videoEnableAvatar: boolean;
+
     // audio output
     audioOutput: string | AudioOutputCustomDevices;
     audioOutputEnable: boolean;
@@ -50,6 +53,8 @@ export type DeviceInfoStateAndMethods = DeviceInfoState & {
     setAudioOutputElement: (elem: HTMLAudioElement) => void;
     setNoiseSuppressionType: (val: NoiseSuppressionTypes) => void;
     setVirtualBackgroundType: (val: VirtualBackgroundTypes) => void;
+    enableCenterStage: (val: boolean) => void;
+    enableAvatar: (val: boolean) => void;
 };
 
 //////////////////////////////
@@ -78,6 +83,8 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         virtualBackgroundImageDataURL: null,
         videoDataURL: null,
         chimeVideoInputDevice: null,
+        videoEnableCenterStage: false,
+        videoEnableAvatar: false,
 
         // audio output
         audioOutput: localStorage.audioOutputDevice || AudioOutputCustomDevices.none,
@@ -183,7 +190,17 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         stateRef.current = { ...stateRef.current, virtualBackgroundType: val };
         setState(stateRef.current);
     };
+    const enableCenterStage = (val: boolean) => {
+        localStorage.videoEnableCenterStage = val;
+        stateRef.current = { ...stateRef.current, videoEnableCenterStage: val };
+        setState(stateRef.current);
+    };
 
+    const enableAvatar = (val: boolean) => {
+        localStorage.videoEnableAvatar = val;
+        stateRef.current = { ...stateRef.current, videoEnableAvatar: val };
+        setState(stateRef.current);
+    };
     // (4) Internal Method for generate chime devices
     useEffect(() => {
         const generateDevice = async () => {
@@ -219,8 +236,8 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
                 device: media,
                 virtualBackgroundType: state.virtualBackgroundType,
                 blurStrength: BlurStrength.HIGH_BLUR,
-                enableTracking: false,
-                enableAvatar: false,
+                enableCenterStage: state.videoEnableCenterStage,
+                enableAvatar: state.videoEnableAvatar,
                 imageURL: "",
             });
             stateRef.current = { ...stateRef.current, chimeVideoInputDevice: device };
@@ -228,7 +245,7 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         };
 
         generateDevice();
-    }, [state.videoInput, state.videoInputEnable, state.videoDataURL, state.virtualBackgroundType]);
+    }, [state.videoInput, state.videoInputEnable, state.videoDataURL, state.virtualBackgroundType, state.videoEnableCenterStage, state.videoEnableAvatar]);
 
     useEffect(() => {
         const generateDevice = async () => {
@@ -271,6 +288,8 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         setAudioOutputElement,
         setNoiseSuppressionType,
         setVirtualBackgroundType,
+        enableCenterStage,
+        enableAvatar,
     };
     return returnVal;
 };
