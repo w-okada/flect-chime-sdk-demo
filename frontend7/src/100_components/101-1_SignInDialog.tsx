@@ -214,17 +214,16 @@ export const SignInDialog = () => {
                 case "signup":
                     setIsProcessing(true);
                     await cognitoClientState.signUp(email, newPassword);
-                    setTab("verify");
                     setIsProcessing(false);
-                    setMessage(null);
+                    setMessage("A verification code is sent to your address. Please verify the code.");
                     break;
                 // (C) Verify
                 case "verify":
                     setIsProcessing(true);
                     await cognitoClientState.verify(email, code);
-                    setTab("signin");
-                    setMessage(null);
                     setIsProcessing(false);
+                    setMessage("Verified.");
+
                     break;
                 // (D) Change password
                 case "forgot":
