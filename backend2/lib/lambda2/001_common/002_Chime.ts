@@ -105,54 +105,57 @@ export const deleteMessageChannelFromChimeBackend = async (messageChannelArn: st
 export const createMessagingAPIUser = async (id: string, name: string) => {
     console.log("Generate Messaging Environment: ID, name:", id, name)
 
-    // 既存のIDを検索。存在する場合はupdate
-    let listRes: Chime.ListAppInstanceUsersCommandOutput | null = null
-    let existId: string | null = null
-    let existMetadata: string | undefined = undefined
-    while (true) {
-        const nextToken = (listRes && listRes.NextToken) ? listRes.NextToken : undefined
-        listRes = await chime.listAppInstanceUsers({
-            AppInstanceArn: messagingAppInstanceArn,
-            // MaxResults: 50,
-            NextToken: nextToken
-        })
-        console.log("APP USERS:", listRes.AppInstanceUsers)
-        const exist = listRes.AppInstanceUsers?.find(x => {
-            return x.AppInstanceUserArn?.endsWith(`/${id}`)
-        })
-        if (exist) {
-            existId = exist.AppInstanceUserArn || null
-            existMetadata = exist.Metadata
-            break
-        }
-        if (!listRes.NextToken) {
-            break
-        }
-    }
+    // 既存のIDを検索。存在する場合はupdate ⇒ Userが多いとタイムアウトするためNG。直接アップデートしてエラーハンドリングする方式に変更
+    // let listRes: Chime.ListAppInstanceUsersCommandOutput | null = null
+    // let existId: string | null = null
+    // let existMetadata: string | undefined = undefined
+    // while (true) {
+    //     const nextToken = (listRes && listRes.NextToken) ? listRes.NextToken : undefined
+    //     listRes = await chime.listAppInstanceUsers({
+    //         AppInstanceArn: messagingAppInstanceArn,
+    //         // MaxResults: 50,
+    //         NextToken: nextToken
+    //     })
+    //     console.log("APP USERS:", listRes.AppInstanceUsers)
+    //     const exist = listRes.AppInstanceUsers?.find(x => {
+    //         return x.AppInstanceUserArn?.endsWith(`/${id}`)
+    //     })
+    //     if (exist) {
+    //         existId = exist.AppInstanceUserArn || null
+    //         existMetadata = exist.Metadata
+    //         break
+    //     }
+    //     if (!listRes.NextToken) {
+    //         break
+    //     }
+    // }
 
-    // 既存IDが見つかった。⇒update
-    if (existId) {
-        console.log("Generate Messaging Environment: Updating...:", existId)
+    // // 既存IDが見つかった。⇒update
+    // if (existId) {
+    const userArn = `${messagingAppInstanceArn}/user/${id}`
+    try {
+
+        console.log("Generate Messaging Environment: Updating...:", userArn)
         const response = await chime
             .updateAppInstanceUser({
-                AppInstanceUserArn: existId,
+                AppInstanceUserArn: userArn,
                 Name: name,
                 Metadata: ""
             })
         console.log("Generate Messaging Environment: UserArn(Update)", response.AppInstanceUserArn)
         return response
+    } catch (exception) {
+        console.log(`No existing app user ${userArn}`, exception)
+        // 新規IDの登録⇒新規登録
+        const response = await chime.createAppInstanceUser({
+            AppInstanceArn: messagingAppInstanceArn,
+            AppInstanceUserId: id,
+            ClientRequestToken: v4(),
+            Name: name,
+        })
+        console.log("Generate Messaging Environment: UserArn(New)", response.AppInstanceUserArn)
+        return response
     }
-
-    // 新規IDの登録⇒新規登録
-    const response = await chime.createAppInstanceUser({
-        AppInstanceArn: messagingAppInstanceArn,
-        AppInstanceUserId: id,
-        ClientRequestToken: v4(),
-        Name: name,
-    })
-
-    console.log("Generate Messaging Environment: UserArn", response.AppInstanceUserArn)
-    return response
 
 }
 

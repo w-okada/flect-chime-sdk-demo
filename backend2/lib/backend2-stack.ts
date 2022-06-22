@@ -4,7 +4,7 @@ import { Construct } from 'constructs';
 
 import { createUserPool } from './001_UserPool/001_UserPool';
 
-import { FRONTEND_LOCAL_DEV, USE_DOCKER, USE_CDN, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, SLACK_SIGNING_SECRET, SLACK_STATE_SECRET, SLACK_APP_DB_PASSWORD, SLACK_APP_DB_SALT, SLACK_APP_DB_SECRET, LOCAL_CORS_ORIGIN } from "../bin/config";
+import { FRONTEND_LOCAL_DEV, USE_DOCKER, USE_CDN, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, SLACK_SIGNING_SECRET, SLACK_STATE_SECRET, SLACK_APP_DB_PASSWORD, SLACK_APP_DB_SALT, SLACK_APP_DB_SECRET, LOCAL_CORS_ORIGIN, COGNITO_USER_POOL_ARN, COGNITO_USER_POOL_ID, COGNITO_USER_POOL_CLIENT_ID } from "../bin/config";
 import { createFrontendS3 } from './002_S3/001_FrontendBucket';
 import { createMeetingTable } from './003_DynamoDB/001_MeetingTable';
 import { createAttendeeTable } from './003_DynamoDB/002_AttendeeTable';
@@ -31,13 +31,24 @@ import { aws_iam as iam } from "aws-cdk-lib"
 import { creatMessagingCustomResourcePolicyStatement } from './004_Role/002_MessagingCustomResourcePolicyStatement';
 import { createCustomResource } from './005_Lambda/004_lamdaForCustomResource';
 import { createMessagingUserRole } from './004_Role/003_MessagingUserRole';
+import { UserPool, UserPoolClient } from 'aws-cdk-lib/aws-cognito';
 
 export class Backend2Stack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     // (1) UserPool
-    const { userPool, userPoolClient } = createUserPool(this, id)
+    let userPool: UserPool | null = null
+    let userPoolClient: UserPoolClient | null = null
+    if (COGNITO_USER_POOL_ARN || COGNITO_USER_POOL_ID || COGNITO_USER_POOL_CLIENT_ID) {
+    } else {
+      const pool = createUserPool(this, id)
+      userPool = pool.userPool
+      userPoolClient = pool.userPoolClient
+    }
+    const userPoolArn = COGNITO_USER_POOL_ARN || userPool?.userPoolArn
+    const userPoolId = COGNITO_USER_POOL_ID || userPool?.userPoolId
+    const userPoolClientId = COGNITO_USER_POOL_CLIENT_ID || userPoolClient?.userPoolClientId
 
     // (2) S3
     const { frontendBucket, frontendCdn } = createFrontendS3(this, id, USE_CDN)
@@ -54,7 +65,7 @@ export class Backend2Stack extends Stack {
       description: "Enables access to AWS Services and Resources used or managed by Amazon Chime."
     })
 
-    const { restApiRole } = createRestApiPolicyStatement(this, userPool.userPoolArn)
+    const { restApiRole } = createRestApiPolicyStatement(this, userPoolArn)
 
     const { messagingPolicyForCreateCustomResource } = creatMessagingCustomResourcePolicyStatement()
     const { messagingRoleForClient } = createMessagingUserRole(this, id, restApiRole)
@@ -81,13 +92,13 @@ export class Backend2Stack extends Stack {
       func.addEnvironment("CONNECTION_TABLE_NAME", connectionTable.tableName);
       func.addEnvironment("SLACK_FEDERATION_AUTHS_TABLE_NAME", slackFederationAuthsTable.tableName);
 
-      func.addEnvironment("USER_POOL_ID", userPool.userPoolId);
+      func.addEnvironment("USER_POOL_ID", userPoolId);
       func.addEnvironment("BUCKET_DOMAIN_NAME", frontendBucket.bucketDomainName);
       func.addEnvironment("BUCKET_ARN", frontendBucket.bucketArn);
       func.addEnvironment("BUCKET_NAME", frontendBucket.bucketName);
 
-      func.addEnvironment("USERPOOL_ID", userPool.userPoolId);
-      func.addEnvironment("USERPOOL_CLIENT_ID", userPoolClient.userPoolClientId);
+      func.addEnvironment("USERPOOL_ID", userPoolId);
+      func.addEnvironment("USERPOOL_CLIENT_ID", userPoolClientId);
 
       //// Slack-Chime Connector (slack access)
       func.addEnvironment("SLACK_CLIENT_ID", SLACK_CLIENT_ID);
@@ -220,12 +231,12 @@ export class Backend2Stack extends Stack {
     ///////////////////////////////
     new CfnOutput(this, "UserPoolId", {
       description: "UserPoolId",
-      value: userPool.userPoolId,
+      value: userPoolId,
     });
 
     new CfnOutput(this, "UserPoolClientId", {
       description: "UserPoolClientId",
-      value: userPoolClient.userPoolClientId,
+      value: userPoolClientId,
     });
 
     new CfnOutput(this, "Bucket", {
