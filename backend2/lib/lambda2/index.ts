@@ -1,7 +1,7 @@
 
 import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest, BackendPostEnvironmentRequest } from "./backend_request";
 import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetEnvironmentResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPPostEnvironmentRequest, HTTPPostEnvironmentResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
-import { generateResponse, getUserInfoFromCognitoWithAccessToken } from "./util";
+import { generateResponse, getUserInfoFromCognitoWithAccessToken, UserInfoFromCognito } from "./util";
 
 
 
@@ -50,7 +50,7 @@ type Operations = typeof Operations[keyof typeof Operations];
  * 共通のログはこのハンドラーで行う。
  * 対象はresource, pathParameters, method, body
  */
-export const handler = (event: any, context: any, callback: any) => {
+export const handler = async (event: any, context: any, callback: any) => {
     console.log(event);
     console.log("resource:", event.resource);
     console.log("pathParameters:", event.pathParameters);
@@ -65,51 +65,65 @@ export const handler = (event: any, context: any, callback: any) => {
 
     console.log("pathParams", pathParams);
 
+    let userInfo: UserInfoFromCognito | null = null
+
+    try {
+        userInfo = await getUserInfoFromCognitoWithAccessToken(accessToken);
+    } catch (e) {
+        console.warn("get UserInfo from Cognito failed.\n", e);
+    }
+    if (!userInfo) {
+        const response = generateResponse({ success: false, code: Codes.TOKEN_ERROR });
+        callback(null, response);
+        return
+    }
+
+
     switch (resource) {
         case Resources.Root:
-            handleRoot(accessToken, method, pathParams, body, callback);
+            await handleRoot(accessToken, method, pathParams, body, callback, userInfo);
             break;
         case Resources.Meetings:
-            handleMeetings(accessToken, method, pathParams, body, callback);
+            await handleMeetings(accessToken, method, pathParams, body, callback, userInfo);
             break;
         case Resources.Meeting:
-            handleMeeting(accessToken, method, pathParams, body, callback);
+            await handleMeeting(accessToken, method, pathParams, body, callback, userInfo);
             break;
         case Resources.Attendees:
-            handleAttendees(accessToken, method, pathParams, body, callback);
+            await handleAttendees(accessToken, method, pathParams, body, callback, userInfo);
             break;
         case Resources.Attendee:
-            handleAttendee(accessToken, method, pathParams, body, callback);
+            await handleAttendee(accessToken, method, pathParams, body, callback, userInfo);
             break;
         case Resources.Operation:
-            handleOperation(accessToken, method, pathParams, body, callback);
+            await handleOperation(accessToken, method, pathParams, body, callback, userInfo);
             break;
         case Resources.Environment:
-            handleEnvironment(accessToken, method, pathParams, body, callback);
+            await handleEnvironment(accessToken, method, pathParams, body, callback, userInfo);
             break;
         default:
-            console.log(`Unknwon resource name: ${resource}`);
+            console.warn(`Unknwon resource name: ${resource}`);
             const response = generateResponse({ success: false, code: Codes.UNKNOWN_RESOURCE });
             callback(null, response);
     }
 };
 
 // (0) Root
-const handleRoot = (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleRoot = async (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     console.log(`HANDLE ROOT: ${method} ${body}`);
     const response = generateResponse({ success: true, code: Codes.SUCCESS });
     callback(null, response);
 };
 
 // (1) meetings
-const handleMeetings = (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleMeetings = async (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     console.log(`HANDLE Meetings: ${method} ${body}`);
     switch (method) {
         case Methods.GET:
-            handleGetMeetings(accessToken, pathParams, body, callback);
+            await handleGetMeetings(accessToken, pathParams, body, callback, userInfo);
             break;
         case Methods.POST:
-            handlePostMeetings(accessToken, pathParams, body, callback);
+            await handlePostMeetings(accessToken, pathParams, body, callback, userInfo);
             break;
         default:
             console.log(`Unknwon method: ${method}`);
@@ -119,84 +133,52 @@ const handleMeetings = (accessToken: string, method: string, pathParams: { [key:
     }
 };
 //// (1-1) list meetings
-const handleGetMeetings = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleGetMeetings = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     const params = JSON.parse(body) as HTTPListMeetingsRequest;
-    let email;
-    let sub;
-    try {
-        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
-        email = info.email
-        sub = info.sub
-    } catch (e) {
-        console.log(e);
-    }
     let res: HTTPResponseBody;
-    if (email) {
-        const backendParams: BackendListMeetingsRequest = {
-            email: email,
-            ...params
-        }
-        const result = await listMeetings(backendParams);
-        const httpRes: HTTPListMeetingsResponse = result;
-        res = {
-            success: true,
-            code: Codes.SUCCESS,
-            data: httpRes,
-        };
-    } else {
-        res = {
-            success: false,
-            code: Codes.TOKEN_ERROR,
-        };
+    const backendParams: BackendListMeetingsRequest = {
+        sub: userInfo.sub,
+        ...params
     }
+    const result = await listMeetings(backendParams);
+    const httpRes: HTTPListMeetingsResponse = result;
+    res = {
+        success: true,
+        code: Codes.SUCCESS,
+        data: httpRes,
+    };
     const response = generateResponse(res);
     callback(null, response);
 };
 //// (1-2) post meetings
-const handlePostMeetings = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handlePostMeetings = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     const params = JSON.parse(body) as HTTPCreateMeetingRequest;
-    let email;
-    let sub;
-    try {
-        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
-        email = info.email
-        sub = info.sub
-    } catch (e) {
-        console.log(e);
-    }
     let res: HTTPResponseBody;
-    if (email) {
-        const backendParams: BackendCreateMeetingRequest = {
-            email: email,
-            ...params
-        }
-        const result = await createMeeting(backendParams);
-        const httpRes: HTTPCreateMeetingResponse = result;
-        res = {
-            success: true,
-            code: Codes.SUCCESS,
-            data: httpRes,
-        };
-    } else {
-        res = {
-            success: false,
-            code: Codes.TOKEN_ERROR,
-        };
+    const backendParams: BackendCreateMeetingRequest = {
+        sub: userInfo.sub,
+        ...params
     }
+    const result = await createMeeting(backendParams);
+    const httpRes: HTTPCreateMeetingResponse = result;
+    res = {
+        success: true,
+        code: Codes.SUCCESS,
+        data: httpRes,
+    };
     const response = generateResponse(res);
     callback(null, response);
 };
 
 
 // (2) meeting
-const handleMeeting = (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleMeeting = async (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     console.log(`HANDLE Meeting: ${method} ${body}`);
     switch (method) {
         case Methods.GET:
-            handleGetMeeting(accessToken, pathParams, body, callback);
+            await handleGetMeeting(accessToken, pathParams, body, callback, userInfo);
             break;
         case Methods.DELETE:
-            handleDeleteMeeting(accessToken, pathParams, body, callback);
+            await handleDeleteMeeting(accessToken, pathParams, body, callback, userInfo);
             break;
         default:
             console.log(`Unknwon method: ${method}`);
@@ -206,23 +188,10 @@ const handleMeeting = (accessToken: string, method: string, pathParams: { [key: 
     }
 };
 //// (2-1) Get Meeting
-const handleGetMeeting = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleGetMeeting = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     let res: HTTPResponseBody;
     const meetingName = pathParams["meetingName"];
-    let email = "";
-    let sub = ""
-    try {
-        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
-        email = info.email
-        sub = info.sub
-    } catch (e) {
-        res = {
-            success: false,
-            code: Codes.NO_SUCH_AN_ATTENDEE,
-        };
-        const response = generateResponse(res);
-        callback(null, response);
-    }
+
     if (!meetingName) {
         console.log(`parameter error: ${meetingName}`);
         res = {
@@ -230,7 +199,7 @@ const handleGetMeeting = async (accessToken: string, pathParams: { [key: string]
             code: Codes.PARAMETER_ERROR,
         };
     } else {
-        const result = await getMeetingInfo({ email, meetingName, deleteCode: true });
+        const result = await getMeetingInfo({ sub: userInfo.sub, meetingName, deleteCode: true });
         if (!result) {
             res = {
                 success: false,
@@ -256,7 +225,7 @@ const handleGetMeeting = async (accessToken: string, pathParams: { [key: string]
 };
 
 //// (2-2) Delete Meeting
-const handleDeleteMeeting = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleDeleteMeeting = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     let res: HTTPResponseBody;
     const meetingName = pathParams["meetingName"];
     if (!meetingName) {
@@ -289,14 +258,14 @@ const handleDeleteMeeting = async (accessToken: string, pathParams: { [key: stri
 };
 
 // (3) attendees
-const handleAttendees = (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleAttendees = async (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     console.log(`HANDLE attendees: ${method} ${body}`);
     switch (method) {
         case Methods.GET:
-            handleGetAttendees(accessToken, pathParams, body, callback);
+            await handleGetAttendees(accessToken, pathParams, body, callback, userInfo);
             break;
         case Methods.POST:
-            handlePostAttendees(accessToken, pathParams, body, callback);
+            await handlePostAttendees(accessToken, pathParams, body, callback, userInfo);
             break;
         default:
             console.log(`Unknwon method: ${method}`);
@@ -307,16 +276,20 @@ const handleAttendees = (accessToken: string, method: string, pathParams: { [key
 };
 
 //// (3-1) Get Attendees
-const handleGetAttendees = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleGetAttendees = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     // let res: ResponseBody;
     // const response = generateResponse(res);
     // callback(null, response);
 };
 //// (3-2) Post Attendees
-const handlePostAttendees = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handlePostAttendees = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     let res: HTTPResponseBody;
     const params = JSON.parse(body) as HTTPJoinMeetingRequest;
-    const backendParams: BackendJoinMeetingRequest = params
+
+    const backendParams: BackendJoinMeetingRequest = {
+        sub: userInfo.sub,
+        ...params
+    }
     const joinInfo = await joinMeeting(backendParams);
     if ("exception" in joinInfo) {
         const exception = joinInfo as BackendJoinMeetingException;
@@ -353,11 +326,11 @@ const handlePostAttendees = async (accessToken: string, pathParams: { [key: stri
 };
 
 // (4) attendee
-const handleAttendee = (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleAttendee = async (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     console.log(`HANDLE attendee: ${method} ${body}`);
     switch (method) {
         case Methods.GET:
-            handleGetAttendee(accessToken, pathParams, body, callback);
+            await handleGetAttendee(accessToken, pathParams, body, callback, userInfo);
             break;
         default:
             console.log(`Unknwon method: ${method}`);
@@ -368,7 +341,7 @@ const handleAttendee = (accessToken: string, method: string, pathParams: { [key:
 };
 
 //// (4-1) Get Attendee
-const handleGetAttendee = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleGetAttendee = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     let res: HTTPResponseBody;
     const meetingName = pathParams["meetingName"];
     const attendeeId = pathParams["attendeeId"];
@@ -398,6 +371,7 @@ const handleGetAttendee = async (accessToken: string, pathParams: { [key: string
             const httpRes: HTTPGetAttendeeInfoResponse = {
                 attendeeId: attendeeInfo.attendeeId,
                 attendeeName: attendeeInfo.attendeeName,
+                externalUserId: attendeeInfo.externalUserId,
             };
             res = {
                 success: true,
@@ -411,7 +385,7 @@ const handleGetAttendee = async (accessToken: string, pathParams: { [key: string
 };
 
 // (5) Operation
-const handleOperation = (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleOperation = async (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     console.log(`HANDLE operation: ${method} ${body}`);
     const meetingName = pathParams["meetingName"];
     const attendeeId = pathParams["attendeeId"];
@@ -419,9 +393,9 @@ const handleOperation = (accessToken: string, method: string, pathParams: { [key
     switch (method) {
         case Methods.POST:
             if (operation === Operations.StartTranscribe) {
-                handlePostStartTranscribe(accessToken, pathParams, body, callback);
+                await handlePostStartTranscribe(accessToken, pathParams, body, callback, userInfo);
             } else if (operation === Operations.StopTranscribe) {
-                handlePostStopTranscribe(accessToken, pathParams, body, callback);
+                await handlePostStopTranscribe(accessToken, pathParams, body, callback, userInfo);
             }
             break;
         default:
@@ -432,29 +406,13 @@ const handleOperation = (accessToken: string, method: string, pathParams: { [key
     }
 };
 //// (5-1) start transcribe
-const handlePostStartTranscribe = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handlePostStartTranscribe = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     let res: HTTPResponseBody;
     const params = JSON.parse(body) as StartTranscribeRequest;
     const meetingName = pathParams["meetingName"];
     const attendeeId = pathParams["attendeeId"];
-    //// (1) If there is no meeting, return fai
-    let email = "";
-    let sub = ""
-    try {
-        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
-        email = info.email
-        sub = info.sub
-    } catch (e) {
-        res = {
-            success: false,
-            code: Codes.NO_SUCH_AN_ATTENDEE,
-        };
-        const response = generateResponse(res);
-        callback(null, response);
-    }
-    /// (2)
     startTranscribe({
-        email,
+        sub: userInfo.sub,
         meetingName,
         lang: params.lang,
     });
@@ -466,29 +424,13 @@ const handlePostStartTranscribe = async (accessToken: string, pathParams: { [key
     callback(null, response);
 };
 //// (5-2) stop transcribe
-const handlePostStopTranscribe = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handlePostStopTranscribe = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     let res: HTTPResponseBody;
     const params = JSON.parse(body) as StopTranscribeRequest;
     const meetingName = pathParams["meetingName"];
     const attendeeId = pathParams["attendeeId"];
-    //// (1) If there is no meeting, return fai
-    let email = "";
-    let sub = "";
-    try {
-        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
-        email = info.email
-        sub = info.sub
-    } catch (e) {
-        res = {
-            success: false,
-            code: Codes.NO_SUCH_AN_ATTENDEE,
-        };
-        const response = generateResponse(res);
-        callback(null, response);
-    }
-    /// (2)
     stopTranscribe({
-        email,
+        sub: userInfo.sub,
         meetingName,
     });
     res = {
@@ -500,13 +442,13 @@ const handlePostStopTranscribe = async (accessToken: string, pathParams: { [key:
 };
 
 // (6) Environment
-const handleEnvironment = (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleEnvironment = async (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     switch (method) {
         case Methods.GET:
-            handleGetEnvironemnt(accessToken, pathParams, body, callback);
+            await handleGetEnvironemnt(accessToken, pathParams, body, callback, userInfo);
             break;
         case Methods.POST:
-            handlePostEnvironment(accessToken, pathParams, body, callback);
+            await handlePostEnvironment(accessToken, pathParams, body, callback, userInfo);
             break;
         default:
             console.log(`Unknwon method: ${method}`);
@@ -516,27 +458,13 @@ const handleEnvironment = (accessToken: string, method: string, pathParams: { [k
     }
 };
 
-const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
 
     let res: HTTPResponseBody;
     // (a) For Messaging
-    // (a-1) EmailをUserIDとする。
-    let email = "";
-    let sub = "";
-    try {
-        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
-        email = info.email
-        sub = info.sub
-    } catch (e) {
-        res = {
-            success: false,
-            code: Codes.NO_SUCH_AN_ATTENDEE,
-        };
-        const response = generateResponse(res);
-        callback(null, response);
-    }
-    console.log("Generate Messaging Environment: Email", email)
-    const backendRes = await getEnvironment({ email })
+    const backendRes = await getEnvironment({
+        sub: userInfo.sub,
+    })
 
 
     const httpRes: HTTPGetEnvironmentResponse = backendRes
@@ -552,36 +480,20 @@ const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: str
 
 
 
-const handlePostEnvironment = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any) => {
+const handlePostEnvironment = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     const params = JSON.parse(body) as HTTPPostEnvironmentRequest;
-    let email;
-    let sub;
-    try {
-        const info = await getUserInfoFromCognitoWithAccessToken(accessToken);
-        email = info.email
-        sub = info.sub
-    } catch (e) {
-        console.log(e);
-    }
     let res: HTTPResponseBody;
-    if (email) {
-        const backendParams: BackendPostEnvironmentRequest = {
-            cognitoSub: sub,
-            ...params
-        }
-        const result = await postEnvironment(backendParams);
-        const httpRes: HTTPPostEnvironmentResponse = result;
-        res = {
-            success: true,
-            code: Codes.SUCCESS,
-            data: httpRes,
-        };
-    } else {
-        res = {
-            success: false,
-            code: Codes.TOKEN_ERROR,
-        };
+    const backendParams: BackendPostEnvironmentRequest = {
+        sub: userInfo.sub,
+        ...params
     }
+    const result = await postEnvironment(backendParams);
+    const httpRes: HTTPPostEnvironmentResponse = result;
+    res = {
+        success: true,
+        code: Codes.SUCCESS,
+        data: httpRes,
+    };
     const response = generateResponse(res);
     callback(null, response);
 };

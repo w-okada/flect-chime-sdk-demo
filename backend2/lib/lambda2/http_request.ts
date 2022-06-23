@@ -125,6 +125,7 @@ export type HTTPGetAttendeeInfoRequest = {};
 export type HTTPGetAttendeeInfoResponse = {
     attendeeId: string;
     attendeeName: string;
+    externalUserId: string;
 };
 
 //// (4-3) Update Attendee Info -> no support

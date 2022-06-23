@@ -36,7 +36,7 @@ export const joinMeeting = async (req: BackendJoinMeetingRequest): Promise<Backe
     const attendeeInfo = await joinMeetingInChimeBackend(meetingInfo.meetingId)
 
     //// (4) register attendee in DB
-    await registerAttendeeIntoDB(req.meetingName, attendeeInfo.Attendee!.AttendeeId!, req.attendeeName)
+    await registerAttendeeIntoDB(req.meetingName, attendeeInfo.Attendee!.AttendeeId!, req.sub, req.attendeeName)
 
     //// (5) Roomのチャンネルにユーザを追加
     console.log("USER REQ", JSON.stringify(req))

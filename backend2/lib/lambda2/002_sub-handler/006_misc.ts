@@ -17,8 +17,8 @@ export const startTranscribe = async (req: BackendStartTranscribeRequest): Promi
     //// (2) check if owner calls or not.
     var meetingMetadata = meetingInfo.metadata;
     var ownerId = meetingMetadata["OwnerId"];
-    console.log("OWNERID", ownerId, "email", req.email);
-    if (ownerId != req.email) {
+    console.log("OWNERID", ownerId, "email", req.sub);
+    if (ownerId != req.sub) {
         return {
             code: BackendStartTranscribeExceptionType.NOT_OWNER,
             exception: true,
@@ -62,8 +62,8 @@ export const stopTranscribe = async (req: BackendStopTranscribeRequest) => {
     //// (2) check if owner calls or not.
     var meetingMetadata = meetingInfo.metadata;
     var ownerId = meetingMetadata["OwnerId"];
-    console.log("OWNERID", ownerId, "email", req.email);
-    if (ownerId != req.email) {
+    console.log("OWNERID", ownerId, "email", req.sub);
+    if (ownerId != req.sub) {
         return {
             code: BackendStopTranscribeExceptionType.NOT_OWNER,
             exception: true,

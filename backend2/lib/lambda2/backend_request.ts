@@ -8,12 +8,12 @@ import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPDeleteMeetingR
 // (1) Meetings 
 //// (1-1) Create Meeting (POST)
 export type BackendCreateMeetingRequest = HTTPCreateMeetingRequest & {
-    email: string
+    sub: string
 }
 export type BackendCreateMeetingResponse = HTTPCreateMeetingResponse;
 //// (1-2) List Meetings (GET)
 export type BackendListMeetingsRequest = HTTPListMeetingsRequest & {
-    email: string
+    sub: string
 }
 export type BackendListMeetingsResponse = HTTPListMeetingsResponse & {
     aliveMeetingIds: string[]
@@ -26,7 +26,7 @@ export type BackendListMeetingsResponse = HTTPListMeetingsResponse & {
 //// (2-2) Get Meeting Info (GET)
 export type BackendGetMeetingInfoRequest = HTTPGetMeetingInfoRequest & {
     meetingName: string;
-    email?: string;
+    sub?: string;
     deleteCode: boolean;
 }
 export type BackendGetMeetingInfoResponse = HTTPGetMeetingInfoResponse & {
@@ -44,7 +44,7 @@ export type BackendDeleteMeetingResponse = HTTPDeleteMeetingResponse
 
 // (3) Attendees
 //// (3-1) Join Meeting (POST)
-export type BackendJoinMeetingRequest = HTTPJoinMeetingRequest
+export type BackendJoinMeetingRequest = HTTPJoinMeetingRequest & { sub: string }
 export type BackendJoinMeetingResponse = HTTPJoinMeetingResponse
 
 export const BackendJoinMeetingExceptionType = {
@@ -92,7 +92,7 @@ export type BackendGetAttendeeInfoException = {
 
 // start transcribe
 export type BackendStartTranscribeRequest = {
-    email: string;
+    sub: string;
     meetingName: string;
     lang: string;
 };
@@ -110,7 +110,7 @@ export type BackendStartTranscribeException = {
 
 // stop transcribe
 export type BackendStopTranscribeRequest = {
-    email: string;
+    sub: string;
     meetingName: string;
 };
 export type BackendStopTranscribeResponse = {};
@@ -126,7 +126,7 @@ export type BackendStopTranscribeException = {
 
 
 // (6) Environment
-export type BackendGetEnvironmentRequest = HTTPGetEnvironmentRequest & { email: string }
+export type BackendGetEnvironmentRequest = HTTPGetEnvironmentRequest & { sub: string }
 export type BackendGetEnvironmentResponse = HTTPGetEnvironmentResponse
-export type BackendPostEnvironmentRequest = HTTPPostEnvironmentRequest & { cognitoSub: string }
+export type BackendPostEnvironmentRequest = HTTPPostEnvironmentRequest & { sub: string }
 export type BackendPostEnvironmentResponse = HTTPPostEnvironmentResponse

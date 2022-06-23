@@ -37,7 +37,12 @@ export const generateResponse = (body: HTTPResponseBody) => {
     return response;
 };
 
-export const getUserInfoFromCognitoWithAccessToken = async (accessToken: string) => {
+export type UserInfoFromCognito = {
+    email: string,
+    sub: string
+}
+
+export const getUserInfoFromCognitoWithAccessToken = async (accessToken: string): Promise<UserInfoFromCognito> => {
     const tokens = accessToken.split(",");
     if (tokens.length === 1) {
         const p = new Promise<CognitoIdentityServiceProvider.GetUserResponse>((resolve, reject) => {

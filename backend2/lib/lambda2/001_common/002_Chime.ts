@@ -63,10 +63,12 @@ export const checkMeetingExistInChimeBackend = async (meetingIds: string[]): Pro
 
 // (3) meeting参加
 export const joinMeetingInChimeBackend = async (meetingId: string) => {
+    // export const joinMeetingInChimeBackend = async (meetingId: string, sub: string) => {
     console.info("Adding new attendee");
     const attendeeInfo = await chime
         .createAttendee({
             MeetingId: meetingId,
+            // ExternalUserId: sub, // 同一IDだと複数のmeetingに同時に入れない。
             ExternalUserId: v4(),
         })
     return attendeeInfo

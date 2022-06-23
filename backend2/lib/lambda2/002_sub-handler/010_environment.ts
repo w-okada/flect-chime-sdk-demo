@@ -12,8 +12,8 @@ export const getEnvironment = async (req: BackendGetEnvironmentRequest): Promise
     const assumedRoleResponse = await assumedMessagingEnduserRole()
 
     // (2) MessagingAPIにユーザ登録
-    const id = req.email
-    const name = req.email // getEnvironmentを使用することになるときに再考
+    const id = req.sub
+    const name = req.sub // getEnvironmentを使用することになるときに再考
 
     const createUserResponse = await createMessagingAPIUser(id, name)
 
@@ -36,7 +36,7 @@ export const postEnvironment = async (req: BackendPostEnvironmentRequest): Promi
     const assumedRoleResponse = await assumedMessagingEnduserRole()
 
     // (2) MessagingAPIにユーザ登録
-    const id = req.cognitoSub
+    const id = req.sub
     const name = req.username
     const createUserResponse = await createMessagingAPIUser(id, name)
 

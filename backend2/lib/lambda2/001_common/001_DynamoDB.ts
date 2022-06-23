@@ -26,11 +26,11 @@ export type MetaddataDB = Metadata & {
 
 
 // (1) 新規ミーティングの登録
-export const registerMeetingIntoDB = async (meetingName: string, ownerEmail: string, region: string, secret: boolean, useCode: boolean, code: string, messageChannelArn: string, meeting: Chime.Meeting) => {
+export const registerMeetingIntoDB = async (meetingName: string, ownerSub: string, region: string, secret: boolean, useCode: boolean, code: string, messageChannelArn: string, meeting: Chime.Meeting) => {
     const date = new Date();
     const now = date.getTime();
     const metadata: MetaddataDB = {
-        OwnerId: ownerEmail,
+        OwnerId: ownerSub,
         Region: region,
         Secret: secret,
         UseCode: useCode,
@@ -79,7 +79,7 @@ export const listMeetingsFromDB = async (req: BackendListMeetingsRequest): Promi
             meetingId: id,
             meeting: info,
             metadata: metadata,
-            isOwner: req.email === metadata.OwnerId,
+            isOwner: req.sub === metadata.OwnerId,
             secret: metadata.Secret
         }
     })
@@ -111,7 +111,7 @@ export const getMeetingInfoFromDB = async (req: BackendGetMeetingInfoRequest): P
     const meeting = JSON.parse(meetingInfo.Meeting.S!);
     const metadata = JSON.parse(meetingInfo.Metadata.S!)
     const hmmTaskArn = meetingInfo.HmmTaskArn ? meetingInfo.HmmTaskArn.S! : "-"
-    const isOwner = req.email === JSON.parse(meetingInfo.Metadata.S!).OwnerId
+    const isOwner = req.sub === JSON.parse(meetingInfo.Metadata.S!).OwnerId
     const code = metadata["Code"]
 
     // Check Exist?
@@ -145,7 +145,7 @@ export const deleteMeetingFromDB = async (req: BackendDeleteMeetingRequest) => {
 
 
 // (5) DBに会議参加者を登録
-export const registerAttendeeIntoDB = async (meetingName: string, attendeeId: string, attendeeName: string) => {
+export const registerAttendeeIntoDB = async (meetingName: string, attendeeId: string, externalUserId: string, attendeeName: string) => {
     await ddb
         .putItem({
             TableName: attendeesTableName,
@@ -154,6 +154,7 @@ export const registerAttendeeIntoDB = async (meetingName: string, attendeeId: st
                     S: `${meetingName}/${attendeeId}`,
                 },
                 AttendeeName: { S: attendeeName },
+                ExternalUserId: { S: externalUserId },
                 TTL: {
                     N: "" + getExpireDate(),
                 },
@@ -181,5 +182,7 @@ export const getAttendeeInfoFromDB = async (meetingName: string, attendeeId: str
     return {
         attendeeId: result.Item.AttendeeId.S!,
         attendeeName: result.Item.AttendeeName.S!,
+        externalUserId: result.Item.ExternalUserId.S!
+
     };
 }
