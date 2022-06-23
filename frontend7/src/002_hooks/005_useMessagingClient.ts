@@ -6,11 +6,11 @@ import { ControlTypes, MessageFormat, MessageTypes } from "../messaging_format"
 
 
 
-export type UseMessagingClientProps = {
-    userArn?: string | null
-    globalChannelArn?: string | null
-    globalUserId?: string | null
-    credentials?: STS.Credentials | null
+// export type UseMessagingClientProps = {
+export type ConnectProps = {
+    userArn: string
+    globalChannelArn: string
+    credentials: STS.Credentials
 }
 
 export type MessagingClientState = {
@@ -19,7 +19,7 @@ export type MessagingClientState = {
     meetingMessages: MessageItem[]
 }
 export type MessagingClientStateAndMethod = MessagingClientState & {
-    connect: () => Promise<void>
+    connect: (props: ConnectProps) => Promise<void>
     setMeetingChannelArn: (arn: string) => void
     sendGlobalMessage: (message: string) => Promise<void>
     sendChannelMessage: (mesage: string) => Promise<void>
@@ -32,7 +32,7 @@ export type MessageControlListener = {
 }
 
 
-export const useMessagingClient = (props: UseMessagingClientProps): MessagingClientStateAndMethod => {
+export const useMessagingClient = (): MessagingClientStateAndMethod => {
     const meetingChannelArnRef = useRef<string | null>(null)
     const [meetingChannelArn, _setMeetingChannelArn] = useState<string | null>(meetingChannelArnRef.current)
     const setMeetingChannelArn = (arn: string) => {
@@ -60,37 +60,40 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
         _setMessageControlListener(messageControlListenerRef.current)
     }
 
+    const connectPropsRef = useRef<ConnectProps | null>(null)
+
 
     const client = useMemo(() => {
         const c = new MessagingClient()
         return c
     }, [])
-    const connect = async () => {
-        console.log("connect called", props.credentials)
-        if (props.credentials) {
-            await client.connect(props.credentials, props.userArn!)
-            const message: MessageFormat = {
-                type: MessageTypes.CONNECTED,
-                data: "initialize message"
-            }
-            await client.send(props.globalChannelArn!, JSON.stringify(message))
-            client.setListener(props.globalChannelArn!, {
-                updated: (messages: MessageItem[]) => {
-                    setGlobalMessages([...messages])
-                    if (messages[0].type == ChannelMessageType.CONTROL && messageControlListenerRef.current) {
-                        if (messages[0].content == ControlTypes.RoomCreated) {
-                            messageControlListenerRef.current.roomCreated()
-                        } else if (messages[0].content == ControlTypes.RoomDeleted) {
-                            messageControlListenerRef.current.roomDeleted()
-                        }
+    const connect = async (_props: ConnectProps) => {
+        connectPropsRef.current = _props
+        console.log("connect called", connectPropsRef.current.credentials)
+        await client.connect(connectPropsRef.current.credentials, connectPropsRef.current.userArn!)
+        const message: MessageFormat = {
+            type: MessageTypes.CONNECTED,
+            data: "initialize message"
+        }
+        await client.send(connectPropsRef.current.globalChannelArn!, JSON.stringify(message))
+        client.setListener(connectPropsRef.current.globalChannelArn!, {
+            updated: (messages: MessageItem[]) => {
+                setGlobalMessages([...messages])
+                if (messages[0].type == ChannelMessageType.CONTROL && messageControlListenerRef.current) {
+                    if (messages[0].content == ControlTypes.RoomCreated) {
+                        messageControlListenerRef.current.roomCreated()
+                    } else if (messages[0].content == ControlTypes.RoomDeleted) {
+                        messageControlListenerRef.current.roomDeleted()
                     }
                 }
-            })
+            }
+        })
+        if (globalMessages.length == 0) {
             listGlobalMessage()
         }
     }
     const sendGlobalMessage = async (data: string) => {
-        if (!props.globalChannelArn) {
+        if (!connectPropsRef.current?.globalChannelArn) {
             console.warn("global channel arn is not set.")
             return
         }
@@ -98,14 +101,14 @@ export const useMessagingClient = (props: UseMessagingClientProps): MessagingCli
             type: MessageTypes.MESSAGE,
             data: data
         }
-        await client.send(props.globalChannelArn!, JSON.stringify(message))
+        await client.send(connectPropsRef.current.globalChannelArn!, JSON.stringify(message))
     }
     const listGlobalMessage = async () => {
-        if (!props.globalChannelArn) {
+        if (!connectPropsRef.current?.globalChannelArn) {
             console.warn("global channel arn is not set.")
             return
         }
-        await client.listMessages(props.globalChannelArn!)
+        await client.listMessages(connectPropsRef.current.globalChannelArn!)
     }
 
 

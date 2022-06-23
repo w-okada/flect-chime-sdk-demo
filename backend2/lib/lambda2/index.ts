@@ -1,6 +1,6 @@
 
-import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest, BackendPostEnvironmentRequest } from "./backend_request";
-import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetEnvironmentResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPPostEnvironmentRequest, HTTPPostEnvironmentResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
+import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest, BackendPostEnvironmentsRequest } from "./backend_request";
+import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetEnvironmentResponse, HTTPGetEnvironmentsResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPPostEnvironmentsRequest, HTTPPostEnvironmentsResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
 import { generateResponse, getUserInfoFromCognitoWithAccessToken, UserInfoFromCognito } from "./util";
 
 
@@ -10,7 +10,8 @@ import { deleteMeeting, getMeetingInfo } from "./002_sub-handler/003_meeting";
 import { joinMeeting } from "./002_sub-handler/004_attendees";
 import { getAttendeeInfo } from "./002_sub-handler/005_attendee";
 import { startTranscribe, stopTranscribe } from "./002_sub-handler/006_misc";
-import { getEnvironment, postEnvironment } from "./002_sub-handler/010_environment";
+import { getEnvironments, postEnvironments } from "./002_sub-handler/010_environments";
+import { getEnvironment } from "./002_sub-handler/011_environment";
 
 
 const Methods = {
@@ -27,7 +28,8 @@ const Resources = {
     Attendees: "/meetings/{meetingName}/attendees",
     Attendee: "/meetings/{meetingName}/attendees/{attendeeId}",
     Operation: "/meetings/{meetingName}/attendees/{attendeeId}/operations/{operation}",
-    Environment: "/environment",
+    Environments: "/environments",
+    Environment: "/environments/{globalUserId}",
 } as const;
 type Resources = typeof Resources[keyof typeof Resources];
 
@@ -97,6 +99,9 @@ export const handler = async (event: any, context: any, callback: any) => {
             break;
         case Resources.Operation:
             await handleOperation(accessToken, method, pathParams, body, callback, userInfo);
+            break;
+        case Resources.Environments:
+            await handleEnvironments(accessToken, method, pathParams, body, callback, userInfo);
             break;
         case Resources.Environment:
             await handleEnvironment(accessToken, method, pathParams, body, callback, userInfo);
@@ -371,7 +376,7 @@ const handleGetAttendee = async (accessToken: string, pathParams: { [key: string
             const httpRes: HTTPGetAttendeeInfoResponse = {
                 attendeeId: attendeeInfo.attendeeId,
                 attendeeName: attendeeInfo.attendeeName,
-                externalUserId: attendeeInfo.externalUserId,
+                globalUserId: attendeeInfo.globalUserId,
             };
             res = {
                 success: true,
@@ -441,14 +446,14 @@ const handlePostStopTranscribe = async (accessToken: string, pathParams: { [key:
     callback(null, response);
 };
 
-// (6) Environment
-const handleEnvironment = async (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
+// (6) Environments
+const handleEnvironments = async (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
     switch (method) {
         case Methods.GET:
-            await handleGetEnvironemnt(accessToken, pathParams, body, callback, userInfo);
+            await handleGetEnvironemnts(accessToken, pathParams, body, callback, userInfo);
             break;
         case Methods.POST:
-            await handlePostEnvironment(accessToken, pathParams, body, callback, userInfo);
+            await handlePostEnvironments(accessToken, pathParams, body, callback, userInfo);
             break;
         default:
             console.log(`Unknwon method: ${method}`);
@@ -458,12 +463,63 @@ const handleEnvironment = async (accessToken: string, method: string, pathParams
     }
 };
 
-const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
+const handleGetEnvironemnts = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
 
     let res: HTTPResponseBody;
     // (a) For Messaging
-    const backendRes = await getEnvironment({
+    const backendRes = await getEnvironments({
         sub: userInfo.sub,
+    })
+
+
+    const httpRes: HTTPGetEnvironmentsResponse = backendRes
+
+    res = {
+        success: true,
+        code: Codes.SUCCESS,
+        data: httpRes,
+    };
+    const response = generateResponse(res);
+    callback(null, response);
+}
+
+const handlePostEnvironments = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
+    const params = JSON.parse(body) as HTTPPostEnvironmentsRequest;
+    let res: HTTPResponseBody;
+    const backendParams: BackendPostEnvironmentsRequest = {
+        sub: userInfo.sub,
+        ...params
+    }
+    const result = await postEnvironments(backendParams);
+    const httpRes: HTTPPostEnvironmentsResponse = result;
+    res = {
+        success: true,
+        code: Codes.SUCCESS,
+        data: httpRes,
+    };
+    const response = generateResponse(res);
+    callback(null, response);
+};
+
+// (7) Environment
+const handleEnvironment = async (accessToken: string, method: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
+    switch (method) {
+        case Methods.GET:
+            await handleGetEnvironemnt(accessToken, pathParams, body, callback, userInfo);
+            break;
+        default:
+            console.log(`Unknwon method: ${method}`);
+            const response = generateResponse({ success: false, code: Codes.UNKNOWN_METHOD });
+            callback(null, response);
+            break;
+    }
+};
+const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
+    let res: HTTPResponseBody;
+    const globalUserId = pathParams["globalUserId"];
+    // (a) For Messaging
+    const backendRes = await getEnvironment({
+        sub: globalUserId,
     })
 
 
@@ -477,23 +533,3 @@ const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: str
     const response = generateResponse(res);
     callback(null, response);
 }
-
-
-
-const handlePostEnvironment = async (accessToken: string, pathParams: { [key: string]: string }, body: any, callback: any, userInfo: UserInfoFromCognito) => {
-    const params = JSON.parse(body) as HTTPPostEnvironmentRequest;
-    let res: HTTPResponseBody;
-    const backendParams: BackendPostEnvironmentRequest = {
-        sub: userInfo.sub,
-        ...params
-    }
-    const result = await postEnvironment(backendParams);
-    const httpRes: HTTPPostEnvironmentResponse = result;
-    res = {
-        success: true,
-        code: Codes.SUCCESS,
-        data: httpRes,
-    };
-    const response = generateResponse(res);
-    callback(null, response);
-};

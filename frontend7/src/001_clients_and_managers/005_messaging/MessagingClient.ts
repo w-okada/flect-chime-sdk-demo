@@ -28,6 +28,8 @@ export class MessagingClient {
     private messages: MessageItems = {}
     private listeners: { [channelArn: string]: MessageListener } = {}
 
+    private session: DefaultMessagingSession | null = null
+
     setListener = (channelArn: string, listener: MessageListener) => {
         this.listeners[channelArn] = listener
     }
@@ -36,6 +38,9 @@ export class MessagingClient {
     }
 
     connect = async (messagingCred: STS.Credentials, userArn: string) => {
+        if (this.session) {
+            this.session.stop()
+        }
         const prov: CredentialProvider = async () => {
             return {
                 accessKeyId: messagingCred.AccessKeyId!,
@@ -50,11 +55,9 @@ export class MessagingClient {
         const endpoint = await this.chime.getMessagingSessionEndpoint({})!
         const configuration = new MessagingSessionConfiguration(userArn, null, endpoint.Endpoint!.Url!, this.chime);
 
-        const session = new DefaultMessagingSession(configuration, new ConsoleLogger('SDK', LogLevel.INFO));
-        // セッション情報に channelArnは含まれない。
+        this.session = new DefaultMessagingSession(configuration, new ConsoleLogger('SDK', LogLevel.INFO));
 
-
-        session.addObserver({
+        this.session.addObserver({
             messagingSessionDidStart: () => {
                 console.log("[messaging] messagingSessionDidStart!")
             },
@@ -86,7 +89,7 @@ export class MessagingClient {
                 }
             },
         });
-        await session.start();
+        await this.session.start();
     }
 
     listMessages = async (channelArn: string) => {

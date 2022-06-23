@@ -1,4 +1,4 @@
-import { HTTPGetEnvironmentRequest, HTTPGetEnvironmentResponse, HTTPPostEnvironmentRequest, HTTPPostEnvironmentResponse, HTTPResponseBody } from "../../http_request";
+import { HTTPPostEnvironmentsRequest, HTTPPostEnvironmentsResponse, HTTPResponseBody } from "../../http_request";
 import { InternalRestApiClientContext } from "./001_RestApiClient";
 
 
@@ -29,12 +29,12 @@ import { InternalRestApiClientContext } from "./001_RestApiClient";
 
 
 
-export type RestPostEnvironmentRequest = HTTPPostEnvironmentRequest
-export type RestPostEnvironmentResponse = HTTPPostEnvironmentResponse
+export type RestPostEnvironmentsRequest = HTTPPostEnvironmentsRequest
+export type RestPostEnvironmentsResponse = HTTPPostEnvironmentsResponse
 
-export const postEnvironment = async (params: RestPostEnvironmentRequest, context: InternalRestApiClientContext): Promise<RestPostEnvironmentResponse> => {
+export const postEnvironment = async (params: RestPostEnvironmentsRequest, context: InternalRestApiClientContext): Promise<RestPostEnvironmentsResponse> => {
     console.log("Context:", context)
-    const url = `${context.baseUrl}environment`;
+    const url = `${context.baseUrl}environments`;
 
     const requestBody = JSON.stringify(params);
     const res = await fetch(url, {
@@ -53,7 +53,7 @@ export const postEnvironment = async (params: RestPostEnvironmentRequest, contex
         console.log(response.code);
         throw response.code;
     }
-    const data = response.data as RestPostEnvironmentResponse;
+    const data = response.data as RestPostEnvironmentsResponse;
     return data;
 };
 

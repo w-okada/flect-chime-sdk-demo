@@ -1,12 +1,14 @@
 import { v4 } from "uuid";
+import { registerUserInfoIntoDB } from "../001_common/001_DynamoDB";
 import { addUserToGlobalChannel, createMessagingAPIUser } from "../001_common/002_Chime";
 import { assumedMessagingEnduserRole } from "../001_common/003_STS";
-import { BackendGetEnvironmentRequest, BackendGetEnvironmentResponse, BackendPostEnvironmentRequest, BackendPostEnvironmentResponse } from "../backend_request";
+import { BackendGetEnvironmentsRequest, BackendGetEnvironmentsResponse, BackendPostEnvironmentsRequest, BackendPostEnvironmentsResponse } from "../backend_request";
+import { UserInfoInServer } from "../http_request";
 
 const messagingGlobalChannelArn = process.env.MESSAGING_GLOBAL_CHANNEL_ARN!;
 
 //// (1) Get Environment Info (Get)
-export const getEnvironment = async (req: BackendGetEnvironmentRequest): Promise<BackendGetEnvironmentResponse> => {
+export const getEnvironments = async (req: BackendGetEnvironmentsRequest): Promise<BackendGetEnvironmentsResponse> => {
 
     // (1) Credentialを取得
     const assumedRoleResponse = await assumedMessagingEnduserRole()
@@ -21,7 +23,7 @@ export const getEnvironment = async (req: BackendGetEnvironmentRequest): Promise
     const membershipResponse = await addUserToGlobalChannel(createUserResponse.AppInstanceUserArn!)
     console.log("Generate Messaging Environment: addToGlobal", JSON.stringify(membershipResponse.Member))
 
-    const res: BackendGetEnvironmentResponse = {
+    const res: BackendGetEnvironmentsResponse = {
         globalChannelArn: messagingGlobalChannelArn,
         credential: assumedRoleResponse.Credentials!,
         appInstanceUserArn: createUserResponse.AppInstanceUserArn!,
@@ -30,7 +32,7 @@ export const getEnvironment = async (req: BackendGetEnvironmentRequest): Promise
 };
 
 //// (2) Post Environment Info (Post)
-export const postEnvironment = async (req: BackendPostEnvironmentRequest): Promise<BackendPostEnvironmentResponse> => {
+export const postEnvironments = async (req: BackendPostEnvironmentsRequest): Promise<BackendPostEnvironmentsResponse> => {
 
     // (1) Credentialを取得
     const assumedRoleResponse = await assumedMessagingEnduserRole()
@@ -44,11 +46,20 @@ export const postEnvironment = async (req: BackendPostEnvironmentRequest): Promi
     const membershipResponse = await addUserToGlobalChannel(createUserResponse.AppInstanceUserArn!)
     console.log("Generate Messaging Environment: addToGlobal", JSON.stringify(membershipResponse.Member))
 
-    const res: BackendPostEnvironmentResponse = {
+    // (4) DBに情報を追加
+    const userInfoInServer: UserInfoInServer = {
+        lastUpdate: new Date().getTime()
+    }
+    await registerUserInfoIntoDB(req.sub, userInfoInServer)
+
+    const res: BackendPostEnvironmentsResponse = {
         globalChannelArn: messagingGlobalChannelArn,
         credential: assumedRoleResponse.Credentials!,
         appInstanceUserArn: createUserResponse.AppInstanceUserArn!,
         globalUserId: id,
+        userInfoInServer: userInfoInServer
     }
     return res
 };
+
+

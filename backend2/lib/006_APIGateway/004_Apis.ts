@@ -86,18 +86,26 @@ export const createApis = (id: string, restApi: api.RestApi, authorizerId: strin
     });
 
     //// (2-7) Environment
-    ///// (2-7-1) Get envrionment // not use?
-    const apiEnvironemnt = root.addResource("environment");
+    ///// (2-7-1) Get envrionment2 // not use?
+    const apiEnvironemnts = root.addResource("environments");
+    apiEnvironemnts.addMethod("GET", new api.LambdaIntegration(lambdaFunctionForRestAPI), {
+        ...basicParams,
+        operationName: `${id}_getEnvironments`,
+    });
+
+    ///// (2-7-2) Post envrionment2
+    apiEnvironemnts.addMethod("POST", new api.LambdaIntegration(lambdaFunctionForRestAPI), {
+        ...basicParams,
+        operationName: `${id}_postEnvironments`,
+    });
+
+    ///// (2-8-3) get envrionment
+    const apiEnvironemnt = apiEnvironemnts.addResource("{globalUserId}");
     apiEnvironemnt.addMethod("GET", new api.LambdaIntegration(lambdaFunctionForRestAPI), {
         ...basicParams,
         operationName: `${id}_getEnvironment`,
     });
 
-    ///// (2-7-2) Post envrionment
-    apiEnvironemnt.addMethod("POST", new api.LambdaIntegration(lambdaFunctionForRestAPI), {
-        ...basicParams,
-        operationName: `${id}_postEnvironment`,
-    });
 
     // (3) CORS Configuration
     [root,
@@ -110,6 +118,7 @@ export const createApis = (id: string, restApi: api.RestApi, authorizerId: strin
         apiLogs,
         apiOperations,
         apiOperation,
+        apiEnvironemnts,
         apiEnvironemnt,].forEach(func => {
             addCorsOptions(func, corsOrigin)
         })

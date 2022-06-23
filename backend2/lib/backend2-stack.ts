@@ -32,6 +32,7 @@ import { creatMessagingCustomResourcePolicyStatement } from './004_Role/002_Mess
 import { createCustomResource } from './005_Lambda/004_lamdaForCustomResource';
 import { createMessagingUserRole } from './004_Role/003_MessagingUserRole';
 import { UserPool, UserPoolClient } from 'aws-cdk-lib/aws-cognito';
+import { createUserEnvironmentTable } from './003_DynamoDB/005_UserEnvironmentTable';
 
 export class Backend2Stack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -62,6 +63,7 @@ export class Backend2Stack extends Stack {
     const { attendeeTable } = createAttendeeTable(this, id)
     const { connectionTable } = createConnectionTable(this, id)
     const { slackFederationAuthsTable } = createSlackFederationAuthsTable(this, id)
+    const { userEnvironmentTable } = createUserEnvironmentTable(this, id)
 
     // (4) IAM
     const role = new iam.CfnServiceLinkedRole(this, id, {
@@ -85,7 +87,7 @@ export class Backend2Stack extends Stack {
     //// (5-4) Configure
     const configureFunctions = (func: lambda.Function) => {
       // (a-1) Table Access
-      [meetingTable, attendeeTable, connectionTable, slackFederationAuthsTable].forEach(table => {
+      [meetingTable, attendeeTable, connectionTable, slackFederationAuthsTable, userEnvironmentTable].forEach(table => {
         table.grantFullAccess(func)
       })
       // (a-2) Policy
@@ -95,6 +97,7 @@ export class Backend2Stack extends Stack {
       func.addEnvironment("ATTENDEE_TABLE_NAME", attendeeTable.tableName);
       func.addEnvironment("CONNECTION_TABLE_NAME", connectionTable.tableName);
       func.addEnvironment("SLACK_FEDERATION_AUTHS_TABLE_NAME", slackFederationAuthsTable.tableName);
+      func.addEnvironment("USER_ENVIRONMENT_TABLE", userEnvironmentTable.tableName)
 
       func.addEnvironment("USER_POOL_ID", userPoolId);
       func.addEnvironment("BUCKET_DOMAIN_NAME", frontendBucket.bucketDomainName);

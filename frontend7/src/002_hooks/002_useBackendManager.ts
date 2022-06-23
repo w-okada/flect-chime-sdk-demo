@@ -5,7 +5,7 @@ import { RestJoinMeetingRequest, RestJoinMeetingResponse } from "../001_clients_
 import { RestGetAttendeeInfoRequest, RestGetAttendeeInfoResponse } from "../001_clients_and_managers/002_rest/014_attendee";
 import { RestApiClient, RestApiClientContext } from "../001_clients_and_managers/002_rest/001_RestApiClient";
 import { MeetingListItem } from "../http_request";
-import { RestPostEnvironmentResponse } from "../001_clients_and_managers/002_rest/016_environment";
+import { RestPostEnvironmentsResponse } from "../001_clients_and_managers/002_rest/016_environment";
 
 
 export type UseBackendManagerProps = {
@@ -29,7 +29,7 @@ export type GetAttendeeInfoResponse = RestGetAttendeeInfoResponse
 
 export type BackendManagerState = {
     meetings: MeetingListItem[],
-    environment: RestPostEnvironmentResponse | undefined
+    environment: RestPostEnvironmentsResponse | undefined
     username: string
 
 }
@@ -48,7 +48,7 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
 
 
     const [meetings, setMeetings] = useState<MeetingListItem[]>([])
-    const [environment, setEnvironment] = useState<RestPostEnvironmentResponse>()
+    const [environment, setEnvironment] = useState<RestPostEnvironmentsResponse>()
     const usernameRef = useRef<string>("")
     const [username, _setUsername] = useState<string>(usernameRef.current)
     const setUsername = (username: string) => {
@@ -78,6 +78,9 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
             }, context)
             setEnvironment(env)
             // ここで取得したmessaging apiのuserArnはapp providerでmessaging clientに設定される。
+            setTimeout(() => {
+                postEnvironment()
+            }, 1000 * 60 * 1) // 5分に１回update.
         }
         if (context.idToken.length > 0) {
             postEnvironment()

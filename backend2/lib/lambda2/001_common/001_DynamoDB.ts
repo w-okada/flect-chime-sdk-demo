@@ -11,12 +11,13 @@ import {
     BackendGetAttendeeInfoRequest,
     BackendGetAttendeeInfoResponse,
 } from "../backend_request";
-import { MeetingListItem, Metadata } from "../http_request";
+import { MeetingListItem, Metadata, UserInfoInServer } from "../http_request";
 import { checkMeetingExistInChimeBackend, deleteMessageChannelFromChimeBackend } from "./002_Chime";
 import { getExpireDate } from "../util";
 // @ts-ignore
 var meetingTableName = process.env.MEETING_TABLE_NAME!;
 var attendeesTableName = process.env.ATTENDEE_TABLE_NAME!;
+var userEnvrionmentTableName = process.env.USER_ENVIRONMENT_TABLE!
 
 var ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
 
@@ -145,7 +146,7 @@ export const deleteMeetingFromDB = async (req: BackendDeleteMeetingRequest) => {
 
 
 // (5) DBに会議参加者を登録
-export const registerAttendeeIntoDB = async (meetingName: string, attendeeId: string, externalUserId: string, attendeeName: string) => {
+export const registerAttendeeIntoDB = async (meetingName: string, attendeeId: string, globalUserId: string, attendeeName: string) => {
     await ddb
         .putItem({
             TableName: attendeesTableName,
@@ -154,7 +155,7 @@ export const registerAttendeeIntoDB = async (meetingName: string, attendeeId: st
                     S: `${meetingName}/${attendeeId}`,
                 },
                 AttendeeName: { S: attendeeName },
-                ExternalUserId: { S: externalUserId },
+                GlobalUserId: { S: globalUserId },
                 TTL: {
                     N: "" + getExpireDate(),
                 },
@@ -182,7 +183,48 @@ export const getAttendeeInfoFromDB = async (meetingName: string, attendeeId: str
     return {
         attendeeId: result.Item.AttendeeId.S!,
         attendeeName: result.Item.AttendeeName.S!,
-        externalUserId: result.Item.ExternalUserId.S!
+        globalUserId: result.Item.GlobalUserId.S!
 
     };
+}
+
+
+
+// (7) ユーザ情報をDBに登録
+export const registerUserInfoIntoDB = async (globalUserId: string, userInfo: UserInfoInServer) => {
+    await ddb
+        .putItem({
+            TableName: userEnvrionmentTableName,
+            Item: {
+                GlobalUserId: {
+                    S: globalUserId,
+                },
+                UserInfoInServer: { S: JSON.stringify(userInfo) },
+                TTL: {
+                    N: "" + getExpireDate(),
+                },
+            },
+        })
+}
+
+
+
+// (6) DBから会議参加者の情報を取得
+export const getUserInfoFromDB = async (globalUserId: string): Promise<UserInfoInServer | null> => {
+    const result = await ddb
+        .getItem({
+            TableName: userEnvrionmentTableName,
+            Key: {
+                AttendeeId: {
+                    S: globalUserId,
+                },
+            },
+        })
+    if (!result.Item) {
+        return null;
+    }
+
+    const userInfoJson = result.Item.UserInfoInServer.S!
+    const userInfo = JSON.parse(userInfoJson) as UserInfoInServer
+    return userInfo;
 }

@@ -2,7 +2,7 @@
  * Frontendと共用するため、http_request.tsをベースにbackend_requestを作成する。
  */
 
-import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPDeleteMeetingRequest, HTTPDeleteMeetingResponse, HTTPGetAttendeeInfoRequest, HTTPGetAttendeeInfoResponse, HTTPGetAttendeesListRequest, HTTPGetAttendeesListResponse, HTTPGetEnvironmentRequest, HTTPGetEnvironmentResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPPostEnvironmentRequest, HTTPPostEnvironmentResponse, Metadata } from "./http_request";
+import { HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPDeleteMeetingRequest, HTTPDeleteMeetingResponse, HTTPGetAttendeeInfoRequest, HTTPGetAttendeeInfoResponse, HTTPGetAttendeesListRequest, HTTPGetAttendeesListResponse, HTTPGetEnvironmentRequest, HTTPGetEnvironmentResponse, HTTPGetEnvironmentsRequest, HTTPGetEnvironmentsResponse, HTTPGetMeetingInfoRequest, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPPostEnvironmentsRequest, HTTPPostEnvironmentsResponse } from "./http_request";
 
 
 // (1) Meetings 
@@ -124,9 +124,12 @@ export type BackendStopTranscribeException = {
     exception: boolean;
 };
 
+// (6) Environments
+export type BackendGetEnvironmentsRequest = HTTPGetEnvironmentsRequest & { sub: string }
+export type BackendGetEnvironmentsResponse = HTTPGetEnvironmentsResponse
+export type BackendPostEnvironmentsRequest = HTTPPostEnvironmentsRequest & { sub: string }
+export type BackendPostEnvironmentsResponse = HTTPPostEnvironmentsResponse
 
-// (6) Environment
+// (7) Environment
 export type BackendGetEnvironmentRequest = HTTPGetEnvironmentRequest & { sub: string }
 export type BackendGetEnvironmentResponse = HTTPGetEnvironmentResponse
-export type BackendPostEnvironmentRequest = HTTPPostEnvironmentRequest & { sub: string }
-export type BackendPostEnvironmentResponse = HTTPPostEnvironmentResponse

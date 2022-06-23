@@ -59,12 +59,7 @@ export const AppStateProvider = ({ children }: Props) => {
 
     const deviceState = useDeviceState();
 
-    const messagingClientState = useMessagingClient({
-        credentials: backendManagerState.environment?.credential || null,
-        userArn: backendManagerState.environment?.appInstanceUserArn || null,
-        globalChannelArn: backendManagerState.environment?.globalChannelArn || null,
-        globalUserId: backendManagerState.environment?.globalUserId || null,
-    });
+    const messagingClientState = useMessagingClient();
 
     /** (020) App State*/
     //// (020) stage
@@ -84,7 +79,11 @@ export const AppStateProvider = ({ children }: Props) => {
     useEffect(() => {
         if (backendManagerState.environment) {
             console.log("env", backendManagerState.environment);
-            messagingClientState.connect();
+            messagingClientState.connect({
+                credentials: backendManagerState.environment.credential,
+                userArn: backendManagerState.environment.appInstanceUserArn,
+                globalChannelArn: backendManagerState.environment.globalChannelArn,
+            });
             messagingClientState.setMessageControlLsiterner({
                 roomCreated: () => {
                     backendManagerState.reloadMeetingList({});

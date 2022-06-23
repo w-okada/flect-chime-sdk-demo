@@ -125,7 +125,7 @@ export type HTTPGetAttendeeInfoRequest = {};
 export type HTTPGetAttendeeInfoResponse = {
     attendeeId: string;
     attendeeName: string;
-    externalUserId: string;
+    globalUserId: string;
 };
 
 //// (4-3) Update Attendee Info -> no support
@@ -140,23 +140,34 @@ export type StartTranscribeRequest = {
 export type StopTranscribeRequest = {};
 
 // (6) Environment
-export type HTTPGetEnvironmentRequest = {}
-export type HTTPGetEnvironmentResponse = {
+export type HTTPGetEnvironmentsRequest = {}
+export type HTTPGetEnvironmentsResponse = {
     globalChannelArn: string,
     credential: STS.Credentials,
     appInstanceUserArn: string,
 }
 
-export type HTTPPostEnvironmentRequest = {
+
+export type UserInfoInServer = {
+    lastUpdate: number
+}
+export type HTTPPostEnvironmentsRequest = {
     username: string
 }
-export type HTTPPostEnvironmentResponse = {
+export type HTTPPostEnvironmentsResponse = {
     globalChannelArn: string,
     credential: STS.Credentials,
     appInstanceUserArn: string,
     globalUserId: string,
+    userInfoInServer: UserInfoInServer
 }
 
+
+export type HTTPGetEnvironmentRequest = {}
+export type HTTPGetEnvironmentResponse = {
+    globalUserId: string,
+    userInfoInServer: UserInfoInServer
+}
 
 
 ///////////////////////////
