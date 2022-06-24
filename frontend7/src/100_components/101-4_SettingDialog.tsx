@@ -83,7 +83,7 @@ const DialogTiles = (props: DialogTilesProps) => {
             },
             selected: props.currentTab == TabItems.audioOutput,
             icon: <FontAwesomeIcon icon={["fas", "volume-high"]} size="3x" />,
-            label: "camera",
+            label: "speaker",
         };
         const audioOutputIcon = <DialogTileIcon {...audioOutputIconProps}></DialogTileIcon>;
 

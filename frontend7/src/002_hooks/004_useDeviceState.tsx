@@ -190,6 +190,13 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
     };
     const setAudioOutputEnable = (val: boolean) => {
         stateRef.current = { ...stateRef.current, audioOutputEnable: val };
+        if (stateRef.current.audioOutputElement) {
+            if (val) {
+                stateRef.current.audioOutputElement.volume = 1;
+            } else {
+                stateRef.current.audioOutputElement.volume = 0;
+            }
+        }
         setState(stateRef.current);
     };
 
