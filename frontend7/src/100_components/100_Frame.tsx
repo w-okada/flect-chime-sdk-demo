@@ -27,6 +27,7 @@ export const Frame = (_props: FrameProps) => {
             signInDialogCheckboxs.forEach((x) => {
                 //@ts-ignore
                 x.checked = true;
+                // x.checked = false;
             });
         } else {
             const signInDialogCheckboxs = document.querySelectorAll(".sign-in-checkbox");

@@ -19,9 +19,8 @@ export const VideoInputCustomDeviceList = Object.entries(VideoInputCustomDevices
 // (2) Virtual Background
 export const VirtualBackgroundTypes = {
     none: "none",
-    blur: "blur",
-    track: "track",
-    // image: "image",
+    blur_background: "blur_background",
+    replace_with_image: "replace_with_image",
 } as const;
 export type VirtualBackgroundTypes = typeof VirtualBackgroundTypes[keyof typeof VirtualBackgroundTypes];
 export const VirtualBackgroundTypeList = Object.entries(VirtualBackgroundTypes).map(([key, val]) => {
@@ -62,11 +61,8 @@ export class VideoInputDeviceGenerator {
             return params.device
         }
 
-        if (params.enableCenterStage) {
-            // TODO
-        }
 
-        if (params.virtualBackgroundType == VirtualBackgroundTypes.blur) {
+        if (params.virtualBackgroundType == VirtualBackgroundTypes.blur_background) {
             const supported = await BackgroundBlurVideoFrameProcessor.isSupported()
             if (supported) {
                 const p = await BackgroundBlurVideoFrameProcessor.create(
@@ -82,18 +78,18 @@ export class VideoInputDeviceGenerator {
             }
         }
 
-        // if (params.virtualBackgroundType == VirtualBackgroundTypes.image) {
-        //     const supported = await BackgroundReplacementVideoFrameProcessor.isSupported();
-        //     if (supported) {
-        //         const image = await fetch(params.imageURL);
-        //         const imageBlob = await image.blob();
-        //         const p = await BackgroundReplacementVideoFrameProcessor.create(undefined, { imageBlob });
-        //         this.backgroundReplacementProcessor = p || null
-        //     } else {
-        //         console.error("Background Replacement is not supported.")
-        //         this.backgroundReplacementProcessor = null
-        //     }
-        // }
+        if (params.virtualBackgroundType == VirtualBackgroundTypes.replace_with_image) {
+            const supported = await BackgroundReplacementVideoFrameProcessor.isSupported();
+            if (supported) {
+                const image = await fetch(params.imageURL);
+                const imageBlob = await image.blob();
+                const p = await BackgroundReplacementVideoFrameProcessor.create(undefined, { imageBlob });
+                this.backgroundReplacementProcessor = p || null
+            } else {
+                console.error("Background Replacement is not supported.")
+                this.backgroundReplacementProcessor = null
+            }
+        }
 
         if (params.enableAvatar) {
             // TODO
@@ -104,13 +100,13 @@ export class VideoInputDeviceGenerator {
         if (params.enableCenterStage) {
             processors.push(this.centerStageProcessor)
         }
-        if (params.virtualBackgroundType == VirtualBackgroundTypes.blur && this.backgroundBlurProcessor) {
+        if (params.virtualBackgroundType == VirtualBackgroundTypes.blur_background && this.backgroundBlurProcessor) {
             processors.push(this.backgroundBlurProcessor)
         }
 
-        // if (params.virtualBackgroundType == VirtualBackgroundTypes.image && this.backgroundReplacementProcessor) {
-        //     // processors.push(this.backgroundReplacementProcessor)
-        // }
+        if (params.virtualBackgroundType == VirtualBackgroundTypes.replace_with_image && this.backgroundReplacementProcessor) {
+            processors.push(this.backgroundReplacementProcessor)
+        }
         // if (params.enableAvatar) {
         //     // processors.push()
         // }

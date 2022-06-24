@@ -371,11 +371,65 @@
             background: #f1e767;
             background: linear-gradient(to bottom, #fdfbfb 0%, #ebedee 100%);
             box-shadow: inset 1px 1px 1px #fff;
+            white-space: nowrap;
         }
         .normal-button:hover {
             background: -webkit-gradient(linear, left bottom, left top, from(#fdfbfb), to(#ebedee));
             background: -webkit-linear-gradient(bottom, #fdfbfb 0%, #ebedee 100%);
             background: linear-gradient(to top, #fdfbfb 0%, #ebedee 100%);
+        }
+        .image-card-selector {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            background: #ccc;
+            width: 100%;
+            height: 100px;
+            .image-card-selector-image-card-container {
+                background: #ffa;
+                width: 100px;
+                height: 100px;
+                border: 2px solid #000;
+                margin: 3px;
+                &:hover {
+                    border: 4px solid #000;
+                }
+                .image-card-selector-image-card-container-no-image {
+                    text-align: center;
+                    vertical-align: middle;
+                    padding: 10px;
+                    font-weight: 700;
+                    user-select: none;
+                }
+                .image-card-selector-image-card-container-image-with-cross {
+                    position: relative;
+                    background: #f10;
+                    width: 100%;
+                    height: 100%;
+                    .image-card-selector-image-card-container-image {
+                        width: 100%;
+                        height: 100%;
+                    }
+                    .image-card-selector-image-card-container-image-cross {
+                        position: absolute;
+                        top: 0px;
+                        right: 0px;
+                        margin: 2px;
+                        width: 30px;
+                        height: 30px;
+                        color: #321;
+                        background: rgba(200, 200, 200, 0.6);
+                        border-radius: 5px;
+                        /* border: 2px solid #000; */
+                        display: flex;
+                        justify-content: center;
+                        align-content: center;
+                        &:hover {
+                            background: rgba(200, 200, 200, 0.9);
+                        }
+                    }
+                }
+            }
         }
         .dialog-message {
             color: #f00;
@@ -391,9 +445,17 @@
     }
 }
 
-.state-control-checkbox:checked + .div-container {
-    display: block;
+.state-control-checkbox:checked {
+    & ~ .button-container,
+    ~ .div-container {
+        display: block;
+        display: flex;
+        align-items: flex-end;
+    }
 }
-.state-control-checkbox ~ .div-container {
-    display: none;
+.state-control-checkbox {
+    & ~ .button-container,
+    ~ .div-container {
+        display: none;
+    }
 }

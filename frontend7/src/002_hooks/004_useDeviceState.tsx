@@ -15,6 +15,8 @@ export type ChimeVideoInputDevice = string | DefaultVideoTransformDevice | Media
 export type ChimeAudioOutputDevice = string | null;
 export type ChimeAudioOutputElement = HTMLAudioElement | null;
 
+export const MAX_VIRTUAL_BACKGROUND_IMAGE_NUM = 3;
+
 export type DeviceInfoState = {
     audioInputDevices: DeviceInfo[];
     videoInputDevices: DeviceInfo[];
@@ -29,8 +31,9 @@ export type DeviceInfoState = {
     videoInput: string | VideoInputCustomDevices;
     videoInputEnable: boolean;
     virtualBackgroundType: VirtualBackgroundTypes;
-    virtualBackgroundImageDataURL: string | null;
     videoDataURL: string | null;
+    virtualBackgroundImageCurrentIndex: number;
+    virtualBackgroundImageDataURLs: string[];
     chimeVideoInputDevice: ChimeVideoInputDevice;
     videoEnableCenterStage: boolean;
     videoEnableAvatar: boolean;
@@ -52,7 +55,9 @@ export type DeviceInfoStateAndMethods = DeviceInfoState & {
     setAudioOutputEnable: (val: boolean) => void;
     setAudioOutputElement: (elem: HTMLAudioElement) => void;
     setNoiseSuppressionType: (val: NoiseSuppressionTypes) => void;
-    setVirtualBackgroundType: (val: VirtualBackgroundTypes) => void;
+    setVirtualBackgroundType: (val: VirtualBackgroundTypes, imageIndex?: number) => void;
+    setVirtualBackgroundImage: (index: number) => Promise<void>;
+    removeVirtualBackgroundImage: (index: number) => Promise<void>;
     enableCenterStage: (val: boolean) => void;
     enableAvatar: (val: boolean) => void;
 };
@@ -80,8 +85,9 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         videoInput: localStorage.videoInputDevice || VideoInputCustomDevices.none,
         videoInputEnable: true,
         virtualBackgroundType: localStorage.virtualBackgroundType || VirtualBackgroundTypes.none,
-        virtualBackgroundImageDataURL: null,
         videoDataURL: null,
+        virtualBackgroundImageCurrentIndex: localStorage.virtualBackgroundImageCurrentIndex || 0,
+        virtualBackgroundImageDataURLs: [],
         chimeVideoInputDevice: null,
         videoEnableCenterStage: false,
         videoEnableAvatar: false,
@@ -93,6 +99,14 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         audioOutputElement: null,
     });
     const [state, setState] = useState<DeviceInfoState>(stateRef.current);
+    // state initializ for background image
+    useEffect(() => {
+        stateRef.current.virtualBackgroundImageDataURLs = [];
+        for (let i = 0; i < MAX_VIRTUAL_BACKGROUND_IMAGE_NUM; i++) {
+            stateRef.current.virtualBackgroundImageDataURLs.push(localStorage[`virtualBackgroundImage_${i}`] || "");
+        }
+        setState(stateRef.current);
+    }, []);
 
     // (2) Device Manager
     const deviceManager = useMemo(() => {
@@ -185,11 +199,33 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         stateRef.current = { ...stateRef.current, noiseSuppretionType: val };
         setState(stateRef.current);
     };
-    const setVirtualBackgroundType = (val: VirtualBackgroundTypes) => {
+    const setVirtualBackgroundType = (val: VirtualBackgroundTypes, imageIndex?: number) => {
         localStorage.virtualBackgroundType = val;
-        stateRef.current = { ...stateRef.current, virtualBackgroundType: val };
+        stateRef.current = { ...stateRef.current, virtualBackgroundType: val, virtualBackgroundImageCurrentIndex: imageIndex || 0 };
+        localStorage.virtualBackgroundImageIndex = imageIndex;
         setState(stateRef.current);
     };
+    const setVirtualBackgroundImage = async (index: number) => {
+        if (index < 0 || index >= MAX_VIRTUAL_BACKGROUND_IMAGE_NUM) {
+            return;
+        }
+        const url = await fileInputState.click("image.*");
+
+        stateRef.current.virtualBackgroundImageDataURLs[index] = url;
+        stateRef.current.virtualBackgroundImageDataURLs = [...stateRef.current.virtualBackgroundImageDataURLs];
+        stateRef.current = { ...stateRef.current };
+        localStorage[`virtualBackgroundImage_${index}`] = url;
+
+        setState(stateRef.current);
+    };
+    const removeVirtualBackgroundImage = async (index: number) => {
+        stateRef.current.virtualBackgroundImageDataURLs[index] = "";
+        stateRef.current.virtualBackgroundImageDataURLs = [...stateRef.current.virtualBackgroundImageDataURLs];
+        stateRef.current = { ...stateRef.current };
+        localStorage[`virtualBackgroundImage_${index}`] = "";
+        setState(stateRef.current);
+    };
+
     const enableCenterStage = (val: boolean) => {
         localStorage.videoEnableCenterStage = val;
         stateRef.current = { ...stateRef.current, videoEnableCenterStage: val };
@@ -238,14 +274,14 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
                 blurStrength: BlurStrength.HIGH_BLUR,
                 enableCenterStage: state.videoEnableCenterStage,
                 enableAvatar: state.videoEnableAvatar,
-                imageURL: "",
+                imageURL: state.virtualBackgroundImageDataURLs[state.virtualBackgroundImageCurrentIndex],
             });
             stateRef.current = { ...stateRef.current, chimeVideoInputDevice: device };
             setState(stateRef.current);
         };
 
         generateDevice();
-    }, [state.videoInput, state.videoInputEnable, state.videoDataURL, state.virtualBackgroundType, state.videoEnableCenterStage, state.videoEnableAvatar]);
+    }, [state.videoInput, state.videoInputEnable, state.videoDataURL, state.virtualBackgroundType, state.virtualBackgroundImageDataURLs, state.virtualBackgroundImageCurrentIndex, state.videoEnableCenterStage, state.videoEnableAvatar]);
 
     useEffect(() => {
         const generateDevice = async () => {
@@ -288,6 +324,8 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         setAudioOutputElement,
         setNoiseSuppressionType,
         setVirtualBackgroundType,
+        setVirtualBackgroundImage,
+        removeVirtualBackgroundImage,
         enableCenterStage,
         enableAvatar,
     };

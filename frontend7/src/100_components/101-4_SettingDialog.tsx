@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAppState } from "../003_provider/AppStateProvider";
-import { NoiseSuppressionTypeList, NoiseSuppressionTypes, VirtualBackgroundTypeList, VirtualBackgroundTypes } from "../002_hooks/004_useDeviceState";
+import { MAX_VIRTUAL_BACKGROUND_IMAGE_NUM, NoiseSuppressionTypeList, NoiseSuppressionTypes, VirtualBackgroundTypeList, VirtualBackgroundTypes } from "../002_hooks/004_useDeviceState";
 import { VideoInputCustomDevices } from "../001_clients_and_managers/004_devices/io/VideoInputDeviceGenerator";
 import { useStateControlCheckbox } from "./hooks/useStateControlCheckbox";
 
@@ -102,6 +102,7 @@ const DialogTiles = (props: DialogTilesProps) => {
 export const SettingDialog = () => {
     const { deviceState, frontendState } = useAppState();
     const videoInputFileCheckbox = useStateControlCheckbox("setting-dialog-video-file-checkbox");
+    const virtualBackgroundImageInputFileCheckbox = useStateControlCheckbox("setting-dialog-video-virtual-background-iamge-file-checkbox");
 
     // (1) States
 
@@ -247,10 +248,8 @@ export const SettingDialog = () => {
                         {videoInputOptions}
                     </select>
                     <label htmlFor="">video device</label>
-                </div>
-                <div className={`dialog-input-controls`}>
                     {videoInputFileCheckbox.trigger}
-                    <div className="div-container">
+                    <div className="button-container">
                         <div
                             className="normal-button"
                             onClick={() => {
@@ -267,6 +266,9 @@ export const SettingDialog = () => {
     useEffect(() => {
         if (deviceState.videoInput === VideoInputCustomDevices.file) {
             videoInputFileCheckbox.updateState(true);
+        }
+        if (deviceState.virtualBackgroundType === VirtualBackgroundTypes.replace_with_image) {
+            virtualBackgroundImageInputFileCheckbox.updateState(true);
         }
     }, [tab]);
 
@@ -285,23 +287,69 @@ export const SettingDialog = () => {
             return <></>;
         }
 
+        const imageCardContainers = [...Array(MAX_VIRTUAL_BACKGROUND_IMAGE_NUM)].map((_x, index) => {
+            if (deviceState.virtualBackgroundImageDataURLs[index].length > 0) {
+                return (
+                    <div key={`image-card-selector-image-card-container-${index}`} className="image-card-selector-image-card-container">
+                        <div className="image-card-selector-image-card-container-image-with-cross">
+                            <img src={deviceState.virtualBackgroundImageDataURLs[index]} className="image-card-selector-image-card-container-image"></img>
+                            <div
+                                className="image-card-selector-image-card-container-image-cross"
+                                onClick={() => {
+                                    deviceState.removeVirtualBackgroundImage(index);
+                                }}
+                            >
+                                <FontAwesomeIcon icon={["fas", "xmark"]} size="2x" />
+                            </div>
+                        </div>
+                    </div>
+                );
+            } else {
+                return (
+                    <div
+                        key={`image-card-selector-image-card-container-${index}`}
+                        className="image-card-selector-image-card-container"
+                        onClick={() => {
+                            deviceState.setVirtualBackgroundImage(index);
+                            deviceState.setVirtualBackgroundType(VirtualBackgroundTypes.replace_with_image, index);
+                        }}
+                    >
+                        <div className="image-card-selector-image-card-container-no-image">load image</div>
+                    </div>
+                );
+            }
+        });
+        console.log("Virtual Background Type", deviceState.virtualBackgroundType);
         return (
-            <div className={`dialog-input-controls`}>
-                <select
-                    id="setting-dialog-virtual-background-select"
-                    className="select"
-                    required
-                    defaultValue={deviceState.virtualBackgroundType}
-                    onChange={(e) => {
-                        deviceState.setVirtualBackgroundType(e.target.value as VirtualBackgroundTypes);
-                    }}
-                >
-                    {virtualBackgroundOptions}
-                </select>
-                <label htmlFor="setting-dialog-virtual-background-select">virtual background</label>
-            </div>
+            <>
+                <div className={`dialog-input-controls`}>
+                    <select
+                        id="setting-dialog-virtual-background-select"
+                        className="select"
+                        required
+                        defaultValue={deviceState.virtualBackgroundType}
+                        onChange={(e) => {
+                            if (e.target.value === VirtualBackgroundTypes.replace_with_image) {
+                                virtualBackgroundImageInputFileCheckbox.updateState(true);
+                            } else {
+                                // virtualBackgroundImageInputFileCheckbox.updateState(false);
+                                deviceState.setVirtualBackgroundType(e.target.value as VirtualBackgroundTypes);
+                            }
+                        }}
+                    >
+                        {virtualBackgroundOptions}
+                    </select>
+                    <label htmlFor="setting-dialog-virtual-background-select">virtual background</label>
+                </div>
+                <div className={`dialog-input-controls`}>
+                    {virtualBackgroundImageInputFileCheckbox.trigger}
+                    <div className="div-container">
+                        <div className="image-card-selector">{imageCardContainers}</div>
+                    </div>
+                </div>
+            </>
         );
-    }, [tab]);
+    }, [tab, deviceState.virtualBackgroundType, deviceState.virtualBackgroundImageDataURLs]);
 
     const videoEffectToggleField = useMemo(() => {
         if (tab != "videoInput") {
