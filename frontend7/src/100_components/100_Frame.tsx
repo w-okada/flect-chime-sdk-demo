@@ -80,6 +80,9 @@ export const Frame = (_props: FrameProps) => {
             <div>
                 <audio id="chime-audio-output-element" />
             </div>
+            <div className="video-for-recorder-container">
+                <video id="video-for-recorder" />
+            </div>
         </>
     );
 };

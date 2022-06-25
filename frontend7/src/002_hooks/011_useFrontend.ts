@@ -2,6 +2,7 @@ import * as Chime from "@aws-sdk/client-chime"
 import { useMemo, useState } from "react";
 import { StateControlCheckbox, useStateControlCheckbox } from "../100_components/hooks/useStateControlCheckbox";
 import { StateControlRadioButtons, useStateControlRadioButton } from "../100_components/hooks/useStateControlRadioButton";
+import { Recorder } from "../999_misc/Recorder";
 import { CognitoClientStateAndMethods } from "./001_useCognitoClient";
 import { BackendManagerStateAndMethod } from "./002_useBackendManager";
 import { ChimeClientStateAndMethods } from "./003_useChimeClient";
@@ -44,6 +45,7 @@ export type StateControls = {
 
     shareScreenCheckbox: StateControlCheckbox
     startTranscribeCheckbox: StateControlCheckbox
+    startRecordingCheckbox: StateControlCheckbox
 
     settingCheckbox: StateControlCheckbox
     leaveCheckbox: StateControlCheckbox
@@ -75,6 +77,9 @@ export type FrontendState = {
     stateControls: StateControls
     joinRoomDialogProps: JoinRoomDialogProps
     setJoinRoomDialogProps: (val: JoinRoomDialogProps) => void
+
+    // (x) Recorder
+    recorder: Recorder
 };
 
 export const useFrontend = (props: UseFrontendProps) => {
@@ -117,6 +122,13 @@ export const useFrontend = (props: UseFrontendProps) => {
         handleShareScreen();
     });
     const startTranscribeCheckbox = useStateControlCheckbox("start-transcribe-checkbox");
+    const startRecordingCheckbox = useStateControlCheckbox("start-recording-checkbox", (newVal: boolean) => {
+        if (newVal) {
+            recorder.startRecording()
+        } else {
+            recorder.stopRecording()
+        }
+    });
     const settingCheckbox = useStateControlCheckbox("setting-checkbox");
     const leaveCheckbox = useStateControlCheckbox("leave-checkbox");
 
@@ -132,6 +144,11 @@ export const useFrontend = (props: UseFrontendProps) => {
         decodedMeetingName: "",
         useCode: false,
     })
+
+    // (X) Recorder
+    const recorder = useMemo(() => {
+        return new Recorder()
+    }, [])
 
     const returnValue: FrontendState = {
         // (1) User Information
@@ -155,6 +172,7 @@ export const useFrontend = (props: UseFrontendProps) => {
 
             shareScreenCheckbox,
             startTranscribeCheckbox,
+            startRecordingCheckbox,
 
             settingCheckbox,
             leaveCheckbox,
@@ -164,7 +182,10 @@ export const useFrontend = (props: UseFrontendProps) => {
             joinRoomCheckbox,
         },
         joinRoomDialogProps,
-        setJoinRoomDialogProps
+        setJoinRoomDialogProps,
+
+        // (X) Recorder
+        recorder
 
     };
     return returnValue;

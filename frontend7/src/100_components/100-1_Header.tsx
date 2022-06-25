@@ -15,6 +15,7 @@ type HeaderButtons = {
     gridViewButton: JSX.Element;
     shareScreenButton: JSX.Element;
     startTranscribeButton: JSX.Element;
+    startRecordingButton: JSX.Element;
     settingButton: JSX.Element;
     leaveButton: JSX.Element;
 };
@@ -128,6 +129,16 @@ export const Header = () => {
         };
         const startTranscribeButton = <HeaderButton {...startTranscribeButtonProps}></HeaderButton>;
 
+        ///// (4-3) start recording
+        const startRecordingButtonProps: HeaderButtonProps = {
+            stateControlCheckbox: frontendState.stateControls.startRecordingCheckbox,
+            tooltip: "Recording",
+            onIcon: ["fas", "r"],
+            offIcon: ["fas", "r"],
+            animation: AnimationTypes.colored,
+        };
+        const startRecordingButton = <HeaderButton {...startRecordingButtonProps}></HeaderButton>;
+
         //// (5) Dialog
         ///// (5-1) setting
         const settingButtonProps: HeaderButtonProps = {
@@ -161,6 +172,7 @@ export const Header = () => {
             gridViewButton,
             shareScreenButton,
             startTranscribeButton,
+            startRecordingButton,
             settingButton,
             leaveButton,
         };
@@ -188,6 +200,7 @@ export const Header = () => {
                     <div className="group">
                         {buttons.shareScreenButton}
                         {buttons.startTranscribeButton}
+                        {buttons.startRecordingButton}
                         <div className="spacer"></div>
                         {buttons.bottomNavButton}
                         {buttons.rightSidebarButton}

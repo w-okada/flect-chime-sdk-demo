@@ -67,3 +67,10 @@ body {
 .state-control-checkbox {
     display: none;
 }
+
+.video-for-recorder-container {
+    position: absolute;
+    left: -1000px;
+    width: 30px;
+    height: 30px;
+}
