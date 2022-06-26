@@ -17,6 +17,7 @@ export const Codes = {
     PARAMETER_ERROR: "PARAMETER_ERROR",
     NO_SUCH_A_MEETING_ROOM: "NO_SUCH_A_MEETING_ROOM",
     NO_SUCH_AN_ATTENDEE: "NO_SUCH_AN_ATTENDEE",
+    NO_SUCH_USER: "NO_SUCH_USER",
     INVALID_CODE: "INVALID_CODE"
 } as const;
 type Code = typeof Codes[keyof typeof Codes];
@@ -31,15 +32,6 @@ export type HTTPResponseBody = {
 };
 
 import * as Chime from "@aws-sdk/client-chime"
-
-export type Metadata = {
-    OwnerId: string;
-    Region: string;
-    Secret: boolean,
-    UseCode: boolean,
-    StartTime: number;
-    MessageChannelArn: string;
-};
 
 // (1) Meetings 
 //// (1-1) Create Meeting (POST)
@@ -64,14 +56,15 @@ export type MeetingListItem = Omit<HTTPCreateMeetingRequest & {
     ended: boolean,
     deleted: boolean,
 
-    // ミーティング情報取得時に動的に算出される情報
-    active: boolean,
-    isOwner: boolean;
-
     // ミーティング開始時に内部生成追加される情報(DBに格納)
     meetingId?: string,
     meeting?: Chime.Meeting,
     messageChannelArn?: string,
+
+    // ミーティング情報取得時に動的に算出される情報
+    active: boolean,
+    isOwner: boolean;
+
 
 }, "code">
 // codeはomit
@@ -126,9 +119,8 @@ export type HTTPGetAttendeesListResponse = {
 //// (4-2) Get Attendee Info
 export type HTTPGetAttendeeInfoRequest = {};
 export type HTTPGetAttendeeInfoResponse = {
-    attendeeId: string;
-    attendeeName: string;
-    globalUserId: string;
+    exUserId: string
+    username: string
 };
 
 //// (4-3) Update Attendee Info -> no support
@@ -152,8 +144,10 @@ export type HTTPGetEnvironmentsResponse = {
 
 
 export type UserInfoInServer = {
+    exUserId: string
     lastUpdate: number
     appInstanceUserArn: string
+    username: string
 }
 export type HTTPPostEnvironmentsRequest = {
     username: string
@@ -161,15 +155,15 @@ export type HTTPPostEnvironmentsRequest = {
 export type HTTPPostEnvironmentsResponse = {
     globalChannelArn: string,
     credential: STS.Credentials,
-    appInstanceUserArn: string,
-    globalUserId: string,
+    // appInstanceUserArn: string,
+    // globalUserId: string,
     userInfoInServer: UserInfoInServer
 }
 
 
 export type HTTPGetEnvironmentRequest = {}
 export type HTTPGetEnvironmentResponse = {
-    globalUserId: string,
+    exUserId: string,
     userInfoInServer: UserInfoInServer
 }
 

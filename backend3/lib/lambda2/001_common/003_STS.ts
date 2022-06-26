@@ -2,6 +2,7 @@
 import * as STS from "@aws-sdk/client-sts"
 const sts = new STS.STS({ region: process.env.AWS_REGION });
 import { v4 } from "uuid";
+import { log } from "../util";
 
 const messagingAppInstanceArn = process.env.MESSAGING_APP_INSTANCE_ARN!;
 const messagingAppInstanceAdminArn = process.env.MESSAGING_APP_INSTANCE_ADMIN_ARN!;
@@ -20,6 +21,6 @@ export const assumedMessagingEnduserRole = async () => {
             }
         ]
     })
-    console.log("Generate Messaging Environment: Cred")
+    log("assumedMessagingEnduserRole", "generated credential")
     return assumedRoleResponse
 }

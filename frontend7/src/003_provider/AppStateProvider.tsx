@@ -81,7 +81,7 @@ export const AppStateProvider = ({ children }: Props) => {
             console.log("env", backendManagerState.environment);
             messagingClientState.connect({
                 credentials: backendManagerState.environment.credential,
-                userArn: backendManagerState.environment.appInstanceUserArn,
+                userArn: backendManagerState.environment.userInfoInServer.appInstanceUserArn,
                 globalChannelArn: backendManagerState.environment.globalChannelArn,
             });
             messagingClientState.setMessageControlLsiterner({

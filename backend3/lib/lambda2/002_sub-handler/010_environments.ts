@@ -1,4 +1,3 @@
-import { v4 } from "uuid";
 import { registerUserInfoIntoDB } from "../001_common/001_DynamoDB";
 import { addUserToGlobalChannel, createMessagingAPIUser } from "../001_common/002_Chime";
 import { assumedMessagingEnduserRole } from "../001_common/003_STS";
@@ -8,6 +7,7 @@ import { UserInfoInServer } from "../http_request";
 const messagingGlobalChannelArn = process.env.MESSAGING_GLOBAL_CHANNEL_ARN!;
 
 //// (1) Get Environment Info (Get)
+//// !!!!!!!!!! not implemented 下の実装はダミー !!!!!!!!!!
 export const getEnvironments = async (req: BackendGetEnvironmentsRequest): Promise<BackendGetEnvironmentsResponse> => {
 
     // (1) Credentialを取得
@@ -48,16 +48,18 @@ export const postEnvironments = async (req: BackendPostEnvironmentsRequest): Pro
 
     // (4) DBに情報を追加
     const userInfoInServer: UserInfoInServer = {
+        exUserId: req.sub,
         lastUpdate: new Date().getTime(),
-        appInstanceUserArn: createUserResponse.AppInstanceUserArn!
+        appInstanceUserArn: createUserResponse.AppInstanceUserArn!,
+        username: name
     }
-    await registerUserInfoIntoDB(req.sub, userInfoInServer)
+    await registerUserInfoIntoDB(userInfoInServer)
 
     const res: BackendPostEnvironmentsResponse = {
         globalChannelArn: messagingGlobalChannelArn,
         credential: assumedRoleResponse.Credentials!,
-        appInstanceUserArn: createUserResponse.AppInstanceUserArn!,
-        globalUserId: id,
+        // appInstanceUserArn: createUserResponse.AppInstanceUserArn!,
+        // globalUserId: id,
         userInfoInServer: userInfoInServer
     }
     return res

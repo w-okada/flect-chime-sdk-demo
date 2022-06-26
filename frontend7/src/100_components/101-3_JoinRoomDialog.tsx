@@ -61,7 +61,7 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
                 meetingName: frontendState.joinRoomDialogProps.meetingName,
                 attendeeName: frontendState.username,
             });
-            await chimeClientState.joinMeeting(frontendState.joinRoomDialogProps.meetingName, meetingInfo, attendeeInfo);
+            await chimeClientState.joinMeeting(frontendState.joinRoomDialogProps.exMeetingId, frontendState.joinRoomDialogProps.meetingName, meetingInfo, attendeeInfo);
             setMessage({
                 content: "join meeting.... done.",
                 color: "#0000ff",

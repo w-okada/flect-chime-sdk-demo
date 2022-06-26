@@ -2,7 +2,7 @@ import * as Chime from "@aws-sdk/client-chime"
 import { ChannelMessagePersistenceType, ChannelMessageType } from "@aws-sdk/client-chime";
 import { v4 } from "uuid";
 import { ControlTypes } from "../messaging_format";
-import { notifyRoomStarted } from "./100_ChimeMessaging";
+import { log } from "../util";
 
 
 const messagingAppInstanceAdminArn = process.env.MESSAGING_APP_INSTANCE_ADMIN_ARN!;
@@ -10,8 +10,6 @@ const messagingAppInstanceArn = process.env.MESSAGING_APP_INSTANCE_ARN!
 const messagingGlobalChannelArn = process.env.MESSAGING_GLOBAL_CHANNEL_ARN!;
 
 const chime = new Chime.Chime({ region: process.env.AWS_REGION });
-
-
 
 // (1) ミーティング作成
 export const createMeetingInChimeBackend = async (region: string) => {
@@ -23,29 +21,19 @@ export const createMeetingInChimeBackend = async (region: string) => {
     return newMeetingInfo
 }
 
-export const notifyMeetingDeletedFromChimeBackend = async () => {
-    await chime.sendChannelMessage({
-        ChannelArn: messagingGlobalChannelArn,
-        ClientRequestToken: v4(),
-        Content: ControlTypes.RoomDeleted,
-        Type: ChannelMessageType.CONTROL,
-        Persistence: ChannelMessagePersistenceType.NON_PERSISTENT,
-        ChimeBearer: messagingAppInstanceAdminArn,
-    })
-}
 
 // (2) Chimeのバックエンドに会議室の存在確認。
 // 存在していたミーティングのIDだけを返す。
 export const checkMeetingExistInChimeBackend = async (meetingId: string): Promise<boolean> => {
     try {
         const mid = await chime.getMeeting({ MeetingId: meetingId })
-        console.log("chime meeting info:", mid);
+        log("checkMeetingExistInChimeBackend", "chime meeting info:", JSON.stringify(mid));
         return true
     } catch (err: any) {
         if (err.code == "NotFoundException") {
-            console.log("chime meeting exception, but this maybe happen when the meeting doesn't exist.");
+            log("checkMeetingExistInChimeBackend", "chime meeting exception, but this maybe happen when the meeting doesn't exist.");
         } else {
-            console.log("chime meeting exception:", err);
+            log("checkMeetingExistInChimeBackend", "chime meeting exception:", err);
         }
         return false
     }
@@ -53,8 +41,7 @@ export const checkMeetingExistInChimeBackend = async (meetingId: string): Promis
 
 // (3) meeting参加
 export const joinMeetingInChimeBackend = async (meetingId: string) => {
-    // export const joinMeetingInChimeBackend = async (meetingId: string, sub: string) => {
-    console.info("Adding new attendee");
+    log("joinMeetingInChimeBacken", "Adding new attendee");
     const attendeeInfo = await chime
         .createAttendee({
             MeetingId: meetingId,
@@ -66,7 +53,6 @@ export const joinMeetingInChimeBackend = async (meetingId: string) => {
 
 // (4) メッセージングチャネル作成
 export const createMessageChannelInChimeBackend = async (meetingName: string,) => {
-    const dateNow = new Date();
     const params = {
         Name: `Ch.${meetingName}`,
         AppInstanceArn: messagingAppInstanceArn,
@@ -77,7 +63,7 @@ export const createMessageChannelInChimeBackend = async (meetingName: string,) =
     };
 
     const response = await chime.createChannel(params);
-    console.log("Message Channel Created:", response.ChannelArn)
+    log("createMessageChannelInChimeBackend", "Message Channel Created:", JSON.stringify(response.ChannelArn));
     return response
 
 }
@@ -90,54 +76,29 @@ export const deleteMessageChannelFromChimeBackend = async (messageChannelArn: st
         ChimeBearer: messagingAppInstanceAdminArn
     };
     const response = await chime.deleteChannel(params);
-    console.log(`Delete Channel ${messageChannelArn}`, response)
+    log("deleteMessageChannelFromChimeBackend", `Delete Channel ${messageChannelArn}`, JSON.stringify(response))
 }
 
 // (6) Messaging APIにユーザ登録
 export const createMessagingAPIUser = async (id: string, name: string) => {
-    console.log("Generate Messaging Environment: ID, name:", id, name)
+    log("createMessagingAPIUser", "Generate Messaging Environment: ID, name:", id, name)
 
     // 既存のIDを検索。存在する場合はupdate ⇒ Userが多いとタイムアウトするためNG。直接アップデートしてエラーハンドリングする方式に変更
-    // let listRes: Chime.ListAppInstanceUsersCommandOutput | null = null
-    // let existId: string | null = null
-    // let existMetadata: string | undefined = undefined
-    // while (true) {
-    //     const nextToken = (listRes && listRes.NextToken) ? listRes.NextToken : undefined
-    //     listRes = await chime.listAppInstanceUsers({
-    //         AppInstanceArn: messagingAppInstanceArn,
-    //         // MaxResults: 50,
-    //         NextToken: nextToken
-    //     })
-    //     console.log("APP USERS:", listRes.AppInstanceUsers)
-    //     const exist = listRes.AppInstanceUsers?.find(x => {
-    //         return x.AppInstanceUserArn?.endsWith(`/${id}`)
-    //     })
-    //     if (exist) {
-    //         existId = exist.AppInstanceUserArn || null
-    //         existMetadata = exist.Metadata
-    //         break
-    //     }
-    //     if (!listRes.NextToken) {
-    //         break
-    //     }
-    // }
-
-    // // 既存IDが見つかった。⇒update
     // if (existId) {
     const userArn = `${messagingAppInstanceArn}/user/${id}`
     try {
 
-        console.log("Generate Messaging Environment: Updating...:", userArn)
+        log("createMessagingAPIUser", "Generate Messaging Environment: Updating...:", userArn)
         const response = await chime
             .updateAppInstanceUser({
                 AppInstanceUserArn: userArn,
                 Name: name,
                 Metadata: ""
             })
-        console.log("Generate Messaging Environment: UserArn(Update)", response.AppInstanceUserArn)
+        log("createMessagingAPIUser", "Generate Messaging Environment: UserArn(Update)", JSON.stringify(response.AppInstanceUserArn))
         return response
     } catch (exception) {
-        console.log(`No existing app user ${userArn}`, exception)
+        log("createMessagingAPIUser", `No existing app user ${userArn}`, exception)
         // 新規IDの登録⇒新規登録
         const response = await chime.createAppInstanceUser({
             AppInstanceArn: messagingAppInstanceArn,
@@ -145,7 +106,7 @@ export const createMessagingAPIUser = async (id: string, name: string) => {
             ClientRequestToken: v4(),
             Name: name,
         })
-        console.log("Generate Messaging Environment: UserArn(New)", response.AppInstanceUserArn)
+        log("createMessagingAPIUser", "Generate Messaging Environment: UserArn(New)", JSON.stringify(response.AppInstanceUserArn))
         return response
     }
 
@@ -162,7 +123,7 @@ export const addUserToGlobalChannel = async (appInstanceUserArn: string) => {
     };
 
     const membershipResponse = await chime.createChannelMembership(params);
-    console.log("Generate Messaging Environment: addUserToGlobalChannel", JSON.stringify(membershipResponse.Member))
+    log("addUserToGlobalChannel", "Generate Messaging Environment: addUserToGlobalChannel", JSON.stringify(membershipResponse.Member))
     return membershipResponse
 }
 
@@ -177,6 +138,6 @@ export const addUserToRoomChannel = async (roomChannelArn: string, appInstanceUs
     };
 
     const membershipResponse = await chime.createChannelMembership(params);
-    console.log("Generate Messaging Environment: addUserToRoomChannel", JSON.stringify(membershipResponse.Member))
+    log("addUserToRoomChannel", "Generate Messaging Environment: addUserToRoomChannel", JSON.stringify(membershipResponse.Member))
     return membershipResponse
 }

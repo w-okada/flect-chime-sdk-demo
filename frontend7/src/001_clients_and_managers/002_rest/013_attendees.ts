@@ -33,7 +33,7 @@ export const joinMeeting = async (params: RestJoinMeetingRequest, context: Inter
 // (2) List Attendees (GET)
 //// TODO: APIを作成してI/Fを合わせる
 export type GetAttendeeListRequest = {
-    meetingName: string;
+    exMeetingId: string
 };
 export type GetAttendeeListResponse = {
     attendees: [
@@ -47,7 +47,7 @@ export type GetAttendeeListResponse = {
 };
 
 export const getAttendeeList = async (params: GetAttendeeListRequest, context: InternalRestApiClientContext): Promise<GetAttendeeListResponse> => {
-    const attendeeUrl = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees`;
+    const attendeeUrl = `${context.baseUrl}meetings/${params.exMeetingId}/attendees`;
     const res = await fetch(attendeeUrl, {
         method: "GET",
         headers: {

@@ -19,7 +19,7 @@ export type ChimeClientState = {
     activeSpeakerId: string | null
 }
 export type ChimeClientStateAndMethods = ChimeClientState & {
-    joinMeeting: (meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => Promise<void>
+    joinMeeting: (exMeetingID: string, meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => Promise<void>
     enterMeeting: (audioInput: ChimeAudioInputDevice, videoInput: ChimeVideoInputDevice, audioOutput: ChimeAudioOutputDevice, audioOutputElement: ChimeAudioOutputElement) => Promise<void>
     leaveMeeting: () => void
 
@@ -39,6 +39,7 @@ export type AttendeeList = { [attendeeId: string]: AttendeeState; }
 export type VideoTileStateList = { [attendeeId: string]: VideoTileState; }
 export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndMethods => {
     const [meetingName, setMeetingName] = useState<string>("")
+    const [exMeetingId, setExMeetingId] = useState<string>("")
     const [attendees, setAttendees] = useState<AttendeeList>({})
     const [videoTileStates, setVideoTileStates] = useState<VideoTileStateList>({})
     const [activeSpeakerId, setActiveSpeakerId] = useState<string | null>(null)
@@ -68,17 +69,17 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
                         if (x.attendeeName === null) {
                             if (!x.isSharedContent) {
                                 const info = await props.getAttendeeInfo({
-                                    meetingName: meetingName,
+                                    exMeetingId: exMeetingId,
                                     attendeeId: x.attendeeId
                                 })
-                                x.attendeeName = info?.attendeeName || null
+                                x.attendeeName = info?.username || null
                             } else {
                                 console.log("OWNER:::", x.ownerId)
                                 const info = await props.getAttendeeInfo({
-                                    meetingName: meetingName,
+                                    exMeetingId: exMeetingId,
                                     attendeeId: x.ownerId
                                 })
-                                x.attendeeName = info?.attendeeName || null
+                                x.attendeeName = info?.username || null
                                 if (x.attendeeName) {
                                     x.attendeeName = `Content(${x.attendeeName})`
                                 }
@@ -99,18 +100,19 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
             }
         }
         chimeClient.setFlectChimeClientListener(l)
-    }, [props.getAttendeeInfo, meetingName])
+    }, [props.getAttendeeInfo, meetingName, exMeetingId])
 
 
 
     //// (1) join
     const joinMeeting = useMemo(() => {
-        return async (meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => {
+        return async (exMeetingId: string, meetingName: string, meetingInfo: Chime.Meeting, attendeeInfo: Chime.Attendee) => {
             if (!chimeClient) {
                 console.warn("chime client is not initialized.")
                 return
             }
             setMeetingName(meetingName)
+            setExMeetingId(exMeetingId)
             await chimeClient.joinMeeting(meetingInfo, attendeeInfo);
         }
     }, [chimeClient])

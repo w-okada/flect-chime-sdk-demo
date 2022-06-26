@@ -3,18 +3,14 @@ import * as Chime from "@aws-sdk/client-chime"
 import {
     BackendDeleteMeetingRequest,
     BackendGetMeetingInfoRequest,
-    BackendGetMeetingInfoResponse,
     BackendListMeetingsRequest,
-    BackendListMeetingsResponse,
     BackendGetAttendeeInfoException,
     BackendGetAttendeeInfoExceptionType,
-    BackendGetAttendeeInfoRequest,
-    BackendGetAttendeeInfoResponse,
     BackendCreateMeetingRequest,
 } from "../backend_request";
-import { MeetingListItem, Metadata, UserInfoInServer } from "../http_request";
-import { checkMeetingExistInChimeBackend, deleteMessageChannelFromChimeBackend } from "./002_Chime";
+import { UserInfoInServer } from "../http_request";
 import { getExpireDate, log } from "../util";
+
 // @ts-ignore
 var meetingTableName = process.env.MEETING_TABLE_NAME!;
 var attendeesTableName = process.env.ATTENDEE_TABLE_NAME!;
@@ -22,19 +18,15 @@ var userEnvrionmentTableName = process.env.USER_ENVIRONMENT_TABLE!
 
 var ddb = new DynamoDB.DynamoDB({ region: process.env.AWS_REGION });
 
-export type MetaddataDB = Metadata & {
-    Code: string
-}
-
-
 
 // (1) ミーティングテーブル
 //// (1-1) 新規ミーティングの登録
 export type MeetingInfoDB = BackendCreateMeetingRequest & {
+    // ミーティング登録時に内部生成される情報(DBに格納)
     exMeetingId: string,
     ended: boolean,
     deleted: boolean,
-
+    // ミーティング開始時に内部生成追加される情報(DBに格納)
     meetingId?: string,
     meeting?: Chime.Meeting,
     messageChannelArn?: string,
@@ -78,7 +70,7 @@ export const listMeetingsFromDB = async (req: BackendListMeetingsRequest): Promi
         IndexName: "EndTime",
         Limit: 100,
     })
-    console.log("dynamo: list all meetings result:", JSON.stringify(result));
+    // log("listMeetingsFromDB", "dynamo: list all meetings result:", JSON.stringify(result));
 
     const meetingInfos = result.Items;
     const meetings: MeetingInfoDB[] = meetingInfos!.map(x => {
@@ -88,7 +80,7 @@ export const listMeetingsFromDB = async (req: BackendListMeetingsRequest): Promi
     return meetings
 }
 
-//// (1-3) 単一ミーティングをDBから列挙。
+//// (1-3) 単一ミーティングをDBから取得。
 export const getMeetingInfoFromDB = async (req: BackendGetMeetingInfoRequest): Promise<MeetingInfoDB | null> => {
     log("getMeetingInfoFromDB", "get meeting info from db", req.exMeetingId)
     //// (1) retrieve info
@@ -106,30 +98,6 @@ export const getMeetingInfoFromDB = async (req: BackendGetMeetingInfoRequest): P
     const info = JSON.parse(result.Item.MeetingInfoDB.S!) as MeetingInfoDB
     return info
 
-
-    // //// (3) If no meeting in Chime, delete meeting from DB and return null
-    // const meetingInfo = result.Item!;
-    // const meetingName = meetingInfo.MeetingName.S!
-    // const meetingId = meetingInfo.MeetingId.S!
-    // const meeting = JSON.parse(meetingInfo.Meeting.S!);
-    // const metadata = JSON.parse(meetingInfo.Metadata.S!)
-    // const hmmTaskArn = meetingInfo.HmmTaskArn ? meetingInfo.HmmTaskArn.S! : "-"
-    // const isOwner = req.sub === JSON.parse(meetingInfo.Metadata.S!).OwnerId
-    // const code = metadata["Code"]
-
-    // // Check Exist?
-    // const aliveIds = await checkMeetingExistInChimeBackend([meetingId])
-    // let alive = aliveIds.includes(meeting.MeetingId)
-    // return {
-    //     meetingName: meetingName,
-    //     meetingId: meetingId,
-    //     meeting: meeting,
-    //     metadata: metadata,
-    //     hmmTaskArn: hmmTaskArn,
-    //     isOwner: isOwner,
-    //     code: code,
-    //     alive: alive
-    // };
 };
 
 //// (1-4) 単一ミーティングを更新
@@ -154,31 +122,58 @@ export const updateMeetingInDB = async (meetingInfoDB: MeetingInfoDB) => {
 
 }
 //// (1-5) 単一ミーティングをDBから削除。
+///// 処理簡単化の為項目全体を上書きする(registerMeetingIntoDBと同じ挙動)
 export const deleteMeetingFromDB = async (req: BackendDeleteMeetingRequest) => {
-    console.log(`Delete meeting from DB ${req.exMeetingId}`)
-    deleteMessageChannelFromChimeBackend(req.messageChannelArn)
+    log("deleteMeetingFromDB", `Delete meeting from DB ${req.exMeetingId}`)
+    const info = await getMeetingInfoFromDB({
+        exMeetingId: req.exMeetingId,
+        exUserId: req.exUserId
+    })
+    if (!info) {
+        log("deleteMeetingFromDB", "db is not found")
+        return
+    }
+    if (info.ownerId != req.exUserId || req.exUserId != "") {
+        log("deleteMeetingFromDB", "no-owner can not delete.")
+        return
+    }
 
+    info.deleted = true
+    const meetingInfoDBString = JSON.stringify(info)
+    const item = {
+        Meeting: { S: "Meeting" },
+        ExMeetingId: { S: info.exMeetingId },
+        EndTime: { N: "" + info.endTime },
+        MeetingInfoDB: { S: meetingInfoDBString },
+        TTL: {
+            N: "" + getExpireDate(24 * 14), // 2weeks
+        },
+    };
     await ddb
-        .deleteItem({
+        .putItem({
             TableName: meetingTableName,
-            Key: {
-                ExMeetingId: { S: req.exMeetingId },
-            },
+            Item: item,
         })
 };
 
 
 // (2) 参加者テーブル
+export type AttendeeInfoDB = {
+    exMeetingId: string,
+    attendeeId: string,
+    exUserId: string
+}
 //// (2-1) 会議参加者を登録
-export const registerAttendeeIntoDB = async (exMeetingId: string, attendeeId: string, exUserId: string) => {
+export const registerAttendeeIntoDB = async (req: AttendeeInfoDB) => {
+    const attendeeInfoString = JSON.stringify(req)
     await ddb
         .putItem({
             TableName: attendeesTableName,
             Item: {
                 AttendeeId: {
-                    S: `${exMeetingId}/${attendeeId}`,
+                    S: `${req.exMeetingId}/${req.attendeeId}`,
                 },
-                ExUserId: { S: exUserId },
+                AttendeeInfoDB: { S: attendeeInfoString },
                 TTL: {
                     N: "" + getExpireDate(24 * 3), // 3days
                 },
@@ -187,40 +182,33 @@ export const registerAttendeeIntoDB = async (exMeetingId: string, attendeeId: st
 }
 
 //// (2-2) 会議参加者の情報を取得
-export const getAttendeeInfoFromDB = async (meetingName: string, attendeeId: string): Promise<BackendGetAttendeeInfoResponse | BackendGetAttendeeInfoException> => {
+export const getAttendeeInfoFromDB = async (exMeetingId: string, attendeeId: string): Promise<AttendeeInfoDB | null> => {
     const result = await ddb
         .getItem({
             TableName: attendeesTableName,
             Key: {
                 AttendeeId: {
-                    S: `${meetingName}/${attendeeId}`,
+                    S: `${exMeetingId}/${attendeeId}`,
                 },
             },
         })
     if (!result.Item) {
-        return {
-            code: BackendGetAttendeeInfoExceptionType.NO_ATTENDEE_FOUND,
-            exception: true,
-        };
+        return null
     }
-    return {
-        attendeeId: result.Item.AttendeeId.S!,
-        attendeeName: result.Item.AttendeeName.S!,
-        globalUserId: result.Item.GlobalUserId.S!
-
-    };
+    const res = JSON.parse(result.Item.AttendeeInfoDB.S!) as AttendeeInfoDB
+    return res;
 }
 
 
 // (3) ユーザ情報
-// (7) ユーザ情報をDBに登録
-export const registerUserInfoIntoDB = async (exUserId: string, userInfo: UserInfoInServer) => {
+// (3-1) ユーザ情報をDBに登録
+export const registerUserInfoIntoDB = async (userInfo: UserInfoInServer) => {
     await ddb
         .putItem({
             TableName: userEnvrionmentTableName,
             Item: {
                 ExUserId: {
-                    S: exUserId,
+                    S: userInfo.exUserId,
                 },
                 UserInfoInServer: { S: JSON.stringify(userInfo) },
                 TTL: {
@@ -232,7 +220,7 @@ export const registerUserInfoIntoDB = async (exUserId: string, userInfo: UserInf
 
 
 
-// (6) DBから会議参加者の情報を取得
+// (3-2) DBから会議参加者の情報を取得
 export const getUserInfoFromDB = async (exUserId: string): Promise<UserInfoInServer | null> => {
     log("getUserInfoFromDB", exUserId)
     const result = await ddb

@@ -3,7 +3,8 @@
 //// (1-1) (POST) -> no support
 
 import { deleteMeetingFromDB, getMeetingInfoFromDB } from "../001_common/001_DynamoDB";
-import { checkMeetingExistInChimeBackend, notifyMeetingDeletedFromChimeBackend } from "../001_common/002_Chime";
+import { checkMeetingExistInChimeBackend, deleteMessageChannelFromChimeBackend } from "../001_common/002_Chime";
+import { notifyRoomDeleted } from "../001_common/100_ChimeMessaging";
 import { BackendDeleteMeetingRequest, BackendDeleteMeetingResponse, BackendGetMeetingInfoRequest, BackendGetMeetingInfoResponse } from "../backend_request";
 import { MeetingListItem } from "../http_request";
 import { log } from "../util";
@@ -38,6 +39,11 @@ export const getMeetingInfo = async (req: BackendGetMeetingInfoRequest): Promise
 //// (1-4) Delete Meeting (DELETE)
 export const deleteMeeting = async (req: BackendDeleteMeetingRequest): Promise<BackendDeleteMeetingResponse> => {
     deleteMeetingFromDB(req)
-    notifyMeetingDeletedFromChimeBackend()
+    if (req.messageChannelArn) {
+        deleteMessageChannelFromChimeBackend(req.messageChannelArn)
+    } else {
+        log("deleteMeeting", "no channel is asigned to the room?")
+    }
+    notifyRoomDeleted()
     return {}
 }

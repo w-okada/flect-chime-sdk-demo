@@ -22,17 +22,6 @@ export const notifyRoomRegistered = async () => {
 }
 
 
-export const notifyRoomCreated = async () => {
-    await chime.sendChannelMessage({
-        ChannelArn: messagingGlobalChannelArn,
-        ClientRequestToken: v4(),
-        Content: ControlTypes.RoomRegistered,
-        Type: ChannelMessageType.CONTROL,
-        Persistence: ChannelMessagePersistenceType.NON_PERSISTENT,
-        ChimeBearer: messagingAppInstanceAdminArn,
-    })
-}
-
 export const notifyRoomStarted = async () => {
     await chime.sendChannelMessage({
         ChannelArn: messagingGlobalChannelArn,
@@ -43,3 +32,27 @@ export const notifyRoomStarted = async () => {
         ChimeBearer: messagingAppInstanceAdminArn,
     })
 }
+
+
+export const notifyRoomEnded = async () => {
+    await chime.sendChannelMessage({
+        ChannelArn: messagingGlobalChannelArn,
+        ClientRequestToken: v4(),
+        Content: ControlTypes.RoomEnded,
+        Type: ChannelMessageType.CONTROL,
+        Persistence: ChannelMessagePersistenceType.NON_PERSISTENT,
+        ChimeBearer: messagingAppInstanceAdminArn,
+    })
+}
+
+export const notifyRoomDeleted = async () => {
+    await chime.sendChannelMessage({
+        ChannelArn: messagingGlobalChannelArn,
+        ClientRequestToken: v4(),
+        Content: ControlTypes.RoomDeleted,
+        Type: ChannelMessageType.CONTROL,
+        Persistence: ChannelMessagePersistenceType.NON_PERSISTENT,
+        ChimeBearer: messagingAppInstanceAdminArn,
+    })
+}
+

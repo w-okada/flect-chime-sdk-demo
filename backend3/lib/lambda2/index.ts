@@ -1,5 +1,5 @@
 
-import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest, BackendPostEnvironmentsRequest } from "./backend_request";
+import { BackendCreateMeetingRequest, BackendGetAttendeeInfoException, BackendGetAttendeeInfoExceptionType, BackendGetEnvironmentException, BackendGetEnvironmentExceptionType, BackendJoinMeetingException, BackendJoinMeetingExceptionType, BackendJoinMeetingRequest, BackendListMeetingsRequest, BackendPostEnvironmentsRequest } from "./backend_request";
 import { Codes, HTTPCreateMeetingRequest, HTTPCreateMeetingResponse, HTTPGetAttendeeInfoResponse, HTTPGetEnvironmentResponse, HTTPGetEnvironmentsResponse, HTTPGetMeetingInfoResponse, HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPListMeetingsRequest, HTTPListMeetingsResponse, HTTPPostEnvironmentsRequest, HTTPPostEnvironmentsResponse, HTTPResponseBody, StartTranscribeRequest, StopTranscribeRequest } from "./http_request";
 import { generateResponse, getUserInfoFromCognitoWithAccessToken, UserInfoFromCognito } from "./util";
 
@@ -237,23 +237,26 @@ const handleDeleteMeeting = async (accessToken: string, pathParams: { [key: stri
             code: Codes.PARAMETER_ERROR,
         };
     } else {
-        // const result = await getMeetingInfo({ exMeetingId });
-        // if (!result) {
-        //     res = {
-        //         success: false,
-        //         code: Codes.NO_SUCH_A_MEETING_ROOM,
-        //     };
-        // } else {
-        //     await deleteMeeting({
-        //         exMeetingId,
-        //         messageChannelArn: result.metadata.MessageChannelArn
-        //     });
-        res = {
-            success: true,
-            code: Codes.SUCCESS,
-        };
+        const result = await getMeetingInfo({
+            exMeetingId, exUserId: userInfo.sub
+        });
+        if (!result) {
+            res = {
+                success: false,
+                code: Codes.NO_SUCH_A_MEETING_ROOM,
+            };
+        } else {
+            await deleteMeeting({
+                exMeetingId,
+                exUserId: userInfo.sub,
+                messageChannelArn: result.meeting.messageChannelArn
+            });
+            res = {
+                success: true,
+                code: Codes.SUCCESS,
+            };
 
-        // }
+        }
     }
     const response = generateResponse(res);
     callback(null, response);
@@ -356,8 +359,10 @@ const handleGetAttendee = async (accessToken: string, pathParams: { [key: string
             code: Codes.PARAMETER_ERROR,
         };
     } else {
-        // const attendeeInfo = await getAttendeeInfo({ exMeetingId, attendeeId });
-        const attendeeInfo = await getAttendeeInfo({ meetingName: "tmp", attendeeId });
+        const attendeeInfo = await getAttendeeInfo({
+            exMeetingId: exMeetingId,
+            attendeeId: attendeeId
+        });
 
         if ("exception" in attendeeInfo) {
             const exception = attendeeInfo as BackendGetAttendeeInfoException;
@@ -374,9 +379,8 @@ const handleGetAttendee = async (accessToken: string, pathParams: { [key: string
             }
         } else {
             const httpRes: HTTPGetAttendeeInfoResponse = {
-                attendeeId: attendeeInfo.attendeeId,
-                attendeeName: attendeeInfo.attendeeName,
-                globalUserId: attendeeInfo.globalUserId,
+                exUserId: attendeeInfo.exUserId,
+                username: attendeeInfo.username
             };
             res = {
                 success: true,
@@ -523,15 +527,30 @@ const handleGetEnvironemnt = async (accessToken: string, pathParams: { [key: str
     const backendRes = await getEnvironment({
         sub: globalUserId,
     })
+    if ("exception" in backendRes) {
+        const exception = backendRes as BackendGetEnvironmentException;
+        if (exception.code === BackendGetEnvironmentExceptionType.NO_USER_FOUND) {
+            res = {
+                success: false,
+                code: Codes.NO_SUCH_USER,
+            };
+        } else {
+            res = {
+                success: false,
+                code: Codes.PARAMETER_ERROR,
+            };
+        }
+    } else {
+        const httpRes: HTTPGetEnvironmentResponse = {
+            ...backendRes
+        }
+        res = {
+            success: true,
+            code: Codes.SUCCESS,
+            data: httpRes,
+        };
+    }
 
-
-    const httpRes: HTTPGetEnvironmentResponse = backendRes
-
-    res = {
-        success: true,
-        code: Codes.SUCCESS,
-        data: httpRes,
-    };
     const response = generateResponse(res);
     callback(null, response);
 }

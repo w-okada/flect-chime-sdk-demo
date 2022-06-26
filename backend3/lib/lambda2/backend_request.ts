@@ -32,7 +32,8 @@ export type BackendGetMeetingInfoResponse = HTTPGetMeetingInfoResponse;
 //// (2-4) Delete Meeting
 export type BackendDeleteMeetingRequest = HTTPDeleteMeetingRequest & {
     exMeetingId: string;
-    messageChannelArn: string;
+    exUserId: string;
+    messageChannelArn?: string;
 };
 export type BackendDeleteMeetingResponse = HTTPDeleteMeetingResponse
 
@@ -65,7 +66,7 @@ export type BackendGetAttendeesListResponse = HTTPGetAttendeesListResponse
 //// (4-1) Create (POST) -> no support
 //// (4-2) Get Attendee Info
 export type BackendGetAttendeeInfoRequest = HTTPGetAttendeeInfoRequest & {
-    meetingName: string;
+    exMeetingId: string;
     attendeeId: string;
 };
 
@@ -130,3 +131,12 @@ export type BackendPostEnvironmentsResponse = HTTPPostEnvironmentsResponse
 // (7) Environment
 export type BackendGetEnvironmentRequest = HTTPGetEnvironmentRequest & { sub: string }
 export type BackendGetEnvironmentResponse = HTTPGetEnvironmentResponse
+export const BackendGetEnvironmentExceptionType = {
+    NO_USER_FOUND: "NO_USER_FOUND",
+    PARAMETER_ERROR: "PARAMETER_ERROR",
+} as const;
+export type BackendGetEnvironmentExceptionType = typeof BackendGetEnvironmentExceptionType[keyof typeof BackendGetEnvironmentExceptionType];
+export type BackendGetEnvironmentException = {
+    code: BackendGetEnvironmentExceptionType;
+    exception: boolean;
+};
