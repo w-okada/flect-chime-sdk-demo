@@ -112,7 +112,7 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
     //// (2-2) Get Meeting Info (GET)
     const getMeetingInfo = async (params: GetMeetingInfoRequest): Promise<GetMeetingInfoResponse | null> => {
         if (!restClient) return null
-        const res = await restClient.getMeetingInfo(params as RestGetMeetingInfoResponse, context)
+        const res = await restClient.getMeetingInfo(params as RestGetMeetingInfoRequest, context)
         return res as GetMeetingInfoResponse
     }
     //// (2-3) (PUT) 

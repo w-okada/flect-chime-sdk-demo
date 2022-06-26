@@ -15,22 +15,22 @@ export class Recorder {
         canvas.width = width;
         canvas.height = height;
         canvas.getContext('2d')!.fillRect(0, 0, width, height);
-        setInterval(async () => {
-            console.log("update image")
-            const ctx = canvas.getContext('2d')!
-            ctx.fillStyle = "#ff0000"
-            ctx.fillRect(0, 0, width, height);
-            ctx.fillStyle = "#00ff00"
-            ctx.font = 'bold 48px serif';
-            ctx.fillText(`NOW:${new Date().getTime()}`, 30, 30);
+        // setInterval(async () => {
+        //     console.log("update image")
+        //     const ctx = canvas.getContext('2d')!
+        //     ctx.fillStyle = "#ff0000"
+        //     ctx.fillRect(0, 0, width, height);
+        //     ctx.fillStyle = "#00ff00"
+        //     ctx.font = 'bold 48px serif';
+        //     ctx.fillText(`NOW:${new Date().getTime()}`, 30, 30);
 
-            if (this.videoSender) {
-                const rep = await this.videoSender.getStats()
-                rep.forEach(x => {
-                    console.log("stat;", x)
-                })
-            }
-        }, 1000 * 1)
+        //     if (this.videoSender) {
+        //         const rep = await this.videoSender.getStats()
+        //         rep.forEach(x => {
+        //             console.log("stat;", x)
+        //         })
+        //     }
+        // }, 1000 * 1)
         return canvas
     })()
     private blackVideoStream = this.blackVideoCanvas.captureStream();

@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const jsonObject = JSON.parse(fs.readFileSync("../backend2/cfn_outputs.json", "utf8"));
+const jsonObject = JSON.parse(fs.readFileSync("../backend3/cfn_outputs.json", "utf8"));
 const result = {};
 
 console.log(jsonObject);

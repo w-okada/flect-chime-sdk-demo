@@ -85,8 +85,14 @@ export const AppStateProvider = ({ children }: Props) => {
                 globalChannelArn: backendManagerState.environment.globalChannelArn,
             });
             messagingClientState.setMessageControlLsiterner({
-                roomCreated: () => {
+                roomRegistered: () => {
                     backendManagerState.reloadMeetingList({});
+                },
+                roomStarted: () => {
+                    console.log("room started");
+                },
+                roomEnded: () => {
+                    console.log("room ended");
                 },
                 roomDeleted: () => {
                     backendManagerState.reloadMeetingList({});

@@ -56,8 +56,10 @@ export type StateControls = {
     joinRoomCheckbox: StateControlCheckbox,
 }
 export type JoinRoomDialogProps = {
-    decodedMeetingName: string,
+    exMeetingId: string,
+    meetingName: string,
     useCode: boolean,
+    secret: boolean,
 
     //// ↓ secret roomの時に確定できないので、ここでは設定しない。
     ////  join後にroominfoを取得してchannelArnを特定することにする。 
@@ -141,8 +143,10 @@ export const useFrontend = (props: UseFrontendProps) => {
 
     // (3) DialogProp
     const [joinRoomDialogProps, setJoinRoomDialogProps] = useState<JoinRoomDialogProps>({
-        decodedMeetingName: "",
+        exMeetingId: "",
+        meetingName: "",
         useCode: false,
+        secret: false,
     })
 
     // (X) Recorder

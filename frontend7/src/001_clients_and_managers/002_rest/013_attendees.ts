@@ -2,12 +2,12 @@ import { HTTPJoinMeetingRequest, HTTPJoinMeetingResponse, HTTPResponseBody } fro
 import { InternalRestApiClientContext } from "./001_RestApiClient";
 
 // (1) Join Meeting (POST)
-export type RestJoinMeetingRequest = HTTPJoinMeetingRequest
+export type RestJoinMeetingRequest = HTTPJoinMeetingRequest & {
+    exMeetingId: string
+}
 export type RestJoinMeetingResponse = HTTPJoinMeetingResponse
 export const joinMeeting = async (params: RestJoinMeetingRequest, context: InternalRestApiClientContext): Promise<RestJoinMeetingResponse> => {
-    const url = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees`;
-    params.meetingName = encodeURIComponent(params.meetingName);
-    params.attendeeName = encodeURIComponent(params.attendeeName);
+    const url = `${context.baseUrl}meetings/${params.exMeetingId}/attendees`;
     const requestBody = JSON.stringify(params);
 
     const res = await fetch(url, {

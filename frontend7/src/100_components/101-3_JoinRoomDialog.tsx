@@ -15,26 +15,30 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
 
     // (2) Action
     const initializeState = () => {
-        (document.getElementById("join-room-dialog-room-name") as HTMLInputElement).value = "";
+        (document.getElementById("join-room-dialog-ex-room-id") as HTMLInputElement).value = "";
         (document.getElementById("join-room-dialog-code") as HTMLInputElement).value = "";
         setIsProcessing(false);
         setMessage(null);
     };
     const onSubmit = async () => {
-        const meetingName = (document.getElementById("join-room-dialog-room-name") as HTMLInputElement).value;
+        let exMeetingId = "";
+        if (frontendState.joinRoomDialogProps.secret) {
+            exMeetingId = (document.getElementById("join-room-dialog-ex-room-id") as HTMLInputElement).value;
+        } else {
+            exMeetingId = frontendState.joinRoomDialogProps.exMeetingId;
+        }
+
         const code = (document.getElementById("join-room-dialog-code") as HTMLInputElement).value;
         try {
             setIsProcessing(true);
-            // (1) get meeting token from backend
+            // (1) バックエンドからJoinTokenを取得
             setMessage({
                 content: "try to get meeting token....",
                 color: "#0000ff",
             });
             const joinTokenResult = await backendManagerState.joinMeeting({
-                meetingName: frontendState.joinRoomDialogProps.decodedMeetingName.length > 0 ? frontendState.joinRoomDialogProps.decodedMeetingName : meetingName,
-                attendeeName: frontendState.username,
+                exMeetingId: frontendState.joinRoomDialogProps.exMeetingId,
                 code: code,
-                messagingUserArn: backendManagerState.environment!.appInstanceUserArn,
             });
             setMessage({
                 content: "try to get meeting token.... done.",
@@ -44,7 +48,7 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
                 throw new Error(ChimeDemoException.RestClientNotInitilized);
             }
 
-            // (2) join with token
+            // (2) joinTokenを使ってjoin
             setMessage({
                 content: "join meeting.... ",
                 color: "#0000ff",
@@ -54,15 +58,16 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
             frontendState.setCurrentMeetingInfo({
                 meetingInfo: meetingInfo,
                 attendeeInfo: attendeeInfo,
-                meetingName: meetingName,
+                meetingName: frontendState.joinRoomDialogProps.meetingName,
                 attendeeName: frontendState.username,
             });
-            await chimeClientState.joinMeeting(frontendState.joinRoomDialogProps.decodedMeetingName, meetingInfo, attendeeInfo);
+            await chimeClientState.joinMeeting(frontendState.joinRoomDialogProps.meetingName, meetingInfo, attendeeInfo);
             setMessage({
                 content: "join meeting.... done.",
                 color: "#0000ff",
             });
-            // (3) enter
+
+            // (3) joinが完了したら、入室。
             setMessage({
                 content: "enter meeting.... ",
                 color: "#0000ff",
@@ -75,14 +80,12 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
                 color: "#0000ff",
             });
 
-            // (4) メッセージング初期化
+            // (4) 参加したRoomのメッセージング設定初期化
             const joinedMeetingInfo = await backendManagerState.getMeetingInfo({
-                meetingName: frontendState.joinRoomDialogProps.decodedMeetingName,
+                exMeetingId: frontendState.joinRoomDialogProps.exMeetingId,
             });
             console.log(`JOINEDMEETING`, joinedMeetingInfo);
-            messagingClientState.setMeetingChannelArn(joinedMeetingInfo?.metadata.MessageChannelArn!);
-            // messagingClientState.sendGlobalMessage("GLOBAL MESSAGING SEND...");
-            // messagingClientState.sendChannelMessage("CHANNEL MESSAGING SEND...");
+            messagingClientState.setMeetingChannelArn(joinedMeetingInfo?.meeting.messageChannelArn!);
 
             // 後処理
             initializeState();
@@ -111,17 +114,19 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
     //  Conponents
     ////////////////////////////
 
-    const description = `Join the room: ${frontendState.joinRoomDialogProps.decodedMeetingName}`;
+    const description = `Join the room: ${frontendState.joinRoomDialogProps.meetingName}`;
 
     const roomNameField = useMemo(() => {
-        const hidden = frontendState.joinRoomDialogProps.decodedMeetingName.length > 0 ? "hidden" : "";
+        if (!frontendState.joinRoomDialogProps.secret) {
+            return <></>;
+        }
         return (
-            <div className={`dialog-input-controls ${hidden}`}>
-                <input type="text" id="join-room-dialog-room-name" className="input-text" name="room-name" autoComplete="none" />
-                <label htmlFor="room-name">room name</label>
+            <div className={`dialog-input-controls`}>
+                <input type="text" id="join-room-dialog-ex-room-id" className="input-text" name="room-name" autoComplete="none" />
+                <label htmlFor="room-name">room id</label>
             </div>
         );
-    }, [frontendState.joinRoomDialogProps.decodedMeetingName]);
+    }, [frontendState.joinRoomDialogProps.meetingName]);
 
     const codeField = useMemo(() => {
         const hidden = frontendState.joinRoomDialogProps.useCode ? "" : "hidden";
