@@ -74,7 +74,7 @@ export class Backend3Stack extends Stack {
     const { restApiRole } = createRestApiPolicyStatement(this, userPoolArn)
 
     const { messagingPolicyForCreateCustomResource } = creatMessagingCustomResourcePolicyStatement()
-    const { messagingRoleForClient } = createMessagingUserRole(this, id, restApiRole, frontendBucket)
+    const { messagingRoleForClient } = createMessagingUserRole(this, id, restApiRole)
     // (5) Lambda
     //// (5-1) Layer
     const { nodeModulesLayer } = createNodeModulesLayer(this, id)

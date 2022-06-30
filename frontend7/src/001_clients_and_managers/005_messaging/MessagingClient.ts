@@ -52,12 +52,12 @@ export class MessagingClient {
 
         console.log("messagingCred", messagingCred)
         const s3 = new S3.S3Client({
-            credentials: prov,
-            // credentials: {
-            //     accessKeyId: messagingCred.AccessKeyId!,
-            //     secretAccessKey: messagingCred.SecretAccessKey!,
-            //     sessionToken: messagingCred.SessionToken!
-            // }, 
+            // credentials: prov,
+            credentials: {
+                accessKeyId: messagingCred.AccessKeyId!,
+                secretAccessKey: messagingCred.SecretAccessKey!,
+                sessionToken: messagingCred.SessionToken!
+            },
             region: "us-east-1"
         })
         s3.send(
