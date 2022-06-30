@@ -22,16 +22,27 @@ export const Frame = (_props: FrameProps) => {
      */
     // (x) signin state
     useEffect(() => {
-        if (!cognitoClientState.signInCompleted || !backendManagerState.environment) {
+        if (!cognitoClientState.signInCompleted) {
             const signInDialogCheckboxs = document.querySelectorAll(".sign-in-checkbox");
             signInDialogCheckboxs.forEach((x) => {
                 //@ts-ignore
                 x.checked = true;
                 // x.checked = false;
             });
-        } else {
+        } else if (!backendManagerState.environment) {
             const signInDialogCheckboxs = document.querySelectorAll(".sign-in-checkbox");
             signInDialogCheckboxs.forEach((x) => {
+                //@ts-ignore
+                x.checked = false;
+            });
+            const loadingUserInformationDialogCheckboxs = document.querySelectorAll(".loading-user-information-checkbox");
+            loadingUserInformationDialogCheckboxs.forEach((x) => {
+                //@ts-ignore
+                x.checked = true;
+            });
+        } else {
+            const loadingUserInformationDialogCheckboxs = document.querySelectorAll(".loading-user-information-checkbox");
+            loadingUserInformationDialogCheckboxs.forEach((x) => {
                 //@ts-ignore
                 x.checked = false;
             });

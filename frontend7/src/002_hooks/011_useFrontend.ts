@@ -54,6 +54,7 @@ export type StateControls = {
     signInCheckbox: StateControlCheckbox,
     createRoomCheckbox: StateControlCheckbox,
     joinRoomCheckbox: StateControlCheckbox,
+    loadingUserInformationCheckbox: StateControlCheckbox,
 }
 export type JoinRoomDialogProps = {
     exMeetingId: string,
@@ -140,6 +141,7 @@ export const useFrontend = (props: UseFrontendProps) => {
     const createRoomCheckbox = useStateControlCheckbox("create-room-checkbox");
     const joinRoomCheckbox = useStateControlCheckbox("join-room-checkbox");
 
+    const loadingUserInformationCheckbox = useStateControlCheckbox("loading-user-information-checkbox");
 
     // (3) DialogProp
     const [joinRoomDialogProps, setJoinRoomDialogProps] = useState<JoinRoomDialogProps>({
@@ -184,6 +186,7 @@ export const useFrontend = (props: UseFrontendProps) => {
             signInCheckbox,
             createRoomCheckbox,
             joinRoomCheckbox,
+            loadingUserInformationCheckbox,
         },
         joinRoomDialogProps,
         setJoinRoomDialogProps,

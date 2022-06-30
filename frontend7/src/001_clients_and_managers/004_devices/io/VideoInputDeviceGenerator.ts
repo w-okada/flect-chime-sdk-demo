@@ -81,7 +81,8 @@ export class VideoInputDeviceGenerator {
         if (params.virtualBackgroundType == VirtualBackgroundTypes.replace_with_image) {
             const supported = await BackgroundReplacementVideoFrameProcessor.isSupported();
             if (supported) {
-                const image = await fetch(params.imageURL);
+                const url = params.imageURL ? params.imageURL : "./bg1.jpg"
+                const image = await fetch(url);
                 const imageBlob = await image.blob();
                 const p = await BackgroundReplacementVideoFrameProcessor.create(undefined, { imageBlob });
                 this.backgroundReplacementProcessor = p || null
