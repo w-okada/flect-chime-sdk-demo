@@ -74,7 +74,7 @@ export class Backend3Stack extends Stack {
     const { restApiRole } = createRestApiPolicyStatement(this, userPoolArn)
 
     const { messagingPolicyForCreateCustomResource } = creatMessagingCustomResourcePolicyStatement()
-    const { messagingRoleForClient } = createMessagingUserRole(this, id, restApiRole)
+    const { messagingRoleForClient } = createMessagingUserRole(this, id, restApiRole, frontendBucket)
     // (5) Lambda
     //// (5-1) Layer
     const { nodeModulesLayer } = createNodeModulesLayer(this, id)
@@ -149,7 +149,7 @@ export class Backend3Stack extends Stack {
     const { authorizer } = createAuthorizer(this, id, roleForAPIAuthorizer.roleArn, restApi.restApiId, authorizerUri)
     let corsOrigin
     if (FRONTEND_LOCAL_DEV) {
-      corsOrigin = LOCAL_CORS_ORIGIN;
+      corsOrigin = `'${LOCAL_CORS_ORIGIN}'`;
     } else {
       if (USE_CDN) {
         corsOrigin = `'https://${frontendCdn!.distributionDomainName}'`;

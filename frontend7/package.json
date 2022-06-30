@@ -52,6 +52,7 @@
     },
     "dependencies": {
         "@aws-sdk/client-chime": "^3.112.0",
+        "@aws-sdk/client-s3": "^3.120.0",
         "@aws-sdk/client-sts": "^3.112.0",
         "@dannadori/blazeface-worker-js": "^1.0.6",
         "@fortawesome/fontawesome-free": "^6.1.1",

@@ -3,7 +3,7 @@ import { aws_s3 as s3 } from "aws-cdk-lib"
 import { aws_cloudfront as cloudfront } from "aws-cdk-lib"
 import { aws_iam as iam } from "aws-cdk-lib"
 import { Construct } from 'constructs';
-import { S3_PUBLIC_READ_ACCESS } from "../../bin/config";
+import { FRONTEND_LOCAL_DEV, LOCAL_CORS_ORIGIN, S3_PUBLIC_READ_ACCESS } from "../../bin/config";
 
 export const createFrontendS3 = (scope: Construct, id: string, USE_CDN: boolean) => {
     const frontendBucket = new s3.Bucket(scope, "StaticSiteBucket", {
@@ -67,5 +67,28 @@ export const createFrontendS3 = (scope: Construct, id: string, USE_CDN: boolean)
             ],
         });
     }
+
+
+    let corsOrigin
+    if (FRONTEND_LOCAL_DEV) {
+        corsOrigin = LOCAL_CORS_ORIGIN;
+    } else {
+        if (USE_CDN) {
+            corsOrigin = `https://${frontendCdn!.distributionDomainName}`;
+        } else {
+            corsOrigin = `https://${frontendBucket.bucketDomainName}`;
+        }
+    }
+
+    frontendBucket.addCorsRule(
+        {
+            allowedMethods: [
+                s3.HttpMethods.PUT,
+            ],
+            allowedOrigins: [corsOrigin],
+            allowedHeaders: ['*'],
+        },
+    )
+
     return { frontendBucket, frontendCdn }
 }

@@ -4,7 +4,7 @@ import { ConsoleLogger, DefaultMessagingSession, LogLevel, Message, MessagingSes
 import { CredentialProvider } from "@aws-sdk/types";
 import { v4 } from "uuid"
 import { ChannelMessageType, SortOrder } from "@aws-sdk/client-chime";
-
+import * as S3 from '@aws-sdk/client-s3';
 
 export enum Persistence {
     Persistent = 'PERSISTENT',
@@ -49,6 +49,25 @@ export class MessagingClient {
                 // expiration: messagingCred.Expiration,
             }
         }
+
+        console.log("messagingCred", messagingCred)
+        const s3 = new S3.S3Client({
+            credentials: prov,
+            // credentials: {
+            //     accessKeyId: messagingCred.AccessKeyId!,
+            //     secretAccessKey: messagingCred.SecretAccessKey!,
+            //     sessionToken: messagingCred.SessionToken!
+            // }, 
+            region: "us-east-1"
+        })
+        s3.send(
+            new S3.PutObjectCommand({
+                Bucket: 'f-backendstack-dev16-bucket',
+                Key: 'test11',
+                Body: 'aaa'
+            })
+        )
+
         this.chime = new Chime.Chime({ region: 'us-east-1', credentials: prov });
         this.userArn = userArn
 
