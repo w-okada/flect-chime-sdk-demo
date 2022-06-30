@@ -22,3 +22,4 @@ export const LOCAL_CORS_ORIGIN = ""
 export const COGNITO_USER_POOL_ARN = null
 export const COGNITO_USER_POOL_ID = null
 export const COGNITO_USER_POOL_CLIENT_ID = null
+export const S3_PUBLIC_READ_ACCESS = false

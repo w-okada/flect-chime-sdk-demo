@@ -3,26 +3,26 @@ import { aws_s3 as s3 } from "aws-cdk-lib"
 import { aws_cloudfront as cloudfront } from "aws-cdk-lib"
 import { aws_iam as iam } from "aws-cdk-lib"
 import { Construct } from 'constructs';
+import { S3_PUBLIC_READ_ACCESS } from "../../bin/config";
 
 export const createFrontendS3 = (scope: Construct, id: string, USE_CDN: boolean) => {
     const frontendBucket = new s3.Bucket(scope, "StaticSiteBucket", {
         bucketName: `${id}-Bucket`.toLowerCase(),
         removalPolicy: RemovalPolicy.DESTROY,
-        publicReadAccess: true,
+        publicReadAccess: S3_PUBLIC_READ_ACCESS,
     });
 
 
     let frontendCdn: cloudfront.CloudFrontWebDistribution | null = null;
     if (USE_CDN) {
         const oai = new cloudfront.OriginAccessIdentity(scope, "my-oai");
-
-        const myBucketPolicy = new iam.PolicyStatement({
-            effect: iam.Effect.ALLOW,
-            actions: ["s3:GetObject"],
-            principals: [new iam.CanonicalUserPrincipal(oai.cloudFrontOriginAccessIdentityS3CanonicalUserId)],
-            resources: [frontendBucket.bucketArn + "/*"],
-        });
-        frontendBucket.addToResourcePolicy(myBucketPolicy);
+        // const myBucketPolicy = new iam.PolicyStatement({
+        //     effect: iam.Effect.ALLOW,
+        //     actions: ["s3:GetObject"],
+        //     principals: [new iam.CanonicalUserPrincipal(oai.cloudFrontOriginAccessIdentityS3CanonicalUserId)],
+        //     resources: [frontendBucket.bucketArn + "/default/*"],
+        // });
+        // frontendBucket.addToResourcePolicy(myBucketPolicy);
 
         // Create CloudFront WebDistribution
         frontendCdn = new cloudfront.CloudFrontWebDistribution(scope, "WebsiteDistribution", {
@@ -38,6 +38,7 @@ export const createFrontendS3 = (scope: Construct, id: string, USE_CDN: boolean)
                     s3OriginSource: {
                         s3BucketSource: frontendBucket,
                         originAccessIdentity: oai,
+                        originPath: "/default",
                     },
                     behaviors: [
                         {

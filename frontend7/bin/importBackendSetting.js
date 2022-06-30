@@ -30,7 +30,8 @@ fs.writeFileSync("./sync.sh", outputString);
 console.log("generate access url");
 const DemoEndpoint = outputs["DemoEndpoint"];
 outputString = "";
-outputString += `${DemoEndpoint}/default/index.html \n`;
+// outputString += `${DemoEndpoint}/default/index.html \n`;
+outputString += `${DemoEndpoint}/index.html \n`;
 
 fs.writeFileSync("./demo_url.txt", outputString);
 
