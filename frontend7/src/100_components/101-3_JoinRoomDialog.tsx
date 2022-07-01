@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useAppState } from "../003_provider/AppStateProvider";
 import { ChimeDemoException } from "../000_exception/Exception";
 import { Processing } from "./parts/001_processing";
+import { off } from "process";
 export type JoinRoomDialogProps = {};
 type DialogMessage = {
     content: string;
@@ -15,7 +16,10 @@ export const JoinRoomDialog = (_props: JoinRoomDialogProps) => {
 
     // (2) Action
     const initializeState = () => {
-        (document.getElementById("join-room-dialog-ex-room-id") as HTMLInputElement).value = "";
+        const exRoomIdInput = document.getElementById("join-room-dialog-ex-room-id") as HTMLInputElement;
+        if (exRoomIdInput) {
+            exRoomIdInput.value = "";
+        }
         (document.getElementById("join-room-dialog-code") as HTMLInputElement).value = "";
         setIsProcessing(false);
         setMessage(null);

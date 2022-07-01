@@ -199,7 +199,7 @@ export class Recorder {
     }
 
     chunks: Blob[] = [];
-    startRecording = async () => {
+    startRecording = async (dataCallback: (data: any) => Promise<void>) => {
         // await this.init()
 
 
@@ -231,9 +231,10 @@ export class Recorder {
         }
         this.mediaRecorder.onstop = (e) => {
             console.log("data available after MediaRecorder.stop() called.");
-            var blob = new Blob(this.chunks, {
+            const blob = new Blob(this.chunks, {
                 type: 'video/webm'
             });
+            dataCallback(blob)
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             document.body.appendChild(a);

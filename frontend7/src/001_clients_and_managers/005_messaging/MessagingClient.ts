@@ -52,7 +52,6 @@ export class MessagingClient {
 
         console.log("messagingCred", messagingCred)
         const s3 = new S3.S3Client({
-            // credentials: prov,
             credentials: {
                 accessKeyId: messagingCred.AccessKeyId!,
                 secretAccessKey: messagingCred.SecretAccessKey!,
@@ -63,7 +62,7 @@ export class MessagingClient {
         s3.send(
             new S3.PutObjectCommand({
                 Bucket: 'f-backendstack-dev16-bucket',
-                Key: 'test11',
+                Key: 'recording/test11',
                 Body: 'aaa'
             })
         )

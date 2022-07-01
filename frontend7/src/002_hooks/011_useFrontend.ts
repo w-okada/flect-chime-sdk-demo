@@ -8,6 +8,7 @@ import { BackendManagerStateAndMethod } from "./002_useBackendManager";
 import { ChimeClientStateAndMethods } from "./003_useChimeClient";
 import { DeviceInfoStateAndMethods } from "./004_useDeviceState";
 import { MessagingClientStateAndMethod } from "./005_useMessagingClient";
+import { S3ClientStateAndMethod } from "./006_useS3Client";
 
 export type UseFrontendProps = {
     cognitoClientState: CognitoClientStateAndMethods;
@@ -15,6 +16,7 @@ export type UseFrontendProps = {
     chimeClientState: ChimeClientStateAndMethods;
     deviceState: DeviceInfoStateAndMethods;
     messagingClientState: MessagingClientStateAndMethod;
+    s3ClinetState: S3ClientStateAndMethod
 }
 
 
@@ -127,7 +129,10 @@ export const useFrontend = (props: UseFrontendProps) => {
     const startTranscribeCheckbox = useStateControlCheckbox("start-transcribe-checkbox");
     const startRecordingCheckbox = useStateControlCheckbox("start-recording-checkbox", (newVal: boolean) => {
         if (newVal) {
-            recorder.startRecording()
+            recorder.startRecording(async (data: Blob) => {
+                console.log("[s3] uploading....")
+                await props.s3ClinetState.putObject("rec.mp4", data)
+            })
         } else {
             recorder.stopRecording()
         }

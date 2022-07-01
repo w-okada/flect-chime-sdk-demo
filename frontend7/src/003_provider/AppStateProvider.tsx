@@ -11,6 +11,7 @@ import { BackendManagerStateAndMethod, useBackendManager } from "../002_hooks/00
 import { FrontendState, useFrontend } from "../002_hooks/011_useFrontend";
 import { MessagingClientStateAndMethod, useMessagingClient } from "../002_hooks/005_useMessagingClient";
 import { Message } from "amazon-chime-sdk-js";
+import { S3ClientStateAndMethod, useS3Client } from "../002_hooks/006_useS3Client";
 
 type Props = {
     children: ReactNode;
@@ -23,6 +24,7 @@ interface AppStateValue {
     chimeClientState: ChimeClientStateAndMethods;
     deviceState: DeviceInfoStateAndMethods;
     messagingClientState: MessagingClientStateAndMethod;
+    s3ClinetState: S3ClientStateAndMethod;
 
     frontendState: FrontendState;
 
@@ -60,6 +62,7 @@ export const AppStateProvider = ({ children }: Props) => {
     const deviceState = useDeviceState();
 
     const messagingClientState = useMessagingClient();
+    const s3ClinetState = useS3Client();
 
     /** (020) App State*/
     //// (020) stage
@@ -103,6 +106,13 @@ export const AppStateProvider = ({ children }: Props) => {
         }
     }, [backendManagerState.environment]);
 
+    useEffect(() => {
+        if (!backendManagerState.environment) {
+            return;
+        }
+        s3ClinetState.setCredentials(backendManagerState.environment.credential);
+    });
+
     /** (010) Environment State */
     //// (010) device
 
@@ -112,7 +122,7 @@ export const AppStateProvider = ({ children }: Props) => {
     /**** Other GUI Props */
 
     /// FrontendStateは全てのバックエンド情報を使用して作成する
-    const frontendState = useFrontend({ cognitoClientState, backendManagerState, chimeClientState, deviceState, messagingClientState });
+    const frontendState = useFrontend({ cognitoClientState, backendManagerState, chimeClientState, deviceState, messagingClientState, s3ClinetState });
 
     /** Clients */
     // const chimeClientState = useChimeClient({ RestAPIEndpoint: RestAPIEndpoint });
@@ -156,6 +166,7 @@ export const AppStateProvider = ({ children }: Props) => {
         backendManagerState,
         chimeClientState,
         messagingClientState,
+        s3ClinetState,
         /** (010) Environment State */
         deviceState,
 
