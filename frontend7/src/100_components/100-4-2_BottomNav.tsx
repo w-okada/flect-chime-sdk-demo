@@ -89,7 +89,7 @@ export const BottomNav = (_props: BottomNavProps) => {
         Object.values(chimeClientState.videoTileStates).forEach((x, index) => {
             const ids = getIds(index);
             const videoElem = document.getElementById(ids.video) as HTMLVideoElement;
-            console.log("sidebar bind::", ids, videoElem);
+            // console.log("sidebar bind::", ids, videoElem);
             chimeClientState.bindVideoElement(x.tileId!, videoElem);
         });
 

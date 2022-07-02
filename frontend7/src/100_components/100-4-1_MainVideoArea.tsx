@@ -47,7 +47,6 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
     //// (2-2) 表示対象タイルの決定
     const targetTiles = useMemo(() => {
         const targetTiles: VideoTileState[] = [];
-        console.log("video tile: 1");
         if (frontendState.viewType == ViewTypes.grid) {
             // Grid View
             targetTiles.push(...Object.values(chimeClientState.videoTileStates));
@@ -77,7 +76,6 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
                 }
             }
         }
-        console.log("video tile: 2", targetTiles);
         return targetTiles;
     }, [chimeClientState.videoTileStates, frontendState.viewType, chimeClientState.activeSpeakerId]);
     //// (2-3) リバインド判定用IDの作成
@@ -90,7 +88,6 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
                 return `${prev}_${cur.boundExternalUserId}_${cur.isContent}`;
             }, "");
     }, [targetTiles]);
-    console.log("video::", rebindId);
 
     // (3) Commit Phase.
     //// (3-1) Demo用のバインド処理
@@ -131,7 +128,6 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
         const num = targetTiles.length;
         const { width, height } = calcSize(num);
         console.log("TILE:", num);
-        console.log("video::TILENUM", num);
 
         targetTiles.forEach((x, index) => {
             const ids = getIds(index);
