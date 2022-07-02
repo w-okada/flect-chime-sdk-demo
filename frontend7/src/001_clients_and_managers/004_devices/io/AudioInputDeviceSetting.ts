@@ -8,6 +8,7 @@ import { GenerateAudioInputDeivceParams } from "../001_DeviceManager";
 export const AudioInputCustomDevices = {
     "none": "none",
     "tone": "tone",
+    "null": "null",
 } as const
 export type AudioInputCustomDevices = typeof AudioInputCustomDevices[keyof typeof AudioInputCustomDevices]
 export const AudioInputCustomDeviceList = Object.entries(AudioInputCustomDevices).map(([key, val]) => {

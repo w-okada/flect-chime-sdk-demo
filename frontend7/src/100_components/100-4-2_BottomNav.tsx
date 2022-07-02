@@ -63,14 +63,13 @@ export const BottomNav = (_props: BottomNavProps) => {
 
     //// (2-3) リバインド判定用IDの作成
     const rebindId = useMemo(() => {
-        const boundIds = Object.keys(chimeClientState.videoTileStates);
-
-        return boundIds
+        const targetTiles = Object.values(chimeClientState.videoTileStates);
+        return targetTiles
             .sort((x, y) => {
-                return x > y ? -1 : 1;
+                return x.boundAttendeeId! > y.boundAttendeeId! ? -1 : 1;
             })
             .reduce((prev, cur) => {
-                return `${prev}_${cur}`;
+                return `${prev}_${cur.boundExternalUserId}_${cur.isContent}`;
             }, "");
     }, [chimeClientState.videoTileStates]);
 

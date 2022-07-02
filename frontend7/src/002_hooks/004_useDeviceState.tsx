@@ -77,12 +77,12 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         audioOutputDevices: [],
 
         // auido input
-        audioInput: localStorage.audioInputDevice || AudioInputCustomDevices.none,
+        audioInput: localStorage.audioInputDevice || AudioInputCustomDevices.null,
         audioInputEnable: true,
         noiseSuppretionType: localStorage.noiseSuppressionType || NoiseSuppressionTypes.auto,
         chimeAudioInputDevice: null,
         // video input
-        videoInput: localStorage.videoInputDevice || VideoInputCustomDevices.none,
+        videoInput: localStorage.videoInputDevice || VideoInputCustomDevices.null,
         videoInputEnable: true,
         virtualBackgroundType: localStorage.virtualBackgroundType || VirtualBackgroundTypes.none,
         videoDataURL: null,
@@ -93,7 +93,7 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         videoEnableAvatar: false,
 
         // audio output
-        audioOutput: localStorage.audioOutputDevice || AudioOutputCustomDevices.none,
+        audioOutput: localStorage.audioOutputDevice || AudioOutputCustomDevices.null,
         audioOutputEnable: true,
         chimeAudioOutputDevice: null,
         audioOutputElement: null,
@@ -125,21 +125,20 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         const { audioInputDevices, videoInputDevices, audioOutputDevices } = deviceManager.getDeviceLists();
         if (useFirstDevice) {
             let audioInput;
-            if (stateRef.current.audioInput == AudioInputCustomDevices.none && audioInputDevices.length > 0) {
+            if (stateRef.current.audioInput == AudioInputCustomDevices.null && audioInputDevices.length > 0) {
                 audioInput = audioInputDevices[0].deviceId;
             } else {
                 audioInput = stateRef.current.audioInput;
             }
-
             let videoInput;
-            if (stateRef.current.videoInput == VideoInputCustomDevices.none && videoInputDevices.length > 0) {
+            if (stateRef.current.videoInput == VideoInputCustomDevices.null && videoInputDevices.length > 0) {
                 videoInput = videoInputDevices[0].deviceId;
             } else {
                 videoInput = stateRef.current.videoInput;
             }
 
             let audioOutput;
-            if (stateRef.current.audioOutput == AudioOutputCustomDevices.none && audioOutputDevices.length > 0) {
+            if (stateRef.current.audioOutput == AudioOutputCustomDevices.null && audioOutputDevices.length > 0) {
                 audioOutput = audioOutputDevices[0].deviceId;
             } else {
                 audioOutput = stateRef.current.audioOutput;

@@ -10,6 +10,7 @@ import { CenterStageCameraImageProcessor } from "./videoProcessor/001_CenterStag
 export const VideoInputCustomDevices = {
     "none": "none",
     "file": "file",
+    "null": "null",
 } as const
 export type VideoInputCustomDevices = typeof VideoInputCustomDevices[keyof typeof VideoInputCustomDevices]
 export const VideoInputCustomDeviceList = Object.entries(VideoInputCustomDevices).map(([key, val]) => {
