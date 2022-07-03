@@ -57,6 +57,8 @@ export type StateControls = {
     createRoomCheckbox: StateControlCheckbox,
     joinRoomCheckbox: StateControlCheckbox,
     loadingUserInformationCheckbox: StateControlCheckbox,
+
+    showSelfCameraViewCheckbox: StateControlCheckbox,
 }
 export type JoinRoomDialogProps = {
     exMeetingId: string,
@@ -98,6 +100,7 @@ export const useFrontend = (props: UseFrontendProps) => {
     const openBottomNavCheckbox = useStateControlCheckbox("open-bottom-nav-checkbox");
     const openRightSidebarCheckbox = useStateControlCheckbox("open-right-sidebar-checkbox");
 
+    //// (2-2) DeviceEnabler 関連
     const micEnableCheckbox = useStateControlCheckbox("mic-enable-checkbox", (newVal: boolean) => {
         props.deviceState.setAudioInputEnable(newVal);
     });
@@ -108,10 +111,12 @@ export const useFrontend = (props: UseFrontendProps) => {
         props.deviceState.setAudioOutputEnable(newVal);
     });
 
+    //// (2-3) View 関連
     const viewRadioButtons = useStateControlRadioButton("view-radio-button", [ViewTypes.feature, ViewTypes.grid], (suffix: string) => {
         setViewType(suffix as ViewTypes);
     });
 
+    //// (2-4) Util 関連
     const shareScreenCheckbox = useStateControlCheckbox("share-screen-checkbox", (newVal: boolean) => {
         const handleShareScreen = () => {
             if (newVal) {
@@ -137,16 +142,21 @@ export const useFrontend = (props: UseFrontendProps) => {
             recorder.stopRecording()
         }
     });
+
+    //// (2-5) Dialog-1
     const settingCheckbox = useStateControlCheckbox("setting-checkbox");
     const leaveCheckbox = useStateControlCheckbox("leave-checkbox");
 
 
-    //// (2-2) Dialog
+    //// (2-6) Dialog-2
     const signInCheckbox = useStateControlCheckbox("sign-in-checkbox");
     const createRoomCheckbox = useStateControlCheckbox("create-room-checkbox");
     const joinRoomCheckbox = useStateControlCheckbox("join-room-checkbox");
-
     const loadingUserInformationCheckbox = useStateControlCheckbox("loading-user-information-checkbox");
+
+    //// (2-7) Util-2
+    const showSelfCameraViewCheckbox = useStateControlCheckbox("show-self-camera-view-checkbox");
+
 
     // (3) DialogProp
     const [joinRoomDialogProps, setJoinRoomDialogProps] = useState<JoinRoomDialogProps>({
@@ -192,6 +202,8 @@ export const useFrontend = (props: UseFrontendProps) => {
             createRoomCheckbox,
             joinRoomCheckbox,
             loadingUserInformationCheckbox,
+
+            showSelfCameraViewCheckbox,
         },
         joinRoomDialogProps,
         setJoinRoomDialogProps,

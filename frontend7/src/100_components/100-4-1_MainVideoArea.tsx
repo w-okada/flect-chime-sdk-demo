@@ -9,8 +9,8 @@ export type MainVideoAreaProps = {};
 
 export const MainVideoArea = (props: MainVideoAreaProps) => {
     const { chimeClientState, frontendState } = useAppState();
-    const height = "33%";
-    const width = "33%";
+    const initialHeight = "33%";
+    const initialWidth = "33%";
 
     // (1) Util Functions
     //// (1-1) DOM ID生成
@@ -37,7 +37,7 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
         return [...Array(MAX_TILES)].map((x, index) => {
             const ids = getIds(index);
             return (
-                <div key={ids.container} id={ids.container} className="main-video-area-tile" style={{ width: width, height: height }}>
+                <div key={ids.container} id={ids.container} className="main-video-area-tile" style={{ width: initialWidth, height: initialHeight }}>
                     <video id={ids.video} autoPlay className="main-video-area-tile-video" />
                     <div id={ids.tag} className="main-video-area-tile-tag"></div>
                 </div>
@@ -49,7 +49,10 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
         const targetTiles: VideoTileState[] = [];
         if (frontendState.viewType == ViewTypes.grid) {
             // Grid View
-            targetTiles.push(...Object.values(chimeClientState.videoTileStates));
+            const otherThanSelfCamera = Object.values(chimeClientState.videoTileStates).filter((x) => {
+                return x.localTile === false;
+            });
+            targetTiles.push(...otherThanSelfCamera);
         } else {
             // Feature View
             //// 画面共有を検索
@@ -60,7 +63,7 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
             //// 面共有がなければ、アクティブスピーカーを検索
             if (targetTiles.length == 0 && chimeClientState.activeSpeakerId) {
                 if (chimeClientState.videoTileStates[chimeClientState.activeSpeakerId]) {
-                    //// 自分がアクティブでなければ表示
+                    //// アクティブスピーカーが自分でなければ表示
                     if (!chimeClientState.videoTileStates[chimeClientState.activeSpeakerId].localTile) {
                         targetTiles.push(chimeClientState.videoTileStates[chimeClientState.activeSpeakerId]);
                     }
@@ -88,7 +91,6 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
                 return `${prev}_${cur.boundExternalUserId}_${cur.isContent}`;
             }, "");
     }, [targetTiles]);
-
     // (3) Commit Phase.
     //// (3-1) Demo用のバインド処理
     useEffect(() => {
@@ -148,7 +150,7 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
             div.style.display = "none";
             video.src = "";
         }
-    }, [rebindId]);
+    }, [rebindId, chimeClientState.meetingName]);
 
     //// (3-3) タグのバインド + Active Speakerのバインド
     useEffect(() => {
@@ -174,10 +176,25 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
         }
     }, [rebindId, chimeClientState.attendees, chimeClientState.activeSpeakerId]);
 
+    ///// (3-4) Self Camera View
+    useEffect(() => {
+        const selfCamera = Object.values(chimeClientState.videoTileStates).find((x) => {
+            return x.localTile === true;
+        });
+        if (selfCamera) {
+            const selfCameraVideoElement = document.getElementById(`main-video-area-video-self-camera`) as HTMLVideoElement;
+            chimeClientState.bindVideoElement(selfCamera.tileId!, selfCameraVideoElement);
+        }
+    });
+
     return (
         <>
             {frontendState.stateControls.openBottomNavCheckbox.trigger}
             <div className="main-video-area">
+                {frontendState.stateControls.showSelfCameraViewCheckbox.trigger}
+                <div className="main-video-area-self-camera">
+                    <video id={`main-video-area-video-self-camera`} autoPlay className="main-video-area-self-camera-video" />
+                </div>
                 <div className="main-video-area-container">{tileComponents}</div>
             </div>
         </>

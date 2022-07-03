@@ -96,6 +96,7 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
                 updateAttendeeList()
             },
             videoTileStateUpdated: (list: { [attendeeId: string]: VideoTileState; }): void => {
+                console.log("VIDEO UPDATE video tile state update")
                 setVideoTileStates({ ...list })
             }
         }
