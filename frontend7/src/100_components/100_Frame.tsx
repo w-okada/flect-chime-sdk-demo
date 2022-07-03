@@ -66,6 +66,7 @@ export const Frame = (_props: FrameProps) => {
         frontendState.stateControls.cameraEnableCheckbox.updateState(false);
         frontendState.stateControls.speakerEnableCheckbox.updateState(true);
         frontendState.stateControls.openBottomNavCheckbox.updateState(true);
+        frontendState.stateControls.showSelfCameraViewCheckbox.updateState(true);
     }, []);
 
     return (
@@ -76,17 +77,6 @@ export const Frame = (_props: FrameProps) => {
             <MainArea />
 
             <Dialog />
-            {/* <SettingDialog />
-            <LeaveDialog />
-            <CreateRoomDialog />
-            <JoinRoomDialog />
-
-            <div>
-                {frontendState.stateControls.signInCheckbox.trigger}
-                <div className="dialog-container">
-                    <SignInDialog />
-                </div>
-            </div> */}
 
             <div>
                 <audio id="chime-audio-output-element" />

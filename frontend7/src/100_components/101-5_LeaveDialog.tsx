@@ -5,7 +5,7 @@ import { useAppState } from "../003_provider/AppStateProvider";
 export type LeaveDialogProps = {};
 
 export const LeaveDialog = (_props: LeaveDialogProps) => {
-    const { cognitoClientState, chimeClientState, frontendState } = useAppState();
+    const { cognitoClientState, chimeClientState, frontendState, backendManagerState } = useAppState();
 
     const description = useMemo(() => {
         return "Leave Application?";
@@ -17,6 +17,7 @@ export const LeaveDialog = (_props: LeaveDialogProps) => {
             frontendState.stateControls.leaveCheckbox.updateState(false);
             cognitoClientState.signOut();
             chimeClientState.leaveMeeting();
+            backendManagerState.initialize();
         };
         // キャンセルクリック
         const onCancelPressed = () => {
