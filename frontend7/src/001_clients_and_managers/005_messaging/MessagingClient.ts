@@ -95,8 +95,8 @@ export class MessagingClient {
                     this.messages[channelArn].unshift({
                         content: payload.Content,
                         createdTimestamp: Date.parse(payload.CreatedTimestamp),
-                        senderName: payload.Sender.Name,
-                        senderArn: payload.Sender.Arn,
+                        senderName: payload.Sender?.Name || "",
+                        senderArn: payload.Sender?.Arn || "",
                         type: payload.Type || ""
                     })
                     console.log("[messaging] messages", this.messages)

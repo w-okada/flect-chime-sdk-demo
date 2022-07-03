@@ -160,6 +160,14 @@ export const AppStateProvider = ({ children }: Props) => {
         chimeClientState.setAudioOutput(deviceState.chimeAudioOutputDevice);
     }, [deviceState.chimeAudioOutputDevice]);
 
+    useEffect(() => {
+        const tracks = deviceState.audioInputMediaStreamForRecorder?.getAudioTracks();
+        console.log("tracks", tracks);
+        if (tracks) {
+            frontendState.recorder.replaceLocalAudioTrack(tracks[0]);
+        }
+    }, [deviceState.audioInputMediaStreamForRecorder]);
+
     const providerValue = {
         /** (000) Clients */
         cognitoClientState,

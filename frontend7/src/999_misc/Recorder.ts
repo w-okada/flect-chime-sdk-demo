@@ -1,5 +1,14 @@
 import { DefaultDeviceController } from "amazon-chime-sdk-js";
+
+const RecordAudioType = {
+    remote: "remote",
+    local: "local"
+} as const
+type RecordAudioType = typeof RecordAudioType[keyof typeof RecordAudioType]
+
+
 export class Recorder {
+    // PeerConnection Pair
     offerOptions = {
         offerToReceiveAudio: true,
         offerToReceiveVideo: true
@@ -8,6 +17,7 @@ export class Recorder {
     private pc1 = new RTCPeerConnection(this.configuration);
     private pc2 = new RTCPeerConnection(this.configuration);
 
+    // Default Stream
     private blackVideoCanvas = (() => {
         const canvas = document.createElement("canvas")
         const width = 640;
@@ -15,22 +25,22 @@ export class Recorder {
         canvas.width = width;
         canvas.height = height;
         canvas.getContext('2d')!.fillRect(0, 0, width, height);
-        // setInterval(async () => {
-        //     console.log("update image")
-        //     const ctx = canvas.getContext('2d')!
-        //     ctx.fillStyle = "#ff0000"
-        //     ctx.fillRect(0, 0, width, height);
-        //     ctx.fillStyle = "#00ff00"
-        //     ctx.font = 'bold 48px serif';
-        //     ctx.fillText(`NOW:${new Date().getTime()}`, 30, 30);
+        setInterval(async () => {
+            console.log("update image")
+            const ctx = canvas.getContext('2d')!
+            ctx.fillStyle = "#ff0000"
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = "#00ff00"
+            ctx.font = 'bold 48px serif';
+            ctx.fillText(`NOW:${new Date().getTime()}`, 30, 60);
 
-        //     if (this.videoSender) {
-        //         const rep = await this.videoSender.getStats()
-        //         rep.forEach(x => {
-        //             console.log("stat;", x)
-        //         })
-        //     }
-        // }, 1000 * 1)
+            // if (this.videoSender) {
+            //     const rep = await this.videoSender.getStats()
+            //     rep.forEach(x => {
+            //         console.log("stat;", x)
+            //     })
+            // }
+        }, 1000 * 1)
         return canvas
     })()
     private blackVideoStream = this.blackVideoCanvas.captureStream();
@@ -39,7 +49,7 @@ export class Recorder {
         const dst = ctx.createMediaStreamDestination()
 
         const gainNode = ctx.createGain();
-        gainNode.gain.value = 0.3;
+        gainNode.gain.value = 0.1;
         gainNode.connect(dst);
 
         const oscillator = ctx.createOscillator();
@@ -50,14 +60,22 @@ export class Recorder {
     })()
     private blackSilenceStream = new MediaStream([this.blackVideoStream.getVideoTracks()[0], this.silentAudioStream.getAudioTracks()[0]])
 
+    // Streams 
     private localStream = this.blackSilenceStream
     private remoteStream: MediaStream | null = null
+    // Senders
     private videoSender: RTCRtpSender | null = null
     private audioSender: RTCRtpSender | null = null
 
     private mediaRecorder: MediaRecorder | null = null
 
+    // WebRTCのストリームを受け取って再生するVideoElement
+    private videoElement
+
+
     constructor() {
+        this.videoElement = document.createElement("video")
+        this.videoElement.volume = 0
         this.init()
     }
     init = async () => {
@@ -92,8 +110,8 @@ export class Recorder {
     }
 
     onCreateOfferSuccess = async (desc: any) => {
-        console.log(`Offer from pc1\n${desc.sdp}`);
-        console.log('pc1 setLocalDescription start');
+        // console.log(`Offer from pc1\n${desc.sdp}`);
+        // console.log('pc1 setLocalDescription start');
         try {
             await this.pc1.setLocalDescription(desc);
             this.onSetLocalSuccess(this.pc1);
@@ -101,7 +119,7 @@ export class Recorder {
             this.onSetSessionDescriptionError(e);
         }
 
-        console.log('pc2 setRemoteDescription start');
+        // console.log('pc2 setRemoteDescription start');
         try {
             await this.pc2.setRemoteDescription(desc);
             this.onSetRemoteSuccess(this.pc2);
@@ -109,7 +127,7 @@ export class Recorder {
             this.onSetSessionDescriptionError(e);
         }
 
-        console.log('pc2 createAnswer start');
+        // console.log('pc2 createAnswer start');
         try {
             const answer = await this.pc2.createAnswer();
             await this.onCreateAnswerSuccess(answer);
@@ -138,15 +156,15 @@ export class Recorder {
     }
 
     onCreateAnswerSuccess = async (desc: any) => {
-        console.log(`Answer from pc2:\n${desc.sdp}`);
-        console.log('pc2 setLocalDescription start');
+        // console.log(`Answer from pc2:\n${desc.sdp}`);
+        // console.log('pc2 setLocalDescription start');
         try {
             await this.pc2.setLocalDescription(desc);
             this.onSetLocalSuccess(this.pc2);
         } catch (e) {
             this.onSetSessionDescriptionError(e);
         }
-        console.log('pc1 setRemoteDescription start');
+        // console.log('pc1 setRemoteDescription start');
         try {
             await this.pc1.setRemoteDescription(desc);
             this.onSetRemoteSuccess(this.pc1);
@@ -164,7 +182,7 @@ export class Recorder {
         } catch (e) {
             this.onAddIceCandidateError(pc, e);
         }
-        console.log(`${this.getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
+        // console.log(`${this.getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
     }
 
     onAddIceCandidateSuccess = (pc: any) => {
@@ -191,31 +209,102 @@ export class Recorder {
     }
 
     /// Public Methods
+    private audioContext = DefaultDeviceController.getAudioContext();
+    private audioOutputNode = this.audioContext.createMediaStreamDestination();
+    private remoteAudioMediaStream = new MediaStream()
+    private localAudioMediaStream = new MediaStream()
+    private remoteAudioSource: MediaStreamAudioSourceNode | null = null
+    private localAudioSource: MediaStreamAudioSourceNode | null = null
+    private remoteAudioTrack: MediaStreamTrack | null = null
+    private localAudioTrack: MediaStreamTrack | null = null
+
+    // remoteAudioSource.connect(audioOutputNode)
+    // localAudioSource.connect(audioOutputNode)
+
     replaceVideoTrack = (track: MediaStreamTrack) => {
         this.videoSender?.replaceTrack(track)
     }
-    replaceAudioTrack = (track: MediaStreamTrack) => {
-        this.audioSender?.replaceTrack(track)
+
+    private replaceAudioTrack = (type: RecordAudioType, track: MediaStreamTrack) => {
+        const targetTrack = type === RecordAudioType.remote ? this.remoteAudioTrack : this.localAudioTrack
+        if (targetTrack?.id === track.id) {
+            console.log(`[tracks]:::${type}:: not change`)
+            return
+        }
+        if (type === RecordAudioType.remote) {
+            this.remoteAudioTrack = track
+        } else {
+            this.localAudioTrack = track
+        }
+
+        const targetAudioSource = type === RecordAudioType.remote ? this.remoteAudioSource : this.localAudioSource
+        if (targetAudioSource) {
+            targetAudioSource.disconnect()
+        }
+
+        const targetAudioMediaStream = type === RecordAudioType.remote ? this.remoteAudioMediaStream : this.localAudioMediaStream
+        targetAudioMediaStream.getTracks().forEach(x => {
+            targetAudioMediaStream.removeTrack(x)
+            x.stop()
+        })
+        targetAudioMediaStream.addTrack(track)
+        if (type === RecordAudioType.remote) {
+            this.remoteAudioSource = this.audioContext.createMediaStreamSource(targetAudioMediaStream)
+            this.remoteAudioSource.connect(this.audioOutputNode)
+        } else {
+            this.localAudioSource = this.audioContext.createMediaStreamSource(targetAudioMediaStream)
+            this.localAudioSource.connect(this.audioOutputNode)
+        }
+
+        const tracks = this.audioOutputNode.stream.getAudioTracks()
+        this.audioSender?.replaceTrack(tracks[0])
+    }
+    replaceLocalAudioTrack = (track: MediaStreamTrack) => {
+        this.replaceAudioTrack(RecordAudioType.local, track)
+    }
+
+    replaceRemoteAudioTrack = (track: MediaStreamTrack) => {
+        this.replaceAudioTrack(RecordAudioType.remote, track)
     }
 
     chunks: Blob[] = [];
     startRecording = async (dataCallback: (data: any) => Promise<void>) => {
         // await this.init()
 
-
-        const recVideo = document.getElementById("video-for-recorder") as HTMLVideoElement
-        setTimeout(() => {
+        const updateChimeMediaStream = () => {
             const video = document.getElementById("main-video-area-video-0") as HTMLVideoElement
+            const audio = document.getElementById("chime-audio-output-element") as HTMLAudioElement
+            if (video) {
+                // @ts-ignore
+                const ms = video.captureStream()
+                this.replaceVideoTrack(ms.getVideoTracks()[0])
+            } else {
+                this.replaceVideoTrack(this.localStream.getVideoTracks()[0])
+            }
+
             // @ts-ignore
-            const ms = video.captureStream()
-
-            this.replaceVideoTrack(ms.getVideoTracks()[0])
-
-        }, 1000 * 5)
+            const audioMS = audio.captureStream()
+            this.replaceRemoteAudioTrack(audioMS.getAudioTracks()[0])
+        }
 
 
-        recVideo.srcObject = this.remoteStream!
-        recVideo.play()
+        setTimeout(() => {
+            const updateChimeMediaStreamInner = () => {
+                updateChimeMediaStream()
+                setTimeout(() => {
+                    updateChimeMediaStreamInner()
+                }, 1000 * 2)
+            }
+            updateChimeMediaStreamInner()
+        }, 1000 * 0)
+
+
+        // const recVideo = document.getElementById("video-for-recorder") as HTMLVideoElement
+        // recVideo.srcObject = this.remoteStream!
+        // recVideo.play()
+        this.videoElement.srcObject = this.remoteStream!
+        this.videoElement.play()
+
 
         console.log("start recording", this.remoteStream)
         console.log("start recording", this.remoteStream?.getTracks())
@@ -241,7 +330,7 @@ export class Recorder {
             // @ts-ignore
             a.style = 'display: none';
             a.href = url;
-            a.download = 'test.webm';
+            a.download = 'test.mp4';
             a.click();
             window.URL.revokeObjectURL(url);
             this.chunks = [];

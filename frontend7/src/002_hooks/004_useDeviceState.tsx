@@ -43,6 +43,9 @@ export type DeviceInfoState = {
     audioOutputEnable: boolean;
     chimeAudioOutputDevice: ChimeAudioOutputDevice;
     audioOutputElement: ChimeAudioOutputElement;
+
+    // for Recorder
+    audioInputMediaStreamForRecorder: MediaStream | null;
 };
 
 export type DeviceInfoStateAndMethods = DeviceInfoState & {
@@ -97,6 +100,9 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         audioOutputEnable: true,
         chimeAudioOutputDevice: null,
         audioOutputElement: null,
+
+        // for Recorder
+        audioInputMediaStreamForRecorder: null,
     });
     const [state, setState] = useState<DeviceInfoState>(stateRef.current);
     // state initializ for background image
@@ -292,7 +298,7 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
     useEffect(() => {
         const generateDevice = async () => {
             if (state.audioInputEnable === false) {
-                stateRef.current = { ...stateRef.current, chimeAudioInputDevice: null };
+                stateRef.current = { ...stateRef.current, chimeAudioInputDevice: null, audioInputMediaStreamForRecorder: null };
                 setState(stateRef.current);
                 return;
             }
@@ -301,7 +307,13 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
                 device: state.audioInput,
                 noiseSuppressionType: state.noiseSuppretionType,
             });
-            stateRef.current = { ...stateRef.current, chimeAudioInputDevice: device };
+            if (!device) {
+                // nullの場合
+                stateRef.current = { ...stateRef.current, chimeAudioInputDevice: null, audioInputMediaStreamForRecorder: null };
+            } else {
+                // Media Stream の場合(Voice Focusも内部的にMediaStreamを作成する)
+                stateRef.current = { ...stateRef.current, chimeAudioInputDevice: device, audioInputMediaStreamForRecorder: device };
+            }
             setState(stateRef.current);
         };
 
