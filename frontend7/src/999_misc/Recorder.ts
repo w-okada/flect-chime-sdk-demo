@@ -26,7 +26,6 @@ export class Recorder {
         canvas.height = height;
         canvas.getContext('2d')!.fillRect(0, 0, width, height);
         setInterval(async () => {
-            console.log("update image")
             const ctx = canvas.getContext('2d')!
             ctx.fillStyle = "#000000"
             ctx.fillRect(0, 0, width, height);
@@ -213,7 +212,7 @@ export class Recorder {
         }
         const targetTrack = type === RecordAudioType.remote ? this.remoteAudioTrack : this.localAudioTrack
         if (targetTrack?.id === track.id) {
-            console.log(`[tracks]:::${type}:: audio not change`)
+            // console.log(`[tracks]:::${type}:: audio not change`)
             return
         }
         if (type === RecordAudioType.remote) {
@@ -255,7 +254,7 @@ export class Recorder {
     chunks: Blob[] = [];
     currentSenderVideoTrack: MediaStreamTrack | null = null
     offereDone = false
-    startRecording = async (dataCallback: (data: any) => Promise<void>) => {
+    startRecording = async (timeslice: number, dataCallback: (data: any) => Promise<void>) => {
 
         //// Initialize 最初のレコード開始の時のみ。
         if (!this.defaultAudio) {
@@ -278,7 +277,7 @@ export class Recorder {
         }
 
 
-        //// Chime の映像データを定期的にアップデート（？？？）
+        //// Chime のAudio/Videoデータの接続(Sender)を定期的にアップデート
         const updateChimeMediaStream = () => {
             const video = document.getElementById("main-video-area-video-0") as HTMLVideoElement
             const audio = document.getElementById("chime-audio-output-element") as HTMLAudioElement
@@ -286,16 +285,14 @@ export class Recorder {
             const chimeVideoMS = video.captureStream() as MediaStream
             video.controls = true
             const videoTrack = chimeVideoMS.getVideoTracks()[0]
-            console.log("VIDEOTRACK:", videoTrack)
             if (videoTrack) {
                 if (this.currentSenderVideoTrack?.id === videoTrack.id) {
-                    console.log("same video track... not change")
+                    // console.log("same video track... not change")
                 } else {
                     this.replaceVideoTrack(videoTrack)
                     this.currentSenderVideoTrack = videoTrack
                 }
             } else {
-                console.log("VIDEOTRACK: USE DEFAULT VIDEO TRACK")
                 const videoTrack = this.defaultCanvas.captureStream().getVideoTracks()[0]
                 this.replaceVideoTrack(videoTrack)
             }
@@ -303,8 +300,6 @@ export class Recorder {
             // @ts-ignore
             const chimeAudioMS = audio.captureStream()
             const audioTrack = chimeAudioMS.getAudioTracks()[0]
-            console.log("VIDEOTRACK: AUDIO TRACK", chimeAudioMS)
-            console.log("VIDEOTRACK: AUDIO TRACK", audioTrack)
             if (audioTrack) {
                 this.replaceRemoteAudioTrack(audioTrack)
             }
@@ -322,31 +317,30 @@ export class Recorder {
         }, 1000 * 0)
 
 
-        // const recVideo = document.getElementById("video-for-recorder") as HTMLVideoElement
-        // recVideo.srcObject = this.remoteStream!
-        // recVideo.play()
+        //// 受信しているストリームを録画用エレメントのにセット
         this.videoElement.srcObject = this.recievedStream!
         this.videoElement.play()
 
-
-        console.log("start recording", this.recievedStream)
-        console.log("start recording", this.recievedStream?.getTracks())
         if (!this.recievedStream) {
             console.warn("remote stream is not ready.")
             return
         }
+
+        //// レコーダー設定
         this.mediaRecorder = new MediaRecorder(this.recievedStream);
-        // this.mediaRecorder = new MediaRecorder(ms);
         this.mediaRecorder.ondataavailable = (e) => {
             console.log("Added Data", e);
             this.chunks.push(e.data);
+            const blob = new Blob([e.data], {
+                type: 'video/webm'
+            });
+            dataCallback(blob)
         }
         this.mediaRecorder.onstop = (e) => {
             console.log("data available after MediaRecorder.stop() called.");
             const blob = new Blob(this.chunks, {
                 type: 'video/webm'
             });
-            dataCallback(blob)
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             document.body.appendChild(a);
@@ -358,7 +352,7 @@ export class Recorder {
             window.URL.revokeObjectURL(url);
             this.chunks = [];
         };
-        this.mediaRecorder.start();
+        this.mediaRecorder.start(timeslice);
     }
     stopRecording = () => {
         if (!this.mediaRecorder) {

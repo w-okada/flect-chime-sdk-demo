@@ -137,7 +137,7 @@ export const useFrontend = (props: UseFrontendProps) => {
     const startRecording = useMemo(() => {
         return (newVal: boolean) => {
             if (newVal) {
-                recorder.startRecording(async (data: Blob) => {
+                recorder.startRecording(1000 * 5, async (data: Blob) => {
                     console.log("[s3] uploading....")
                     const dateString = generateDateString()
                     const key = `recording/${props.chimeClientState.getCurrentExMeetingId()}/${props.backendManagerState.getCurrentEnvironment()?.userInfoInServer.exUserId || "unknown-user"}/${dateString}.mp4`
