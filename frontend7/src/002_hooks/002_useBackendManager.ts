@@ -44,12 +44,14 @@ export type BackendManagerStateAndMethod = BackendManagerState & {
     setUsername: (username: string) => void
 
     initialize: () => void
+    getCurrentEnvironment: () => RestPostEnvironmentsResponse | undefined
 
 }
 export const useBackendManager = (props: UseBackendManagerProps): BackendManagerStateAndMethod => {
 
 
     const [meetings, setMeetings] = useState<MeetingListItem[]>([])
+    const environmentRef = useRef<RestPostEnvironmentsResponse>()
     const [environment, setEnvironment] = useState<RestPostEnvironmentsResponse>()
     const usernameRef = useRef<string>("")
     const [username, _setUsername] = useState<string>(usernameRef.current)
@@ -78,7 +80,8 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
             const env = await restClient.postEnvironment({
                 username: username
             }, context)
-            setEnvironment(env)
+            environmentRef.current = env
+            setEnvironment(environmentRef.current)
             // ここで取得したmessaging apiのuserArnはapp providerでmessaging clientに設定される。
             setTimeout(() => {
                 postEnvironment()
@@ -90,7 +93,8 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
     }, [context])
 
     const initialize = () => {
-        setEnvironment(undefined)
+        environmentRef.current = undefined
+        setEnvironment(environmentRef.current)
         setMeetings([])
         setUsername("")
     }
@@ -161,6 +165,11 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
     // (4-3)  (PUT) -> no support
     // (4-4)  (DELETE) 
 
+
+
+    const getCurrentEnvironment = () => {
+        return environmentRef.current
+    }
     const returnVal: BackendManagerStateAndMethod = {
         meetings,
         environment,
@@ -174,7 +183,9 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
         getAttendeeInfo,
         setUsername,
 
-        initialize
+        initialize,
+        getCurrentEnvironment
+
     }
 
     return returnVal

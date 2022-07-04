@@ -55,7 +55,7 @@ export const useStateControlCheckbox = (className: string, changeCallback?: (new
             currentValForTriggerCallback.current = newVal;
             changeCallback(currentValForTriggerCallback.current);
         };
-    }, []);
+    }, [changeCallback]);
     const trigger = useMemo(() => {
         if (changeCallback) {
             return (
@@ -71,7 +71,7 @@ export const useStateControlCheckbox = (className: string, changeCallback?: (new
         } else {
             return <input type="checkbox" className={`${className} state-control-checkbox rotate-button`} id={`${className}`} />;
         }
-    }, []);
+    }, [changeCallback]);
 
     useEffect(() => {
         const checkboxes = document.querySelectorAll(`.${className}`);
@@ -106,7 +106,7 @@ export const useStateControlCheckbox = (className: string, changeCallback?: (new
                 callback(newVal);
             }
         };
-    }, []);
+    }, [changeCallback]);
 
     return { trigger, updateState, className };
 };
