@@ -178,7 +178,6 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
             ctx.fillStyle = "#000000";
             ctx.fillRect(0, 0, width, height);
             const num = (Math.sin(count * 0.3) + 1) * 128;
-            console.log(num);
             // ctx.fillStyle = `rgb(255,${num * 255},${num * 255})`;
             ctx.fillStyle = `rgb(${num},${num},${num})`;
             ctx.font = "bold 48px serif";
