@@ -150,8 +150,48 @@ export const MainVideoArea = (props: MainVideoAreaProps) => {
             div.style.display = "none";
             video.src = "";
         }
+
+        if (targetTiles.length === 0) {
+            const ids = getIds(0);
+            const div = document.getElementById(ids.container) as HTMLDivElement;
+            const video = document.getElementById(ids.video) as HTMLVideoElement;
+            div.style.display = "block";
+            div.style.width = `100%`;
+            div.style.height = `100%`;
+
+            const ms = createBlackCanvas();
+            video.srcObject = ms;
+        }
     }, [rebindId, chimeClientState.meetingName]);
 
+    // Default Stream
+    const createBlackCanvas = () => {
+        const canvas = document.createElement("canvas");
+        const width = 640;
+        const height = 480;
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d")!.fillRect(0, 0, width, height);
+
+        const drawInfo = (count: number) => {
+            const ctx = canvas.getContext("2d")!;
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(0, 0, width, height);
+            const num = (Math.sin(count * 0.3) + 1) * 128;
+            console.log(num);
+            // ctx.fillStyle = `rgb(255,${num * 255},${num * 255})`;
+            ctx.fillStyle = `rgb(${num},${num},${num})`;
+            ctx.font = "bold 48px serif";
+            ctx.fillText(`NOW:${new Date().toLocaleString()}`, 30, 60);
+            setTimeout(() => {
+                drawInfo(count + 1);
+            }, 100 * 1);
+        };
+        setTimeout(() => {
+            drawInfo(0);
+        }, 0);
+        return canvas.captureStream();
+    };
     //// (3-3) タグのバインド + Active Speakerのバインド
     useEffect(() => {
         const num = targetTiles.length;

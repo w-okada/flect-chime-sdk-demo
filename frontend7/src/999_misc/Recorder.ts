@@ -18,7 +18,7 @@ export class Recorder {
     private pc2 = new RTCPeerConnection(this.configuration);
 
     // Default Stream
-    private blackVideoCanvas = (() => {
+    private createBlackCanvas = () => {
         const canvas = document.createElement("canvas")
         const width = 640;
         const height = 480
@@ -28,41 +28,38 @@ export class Recorder {
         setInterval(async () => {
             console.log("update image")
             const ctx = canvas.getContext('2d')!
-            ctx.fillStyle = "#ff0000"
+            ctx.fillStyle = "#000000"
             ctx.fillRect(0, 0, width, height);
-            ctx.fillStyle = "#00ff00"
+            ctx.fillStyle = "#aa0000"
             ctx.font = 'bold 48px serif';
             ctx.fillText(`NOW:${new Date().getTime()}`, 30, 60);
-
-            // if (this.videoSender) {
-            //     const rep = await this.videoSender.getStats()
-            //     rep.forEach(x => {
-            //         console.log("stat;", x)
-            //     })
-            // }
         }, 1000 * 1)
-        return canvas
-    })()
-    private blackVideoStream = this.blackVideoCanvas.captureStream();
-    // private silentAudioStream = (() => {
-    //     const ctx = DefaultDeviceController.getAudioContext();
-    //     const dst = ctx.createMediaStreamDestination()
+        return canvas.captureStream()
+    }
+    private createSilentAudioStream = () => {
+        const ctx = DefaultDeviceController.getAudioContext();
+        const dst = ctx.createMediaStreamDestination()
 
-    //     const gainNode = ctx.createGain();
-    //     gainNode.gain.value = 0.1;
-    //     gainNode.connect(dst);
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = 0.1;
+        gainNode.connect(dst);
 
-    //     const oscillator = ctx.createOscillator();
-    //     oscillator.frequency.value = 440;
-    //     oscillator.connect(gainNode);
-    //     oscillator.start();
-    //     return dst.stream;
-    // })()
-    // private blackSilenceStream = new MediaStream([this.blackVideoStream.getVideoTracks()[0], this.silentAudioStream.getAudioTracks()[0]])
-    private blackSilenceStream = new MediaStream([this.blackVideoStream.getVideoTracks()[0]])
+        const oscillator = ctx.createOscillator();
+        oscillator.frequency.value = 440;
+        oscillator.connect(gainNode);
+        oscillator.start();
+        return dst.stream;
+    }
+
+    private createDefaultStream = () => {
+        const video = this.createBlackCanvas()
+        const audio = this.createSilentAudioStream()
+        return new MediaStream([video.getVideoTracks()[0], audio.getAudioTracks()[0]])
+    }
+
 
     // Streams 
-    private localStream = this.blackSilenceStream
+    private localStream: MediaStream | null = null
     private remoteStream: MediaStream | null = null
     // Senders
     private videoSender: RTCRtpSender | null = null
@@ -86,25 +83,9 @@ export class Recorder {
         this.pc1.addEventListener('iceconnectionstatechange', e => this.onIceStateChange(this.pc1, e));
         this.pc2.addEventListener('iceconnectionstatechange', e => this.onIceStateChange(this.pc2, e));
         this.pc2.addEventListener('track', this.gotRemoteStream);
-
-        this.localStream.getTracks().forEach((track) => {
-            if (track.kind == "video") {
-                console.log("video track added")
-                this.videoSender = this.pc1.addTrack(track, this.localStream)
-
-            } else if (track.kind == "audio") {
-                console.log("audio track added")
-                this.audioSender = this.pc1.addTrack(track, this.localStream)
-            }
-        })
-
-        try {
-            const offer = await this.pc1.createOffer(this.offerOptions);
-            await this.onCreateOfferSuccess(offer);
-        } catch (e) {
-            this.onCreateSessionDescriptionError(e);
-        }
     }
+
+
 
     onCreateSessionDescriptionError = (error: any) => {
         console.warn(`Failed to create session description: ${error.toString()}`);
@@ -277,6 +258,28 @@ export class Recorder {
 
     chunks: Blob[] = [];
     startRecording = async (dataCallback: (data: any) => Promise<void>) => {
+        if (!this.localStream) {
+            this.localStream = this.createDefaultStream()
+            this.localStream.getTracks().forEach((track) => {
+                if (track.kind == "video") {
+                    console.log("video track added")
+                    this.videoSender = this.pc1.addTrack(track, this.localStream!)
+
+                } else if (track.kind == "audio") {
+                    console.log("audio track added")
+                    this.audioSender = this.pc1.addTrack(track, this.localStream!)
+                }
+            })
+        }
+
+        try {
+            const offer = await this.pc1.createOffer(this.offerOptions);
+            await this.onCreateOfferSuccess(offer);
+        } catch (e) {
+            this.onCreateSessionDescriptionError(e);
+        }
+
+
         const updateChimeMediaStream = () => {
             const video = document.getElementById("main-video-area-video-0") as HTMLVideoElement
             const audio = document.getElementById("chime-audio-output-element") as HTMLAudioElement
@@ -285,7 +288,7 @@ export class Recorder {
                 const ms = video.captureStream()
                 this.replaceVideoTrack(ms.getVideoTracks()[0])
             } else {
-                this.replaceVideoTrack(this.localStream.getVideoTracks()[0])
+                this.replaceVideoTrack(this.localStream!.getVideoTracks()[0])
             }
 
             // @ts-ignore
