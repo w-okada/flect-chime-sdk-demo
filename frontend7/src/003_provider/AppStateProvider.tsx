@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useMemo } from "react";
 import { ReactNode } from "react";
 import { UserPoolClientId, UserPoolId } from "../BackendConfig";
 
-import { useWindowSizeChangeListener, WindowSizeState } from "../002_hooks/012_useWindowSizeChange";
 import { CognitoClientStateAndMethods, useCognitoClient } from "../002_hooks/001_useCognitoClient";
 
 import { DeviceInfoStateAndMethods, useDeviceState } from "../002_hooks/004_useDeviceState";
@@ -10,7 +9,6 @@ import { ChimeClientStateAndMethods, useChimeClient } from "../002_hooks/003_use
 import { BackendManagerStateAndMethod, useBackendManager } from "../002_hooks/002_useBackendManager";
 import { FrontendState, useFrontend } from "../002_hooks/011_useFrontend";
 import { MessagingClientStateAndMethod, useMessagingClient } from "../002_hooks/005_useMessagingClient";
-import { Message } from "amazon-chime-sdk-js";
 import { S3ClientStateAndMethod, useS3Client } from "../002_hooks/006_useS3Client";
 
 type Props = {
@@ -124,32 +122,6 @@ export const AppStateProvider = ({ children }: Props) => {
     /// FrontendStateは全てのバックエンド情報を使用して作成する
     const frontendState = useFrontend({ cognitoClientState, backendManagerState, chimeClientState, deviceState, messagingClientState, s3ClinetState });
 
-    /** Clients */
-    // const chimeClientState = useChimeClient({ RestAPIEndpoint: RestAPIEndpoint });
-    // useEffect(() => {
-    //     if (cognitoClientState.userId && cognitoClientState.idToken && cognitoClientState.accessToken && cognitoClientState.refreshToken) {
-    //         chimeClientState.initialize(cognitoClientState.userId, cognitoClientState.idToken, cognitoClientState.accessToken, cognitoClientState.refreshToken);
-    //     }
-    //     if (slackToken) {
-    //         chimeClientState.initializeWithCode(`slack,${slackToken}`);
-    //     }
-    // }, [cognitoClientState.userId, cognitoClientState.idToken, cognitoClientState.accessToken, cognitoClientState.refreshToken, slackToken]);
-    // const whiteboardClientState = useWhiteboardClient({
-    //     joinToken: chimeClientState.joinToken || "",
-    //     meetingId: chimeClientState.meetingId || "",
-    //     attendeeId: chimeClientState.attendeeId || "",
-    // });
-
-    /** For Device State */
-
-    // /// whiteboard
-    // ///////////////////
-    // const [recreateWebSocketWhiteboardClientCount, setRecreateWebSocketWhiteboardClientCount] = useState(0);
-    // const recreateWebSocketWhiteboardClient = () => {
-    //     console.log("whiteboard client recreate requested...");
-    //     setRecreateWebSocketWhiteboardClientCount(recreateWebSocketWhiteboardClientCount + 1);
-    // };
-
     // デバイス選択時の処理
     useEffect(() => {
         chimeClientState.setAudioInput(deviceState.chimeAudioInputDevice);
@@ -163,7 +135,6 @@ export const AppStateProvider = ({ children }: Props) => {
 
     useEffect(() => {
         const tracks = deviceState.audioInputMediaStreamForRecorder?.getAudioTracks();
-        console.log("[tracks]::", tracks);
         if (tracks) {
             frontendState.recorder.replaceLocalAudioTrack(tracks[0]);
         }

@@ -1,6 +1,6 @@
 import { VideoTileState } from "amazon-chime-sdk-js";
 import * as Chime from "@aws-sdk/client-chime"
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AttendeeState, FlectChimeClient, FlectChimeClientListener, MeetingInfo } from "../001_clients_and_managers/003_chime/FlectChimeClient";
 import { GetAttendeeInfoRequest, GetAttendeeInfoResponse } from "./002_useBackendManager";
 import { ChimeAudioInputDevice, ChimeAudioOutputDevice, ChimeAudioOutputElement, ChimeVideoInputDevice } from "./004_useDeviceState";
@@ -14,6 +14,7 @@ export type UseChimeClientProps = {
 export type ChimeClientState = {
     chimeClient: FlectChimeClient
     meetingName: string,
+    exMeetingId: string,
     attendees: AttendeeList
     videoTileStates: VideoTileStateList
     activeSpeakerId: string | null
@@ -33,13 +34,16 @@ export type ChimeClientStateAndMethods = ChimeClientState & {
 
     bindVideoElement: (tileId: number, videoElement: HTMLVideoElement) => void
 
+    getCurrentExMeetingId: () => string
+
 }
 
 export type AttendeeList = { [attendeeId: string]: AttendeeState; }
 export type VideoTileStateList = { [attendeeId: string]: VideoTileState; }
 export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndMethods => {
     const [meetingName, setMeetingName] = useState<string>("")
-    const [exMeetingId, setExMeetingId] = useState<string>("")
+    const exMeetingIdRef = useRef<string>("")
+    const [exMeetingId, setExMeetingId] = useState<string>(exMeetingIdRef.current)
     const [attendees, setAttendees] = useState<AttendeeList>({})
     const [videoTileStates, setVideoTileStates] = useState<VideoTileStateList>({})
     const [activeSpeakerId, setActiveSpeakerId] = useState<string | null>(null)
@@ -113,7 +117,8 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
                 return
             }
             setMeetingName(meetingName)
-            setExMeetingId(exMeetingId)
+            exMeetingIdRef.current = exMeetingId
+            setExMeetingId(exMeetingIdRef.current)
             await chimeClient.joinMeeting(meetingInfo, attendeeInfo);
         }
     }, [chimeClient])
@@ -132,6 +137,9 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
     //// (3) leave
     const leaveMeeting = useMemo(() => {
         return () => {
+            setMeetingName("")
+            exMeetingIdRef.current = ""
+            setExMeetingId(exMeetingIdRef.current)
             chimeClient.leaveMeeting()
         }
     }, [])
@@ -168,9 +176,14 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
         chimeClient.stopScreenShare()
     }
 
+    const getCurrentExMeetingId = () => {
+        return exMeetingIdRef.current
+    }
+
     const returnValue: ChimeClientStateAndMethods = {
         chimeClient,
         meetingName,
+        exMeetingId,
         attendees,
         videoTileStates,
         activeSpeakerId,
@@ -188,6 +201,8 @@ export const useChimeClient = (props: UseChimeClientProps): ChimeClientStateAndM
         stopScreenShare,
 
         bindVideoElement,
+
+        getCurrentExMeetingId,
     }
     return returnValue
 }

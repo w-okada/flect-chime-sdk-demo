@@ -1,7 +1,9 @@
 import * as Chime from "@aws-sdk/client-chime"
+import { ChimeClient } from "@aws-sdk/client-chime";
 import { useMemo, useState } from "react";
 import { StateControlCheckbox, useStateControlCheckbox } from "../100_components/hooks/useStateControlCheckbox";
 import { StateControlRadioButtons, useStateControlRadioButton } from "../100_components/hooks/useStateControlRadioButton";
+import { generateDateString } from "../999_misc/dateString";
 import { Recorder } from "../999_misc/Recorder";
 import { CognitoClientStateAndMethods } from "./001_useCognitoClient";
 import { BackendManagerStateAndMethod } from "./002_useBackendManager";
@@ -132,16 +134,21 @@ export const useFrontend = (props: UseFrontendProps) => {
         handleShareScreen();
     });
     const startTranscribeCheckbox = useStateControlCheckbox("start-transcribe-checkbox");
-    const startRecordingCheckbox = useStateControlCheckbox("start-recording-checkbox", (newVal: boolean) => {
-        if (newVal) {
-            recorder.startRecording(async (data: Blob) => {
-                console.log("[s3] uploading....")
-                await props.s3ClinetState.putObject("rec.mp4", data)
-            })
-        } else {
-            recorder.stopRecording()
+    const startRecording = useMemo(() => {
+        return (newVal: boolean) => {
+            if (newVal) {
+                recorder.startRecording(1000 * 5, async (data: Blob) => {
+                    console.log("[s3] uploading....")
+                    const dateString = generateDateString()
+                    const key = `recording/${props.chimeClientState.getCurrentExMeetingId()}/${props.backendManagerState.getCurrentEnvironment()?.userInfoInServer.exUserId || "unknown-user"}/${dateString}.mp4`
+                    await props.s3ClinetState.putObject(key, data)
+                })
+            } else {
+                recorder.stopRecording()
+            }
         }
-    });
+    }, [props.chimeClientState.exMeetingId, props.backendManagerState.environment?.userInfoInServer.exUserId])
+    const startRecordingCheckbox = useStateControlCheckbox("start-recording-checkbox", startRecording);
 
     //// (2-5) Dialog-1
     const settingCheckbox = useStateControlCheckbox("setting-checkbox");

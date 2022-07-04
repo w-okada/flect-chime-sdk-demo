@@ -85,7 +85,7 @@ export const createFrontendS3 = (scope: Construct, id: string, USE_CDN: boolean)
             allowedMethods: [
                 s3.HttpMethods.PUT,
             ],
-            allowedOrigins: [corsOrigin],
+            allowedOrigins: ['*'],
             allowedHeaders: ['*'],
         },
     )

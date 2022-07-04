@@ -278,6 +278,12 @@ export class FlectChimeClient {
         }
         this._meetingSession.audioVideo.stopLocalVideoTile();
         this._meetingSession.audioVideo.stop();
+        this._attendees = {}
+        this._videoTileStates = {}
+        this._activeSpeakerId = null
+        this._flectChimeClientListener?.attendeesUpdated(this._attendees);
+        this._flectChimeClientListener?.videoTileStateUpdated(this._videoTileStates)
+        this._flectChimeClientListener?.activeSpekaerUpdated(this._activeSpeakerId);
     }
 
     // (X) Configuration
