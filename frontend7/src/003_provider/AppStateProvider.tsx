@@ -150,6 +150,7 @@ export const AppStateProvider = ({ children }: Props) => {
     //     setRecreateWebSocketWhiteboardClientCount(recreateWebSocketWhiteboardClientCount + 1);
     // };
 
+    // デバイス選択時の処理
     useEffect(() => {
         chimeClientState.setAudioInput(deviceState.chimeAudioInputDevice);
     }, [deviceState.chimeAudioInputDevice]);

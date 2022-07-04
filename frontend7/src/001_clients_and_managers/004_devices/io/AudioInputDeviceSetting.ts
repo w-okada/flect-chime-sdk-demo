@@ -37,7 +37,6 @@ export class AudioInputDeviceGenerator {
     voiceFocusDeviceTransformer: VoiceFocusDeviceTransformer | null = null
     generatedDvice: VoiceFocusTransformDevice | MediaStream | null = null
     generateAudioInputDeivce = async (params: GenerateAudioInputDeivceParams) => {
-        console.log("generate tone device1")
         //// (a) no device selected 
         if (params.device === AudioInputCustomDevices.none) {
             return null
@@ -48,10 +47,9 @@ export class AudioInputDeviceGenerator {
             return this.generateToneDevice();
         }
 
-
         const proposedConstraints: MediaStreamConstraints | null = this.calculateAudioMediaStreamConstraints(params.device);
         const inputMediaStream = await navigator.mediaDevices.getUserMedia(proposedConstraints!);
-
+        console.log("generateAudio", inputMediaStream)
         //// (c) no voice focus
         if (params.noiseSuppressionType === NoiseSuppressionTypes.none) {
             return inputMediaStream

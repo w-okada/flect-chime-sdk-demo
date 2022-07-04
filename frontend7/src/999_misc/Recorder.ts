@@ -44,21 +44,22 @@ export class Recorder {
         return canvas
     })()
     private blackVideoStream = this.blackVideoCanvas.captureStream();
-    private silentAudioStream = (() => {
-        const ctx = DefaultDeviceController.getAudioContext();
-        const dst = ctx.createMediaStreamDestination()
+    // private silentAudioStream = (() => {
+    //     const ctx = DefaultDeviceController.getAudioContext();
+    //     const dst = ctx.createMediaStreamDestination()
 
-        const gainNode = ctx.createGain();
-        gainNode.gain.value = 0.1;
-        gainNode.connect(dst);
+    //     const gainNode = ctx.createGain();
+    //     gainNode.gain.value = 0.1;
+    //     gainNode.connect(dst);
 
-        const oscillator = ctx.createOscillator();
-        oscillator.frequency.value = 440;
-        oscillator.connect(gainNode);
-        oscillator.start();
-        return dst.stream;
-    })()
-    private blackSilenceStream = new MediaStream([this.blackVideoStream.getVideoTracks()[0], this.silentAudioStream.getAudioTracks()[0]])
+    //     const oscillator = ctx.createOscillator();
+    //     oscillator.frequency.value = 440;
+    //     oscillator.connect(gainNode);
+    //     oscillator.start();
+    //     return dst.stream;
+    // })()
+    // private blackSilenceStream = new MediaStream([this.blackVideoStream.getVideoTracks()[0], this.silentAudioStream.getAudioTracks()[0]])
+    private blackSilenceStream = new MediaStream([this.blackVideoStream.getVideoTracks()[0]])
 
     // Streams 
     private localStream = this.blackSilenceStream
@@ -209,8 +210,8 @@ export class Recorder {
     }
 
     /// Public Methods
-    private audioContext = DefaultDeviceController.getAudioContext();
-    private audioOutputNode = this.audioContext.createMediaStreamDestination();
+    private audioContext: AudioContext | null = null
+    private audioOutputNode: MediaStreamAudioDestinationNode | null = null
     private remoteAudioMediaStream = new MediaStream()
     private localAudioMediaStream = new MediaStream()
     private remoteAudioSource: MediaStreamAudioSourceNode | null = null
@@ -226,6 +227,13 @@ export class Recorder {
     }
 
     private replaceAudioTrack = (type: RecordAudioType, track: MediaStreamTrack) => {
+        if (!this.audioContext) {
+            this.audioContext = DefaultDeviceController.getAudioContext();
+
+        }
+        if (!this.audioOutputNode) {
+            this.audioOutputNode = this.audioContext.createMediaStreamDestination();
+        }
         const targetTrack = type === RecordAudioType.remote ? this.remoteAudioTrack : this.localAudioTrack
         if (targetTrack?.id === track.id) {
             console.log(`[tracks]:::${type}:: not change`)
@@ -269,8 +277,6 @@ export class Recorder {
 
     chunks: Blob[] = [];
     startRecording = async (dataCallback: (data: any) => Promise<void>) => {
-        // await this.init()
-
         const updateChimeMediaStream = () => {
             const video = document.getElementById("main-video-area-video-0") as HTMLVideoElement
             const audio = document.getElementById("chime-audio-output-element") as HTMLAudioElement
