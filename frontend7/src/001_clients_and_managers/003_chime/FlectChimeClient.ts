@@ -150,21 +150,25 @@ export class FlectChimeClient {
         //// (2-1) create AudioVideoObserver
         const audioVideoOserver = new AudioVideoObserverTemplate();
         audioVideoOserver.videoTileDidUpdate = (tileState: VideoTileState) => {
+            if (!this._flectChimeClientListener) {
+                console.log("[FlectChimeClient][AudioVideoObserver] listener not set", tileState);
+                return
+            }
             if (!tileState.boundAttendeeId) {
                 console.log("[FlectChimeClient][AudioVideoObserver] updated tile have no boundAttendeeID", tileState);
                 return;
             }
             if (this._attendees[tileState.boundAttendeeId]) {
                 this._attendees[tileState.boundAttendeeId].cameraOn = true;
-                this._flectChimeClientListener?.attendeesUpdated(this._attendees);
+                this._flectChimeClientListener.attendeesUpdated(this._attendees);
             }
             if (!this._videoTileStates[tileState.boundAttendeeId]) {
                 console.log("[FlectChimeClient][AudioVideoObserver] new tile added", tileState);
                 this._videoTileStates[tileState.boundAttendeeId] = tileState;
-                this._flectChimeClientListener?.videoTileStateUpdated(this._videoTileStates);
-                return;
+            } else {
+                console.log("[FlectChimeClient][AudioVideoObserver] no change?", tileState);
             }
-            console.log("[FlectChimeClient][AudioVideoObserver] no change?", tileState);
+            this._flectChimeClientListener.videoTileStateUpdated(this._videoTileStates);
         };
         audioVideoOserver.videoTileWasRemoved = (tileId: number) => {
             // There are the risk to overwrite new commer who is assgined same tileid, but tile id is generally incremented one by one

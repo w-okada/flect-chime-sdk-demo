@@ -10,7 +10,7 @@
         "webpack:start": "webpack serve --config webpack.config.js",
         "copy:resources": "node bin/list_resources.js && mkdir -p dist && cp -r public/* dist/",
         "copy:backendinfo": "node bin/importBackendSetting.js",
-        "copy:backend_types": "cp ../backend2/lib/lambda2/http_request.ts src/http_request.ts && cp ../backend2/lib/lambda2/messaging_format.ts src/messaging_format.ts",
+        "copy:backend_types": "cp ../backend3/lib/lambda2/http_request.ts src/http_request.ts && cp ../backend3/lib/lambda2/messaging_format.ts src/messaging_format.ts",
         "copy:slackinfo": "cp ../slack-chime-connect/app/src/slack/http_request.ts src/pages/100_federattion/101_slack/",
         "build": "run-s clean copy:backendinfo copy:backend_types copy:resources webpack:build ",
         "start": "run-s clean copy:backendinfo copy:backend_types copy:resources webpack:start",
@@ -52,6 +52,7 @@
     },
     "dependencies": {
         "@aws-sdk/client-chime": "^3.112.0",
+        "@aws-sdk/client-s3": "^3.120.0",
         "@aws-sdk/client-sts": "^3.112.0",
         "@dannadori/blazeface-worker-js": "^1.0.6",
         "@fortawesome/fontawesome-free": "^6.1.1",

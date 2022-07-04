@@ -5,13 +5,13 @@ import { InternalRestApiClientContext } from "./001_RestApiClient";
 // (1) (POST) -> no support
 // (2) Get Attendee Info (GET)
 export type RestGetAttendeeInfoRequest = HTTPGetAttendeeInfoRequest & {
-    meetingName: string,
+    exMeetingId: string
     attendeeId: string,
 }
 export type RestGetAttendeeInfoResponse = HTTPGetAttendeeInfoResponse
 
 export const getAttendeeInfo = async (params: RestGetAttendeeInfoRequest, context: InternalRestApiClientContext): Promise<RestGetAttendeeInfoResponse> => {
-    const attendeeUrl = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}/attendees/${encodeURIComponent(params.attendeeId)}`;
+    const attendeeUrl = `${context.baseUrl}meetings/${params.exMeetingId}/attendees/${params.attendeeId}`;
     const res = await fetch(attendeeUrl, {
         method: "GET",
         headers: {

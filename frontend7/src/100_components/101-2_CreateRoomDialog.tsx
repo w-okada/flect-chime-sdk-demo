@@ -31,12 +31,16 @@ export const CreateRoomDialog = (_props: CreateRoomDialogProps) => {
         const code = (document.getElementById("create-room-dialog-code") as HTMLInputElement).value;
         try {
             setIsProcessing(true);
+            const currentTime = new Date().getTime();
+            const endTime = currentTime + 1000 * 60 * 1; // １分後
             const res = await backendManagerState.createMeeting({
                 meetingName: roomName,
                 region: region,
                 secret: secret,
                 useCode: useCode,
                 code: code,
+                startTime: currentTime,
+                endTime: endTime,
             });
             if (res?.created === false) {
                 throw new Error(ChimeDemoException.NoMeetingRoomCreated);

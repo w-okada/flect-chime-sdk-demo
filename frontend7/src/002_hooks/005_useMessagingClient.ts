@@ -27,7 +27,9 @@ export type MessagingClientStateAndMethod = MessagingClientState & {
 }
 
 export type MessageControlListener = {
-    roomCreated: () => void
+    roomRegistered: () => void
+    roomStarted: () => void
+    roomEnded: () => void
     roomDeleted: () => void
 }
 
@@ -80,8 +82,12 @@ export const useMessagingClient = (): MessagingClientStateAndMethod => {
             updated: (messages: MessageItem[]) => {
                 setGlobalMessages([...messages])
                 if (messages[0].type == ChannelMessageType.CONTROL && messageControlListenerRef.current) {
-                    if (messages[0].content == ControlTypes.RoomCreated) {
-                        messageControlListenerRef.current.roomCreated()
+                    if (messages[0].content == ControlTypes.RoomRegistered) {
+                        messageControlListenerRef.current.roomRegistered()
+                    } else if (messages[0].content == ControlTypes.RoomStarted) {
+                        messageControlListenerRef.current.roomStarted()
+                    } else if (messages[0].content == ControlTypes.RoomEnded) {
+                        messageControlListenerRef.current.roomEnded()
                     } else if (messages[0].content == ControlTypes.RoomDeleted) {
                         messageControlListenerRef.current.roomDeleted()
                     }

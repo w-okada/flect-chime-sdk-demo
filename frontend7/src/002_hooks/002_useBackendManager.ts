@@ -43,6 +43,8 @@ export type BackendManagerStateAndMethod = BackendManagerState & {
     getAttendeeInfo: (params: GetAttendeeInfoRequest) => Promise<GetAttendeeInfoResponse | null>
     setUsername: (username: string) => void
 
+    initialize: () => void
+
 }
 export const useBackendManager = (props: UseBackendManagerProps): BackendManagerStateAndMethod => {
 
@@ -87,6 +89,13 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
         }
     }, [context])
 
+    const initialize = () => {
+        setEnvironment(undefined)
+        setMeetings([])
+        setUsername("")
+    }
+
+
 
     // (1) Meetings
     //// (1-1) Create Meeting (POST)
@@ -112,7 +121,7 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
     //// (2-2) Get Meeting Info (GET)
     const getMeetingInfo = async (params: GetMeetingInfoRequest): Promise<GetMeetingInfoResponse | null> => {
         if (!restClient) return null
-        const res = await restClient.getMeetingInfo(params as RestGetMeetingInfoResponse, context)
+        const res = await restClient.getMeetingInfo(params as RestGetMeetingInfoRequest, context)
         return res as GetMeetingInfoResponse
     }
     //// (2-3) (PUT) 
@@ -163,7 +172,9 @@ export const useBackendManager = (props: UseBackendManagerProps): BackendManager
         endMeeting,
         joinMeeting,
         getAttendeeInfo,
-        setUsername
+        setUsername,
+
+        initialize
     }
 
     return returnVal

@@ -10,6 +10,7 @@ import { CenterStageCameraImageProcessor } from "./videoProcessor/001_CenterStag
 export const VideoInputCustomDevices = {
     "none": "none",
     "file": "file",
+    "null": "null",
 } as const
 export type VideoInputCustomDevices = typeof VideoInputCustomDevices[keyof typeof VideoInputCustomDevices]
 export const VideoInputCustomDeviceList = Object.entries(VideoInputCustomDevices).map(([key, val]) => {
@@ -81,7 +82,8 @@ export class VideoInputDeviceGenerator {
         if (params.virtualBackgroundType == VirtualBackgroundTypes.replace_with_image) {
             const supported = await BackgroundReplacementVideoFrameProcessor.isSupported();
             if (supported) {
-                const image = await fetch(params.imageURL);
+                const url = params.imageURL ? params.imageURL : "./bg1.png"
+                const image = await fetch(url);
                 const imageBlob = await image.blob();
                 const p = await BackgroundReplacementVideoFrameProcessor.create(undefined, { imageBlob });
                 this.backgroundReplacementProcessor = p || null

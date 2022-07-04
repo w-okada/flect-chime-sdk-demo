@@ -18,6 +18,8 @@ type HeaderButtons = {
     startRecordingButton: JSX.Element;
     settingButton: JSX.Element;
     leaveButton: JSX.Element;
+
+    showSelfCameraViewButton: JSX.Element;
 };
 
 export const Header = () => {
@@ -139,6 +141,16 @@ export const Header = () => {
         };
         const startRecordingButton = <HeaderButton {...startRecordingButtonProps}></HeaderButton>;
 
+        ///// (4-4) Show self camera view
+        const showSelfCameraViewButtonProps: HeaderButtonProps = {
+            stateControlCheckbox: frontendState.stateControls.showSelfCameraViewCheckbox,
+            tooltip: "show my view",
+            onIcon: ["fas", "user"],
+            offIcon: ["fas", "user"],
+            animation: AnimationTypes.colored,
+        };
+        const showSelfCameraViewButton = <HeaderButton {...showSelfCameraViewButtonProps}></HeaderButton>;
+
         //// (5) Dialog
         ///// (5-1) setting
         const settingButtonProps: HeaderButtonProps = {
@@ -173,19 +185,24 @@ export const Header = () => {
             shareScreenButton,
             startTranscribeButton,
             startRecordingButton,
+            showSelfCameraViewButton,
             settingButton,
             leaveButton,
         };
     }, []);
 
     const header = useMemo(() => {
+        let statusString = "";
+        if (chimeClientState.meetingName.length > 0) {
+            statusString = `${frontendState.username} [${chimeClientState.meetingName}]`;
+        } else {
+            statusString = `${frontendState.username}`;
+        }
         // (X) Header
         const header = (
             <div className="header">
                 <div className="sidebar-button-area">{buttons.sidebarButton}</div>
-                <div className="status-area">
-                    {frontendState.username} @ {chimeClientState.meetingName}
-                </div>
+                <div className="status-area">{statusString}</div>
                 <div className="menu-item-area">
                     <div className="group">
                         {buttons.micButton}
@@ -204,6 +221,7 @@ export const Header = () => {
                         <div className="spacer"></div>
                         {buttons.bottomNavButton}
                         {buttons.rightSidebarButton}
+                        {buttons.showSelfCameraViewButton}
                     </div>
                     <div className="group">
                         {buttons.settingButton}

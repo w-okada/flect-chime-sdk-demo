@@ -1,5 +1,6 @@
 /* BottomNavとVideoAreaの定義 */
 .main-video-area {
+    position: relative;
     overflow: hidden;
     background: rgba(0, 0, 0, 0);
     width: 100%;

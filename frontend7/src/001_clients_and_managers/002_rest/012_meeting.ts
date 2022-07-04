@@ -9,12 +9,12 @@ export type Metadata = {
     StartTime: number;
 };
 export type RestGetMeetingInfoRequest = HTTPGetMeetingInfoRequest & {
-    meetingName: string;
+    exMeetingId: string;
 };
 export type RestGetMeetingInfoResponse = HTTPGetMeetingInfoResponse;
 
 export const getMeetingInfo = async (params: RestGetMeetingInfoRequest, context: InternalRestApiClientContext): Promise<RestGetMeetingInfoResponse> => {
-    const url = `${context.baseUrl}meetings/${encodeURIComponent(params.meetingName)}`;
+    const url = `${context.baseUrl}meetings/${params.exMeetingId}`;
 
     const res = await fetch(url, {
         method: "GET",

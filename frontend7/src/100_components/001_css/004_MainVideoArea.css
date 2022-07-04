@@ -26,3 +26,23 @@
     paddingleft: 2px;
     paddingright: 2px;
 }
+
+.show-self-camera-view-checkbox + .main-video-area-self-camera {
+    display: none;
+}
+.show-self-camera-view-checkbox:checked + .main-video-area-self-camera {
+    display: block;
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    width: 100px;
+    height: 100px;
+    z-index: 100;
+}
+.main-video-area-self-camera-video {
+    border: 2px solid;
+    position: absolute;
+    objectfit: contain;
+    width: 100%;
+    /* height: 100%; */
+}

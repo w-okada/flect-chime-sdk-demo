@@ -6,7 +6,7 @@ export type RestCreateMeetingRequest = HTTPCreateMeetingRequest
 export type RestCreateMeetingResponse = HTTPCreateMeetingResponse
 export const createMeeting = async (params: RestCreateMeetingRequest, context: InternalRestApiClientContext): Promise<RestCreateMeetingResponse> => {
     const url = `${context.baseUrl}meetings`;
-    params.meetingName = encodeURIComponent(params.meetingName);
+    params.meetingName = params.meetingName;
 
     const requestBody = JSON.stringify(params);
     const res = await fetch(url, {

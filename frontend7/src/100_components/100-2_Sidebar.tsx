@@ -32,17 +32,21 @@ export const Sidebar = (_props: SidebarProps) => {
     const joinSecretRoomClicked = useMemo(() => {
         return async () => {
             frontendState.setJoinRoomDialogProps({
-                decodedMeetingName: "",
+                exMeetingId: "",
+                meetingName: "",
                 useCode: true,
+                secret: true,
             });
             frontendState.stateControls.joinRoomCheckbox.updateState(true);
         };
     }, []);
     const joinMeetingClicked = useMemo(() => {
-        return async (decodedMeetingName: string, useCode: boolean) => {
+        return async (exMeetingId: string, meetingName: string, useCode: boolean) => {
             frontendState.setJoinRoomDialogProps({
-                decodedMeetingName,
-                useCode: useCode,
+                exMeetingId,
+                meetingName,
+                useCode,
+                secret: false,
             });
             frontendState.stateControls.joinRoomCheckbox.updateState(true);
         };
@@ -78,15 +82,14 @@ export const Sidebar = (_props: SidebarProps) => {
     //// () generate Room list
     const roomItems = useMemo(() => {
         return backendManagerState.meetings.map((x, index) => {
-            const key = x.meetingId === "---secret---" ? `---secret---${index}` : x.meetingId;
-            const decodedMeetingName = decodeURIComponent(x.meetingName);
+            // const decodedMeetingName = decodeURIComponent(x.meetingName);
             return (
-                <div key={key} className="sidebar-room-item">
-                    <div className="sidebar-room-name">{decodedMeetingName}</div>
+                <div key={x.exMeetingId} className="sidebar-room-item">
+                    <div className="sidebar-room-name">{x.meetingName}</div>
                     <div
                         className="sidebar-room-join"
                         onClick={() => {
-                            joinMeetingClicked(decodedMeetingName, x.metadata["UseCode"]);
+                            joinMeetingClicked(x.exMeetingId, x.meetingName, x.useCode);
                         }}
                     >
                         Join <FontAwesomeIcon icon={["fas", "right-to-bracket"]} className="tooltip-right" data-tooltip="join meeting" />

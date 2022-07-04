@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const jsonObject = JSON.parse(fs.readFileSync("../backend2/cfn_outputs.json", "utf8"));
+const jsonObject = JSON.parse(fs.readFileSync("../backend3/cfn_outputs.json", "utf8"));
 const result = {};
 
 console.log(jsonObject);
@@ -30,7 +30,8 @@ fs.writeFileSync("./sync.sh", outputString);
 console.log("generate access url");
 const DemoEndpoint = outputs["DemoEndpoint"];
 outputString = "";
-outputString += `${DemoEndpoint}/default/index.html \n`;
+// outputString += `${DemoEndpoint}/default/index.html \n`;
+outputString += `${DemoEndpoint}/index.html \n`;
 
 fs.writeFileSync("./demo_url.txt", outputString);
 

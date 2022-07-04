@@ -1,5 +1,5 @@
 import { faL } from "@fortawesome/free-solid-svg-icons";
-import { DefaultVideoTransformDevice, VoiceFocusTransformDevice } from "amazon-chime-sdk-js";
+import { DefaultDeviceController, DefaultVideoTransformDevice, VoiceFocusTransformDevice } from "amazon-chime-sdk-js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DeviceInfo, Devicemanager } from "../001_clients_and_managers/004_devices/001_DeviceManager";
 import { AudioInputCustomDeviceList, AudioInputCustomDevices, NoiseSuppressionTypeList, NoiseSuppressionTypes } from "../001_clients_and_managers/004_devices/io/AudioInputDeviceSetting";
@@ -43,6 +43,9 @@ export type DeviceInfoState = {
     audioOutputEnable: boolean;
     chimeAudioOutputDevice: ChimeAudioOutputDevice;
     audioOutputElement: ChimeAudioOutputElement;
+
+    // for Recorder
+    audioInputMediaStreamForRecorder: MediaStream | null;
 };
 
 export type DeviceInfoStateAndMethods = DeviceInfoState & {
@@ -60,6 +63,8 @@ export type DeviceInfoStateAndMethods = DeviceInfoState & {
     removeVirtualBackgroundImage: (index: number) => Promise<void>;
     enableCenterStage: (val: boolean) => void;
     enableAvatar: (val: boolean) => void;
+
+    generateAudioDevice: () => Promise<void>;
 };
 
 //////////////////////////////
@@ -77,12 +82,12 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         audioOutputDevices: [],
 
         // auido input
-        audioInput: localStorage.audioInputDevice || AudioInputCustomDevices.none,
+        audioInput: localStorage.audioInputDevice || AudioInputCustomDevices.null,
         audioInputEnable: true,
         noiseSuppretionType: localStorage.noiseSuppressionType || NoiseSuppressionTypes.auto,
         chimeAudioInputDevice: null,
         // video input
-        videoInput: localStorage.videoInputDevice || VideoInputCustomDevices.none,
+        videoInput: localStorage.videoInputDevice || VideoInputCustomDevices.null,
         videoInputEnable: true,
         virtualBackgroundType: localStorage.virtualBackgroundType || VirtualBackgroundTypes.none,
         videoDataURL: null,
@@ -93,10 +98,13 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         videoEnableAvatar: false,
 
         // audio output
-        audioOutput: localStorage.audioOutputDevice || AudioOutputCustomDevices.none,
+        audioOutput: localStorage.audioOutputDevice || AudioOutputCustomDevices.null,
         audioOutputEnable: true,
         chimeAudioOutputDevice: null,
         audioOutputElement: null,
+
+        // for Recorder
+        audioInputMediaStreamForRecorder: null,
     });
     const [state, setState] = useState<DeviceInfoState>(stateRef.current);
     // state initializ for background image
@@ -125,21 +133,20 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         const { audioInputDevices, videoInputDevices, audioOutputDevices } = deviceManager.getDeviceLists();
         if (useFirstDevice) {
             let audioInput;
-            if (stateRef.current.audioInput == AudioInputCustomDevices.none && audioInputDevices.length > 0) {
+            if (stateRef.current.audioInput == AudioInputCustomDevices.null && audioInputDevices.length > 0) {
                 audioInput = audioInputDevices[0].deviceId;
             } else {
                 audioInput = stateRef.current.audioInput;
             }
-
             let videoInput;
-            if (stateRef.current.videoInput == VideoInputCustomDevices.none && videoInputDevices.length > 0) {
+            if (stateRef.current.videoInput == VideoInputCustomDevices.null && videoInputDevices.length > 0) {
                 videoInput = videoInputDevices[0].deviceId;
             } else {
                 videoInput = stateRef.current.videoInput;
             }
 
             let audioOutput;
-            if (stateRef.current.audioOutput == AudioOutputCustomDevices.none && audioOutputDevices.length > 0) {
+            if (stateRef.current.audioOutput == AudioOutputCustomDevices.null && audioOutputDevices.length > 0) {
                 audioOutput = audioOutputDevices[0].deviceId;
             } else {
                 audioOutput = stateRef.current.audioOutput;
@@ -290,23 +297,38 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         generateDevice();
     }, [state.videoInput, state.videoInputEnable, state.videoDataURL, state.virtualBackgroundType, state.virtualBackgroundImageDataURLs, state.virtualBackgroundImageCurrentIndex, state.videoEnableCenterStage, state.videoEnableAvatar]);
 
-    useEffect(() => {
-        const generateDevice = async () => {
-            if (state.audioInputEnable === false) {
-                stateRef.current = { ...stateRef.current, chimeAudioInputDevice: null };
-                setState(stateRef.current);
-                return;
-            }
-
-            const device = await deviceManager.generateAudioInputDeivce({
-                device: state.audioInput,
-                noiseSuppressionType: state.noiseSuppretionType,
-            });
-            stateRef.current = { ...stateRef.current, chimeAudioInputDevice: device };
+    const generateAudioDevice = async () => {
+        if (state.audioInputEnable === false) {
+            stateRef.current = { ...stateRef.current, chimeAudioInputDevice: null, audioInputMediaStreamForRecorder: null };
             setState(stateRef.current);
-        };
+            return;
+        }
 
-        generateDevice();
+        const device = await deviceManager.generateAudioInputDeivce({
+            device: state.audioInput,
+            noiseSuppressionType: state.noiseSuppretionType,
+        });
+        if (!device) {
+            // nullの場合
+            stateRef.current = { ...stateRef.current, chimeAudioInputDevice: null, audioInputMediaStreamForRecorder: null };
+        } else {
+            // Media Stream の場合(Voice Focusも内部的にMediaStreamを作成する)
+            // const audioContext = DefaultDeviceController.getAudioContext();
+            // const audioOutputNodeForChime = audioContext.createMediaStreamDestination();
+            // const audioOutputNodeForRecorder = audioContext.createMediaStreamDestination();
+            // const audioSource = audioContext.createMediaStreamSource(device);
+            // audioSource.connect(audioOutputNodeForChime);
+            // audioSource.connect(audioOutputNodeForRecorder);
+
+            // stateRef.current = { ...stateRef.current, chimeAudioInputDevice: audioOutputNodeForChime.stream, audioInputMediaStreamForRecorder: audioOutputNodeForRecorder.stream };
+            // stateRef.current = { ...stateRef.current, chimeAudioInputDevice: device, audioInputMediaStreamForRecorder: device.clone() };
+            // stateRef.current = { ...stateRef.current, chimeAudioInputDevice: device, audioInputMediaStreamForRecorder: device };
+            stateRef.current = { ...stateRef.current, chimeAudioInputDevice: device, audioInputMediaStreamForRecorder: device };
+        }
+        setState(stateRef.current);
+    };
+    useEffect(() => {
+        generateAudioDevice();
     }, [state.audioInput, state.audioInputEnable, state.noiseSuppretionType]);
 
     useEffect(() => {
@@ -335,6 +357,8 @@ export const useDeviceState = (): DeviceInfoStateAndMethods => {
         removeVirtualBackgroundImage,
         enableCenterStage,
         enableAvatar,
+
+        generateAudioDevice,
     };
     return returnVal;
 };

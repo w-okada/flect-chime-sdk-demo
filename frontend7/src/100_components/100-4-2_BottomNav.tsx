@@ -63,14 +63,13 @@ export const BottomNav = (_props: BottomNavProps) => {
 
     //// (2-3) リバインド判定用IDの作成
     const rebindId = useMemo(() => {
-        const boundIds = Object.keys(chimeClientState.videoTileStates);
-
-        return boundIds
+        const targetTiles = Object.values(chimeClientState.videoTileStates);
+        return targetTiles
             .sort((x, y) => {
-                return x > y ? -1 : 1;
+                return x.boundAttendeeId! > y.boundAttendeeId! ? -1 : 1;
             })
             .reduce((prev, cur) => {
-                return `${prev}_${cur}`;
+                return `${prev}_${cur.boundExternalUserId}_${cur.isContent}`;
             }, "");
     }, [chimeClientState.videoTileStates]);
 
@@ -87,35 +86,43 @@ export const BottomNav = (_props: BottomNavProps) => {
     //// (3-2) タイルのバインド
     useEffect(() => {
         const num = Object.values(chimeClientState.videoTileStates).length;
-        Object.values(chimeClientState.videoTileStates).forEach((x, index) => {
-            const ids = getIds(index);
-            const videoElem = document.getElementById(ids.video) as HTMLVideoElement;
-            console.log("sidebar bind::", ids, videoElem);
-            chimeClientState.bindVideoElement(x.tileId!, videoElem);
-        });
+        Object.values(chimeClientState.videoTileStates)
+            .filter((x) => {
+                return x.localTile === false;
+            })
+            .forEach((x, index) => {
+                const ids = getIds(index);
+                const videoElem = document.getElementById(ids.video) as HTMLVideoElement;
+                // console.log("sidebar bind::", ids, videoElem);
+                chimeClientState.bindVideoElement(x.tileId!, videoElem);
+            });
 
         for (let i = num; i < MAX_TILES; i++) {
             const ids = getIds(i);
             const video = document.getElementById(ids.video) as HTMLVideoElement;
             video.src = "";
         }
-    }, [rebindId]);
+    }, [rebindId, chimeClientState.videoTileStates, chimeClientState.meetingName]);
 
     //// (3-3) タグとactive speakerのバインド
     useEffect(() => {
         const num = Object.values(chimeClientState.videoTileStates).length;
-        Object.values(chimeClientState.videoTileStates).forEach((x, index) => {
-            const ids = getIds(index);
-            const tag = document.getElementById(ids.tag) as HTMLDivElement;
-            if (x.boundAttendeeId && chimeClientState.attendees[x.boundAttendeeId]) {
-                if (chimeClientState.activeSpeakerId === x.boundAttendeeId) {
-                    tag.style.color = "#f00";
-                } else {
-                    tag.style.color = "#fff";
+        Object.values(chimeClientState.videoTileStates)
+            .filter((x) => {
+                return x.localTile === false;
+            })
+            .forEach((x, index) => {
+                const ids = getIds(index);
+                const tag = document.getElementById(ids.tag) as HTMLDivElement;
+                if (x.boundAttendeeId && chimeClientState.attendees[x.boundAttendeeId]) {
+                    if (chimeClientState.activeSpeakerId === x.boundAttendeeId) {
+                        tag.style.color = "#f00";
+                    } else {
+                        tag.style.color = "#fff";
+                    }
+                    tag.innerText = `${chimeClientState.attendees[x.boundAttendeeId!].attendeeName}`;
                 }
-                tag.innerText = `${chimeClientState.attendees[x.boundAttendeeId!].attendeeName}`;
-            }
-        });
+            });
         for (let i = num; i < MAX_TILES; i++) {
             const ids = getIds(i);
             const tag = document.getElementById(ids.tag) as HTMLDivElement;

@@ -8,6 +8,7 @@ import { BackendManagerStateAndMethod } from "./002_useBackendManager";
 import { ChimeClientStateAndMethods } from "./003_useChimeClient";
 import { DeviceInfoStateAndMethods } from "./004_useDeviceState";
 import { MessagingClientStateAndMethod } from "./005_useMessagingClient";
+import { S3ClientStateAndMethod } from "./006_useS3Client";
 
 export type UseFrontendProps = {
     cognitoClientState: CognitoClientStateAndMethods;
@@ -15,6 +16,7 @@ export type UseFrontendProps = {
     chimeClientState: ChimeClientStateAndMethods;
     deviceState: DeviceInfoStateAndMethods;
     messagingClientState: MessagingClientStateAndMethod;
+    s3ClinetState: S3ClientStateAndMethod
 }
 
 
@@ -54,10 +56,15 @@ export type StateControls = {
     signInCheckbox: StateControlCheckbox,
     createRoomCheckbox: StateControlCheckbox,
     joinRoomCheckbox: StateControlCheckbox,
+    loadingUserInformationCheckbox: StateControlCheckbox,
+
+    showSelfCameraViewCheckbox: StateControlCheckbox,
 }
 export type JoinRoomDialogProps = {
-    decodedMeetingName: string,
+    exMeetingId: string,
+    meetingName: string,
     useCode: boolean,
+    secret: boolean,
 
     //// ↓ secret roomの時に確定できないので、ここでは設定しない。
     ////  join後にroominfoを取得してchannelArnを特定することにする。 
@@ -93,6 +100,7 @@ export const useFrontend = (props: UseFrontendProps) => {
     const openBottomNavCheckbox = useStateControlCheckbox("open-bottom-nav-checkbox");
     const openRightSidebarCheckbox = useStateControlCheckbox("open-right-sidebar-checkbox");
 
+    //// (2-2) DeviceEnabler 関連
     const micEnableCheckbox = useStateControlCheckbox("mic-enable-checkbox", (newVal: boolean) => {
         props.deviceState.setAudioInputEnable(newVal);
     });
@@ -103,10 +111,12 @@ export const useFrontend = (props: UseFrontendProps) => {
         props.deviceState.setAudioOutputEnable(newVal);
     });
 
+    //// (2-3) View 関連
     const viewRadioButtons = useStateControlRadioButton("view-radio-button", [ViewTypes.feature, ViewTypes.grid], (suffix: string) => {
         setViewType(suffix as ViewTypes);
     });
 
+    //// (2-4) Util 関連
     const shareScreenCheckbox = useStateControlCheckbox("share-screen-checkbox", (newVal: boolean) => {
         const handleShareScreen = () => {
             if (newVal) {
@@ -124,25 +134,36 @@ export const useFrontend = (props: UseFrontendProps) => {
     const startTranscribeCheckbox = useStateControlCheckbox("start-transcribe-checkbox");
     const startRecordingCheckbox = useStateControlCheckbox("start-recording-checkbox", (newVal: boolean) => {
         if (newVal) {
-            recorder.startRecording()
+            recorder.startRecording(async (data: Blob) => {
+                console.log("[s3] uploading....")
+                await props.s3ClinetState.putObject("rec.mp4", data)
+            })
         } else {
             recorder.stopRecording()
         }
     });
+
+    //// (2-5) Dialog-1
     const settingCheckbox = useStateControlCheckbox("setting-checkbox");
     const leaveCheckbox = useStateControlCheckbox("leave-checkbox");
 
 
-    //// (2-2) Dialog
+    //// (2-6) Dialog-2
     const signInCheckbox = useStateControlCheckbox("sign-in-checkbox");
     const createRoomCheckbox = useStateControlCheckbox("create-room-checkbox");
     const joinRoomCheckbox = useStateControlCheckbox("join-room-checkbox");
+    const loadingUserInformationCheckbox = useStateControlCheckbox("loading-user-information-checkbox");
+
+    //// (2-7) Util-2
+    const showSelfCameraViewCheckbox = useStateControlCheckbox("show-self-camera-view-checkbox");
 
 
     // (3) DialogProp
     const [joinRoomDialogProps, setJoinRoomDialogProps] = useState<JoinRoomDialogProps>({
-        decodedMeetingName: "",
+        exMeetingId: "",
+        meetingName: "",
         useCode: false,
+        secret: false,
     })
 
     // (X) Recorder
@@ -180,6 +201,9 @@ export const useFrontend = (props: UseFrontendProps) => {
             signInCheckbox,
             createRoomCheckbox,
             joinRoomCheckbox,
+            loadingUserInformationCheckbox,
+
+            showSelfCameraViewCheckbox,
         },
         joinRoomDialogProps,
         setJoinRoomDialogProps,

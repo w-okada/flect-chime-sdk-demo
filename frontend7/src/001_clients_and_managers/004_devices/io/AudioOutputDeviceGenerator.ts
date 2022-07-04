@@ -5,6 +5,7 @@
 // (1) Custom Devices
 export const AudioOutputCustomDevices = {
     "none": "none",
+    "null": "null",
 } as const
 export type AudioOutputCustomDevices = typeof AudioOutputCustomDevices[keyof typeof AudioOutputCustomDevices]
 export const AudioOutputCustomDeviceList = Object.entries(AudioOutputCustomDevices).map(([key, val]) => {

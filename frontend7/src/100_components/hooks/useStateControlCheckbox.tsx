@@ -83,8 +83,8 @@ export const useStateControlCheckbox = (className: string, changeCallback?: (new
             };
         });
         // (2) 全エレメントoff
-        const createMeetingDialogRemovers = document.querySelectorAll(`.${className}-remover`);
-        createMeetingDialogRemovers.forEach((x) => {
+        const removers = document.querySelectorAll(`.${className}-remover`);
+        removers.forEach((x) => {
             // @ts-ignore
             x.onclick = (ev) => {
                 if (ev.target.className.indexOf(`${className}-remover`) > 0) {

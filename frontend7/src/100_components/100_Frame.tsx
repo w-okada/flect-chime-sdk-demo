@@ -22,16 +22,27 @@ export const Frame = (_props: FrameProps) => {
      */
     // (x) signin state
     useEffect(() => {
-        if (!cognitoClientState.signInCompleted || !backendManagerState.environment) {
+        if (!cognitoClientState.signInCompleted) {
             const signInDialogCheckboxs = document.querySelectorAll(".sign-in-checkbox");
             signInDialogCheckboxs.forEach((x) => {
                 //@ts-ignore
                 x.checked = true;
                 // x.checked = false;
             });
-        } else {
+        } else if (!backendManagerState.environment) {
             const signInDialogCheckboxs = document.querySelectorAll(".sign-in-checkbox");
             signInDialogCheckboxs.forEach((x) => {
+                //@ts-ignore
+                x.checked = false;
+            });
+            const loadingUserInformationDialogCheckboxs = document.querySelectorAll(".loading-user-information-checkbox");
+            loadingUserInformationDialogCheckboxs.forEach((x) => {
+                //@ts-ignore
+                x.checked = true;
+            });
+        } else {
+            const loadingUserInformationDialogCheckboxs = document.querySelectorAll(".loading-user-information-checkbox");
+            loadingUserInformationDialogCheckboxs.forEach((x) => {
                 //@ts-ignore
                 x.checked = false;
             });
@@ -55,6 +66,7 @@ export const Frame = (_props: FrameProps) => {
         frontendState.stateControls.cameraEnableCheckbox.updateState(false);
         frontendState.stateControls.speakerEnableCheckbox.updateState(true);
         frontendState.stateControls.openBottomNavCheckbox.updateState(true);
+        frontendState.stateControls.showSelfCameraViewCheckbox.updateState(true);
     }, []);
 
     return (
@@ -65,17 +77,6 @@ export const Frame = (_props: FrameProps) => {
             <MainArea />
 
             <Dialog />
-            {/* <SettingDialog />
-            <LeaveDialog />
-            <CreateRoomDialog />
-            <JoinRoomDialog />
-
-            <div>
-                {frontendState.stateControls.signInCheckbox.trigger}
-                <div className="dialog-container">
-                    <SignInDialog />
-                </div>
-            </div> */}
 
             <div>
                 <audio id="chime-audio-output-element" />
